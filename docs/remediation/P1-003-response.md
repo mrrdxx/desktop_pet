@@ -508,3 +508,52 @@ F-01～F-05 均已关闭，不重复整改。仅针对 R6 新增 F-06 整改。
 ### 复核请求
 
 F-06 已按监理 R6 报告路径修复：生产恢复路径依据暂停状态排除冻结退出间隔，保留未暂停退出的正常离线衰减及 F-02 回拨保护。12 小时隔离恢复验证使用独立快照和紧容差，移除修复后测试失败。未暂停退出对照防止修复过于激进。请监理复核。
+
+## R7 整改：F-06 回拨保护恢复边界
+
+对应监理 R7（`cabf7ba`），见 [P1-003-review](../reviews/P1-003-review.md) R7 章节。
+F-01～F-05 均已关闭，不重做。R7 认可 F-06 正常向前的冻结/未暂停对照，仅补回拨保护恢复边界。
+
+### F-06 R7 剩余：暂停恢复遇回拨时无条件重设 now 会倒退基准
+
+#### 剩余问题
+
+R7 指出 `MapArchiveToEmotionObjects` 中 `if (state.IsPaused) lastDecayUtc = utcNow` 无条件覆盖。当存档基准为 `2026-10-24T12:00:00Z`、恢复当前时间回拨为 `2026-10-24T00:00:00Z` 时，它把基准从 12 点倒退至 0 点；恢复到 12 点时累计器会再次衰减这 12 小时（委屈 90→70）。这绕过了 F-02 在 `AdvanceTo` 中的非倒退保护。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/App.xaml.cs` 的 `MapArchiveToEmotionObjects`。
+- 将暂停恢复的前移条件从 `if (state.IsPaused)` 改为 `if (state.IsPaused && utcNow > lastDecayUtc)`：只在当前时间晚于存档有效基准时前移，不倒退。
+- 当 `utcNow <= lastDecayUtc`（回拨场景）时，保留存档中的 `lastDecayUtc` 不变，F-02 的 `AdvanceTo` 非倒退保护自然生效。
+- 未暂停路径不变：`state.IsPaused == false` 时保持存档原基准，离线间隔按正常衰减计算。
+- `AdvanceTo` 方法本身不变，不重开 F-02。
+
+#### 自测
+
+新增 1 项连续测试（`PauseSemanticsTests.cs`）：
+
+- `F06_R7_PausedRollbackRestore_NoBackwardShift_ThenForward_OnlyNewInterval`：
+  - 存档基准 = 12:00，IsPaused=true，restoreUtcNow = 00:00（回拨 12h）。
+  - 生产映射恢复后 `LastDecayUtc` 保持 12:00（不倒退到 00:00）。
+  - `AdvanceTo(12:00)` → elapsed=0 → 亲近度和委屈值不变。
+  - `AdvanceTo(18:00)` → 只计 6h 新间隔，与无回拨对照一致（容差 0.001）。
+  - 同时覆盖亲近度和委屈值。
+
+保留已通过的 12 小时暂停退出隔离恢复测试和未暂停正常离线衰减对照测试。
+
+#### 验证移除修复后测试失败
+
+临时将条件改回 `if (state.IsPaused)`（无条件前移），重新构建测试项目后运行 R7 测试：
+- `F06_R7_PausedRollbackRestore_NoBackwardShift_ThenForward_OnlyNewInterval` **失败**：`LastDecayUtc` 被倒退到 00:00 而非保持 12:00。
+恢复修复后 3 项 F-06 测试全部通过，确认测试有实际区分度。
+
+### 构建与测试（R7 整改后）
+
+- `dotnet build DesktopPet.slnx -c Debug`：0 警告 0 错误。
+- `dotnet test tests/DesktopPet.App.Tests/DesktopPet.App.Tests.csproj -c Debug --no-build --no-restore`：**App 126/126**，0 失败，0 跳过。
+- App 测试新增 1 项（F-06 R7 回拨边界连续测试）。
+- Core 208 项未重跑，不把开发方全量写成独立全量通过。
+
+### 复核请求
+
+F-06 R7 剩余回拨保护恢复边界已修复：暂停恢复前移条件增加 `utcNow > lastDecayUtc` 防止倒退，未暂停路径不变。连续测试覆盖存档基准晚于 restoreUtcNow → 生产映射恢复 → 回到原时刻不衰减 → 超过原时刻只计新间隔，亲近度和委屈值均有对照。移除修复后测试失败。F-01～F-05 不重做，P1-003 保持 in-progress，不进入 P1-004。请监理复核。

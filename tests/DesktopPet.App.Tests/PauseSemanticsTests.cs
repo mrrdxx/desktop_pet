@@ -1020,4 +1020,87 @@ public class PauseSemanticsTests
             try { System.IO.Directory.Delete(tempDir, true); } catch { }
         }
     }
+
+    /// <summary>
+    /// F-06 R7: When IsPaused=true and the saved LastDecayUtc is LATER than
+    /// restoreUtcNow (clock rollback during exit), the production mapping must
+    /// NOT shift the reference backward. The saved reference is kept, so:
+    ///   1. Advancing to the saved reference time → zero elapsed → no decay.
+    ///   2. Advancing past the saved reference → only the new interval decays.
+    ///
+    /// This is a continuous test covering both grievance and affinity:
+    ///   save base = 12:00 → restoreUtcNow = 00:00 (rollback 12h)
+    ///   → AdvanceTo(12:00) → no extra decay (back to original moment)
+    ///   → AdvanceTo(18:00) → only 6h of new decay (not 18h)
+    ///
+    /// A control accumulator (no rollback) is compared for both emotions.
+    /// The 12h-paused and not-paused tests above are retained.
+    /// </summary>
+    [STATestMethod]
+    public void F06_R7_PausedRollbackRestore_NoBackwardShift_ThenForward_OnlyNewInterval()
+    {
+        // ── Setup: saved archive with LastDecayUtc at 12:00, IsPaused=true ──
+        var savedBaseUtc = new DateTime(2026, 10, 24, 12, 0, 0, DateTimeKind.Utc);
+        const int savedAffinity = 80;
+        const int savedGrievance = 90;
+
+        var savedState = new PetStateArchive
+        {
+            SchemaVersion = 2,
+            Affinity = savedAffinity,
+            Grievance = savedGrievance,
+            LastDecayUtc = savedBaseUtc.ToString("O"),
+            PendingGrievanceExpression = false,
+            GrievanceExpressionDate = null,
+            IsPaused = true,
+            WindowLeft = 100,
+            WindowTop = 100
+        };
+
+        // ── Restore: clock rolled back 12h → restoreUtcNow = 00:00 ──
+        var restoreUtcNow = savedBaseUtc.AddHours(-12); // 2026-10-24T00:00:00Z
+
+        var (acc, expr, tracker) = App.MapArchiveToEmotionObjects(savedState, restoreUtcNow);
+
+        // F-06 R7: The reference must NOT be shifted backward to restoreUtcNow.
+        // It must remain at the saved base (12:00) — F-02 protection preserved.
+        Assert.AreEqual(savedBaseUtc, acc.LastDecayUtc,
+            $"F-06 R7: Restored LastDecayUtc must NOT shift backward when " +
+            $"restoreUtcNow ({restoreUtcNow}) < saved base ({savedBaseUtc}). " +
+            $"Got: {acc.LastDecayUtc}");
+
+        // ── Phase 1: Advance back to the original saved moment (12:00) ──
+        // Elapsed = 0 → no decay. Grievance and affinity must be unchanged.
+        var grievanceBeforeReturn = acc.GrievanceFloat;
+        var affinityBeforeReturn = acc.AffinityFloat;
+
+        acc.AdvanceTo(savedBaseUtc);
+
+        Assert.AreEqual(grievanceBeforeReturn, acc.GrievanceFloat, 0.0001,
+            $"F-06 R7: Returning to original moment must NOT cause extra decay. " +
+            $"Before: {grievanceBeforeReturn}, After: {acc.GrievanceFloat}");
+        Assert.AreEqual(affinityBeforeReturn, acc.AffinityFloat, 0.0001,
+            $"F-06 R7: Returning to original moment must NOT cause extra affinity decay. " +
+            $"Before: {affinityBeforeReturn}, After: {acc.AffinityFloat}");
+
+        // ── Phase 2: Advance 6h past the original moment (to 18:00) ──
+        // Only the 6h new interval should decay — NOT the 12h rollback gap.
+        var forwardTarget = savedBaseUtc.AddHours(6); // 2026-10-24T18:00:00Z
+        acc.AdvanceTo(forwardTarget);
+
+        // Control: accumulator with same starting values, advancing directly
+        // 6h from the saved base (no rollback involved).
+        var controlAcc = new EmotionDecayAccumulator(savedAffinity, savedGrievance, savedBaseUtc);
+        controlAcc.AdvanceTo(forwardTarget);
+
+        Assert.AreEqual(controlAcc.GrievanceFloat, acc.GrievanceFloat, 0.001,
+            $"F-06 R7: After rollback→return→forward, grievance must match " +
+            $"control that only decayed 6h from the saved base. " +
+            $"Test: {acc.GrievanceFloat}, Control(6h): {controlAcc.GrievanceFloat}. " +
+            $"Without protection, 18h of decay would apply (12h rollback + 6h forward).");
+        Assert.AreEqual(controlAcc.AffinityFloat, acc.AffinityFloat, 0.001,
+            $"F-06 R7: After rollback→return→forward, affinity must match " +
+            $"control that only decayed 6h from the saved base. " +
+            $"Test: {acc.AffinityFloat}, Control(6h): {controlAcc.AffinityFloat}.");
+    }
 }

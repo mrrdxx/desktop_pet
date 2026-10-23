@@ -50,7 +50,12 @@ public partial class App : System.Windows.Application
         // to now so the offline gap is not counted as decay time on the first
         // AdvanceTo call. When the app was NOT paused, the offline interval
         // is normal offline decay (per PRODUCT R-02) and the reference is kept.
-        if (state.IsPaused)
+        //
+        // F-06 R7: The shift must never move the reference backward. If the
+        // clock was rolled back (utcNow earlier than the saved lastDecayUtc),
+        // keep the saved reference so that F-02's non-regression protection
+        // in AdvanceTo is preserved. Only shift forward.
+        if (state.IsPaused && utcNow > lastDecayUtc)
         {
             lastDecayUtc = utcNow;
         }
