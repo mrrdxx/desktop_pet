@@ -4,43 +4,37 @@
 
 ## 当前接手任务
 
-P1-003 情绪记忆：`in-progress`，依赖 P1-002 已解除。R-02 细化参数已修正写入 PRODUCT.md（角落计分、次日表达待处理状态、衰减目标统一为中性值 50、存档 v2 字段定义）。下一步：实现 Core 情绪模型和存档 v2。
-P1-002 已完成（`done`）：监理 R4 关闭 F-01～F-04；帮手实机修复透明角落误触，接手者核对 diff 并重验 163/163 通过；用户人工体验后明确接受交互功能并要求收尾。P1-001 已完成。
-
-## P1-002 收尾
-
-- 监理 [复核 R4](reviews/P1-002-review.md) 已关闭 F-01～F-04。
-- 帮手实机修复（透明角落误触）：新增 `PetImageGeometry` Alpha 命中、`HoverDetector` 可选 `isOverEntity`、`MainWindow` 坐标改用 `PointToScreen/PointFromScreen`。接手者核对 diff、重验构建 0 警告 0 错误、163/163 测试通过。
-- 用户反馈：已人工体验，暂未发现阻碍继续开发的问题；接受的是 P1-002 交互功能，不代表最终美术/表情/动作观感验收。用户要求收尾标 done，构成对真实鼠标手感验收项的明确豁免（REVIEW_PROCESS §5）。此豁免仅限 P1-002 真实鼠标手感，不泛化为其他风险豁免。
-- 帮手修复的独立核对由接手者完成（非帮手本人），不代签监理结论。详见 [整改记录](remediation/P1-002-response.md)。
+P1-003 情绪记忆：`in-progress`。R-02 规格已修正写入 PRODUCT.md。Core 情绪模型 4 文件已创建并测试通过（EmotionState/EmotionDecay/CornerTracker/GrievanceExpressionState）。存档 v2 已更新（PetStateArchive + ArchiveService v1 兼容）。下一步：接入 App 层（抚摸检测、角落判定、情绪更新接入 OnUpdateTick）。
+P1-002 已完成（`done`）。P1-001 已完成。
 
 ## 本轮验证
 
 - 构建：`dotnet build DesktopPet.slnx -c Debug` 成功，0 警告 0 错误。
-- 测试：Core 108 + App 55 = **163/163**，0 失败，0 跳过。
-- 帮手实机自动输入 18/18 两轮通过、十场景生命周期通过（沿用帮手记录，本轮未重跑实机）。
+- 测试：Core 170 + App 58 = **228/228**，0 失败，0 跳过。
+- 新增 Core 情绪模型测试 62 项（EmotionState 17、EmotionDecay 17、CornerTracker 14、GrievanceExpressionState 14）。
+- 新增 App 存档兼容测试 3 项（v1 回退、v2 保存恢复、待表达重启保留）。
 
 ## 实际实现及限制
 
 - WPF 透明非激活置顶窗口、PNG 动画、拖动、原生菜单、PMv2、工作区约束与 Recover。
 - 单实例、托盘 Pause/Resume/Recover/Exit、本地配置/位置存档、损坏恢复和高版本只读保护。
-- P1-002 采样/悬停/甩动和中断链已接入；透明角落误触已修复（Alpha 命中替代整窗矩形）。
-- 资源仍是程序导出的占位美术；用户接受交互功能但不代表最终美术/表情/动作观感验收。
+- P1-002 采样/悬停/甩动和中断链已接入；透明角落误触已修复。
+- P1-003 Core 情绪模型已实现，尚未接入 App 层；情绪行为尚未在运行时可见。
+- 资源仍是程序导出的占位美术；用户接受 P1-002 交互功能但不代表最终美术/表情/动作观感验收。
 - 100% DPI 新版本、混合 DPI 双屏、真实锁屏/睡眠恢复仍未重测。
-- KL-001：拖动中 Alt+Tab 仍跟随的用户接受范围见 [P0-002 R2](reviews/P0-002-review.md)，未扩大豁免。
 
 ## Git 状态
 
-- 基线 main 的 `35528cf`（已推送），领先 origin/main 3 个本地提交：`3efc046`（P1-002 收尾）、`e83e3e6`（P1-003 参数初版）、本轮 R-02 修正待提交。
+- 基线 main 的 `35528cf`（已推送），领先 origin/main 本地提交：`3efc046`（P1-002 收尾）、`e83e3e6`（P1-003 参数初版）、`b81666e`（R-02 规格修正）、本轮 Core 情绪模型+测试待提交。
 - 后续授权：每个完成必要验证的小步可自动本地提交；仅用户明确要求时才 push。
 
 ## 接续动作
 
-1. P1-003 进行中：R-02 规则已修正，下一步实现 Core 情绪模型和存档 v2。
+1. P1-003 进行中：Core 情绪模型+存档 v2 已完成测试，下一步接入 App 层。
 2. 不提前实现后续阶段，遵守文档纪律。
 
 ## 主要入口
 
 - [PRODUCT](PRODUCT.md)、[ARCHITECTURE](ARCHITECTURE.md)、[TESTING](TESTING.md)、[REVIEW_PROCESS](REVIEW_PROCESS.md)。
 - [P1-002 原审查](reviews/P1-002-review.md)、[开发整改记录](remediation/P1-002-response.md)。
-- [本轮修复交接](handoffs/P1-002-live-input-fix.md)、[实机自测结果](history/P1-002-live-validation.md)、[通用接续](CONTEXT_HANDOFF.md)。
+- [通用接续](CONTEXT_HANDOFF.md)。

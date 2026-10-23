@@ -235,4 +235,92 @@ public class ArchiveServiceTests
         Assert.IsFalse(unknown);
         Assert.AreEqual(new PetSettingsArchive().AnimationSpeed, settings.AnimationSpeed, 0.001);
     }
+
+    /// <summary>v1 file (schemaVersion=1) loads with emotion defaults and lastDecayUtc fallback.</summary>
+    [TestMethod]
+    public void LoadState_V1File_EmotionFieldsFallbackToDefaults()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        // Write a v1 state file with no emotion fields.
+        var v1Json = """
+            {
+              "schemaVersion": 1,
+              "windowLeft": 150,
+              "windowTop": 250,
+              "savedDeviceName": "\\\\.\\DISPLAY1",
+              "lastSavedUtc": "2026-10-20T08:00:00.0000000Z",
+              "isPaused": false
+            }
+            """;
+        File.WriteAllText(archive.StateFilePath, v1Json);
+
+        var (loaded, fromBackup, unknown) = archive.LoadState();
+
+        // Position fields preserved.
+        Assert.AreEqual(150, loaded.WindowLeft, 0.001);
+        Assert.AreEqual(250, loaded.WindowTop, 0.001);
+        Assert.IsFalse(unknown);
+
+        // Emotion fields fall back to defaults.
+        Assert.AreEqual(50, loaded.Affinity);
+        Assert.AreEqual(50, loaded.Grievance);
+        Assert.IsFalse(loaded.PendingGrievanceExpression);
+        Assert.IsNull(loaded.GrievanceExpressionDate);
+
+        // lastDecayUtc should fall back to lastSavedUtc per PRODUCT R-02.
+        Assert.AreEqual("2026-10-20T08:00:00.0000000Z", loaded.LastDecayUtc);
+    }
+
+    /// <summary>v2 file with emotion values loads correctly.</summary>
+    [TestMethod]
+    public void LoadState_V2File_PreservesEmotionFields()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            WindowLeft = 100,
+            WindowTop = 200,
+            Affinity = 75,
+            Grievance = 85,
+            LastDecayUtc = "2026-10-22T12:00:00.0000000Z",
+            PendingGrievanceExpression = true,
+            GrievanceExpressionDate = "2026-10-22"
+        };
+
+        archive.SaveState(state);
+        var (loaded, _, unknown) = archive.LoadState();
+
+        Assert.IsFalse(unknown);
+        Assert.AreEqual(2, loaded.SchemaVersion);
+        Assert.AreEqual(75, loaded.Affinity);
+        Assert.AreEqual(85, loaded.Grievance);
+        Assert.AreEqual("2026-10-22T12:00:00.0000000Z", loaded.LastDecayUtc);
+        Assert.IsTrue(loaded.PendingGrievanceExpression);
+        Assert.AreEqual("2026-10-22", loaded.GrievanceExpressionDate);
+    }
+
+    /// <summary>Restart with pending expression does not re-award or lose pending state.</summary>
+    [TestMethod]
+    public void LoadState_V2PendingExpression_SurvivesRestart()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            Grievance = 82,
+            PendingGrievanceExpression = true,
+            GrievanceExpressionDate = "2026-10-22",
+            LastDecayUtc = "2026-10-22T18:00:00.0000000Z"
+        };
+
+        archive.SaveState(state);
+        var (loaded, _, _) = archive.LoadState();
+
+        // Pending state and date preserved across restart.
+        Assert.IsTrue(loaded.PendingGrievanceExpression);
+        Assert.AreEqual("2026-10-22", loaded.GrievanceExpressionDate);
+        Assert.AreEqual(82, loaded.Grievance);
+    }
 }

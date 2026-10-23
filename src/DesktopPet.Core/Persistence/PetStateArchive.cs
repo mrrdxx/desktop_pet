@@ -1,12 +1,13 @@
 namespace DesktopPet.Core.Persistence;
 
 /// <summary>
-/// v1 state archive: pet position and basic session metadata.
+/// v2 state archive: pet position, session metadata, and emotion state.
 /// Stored as state.json in %LOCALAPPDATA%\DesktopPet\.
+/// v1 files are read with emotion fields falling back to defaults.
 /// </summary>
 public sealed class PetStateArchive
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     /// <summary>Schema version for forward/backward compatibility.</summary>
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
@@ -26,6 +27,23 @@ public sealed class PetStateArchive
 
     /// <summary>Whether the pet is currently paused (active behavior stopped).</summary>
     public bool IsPaused { get; set; }
+
+    // --- v2 emotion fields ---
+
+    /// <summary>Affinity value (0-100, neutral 50). v1 fallback: 50.</summary>
+    public int Affinity { get; set; } = 50;
+
+    /// <summary>Grievance value (0-100, neutral 50). v1 fallback: 50.</summary>
+    public int Grievance { get; set; } = 50;
+
+    /// <summary>UTC timestamp of last decay calculation (ISO 8601). v1 fallback: LastSavedUtc.</summary>
+    public string? LastDecayUtc { get; set; }
+
+    /// <summary>Whether a grievance expression is pending for the next local day. v1 fallback: false.</summary>
+    public bool PendingGrievanceExpression { get; set; }
+
+    /// <summary>Local date (yyyy-MM-dd) when pending expression was marked. v1 fallback: null.</summary>
+    public string? GrievanceExpressionDate { get; set; }
 }
 
 /// <summary>

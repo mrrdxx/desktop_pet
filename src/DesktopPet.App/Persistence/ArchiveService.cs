@@ -52,8 +52,20 @@ public sealed class ArchiveService
     public (PetStateArchive State, bool FromBackup, bool IsUnknownVersion) LoadState()
     {
         var (archive, fromBackup, unknownVersion) = TryLoad<PetStateArchive>(StateFilePath, StateBackupPath);
+        var result = archive ?? new PetStateArchive();
         _stateReadOnly = unknownVersion;
-        return (archive ?? new PetStateArchive(), fromBackup, unknownVersion);
+
+        // v1 → v2 compatibility: v1 files have no lastDecayUtc field.
+        // Per PRODUCT R-02, fall back to lastSavedUtc so decay calculation
+        // has a baseline timestamp after upgrade.
+        if (result.SchemaVersion < PetStateArchive.CurrentSchemaVersion
+            && string.IsNullOrEmpty(result.LastDecayUtc)
+            && !string.IsNullOrEmpty(result.LastSavedUtc))
+        {
+            result.LastDecayUtc = result.LastSavedUtc;
+        }
+
+        return (result, fromBackup, unknownVersion);
     }
 
     /// <summary>

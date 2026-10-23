@@ -121,13 +121,18 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - `settings.json` 保存设置；`state.json` 保存宠物、情绪、事件与位置；未来习惯数据单独存储。
 - 每份文件带整数 `schemaVersion`。阶段 0 为 v1，实际结构如下：
 
-  **state.json v1**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
-  - `schemaVersion` (int, 默认 1)：模式版本号。
+  **state.json v2**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
+  - `schemaVersion` (int, 默认 2)：模式版本号。v1 文件读取时情绪字段回退默认值。
   - `windowLeft` (double, 默认 100)：窗口左上角 X，WPF DIP 坐标。
   - `windowTop` (double, 默认 100)：窗口左上角 Y，WPF DIP 坐标。
   - `savedDeviceName` (string|null)：上次保存时宠物所在显示器设备名，用于恢复时检测显示器是否仍存在。
   - `lastSavedUtc` (string|null)：上次保存的 UTC 时间戳（ISO 8601 round-trip 格式）。
   - `isPaused` (bool, 默认 false)：是否处于暂停状态（主动行为停止）。
+  - `affinity` (int, 默认 50)：亲近度（0-100，中性 50）。v1 回退 50。
+  - `grievance` (int, 默认 50)：委屈值（0-100，中性 50）。v1 回退 50。
+  - `lastDecayUtc` (string|null)：上次衰减计算基准时间（UTC ISO 8601）。v1 回退为 `lastSavedUtc`。
+  - `pendingGrievanceExpression` (bool, 默认 false)：是否有待执行的委屈表达。v1 回退 false。
+  - `grievanceExpressionDate` (string|null)：标记待表达的本地日期（yyyy-MM-dd）。v1 回退 null。
 
   **settings.json v1**（`PetSettingsArchive`，同文件）：
   - `schemaVersion` (int, 默认 1)：模式版本号。
