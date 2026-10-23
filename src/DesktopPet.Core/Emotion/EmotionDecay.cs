@@ -156,4 +156,19 @@ public sealed class EmotionDecayAccumulator
     {
         _grievanceFloat = EmotionState.Neutral;
     }
+
+    /// <summary>
+    /// Advances the decay reference time forward by the specified interval
+    /// WITHOUT performing any decay calculation. Used by G-03 pause compensation:
+    /// when the app is paused, the paused duration should not count toward
+    /// decay, so we shift the reference forward to skip that interval.
+    /// </summary>
+    /// <param name="interval">The time span to skip (must be non-negative).</param>
+    public void SkipInterval(TimeSpan interval)
+    {
+        if (interval > TimeSpan.Zero)
+        {
+            _lastDecayUtc = _lastDecayUtc + interval;
+        }
+    }
 }

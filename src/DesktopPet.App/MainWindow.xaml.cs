@@ -49,6 +49,8 @@ public partial class MainWindow : System.Windows.Window
     private const double PettingRequiredMs = 1000.0;
     private const double PettingCooldownMs = 2000.0;
     private const double PettingMaxMovePerFramePx = 8.0; // small movement threshold in DIP
+    private const double PettingMinMovePx = 0.5; // F-03: below this is zero-displacement (stationary)
+    private const double PettingMaxInterEventMs = 500.0; // F-03: gap larger than this is a long pause, not continuous petting
     private const double HeadZoneRatio = 1.0 / 3.0; // upper 1/3 is head
 
     // P1-003: Grievance expression state (R-02).
@@ -659,6 +661,8 @@ public partial class MainWindow : System.Windows.Window
             // Expression fires on next local day when not in an interrupt state.
             // Expression lasts 10 seconds (R-02), then resets grievance to neutral.
             // Drag/petting/menu interrupts expression: clears pending + resets grievance.
+            // F-04: Expression only starts on "first encounter" — mouse must be
+            // near or over the pet (interaction range), not just anywhere on screen.
             if (grievanceExpr is not null)
             {
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
@@ -675,16 +679,38 @@ public partial class MainWindow : System.Windows.Window
                         emotionAcc.ResetGrievanceAfterExpression();
                         if (System.Windows.Application.Current is App app3)
                             app3.MarkStateDirty();
+
+                        // F-04: Return to idle action after expression completes.
+                        _animPlayer.PlayAction("idle");
                     }
                 }
                 else if (grievanceExpr.ShouldExpress(today)
                     && !_isDragging && !_isPettingCandidate && !_isContextMenuOpen)
                 {
-                    // Start expression: play "turn away" action (reuse curious for now).
-                    // Expression will last 10 seconds, then resets grievance.
-                    _isExpressingGrievance = true;
-                    _grievanceExpressionStartMs = nowMs;
-                    _animPlayer.PlayAction("curious");
+                    // F-04: Check "first encounter" — mouse must be in interaction range.
+                    // In test mode (TestGetCursorPos set), use the injected position.
+                    // In production, use GetCursorPos. If we can't determine position,
+                    // err on the side of allowing expression (better to express than
+                    // to silently swallow a pending grievance).
+                    bool mouseInRange = true; // default: allow if we can't check
+                    if (TestGetCursorPos is not null)
+                    {
+                        var (mx, my) = TestGetCursorPos.Invoke();
+                        mouseInRange = IsMouseInInteractionRange(mx, my);
+                    }
+                    else if (GetCursorPos(out var cursorPt))
+                    {
+                        mouseInRange = IsMouseInInteractionRange(cursorPt.X, cursorPt.Y);
+                    }
+
+                    if (mouseInRange)
+                    {
+                        // Start expression: play "turn away" action (reuse curious for now).
+                        // Expression will last 10 seconds, then resets grievance.
+                        _isExpressingGrievance = true;
+                        _grievanceExpressionStartMs = nowMs;
+                        _animPlayer.PlayAction("curious");
+                    }
                 }
             }
         }
@@ -773,6 +799,14 @@ public partial class MainWindow : System.Windows.Window
         if (!PetCanvas.IsMouseCaptured)
             return;
 
+        // F-04: Drag/petting start immediately interrupts grievance expression.
+        // Per R-02, expression is interrupted when the user starts dragging;
+        // this must happen at MouseLeftButtonDown, not at EndDrag.
+        if (_isExpressingGrievance)
+        {
+            InterruptGrievanceExpression();
+        }
+
         // P1-003: Determine if press is on head zone (petting) or body (drag).
         var localPos = e.GetPosition(PetImage);
         var isHeadPress = IsInHeadZone(localPos);
@@ -821,24 +855,25 @@ public partial class MainWindow : System.Windows.Window
             }
 
             var localPos = e.GetPosition(PetImage);
+            var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+
+            if (ProcessPettingMove(localPos, nowMs))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // ProcessPettingMove returned false — check if it was a large movement
+            // that needs drag conversion.
             var dx = localPos.X - _pettingLastPos.X;
             var dy = localPos.Y - _pettingLastPos.Y;
             var moveDist = Math.Sqrt(dx * dx + dy * dy);
-
-            if (moveDist <= PettingMaxMovePerFramePx)
-            {
-                // Small movement — accumulate petting time.
-                var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
-                _pettingAccumulatedMs += nowMs - _pettingStartMs;
-                _pettingStartMs = nowMs;
-            }
-            else
+            if (moveDist > PettingMaxMovePerFramePx && !_isPettingCandidate && !_isDragging)
             {
                 // Large movement — convert to drag.
                 ConvertPettingToDrag(e);
             }
 
-            _pettingLastPos = localPos;
             e.Handled = true;
             return;
         }
@@ -879,6 +914,35 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
+    /// F-04: Interrupt grievance expression. Clears pending, resets grievance
+    /// to neutral (50), stops expression flag, and returns to idle action.
+    /// Called at drag start (MouseLeftButtonDown) and at EndDrag for safety.
+    /// </summary>
+    private void InterruptGrievanceExpression()
+    {
+        if (!_isExpressingGrievance)
+            return;
+
+        _isExpressingGrievance = false;
+
+        var grievanceExpr = TestGrievanceExpression;
+        var emotionAcc = TestEmotionAccumulator;
+        if (grievanceExpr is null && System.Windows.Application.Current is App appExpr)
+        {
+            grievanceExpr = appExpr.GrievanceExpression;
+            emotionAcc = appExpr.EmotionAccumulator;
+        }
+        grievanceExpr?.Clear();
+        emotionAcc?.ResetGrievanceAfterExpression();
+        if (System.Windows.Application.Current is App appDirty)
+            appDirty.MarkStateDirty();
+
+        // F-04: Return to idle action after expression is interrupted.
+        _animPlayer.PlayAction("idle");
+        UpdateFrame();
+    }
+
+    /// <summary>
     /// F-03: Unified drag cleanup entry. Called on mouse up, capture loss,
     /// and detected stale drag state. Releases capture and resets flag.
     /// F-02: After drag ends, clamp the window to a visible work area.
@@ -892,22 +956,8 @@ public partial class MainWindow : System.Windows.Window
             PetCanvas.ReleaseMouseCapture();
 
         // P1-003: Drag interrupts grievance expression (R-02).
-        // Clear pending, reset grievance to neutral, stop expression.
-        if (_isExpressingGrievance)
-        {
-            _isExpressingGrievance = false;
-            var grievanceExpr = TestGrievanceExpression;
-            var emotionAcc = TestEmotionAccumulator;
-            if (grievanceExpr is null && System.Windows.Application.Current is App appExpr)
-            {
-                grievanceExpr = appExpr.GrievanceExpression;
-                emotionAcc = appExpr.EmotionAccumulator;
-            }
-            grievanceExpr?.Clear();
-            emotionAcc?.ResetGrievanceAfterExpression();
-            if (System.Windows.Application.Current is App appDirty)
-                appDirty.MarkStateDirty();
-        }
+        // F-04: Primary interrupt is at MouseLeftButtonDown; this is a safety net.
+        InterruptGrievanceExpression();
 
         // F-02: Constrain the pet to a visible work area after dragging.
         ClampWindowToWorkArea();
@@ -958,12 +1008,17 @@ public partial class MainWindow : System.Windows.Window
         // Check if petting threshold was met and cooldown has elapsed.
         if (_pettingAccumulatedMs >= PettingRequiredMs && nowMs >= _pettingCooldownUntilMs)
         {
-            if (System.Windows.Application.Current is App app
-                && app.EmotionAccumulator is not null)
+            // F-05: Support test injection via TestEmotionAccumulator.
+            EmotionDecayAccumulator? emotionAcc = TestEmotionAccumulator;
+            if (emotionAcc is null && System.Windows.Application.Current is App app)
+                emotionAcc = app.EmotionAccumulator;
+
+            if (emotionAcc is not null)
             {
-                app.EmotionAccumulator.AddAffinity(5);
+                emotionAcc.AddAffinity(5);
                 _pettingCooldownUntilMs = nowMs + PettingCooldownMs;
-                app.MarkStateDirty();
+                if (System.Windows.Application.Current is App appDirty)
+                    appDirty.MarkStateDirty();
             }
         }
 
@@ -1003,6 +1058,55 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
+    /// F-03: Internal entry point for petting move processing, used by tests
+    /// to drive the real gesture chain without constructing MouseEventArgs.
+    /// This is the same logic called by PetCanvas_MouseMove when _isPettingCandidate
+    /// is true. Returns false if petting was ended (left head zone or converted to drag).
+    /// </summary>
+    internal bool ProcessPettingMove(Point localPos, double nowMs)
+    {
+        if (!_isPettingCandidate)
+            return false;
+
+        // F-03: If the cursor has left the head zone, end petting candidate.
+        if (!IsInHeadZone(localPos))
+        {
+            EndPetting();
+            return false;
+        }
+
+        var dx = localPos.X - _pettingLastPos.X;
+        var dy = localPos.Y - _pettingLastPos.Y;
+        var moveDist = Math.Sqrt(dx * dx + dy * dy);
+
+        if (moveDist > PettingMaxMovePerFramePx)
+        {
+            // Large movement — would convert to drag in real handler.
+            // In test mode we just end petting candidate without drag setup.
+            _isPettingCandidate = false;
+            if (PetCanvas.IsMouseCaptured)
+                PetCanvas.ReleaseMouseCapture();
+            _mouseSampler.Clear();
+            return false;
+        }
+
+        // F-03: Only accumulate for effective small movements.
+        if (moveDist >= PettingMinMovePx)
+        {
+            var interEventMs = nowMs - _pettingStartMs;
+
+            if (interEventMs <= PettingMaxInterEventMs)
+            {
+                _pettingAccumulatedMs += interEventMs;
+            }
+            _pettingStartMs = nowMs;
+        }
+
+        _pettingLastPos = localPos;
+        return true;
+    }
+
+    /// <summary>
     /// P1-003: Check if the pet window is currently in a screen corner zone.
     /// Corner zone = 15% of work area width/height at each of the four corners.
     /// Uses the work area of the monitor the pet is currently on.
@@ -1034,13 +1138,45 @@ public partial class MainWindow : System.Windows.Window
         var topLeft = cx >= wa.Left && cx < wa.Left + cornerW
                    && cy >= wa.Top && cy < wa.Top + cornerH;
         var topRight = cx >= wa.Right - cornerW && cx < wa.Right
-                    && cy >= wa.Top && cy < wa.Top + cornerH;
+                     && cy >= wa.Top && cy < wa.Top + cornerH;
         var bottomLeft = cx >= wa.Left && cx < wa.Left + cornerW
-                      && cy >= wa.Bottom - cornerH && cy < wa.Bottom;
-        var bottomRight = cx >= wa.Right - cornerW && cx < wa.Right
                        && cy >= wa.Bottom - cornerH && cy < wa.Bottom;
+        var bottomRight = cx >= wa.Right - cornerW && cx < wa.Right
+                        && cy >= wa.Bottom - cornerH && cy < wa.Bottom;
 
         return topLeft || topRight || bottomLeft || bottomRight;
+    }
+
+    /// <summary>
+    /// F-04: Check if the mouse is in the pet's interaction range.
+    /// "First encounter" means the mouse has come near or over the pet entity.
+    /// Interaction range = within 50 physical pixels of the pet's opaque bounds.
+    /// In test mode without a PresentationSource, falls back to checking if
+    /// the mouse is within the window's screen rectangle + margin.
+    /// </summary>
+    internal bool IsMouseInInteractionRange(int screenX, int screenY)
+    {
+        const int interactionMarginPx = 50;
+
+        // Get pet rect in physical pixels.
+        var petRect = GetPetRectPhysicalPx();
+        if (petRect.Width <= 0 || petRect.Height <= 0)
+        {
+            // Fallback: use window bounds in physical pixels.
+            var source = PresentationSource.FromVisual(this);
+            var transform = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
+            var topLeftPx = transform.Transform(new Point(Left, Top));
+            var bottomRightPx = transform.Transform(new Point(Left + Width, Top + Height));
+            return screenX >= topLeftPx.X - interactionMarginPx
+                && screenX <= bottomRightPx.X + interactionMarginPx
+                && screenY >= topLeftPx.Y - interactionMarginPx
+                && screenY <= bottomRightPx.Y + interactionMarginPx;
+        }
+
+        return screenX >= petRect.Left - interactionMarginPx
+            && screenX <= petRect.Left + petRect.Width + interactionMarginPx
+            && screenY >= petRect.Top - interactionMarginPx
+            && screenY <= petRect.Top + petRect.Height + interactionMarginPx;
     }
 
     /// <summary>
@@ -1119,17 +1255,29 @@ public partial class MainWindow : System.Windows.Window
             app.MarkStateDirty();
     }
 
+    // G-03: Pause duration tracking. When paused, wall-clock time continues
+    // to advance (GetElapsedMs is monotonic). On resume, we need to compensate
+    // so that the pause duration is NOT counted toward emotion decay or
+    // expression/corner-stay timers.
+    private double _pauseStartMs;
+    private bool _hasPauseStartMs;
+
     /// <summary>
     /// P0-004: Pause active behavior (animation timer) when user pauses via tray.
     /// P1-001 F-02: Also pause the animation player's time so resuming
     /// continues from the same frame, not from wall-clock elapsed.
-    /// The window and menu remain operational; only the animation loop stops.
+    /// G-03: Record the pause start time so ResumeAnimation can compensate
+    /// emotion decay and expression timers for the pause duration.
     /// </summary>
     public void PauseAnimation()
     {
         _isAppPaused = true;
         _updateTimer.Stop();
         _animPlayer.Pause();
+
+        // G-03: Record pause start for compensation on resume.
+        _pauseStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        _hasPauseStartMs = true;
 
         // P1-002: Clear sampler on pause to avoid stale samples on resume.
         _mouseSampler.Clear();
@@ -1139,9 +1287,52 @@ public partial class MainWindow : System.Windows.Window
     /// P0-004: Resume active behavior after pause.
     /// P1-001 F-02: Resume the animation player's time so the animation
     /// continues from where it was paused, without accumulated wall-clock gap.
+    /// G-03: Compensate emotion decay and expression timers for the pause
+    /// duration so that paused time is NOT counted toward decay or expression.
     /// </summary>
     public void ResumeAnimation()
     {
+        // G-03: Calculate pause duration and compensate timers.
+        if (_hasPauseStartMs)
+        {
+            var resumeMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+            var pauseDurationMs = resumeMs - _pauseStartMs;
+
+            if (pauseDurationMs > 0)
+            {
+                // Compensate grievance expression start time so the expression
+                // doesn't instantly complete after a long pause.
+                if (_isExpressingGrievance)
+                {
+                    _grievanceExpressionStartMs += pauseDurationMs;
+                }
+
+                // Compensate petting cooldown so it doesn't expire during pause.
+                _pettingCooldownUntilMs += pauseDurationMs;
+
+                // Compensate emotion decay: advance the accumulator's reference
+                // time forward by the pause duration so that the next AdvanceTo
+                // call doesn't count the paused interval as decay time.
+                var emotionAcc = TestEmotionAccumulator;
+                if (emotionAcc is null && System.Windows.Application.Current is App app)
+                    emotionAcc = app.EmotionAccumulator;
+                if (emotionAcc is not null)
+                {
+                    // Move the decay reference forward by the pause duration.
+                    // This is NOT advancing decay — it's skipping the paused interval.
+                    emotionAcc.SkipInterval(TimeSpan.FromMilliseconds(pauseDurationMs));
+                }
+
+                // Compensate corner tracker's time-based windows.
+                var cornerTrack = TestCornerTracking;
+                if (cornerTrack is null && System.Windows.Application.Current is App appCT)
+                    cornerTrack = appCT.CornerTracking;
+                cornerTrack?.SkipInterval(pauseDurationMs);
+            }
+
+            _hasPauseStartMs = false;
+        }
+
         _isAppPaused = false;
         _animPlayer.Resume();
         _updateTimer.Start();

@@ -90,6 +90,34 @@ public sealed class CornerTracker
         && _lastDragEndTime is not null
         && _lastDragStayStart.Value >= _lastDragEndTime.Value;
 
+    /// <summary>
+    /// Shifts all internal timestamps forward by the specified milliseconds,
+    /// WITHOUT pruning or evaluating conditions. Used by G-03 pause compensation:
+    /// when the app is paused, the paused duration should not count toward
+    /// the 5-minute window or the 30-second stay, so we shift all timestamps
+    /// forward to skip that interval.
+    /// </summary>
+    /// <param name="ms">The duration in milliseconds to skip (must be non-negative).</param>
+    public void SkipInterval(double ms)
+    {
+        if (ms <= 0) return;
+
+        for (int i = 0; i < _cornerDragTimes.Count; i++)
+        {
+            _cornerDragTimes[i] += ms;
+        }
+
+        if (_lastDragEndTime is not null)
+        {
+            _lastDragEndTime += ms;
+        }
+
+        if (_lastDragStayStart is not null)
+        {
+            _lastDragStayStart += ms;
+        }
+    }
+
     private void PruneExpired(double currentTimeMs)
     {
         var windowMs = WindowMinutes * 60 * 1000;

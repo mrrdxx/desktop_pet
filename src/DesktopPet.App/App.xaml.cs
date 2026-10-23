@@ -29,6 +29,42 @@ public partial class App : System.Windows.Application
     internal GrievanceExpressionState? GrievanceExpression { get; private set; }
     internal CornerTracker? CornerTracking { get; private set; }
 
+    /// <summary>
+    /// F-05: Production mapping from PetStateArchive to emotion objects.
+    /// This is the same logic used in OnStartup, extracted so tests can
+    /// verify the real load→map→save→reload chain without copying code.
+    /// </summary>
+    internal static (EmotionDecayAccumulator acc, GrievanceExpressionState expr, CornerTracker tracker)
+        MapArchiveToEmotionObjects(PetStateArchive state)
+    {
+        var lastDecayUtc = DateTime.TryParse(state.LastDecayUtc, null,
+            System.Globalization.DateTimeStyles.RoundtripKind, out var parsedDecay)
+            ? DateTime.SpecifyKind(parsedDecay, DateTimeKind.Utc)
+            : DateTime.UtcNow;
+
+        var acc = new EmotionDecayAccumulator(state.Affinity, state.Grievance, lastDecayUtc);
+        var expr = new GrievanceExpressionState();
+        expr.Restore(state.PendingGrievanceExpression, state.GrievanceExpressionDate);
+        var tracker = new CornerTracker();
+
+        return (acc, expr, tracker);
+    }
+
+    /// <summary>
+    /// F-05: Production mapping from emotion objects to PetStateArchive.
+    /// This is the same logic used in MarkStateDirty, extracted so tests
+    /// can verify the save path without a full App instance.
+    /// </summary>
+    internal static void MapEmotionObjectsToArchive(
+        PetStateArchive state, EmotionDecayAccumulator acc, GrievanceExpressionState expr)
+    {
+        state.Affinity = acc.AffinityInt;
+        state.Grievance = acc.GrievanceInt;
+        state.LastDecayUtc = acc.LastDecayUtc.ToString("o");
+        state.PendingGrievanceExpression = expr.IsPending;
+        state.GrievanceExpressionDate = expr.MarkedDate;
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);

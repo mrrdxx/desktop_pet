@@ -166,25 +166,35 @@ public class PettingDetectionTests
         var window = CreateMainWindowOrFail();
         try
         {
-            // Set up a fake App with emotion accumulator.
-            // We can't easily create a full App instance in tests, so we
-            // test the EndPetting logic by setting the fields directly
-            // and checking the cooldown field is set.
-            var clockMs = 0.0;
+            var clockMs = 1000.0;
             window.TestGetElapsedMs = () => clockMs;
+
+            // F-05: Inject TestEmotionAccumulator so EndPetting can actually
+            // apply the +5 affinity increment without requiring App.Current.
+            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            window.TestEmotionAccumulator = accumulator;
 
             // Simulate petting candidate with enough accumulated time.
             SetField(window, "_isPettingCandidate", true);
             SetField(window, "_pettingAccumulatedMs", 1100.0); // > 1000ms required
             SetField(window, "_pettingCooldownUntilMs", 0.0);  // cooldown elapsed
 
-            // EndPetting checks for App.Current as App — in test context
-            // App.Current may not be our App type, so the increment won't fire.
-            // We verify the state cleanup instead.
+            Assert.AreEqual(50, accumulator.AffinityInt,
+                "Affinity must start at 50 before petting increment.");
+
             InvokeMethod(window, "EndPetting");
 
             Assert.IsFalse(window.IsPettingCandidate,
                 "Petting candidate must be cleared after EndPetting.");
+
+            // F-05: Verify actual +5 affinity increment was applied.
+            Assert.AreEqual(55, accumulator.AffinityInt,
+                $"Affinity must be 55 after petting +5. Got {accumulator.AffinityInt}.");
+
+            // Verify cooldown was set.
+            var cooldown = GetField<double>(window, "_pettingCooldownUntilMs");
+            Assert.AreEqual(1000.0 + 2000.0, cooldown,
+                $"Cooldown must be set to now+2000ms. Got {cooldown}.");
         }
         finally
         {

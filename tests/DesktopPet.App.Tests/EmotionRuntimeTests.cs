@@ -140,6 +140,9 @@ public class EmotionRuntimeTests
     /// G-01: Many small ticks must produce the same result as one large tick
     /// for the same total elapsed time. This is the core G-01 requirement —
     /// float accumulation must not lose precision across per-tick updates.
+    /// NOTE: This test directly calls the Core accumulator, NOT OnUpdateTick.
+    /// It verifies Core float precision, not App wiring. For App-wired
+    /// decay verification, see G01_DecayAdvancesAcrossMultipleTicks_GrievanceDecreases.
     /// </summary>
     [STATestMethod]
     public void G01_ManySmallTicks_MatchOneLargeTick()
@@ -221,17 +224,22 @@ public class EmotionRuntimeTests
             Assert.IsFalse(window.IsAppPaused, "Must not be paused after resume");
 
             // After resume, ticking should advance decay (even if only slightly).
+            // G-03: SkipInterval compensation shifts _lastDecayUtc forward by
+            // the pause duration, so only post-resume active time counts.
+            // We need real wall-clock time to pass for AdvanceTo(DateTime.UtcNow)
+            // to see a non-zero elapsed. Sleep briefly, then tick.
             var grievanceAfterResume = accumulator.GrievanceFloat;
+            System.Threading.Thread.Sleep(1000); // 1 second of real active time
             for (int i = 0; i < 60; i++)
             {
                 InvokeTick(window);
                 clockMs += 33;
             }
 
-            // After ~2 seconds of real time, grievance should have decayed.
+            // After ~1 second of real active time, grievance should have decayed.
             Assert.IsTrue(accumulator.GrievanceFloat < grievanceAfterResume,
                 $"Grievance must resume decaying after unpause. " +
-                $"At resume: {grievanceAfterResume}, after 60 ticks: {accumulator.GrievanceFloat}");
+                $"At resume: {grievanceAfterResume}, after sleep+60 ticks: {accumulator.GrievanceFloat}");
         }
         finally
         {
@@ -577,7 +585,8 @@ public class EmotionRuntimeTests
         {
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
-            window.TestGetCursorPos = () => (500, 500);
+            // F-04: Mouse must be in interaction range for expression to start.
+            window.TestGetCursorPos = () => (160, 160);
             window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
@@ -595,11 +604,11 @@ public class EmotionRuntimeTests
             Assert.IsTrue(grievanceExpr.ShouldExpress(today),
                 "ShouldExpress must return true for yesterday's marked date.");
 
-            // Tick — expression should start (not during drag).
+            // Tick — expression should start (not during drag, mouse in range).
             InvokeTick(window);
 
             Assert.IsTrue(window.IsExpressingGrievance,
-                "Expression must be in progress after tick with pending + next day.");
+                "Expression must be in progress after tick with pending + next day + mouse in range.");
             Assert.AreEqual("curious", window.CurrentAction,
                 $"Expression must play 'curious' action. Got: {window.CurrentAction}");
             // Pending is NOT cleared yet — only cleared after 10s or interrupt.
@@ -622,6 +631,9 @@ public class EmotionRuntimeTests
                 "Pending must be cleared after drag interrupt (R-02).");
             Assert.AreEqual(50, accumulator.GrievanceInt,
                 $"Grievance must be reset to neutral (50) after drag interrupt (R-02). Got: {accumulator.GrievanceInt}");
+            // F-04: After expression is interrupted, action must return to idle.
+            Assert.AreEqual("idle", window.CurrentAction,
+                $"Action must return to idle after drag interrupt. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -643,7 +655,8 @@ public class EmotionRuntimeTests
         {
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
-            window.TestGetCursorPos = () => (500, 500);
+            // F-04: Mouse must be in interaction range for expression to start.
+            window.TestGetCursorPos = () => (160, 160);
             window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
@@ -700,7 +713,8 @@ public class EmotionRuntimeTests
         {
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
-            window.TestGetCursorPos = () => (500, 500);
+            // F-04: Mouse must be in interaction range for expression to start.
+            window.TestGetCursorPos = () => (160, 160);
             window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
@@ -763,7 +777,8 @@ public class EmotionRuntimeTests
         {
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
-            window.TestGetCursorPos = () => (500, 500);
+            // F-04: Mouse must be in interaction range for expression to start.
+            window.TestGetCursorPos = () => (160, 160);
             window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
@@ -814,6 +829,9 @@ public class EmotionRuntimeTests
                 "Pending must be cleared after expression completes (10s).");
             Assert.AreEqual(50, accumulator.GrievanceInt,
                 $"Grievance must be reset to neutral (50) after expression completes. Got: {accumulator.GrievanceInt}");
+            // F-04: After expression completes, action must return to idle.
+            Assert.AreEqual("idle", window.CurrentAction,
+                $"Action must return to idle after expression completes. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -830,6 +848,9 @@ public class EmotionRuntimeTests
     /// simulating a restart. The accumulator should pick up the archived
     /// affinity/grievance/lastDecayUtc, and the grievance expression state
     /// should restore pending/markedDate.
+    /// NOTE: This test constructs objects from literal values, NOT through
+    /// ArchiveService file I/O. For the real file-based load→save→reload
+    /// chain, see IsolatedArchiveChainTests.
     /// </summary>
     [STATestMethod]
     public void G01_RestartRestore_EmotionStateFromArchive()
@@ -868,6 +889,9 @@ public class EmotionRuntimeTests
     /// Verify that v1 archive (without emotion fields) falls back to neutral
     /// values and current time as decay baseline. This tests the v1→v2
     /// migration path in App.OnStartup.
+    /// NOTE: This test constructs objects from literal values, NOT through
+    /// ArchiveService file I/O. For the real file-based v1→v2 chain,
+    /// see IsolatedArchiveChainTests.F05_V1Archive_DefaultEmotionValues_UpgradeToV2.
     /// </summary>
     [STATestMethod]
     public void G01_V1ArchiveFallback_NeutralEmotionAndCurrentTime()
