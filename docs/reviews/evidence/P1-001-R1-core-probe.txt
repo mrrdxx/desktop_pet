@@ -1,0 +1,4 @@
+ONCE_SINGLE_FRAME: completed=True; completionEvents=1
+NORMAL_PAUSE: before=idle_0.png; paused=idle_0.png; resumed=idle_0.png
+PAUSED_ACTION_CHANGE: pausedAfterPlay=False; expected lifecycle pause retained
+SIBLING_PREFIX_PATH_ACCEPTED: ../pet-sibling/outside.png

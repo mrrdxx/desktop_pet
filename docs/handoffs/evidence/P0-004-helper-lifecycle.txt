@@ -1,0 +1,123 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-ceb36b1b\isolated-app\DesktopPet.App.csproj (用时 79 毫秒)。
+  1 个项目(共 2 个)是最新的，无法还原。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-ceb36b1b\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:03.16
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-ceb36b1b\data
+CASE: normal; PID=130464; exited=True; exitCode=0
+READY: scenario=normal
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Invoking actual ToolStripMenuItem.PerformClick: Pause
+PASS: Pause stops animation timer
+PASS: animation frame stays unchanged while paused
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764)
+PASS: Recover remains usable while paused
+Invoking actual ToolStripMenuItem.PerformClick: Resume
+PASS: Resume restarts animation without accumulated ticks
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: paused-start; PID=105068; exited=True; exitCode=0
+READY: scenario=paused-start
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=True; timerEnabled=False
+PASS: restart restores pause behavior as well as stored flag
+PASS: saved paused state keeps animation frame unchanged
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: offscreen-start; PID=119104; exited=True; exitCode=0
+READY: scenario=offscreen-start
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(1586.6666666666665,898.6666666666666); paused=False; timerEnabled=True
+Native window rect=(2380,1348,2560,1528)
+PASS: startup recovers saved offscreen/missing-monitor position
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: fast-final; PID=145372; exited=True; exitCode=0
+READY: scenario=fast-final
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: debounced dirty state has not written before five seconds
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: final position persisted; expected=(350,260), saved=(350,260)
+CASE: recover-after-save; PID=139676; exited=True; exitCode=0
+READY: scenario=recover-after-save
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: dirty state writes after default five-second debounce
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764)
+PASS: tray Recover moves window to visible area
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: final position persisted; expected=(793.333333333333,389.333333333333), saved=(793.333333333333,389.333333333333)
+CASE: archive-cases; PID=122040; exited=True; exitCode=0
+READY: scenario=archive-cases
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: isolated state service roundtrip
+PASS: isolated settings service roundtrip
+PASS: corrupt primary preserved byte-for-byte and valid backup selected
+PASS: corrupt file without backup falls back to defaults
+PASS: higher version state remains read-only; incompatibleFields=False
+PASS: higher version state remains read-only; incompatibleFields=True
+PASS: higher version incompatible settings remain read-only
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: second isolated instance PID=144712 shows a dialog; activating its OK button via BM_CLICK
+Second instance exit code=1
+PASS: first instance remains running after duplicate exits
+CASE: hold; PID=124000; exited=True; exitCode=0
+READY: scenario=hold
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: restart-position; PID=124892; exited=True; exitCode=0
+READY: scenario=restart-position
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(350,260); paused=False; timerEnabled=True
+PASS: restart loads position written by previous normal tray exit
+PASS: startup loads stored settings value (not animation-speed behavior test)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: readonly-state; PID=141576; exited=True; exitCode=0
+READY: scenario=readonly-state
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: startup recognizes newer archive with incompatible field types
+PASS: future archive was not renamed as corrupted
+PASS: tray read-only notification text configured (OS display not asserted)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+PASS: normal tray exit preserves future archive bytes despite final state changes
+Tray Exit handler returned
+CASE: readonly-settings; PID=142580; exited=True; exitCode=0
+READY: scenario=readonly-settings
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: startup recognizes newer archive with incompatible field types
+PASS: future archive was not renamed as corrupted
+PASS: tray read-only notification text configured (OS display not asserted)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+PASS: normal tray exit preserves future archive bytes despite final state changes
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged
+ALL ISOLATED LIFECYCLE SCENARIOS PASS

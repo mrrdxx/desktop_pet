@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="DesktopPet.App"/>
+
+  <!-- Per-Monitor V2 DPI awareness for WPF.
+       This is the WPF-standard way to declare PMv2: the manifest is read
+       by the OS before any managed code runs, setting the process DPI
+       awareness context to PER_MONITOR_AWARE_V2.
+
+       The .NET 10 WinForms analyzer (WFO0003) also wants DPI configured via
+       ApplicationHighDpiMode, but that property only takes effect through
+       the WinForms ApplicationConfiguration.Initialize() startup path,
+       which this WPF application does not call. We suppress WFO0003 in the
+       csproj because this is a WPF-first project (UseWindowsForms=true is
+       only for NotifyIcon), and the manifest declaration is the correct
+       mechanism for WPF. -->
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+    </windowsSettings>
+  </application>
+</assembly>

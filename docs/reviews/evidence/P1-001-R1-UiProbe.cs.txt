@@ -1,0 +1,68 @@
+using System;
+using System.IO;
+using System.Reflection;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using DesktopPet.App;
+using DesktopPet.Core.Animation;
+
+internal static class UiProbeR1
+{
+    private static T Field<T>(object owner, string name) => (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(owner)!;
+    private static void Update(MainWindow w) => typeof(MainWindow).GetMethod("UpdateFrame", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(w, null);
+    private static double VisibleBottom(Image image)
+    {
+        var source = (BitmapSource)image.Source;
+        var bgra = new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
+        var data = new byte[bgra.PixelWidth * bgra.PixelHeight * 4];
+        bgra.CopyPixels(data, bgra.PixelWidth * 4, 0);
+        for (int y = bgra.PixelHeight - 1; y >= 0; y--)
+            for (int x = 0; x < bgra.PixelWidth; x++)
+                if (data[(y * bgra.PixelWidth + x) * 4 + 3] > 0)
+                    return y * source.Height / source.PixelHeight + image.RenderTransform.Value.OffsetY;
+        return double.NaN;
+    }
+    [STAThread]
+    private static void Main()
+    {
+        string root = Directory.GetCurrentDirectory();
+        string dir = Path.Combine(AppContext.BaseDirectory, "assets", "pets", "default");
+        Directory.CreateDirectory(dir);
+        void Definition(string path, int size = 120) => File.WriteAllText(Path.Combine(dir, "character.json"), System.Text.Json.JsonSerializer.Serialize(new {
+            id="probe", frameWidth=size, frameHeight=size, footAnchorX=size/2, footAnchorY=size-10,
+            actions=new { idle=new { loop="loop", frames=new[]{new { imagePath=path, durationMs=800 }} } }
+        }));
+        Definition("never-created.png");
+        var missing = new MainWindow();
+        Console.WriteLine($"MISSING_IMAGE: sourceNull={((Image)missing.FindName("PetImage")).Source is null}");
+        missing.Close();
+        File.WriteAllText(Path.Combine(dir,"broken.png"),"not a PNG");
+        Definition("broken.png");
+        var broken = new MainWindow();
+        Console.WriteLine($"BROKEN_PNG: constructorSurvived=True; sourceNull={((Image)broken.FindName("PetImage")).Source is null}");
+        broken.Close();
+        File.Copy(Path.Combine(root,"assets/pets/default/idle_0.png"),Path.Combine(dir,"valid.png"),true);
+        Definition("valid.png",64);
+        var mismatch = new MainWindow();
+        var mismatchImage=(Image)mismatch.FindName("PetImage");
+        Console.WriteLine($"SIZE_MISMATCH_ACCEPTED: declared=64x64; decoded={((BitmapSource)mismatchImage.Source).PixelWidth}x{((BitmapSource)mismatchImage.Source).PixelHeight}");
+        mismatch.Close();
+        foreach(var file in Directory.GetFiles(Path.Combine(root,"assets/pets/default"))) File.Copy(file,Path.Combine(dir,Path.GetFileName(file)),true);
+        var live = new MainWindow();
+        var image=(Image)live.FindName("PetImage");
+        var player=Field<AnimationPlayer>(live,"_animPlayer");
+        player.PlayAction("idle"); Update(live);
+        double idleBottom=VisibleBottom(image);
+        player.PlayAction("curious"); Update(live);
+        double curiousBottom=VisibleBottom(image);
+        Console.WriteLine($"FOOT_RENDER: idleOpaqueBottomDip={idleBottom}; curiousOpaqueBottomDip={curiousBottom}; delta={curiousBottom-idleBottom}; windowTop={live.Top}; transform={live.CurrentFrameOffset}");
+        live.PauseAnimation();
+        bool before=player.IsPaused;
+        player.PlayAction("drag"); Update(live);
+        Console.WriteLine($"PAUSED_DRAG_SWITCH: playerPausedBefore={before}; playerPausedAfter={player.IsPaused}; timerEnabled={Field<DispatcherTimer>(live,"_updateTimer").IsEnabled}");
+        live.Close();
+        Console.WriteLine("Only unshown MainWindow objects and isolated assets were used; no App startup or real archives.");
+    }
+}

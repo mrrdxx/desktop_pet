@@ -1,0 +1,34 @@
+<Window x:Class="DesktopPet.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DesktopPet"
+        Width="120"
+        Height="120"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Focusable="False"
+        ShowActivated="False"
+        WindowStartupLocation="Manual"
+        SourceInitialized="MainWindow_SourceInitialized">
+    <Canvas x:Name="PetCanvas"
+            Width="120"
+            Height="120"
+            Background="Transparent"
+            MouseLeftButtonDown="PetCanvas_MouseLeftButtonDown"
+            MouseLeftButtonUp="PetCanvas_MouseLeftButtonUp"
+            MouseMove="PetCanvas_MouseMove"
+            LostMouseCapture="PetCanvas_LostMouseCapture">
+        <Image x:Name="PetImage"
+               Width="120"
+               Height="120"
+               Stretch="None">
+            <Image.RenderTransform>
+                <TranslateTransform x:Name="FrameOffsetTransform" X="0" Y="0" />
+            </Image.RenderTransform>
+        </Image>
+    </Canvas>
+</Window>

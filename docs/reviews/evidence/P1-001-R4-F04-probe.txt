@@ -1,0 +1,33 @@
+MEASURE idle: decodedFoot=(110, 60); dpi=95.98660278320312,95.98660278320312; transform=(0, 0); rasterFoot=(111, 60); worldDip=(160,211)
+PASS idle: world window unchanged
+PASS idle: rendered foot Y stable within 1px
+PASS idle: rendered foot X stable within 1px
+MEASURE curious: decodedFoot=(95, 59.5); dpi=95.98660278320312,95.98660278320312; transform=(0, 9); rasterFoot=(105, 59.5); worldDip=(159.5,205)
+PASS curious: world window unchanged
+FAIL curious: rendered foot Y stable within 1px
+PASS curious: rendered foot X stable within 1px
+PASS curious actual Image transform=(0,9)
+MEASURE drag: decodedFoot=(110, 60); dpi=95.98660278320312,95.98660278320312; transform=(0, 0); rasterFoot=(111, 60); worldDip=(160,211)
+PASS drag: world window unchanged
+PASS drag: rendered foot Y stable within 1px
+PASS drag: rendered foot X stable within 1px
+MEASURE dodge: decodedFoot=(110, 60); dpi=95.98660278320312,95.98660278320312; transform=(0, 0); rasterFoot=(111, 60); worldDip=(160,211)
+PASS dodge: world window unchanged
+PASS dodge: rendered foot Y stable within 1px
+PASS dodge: rendered foot X stable within 1px
+MEASURE idle: decodedFoot=(110, 60); dpi=95.98660278320312,95.98660278320312; transform=(0, 0); rasterFoot=(111, 60); worldDip=(160,211)
+PASS idle: world window unchanged
+PASS idle: rendered foot Y stable within 1px
+PASS idle: rendered foot X stable within 1px
+MEASURE curious: decodedFoot=(95, 59.5); dpi=95.98660278320312,95.98660278320312; transform=(0, 9); rasterFoot=(105, 59.5); worldDip=(159.5,205)
+PASS curious: world window unchanged
+FAIL curious: rendered foot Y stable within 1px
+PASS curious: rendered foot X stable within 1px
+PASS curious actual Image transform=(0,9)
+MEASURE idle: decodedFoot=(110, 60); dpi=95.98660278320312,95.98660278320312; transform=(0, 0); rasterFoot=(111, 60); worldDip=(160,211)
+PASS idle: world window unchanged
+PASS idle: rendered foot Y stable within 1px
+PASS idle: rendered foot X stable within 1px
+FAIL actual PNG foot moved up exactly 9 source pixels
+PASS negative control without compensation fails foot equality
+F04 PIXEL CHECKS: total=25; failures=3. Actual PNG pixels and offscreen WPF raster; no desktop input or real archives.

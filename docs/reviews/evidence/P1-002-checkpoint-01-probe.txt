@@ -1,0 +1,3 @@
+BACKTRACK: outbound=2000; returnResult=0; valid=True; eachLegSpeed=2000; travelledDistance=400px/200ms
+STATIONARY_THEN_BURST: result=336.7003367003367; valid=True; latestSegmentSpeed=3030.30303030303; window=10
+Diagnostic values only; current App has no mouse reaction integration. No desktop or archives accessed.

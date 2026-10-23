@@ -1,0 +1,11 @@
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-validation\run-01530d69
+CASE: restart-position; PID=133032; exited=True; exitCode=0
+READY: scenario=restart-position
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(350,260); paused=False; timerEnabled=True
+PASS: restart loads position written by previous normal tray exit
+PASS: startup loads stored settings value (not animation-speed behavior test)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged

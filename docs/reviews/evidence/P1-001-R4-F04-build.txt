@@ -1,0 +1,10 @@
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\bin\Debug\net10.0-windows\DesktopPet.dll
+  DesktopPet.App.Tests -> C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll
+  DesktopPet.Core.Tests -> C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.Core.Tests\bin\Debug\net10.0\DesktopPet.Core.Tests.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:01.80

@@ -1,0 +1,5 @@
+Environment: Windows=10.0.26200.0; DPI=144; PMv2=False; PID=125672; work=(0,0,2560,1528)
+REPRODUCED: Recover wrote unhandled exception; process exited=False
+Unhandled exception. System.EntryPointNotFoundException: Unable to find an entry point named 'GetDpiForMonitor' in DLL 'user32.dll'.
+   at DesktopPet.App.Platform.MonitorInterop.GetDpiForMonitor(IntPtr hMonitor, Int32 dpiType, UInt32& dpiX, UInt32& dpiY)
+   at DesktopPet.App.Platform.MonitorInterop.<>c__DisplayClass9_0.<EnumerateMonitors>b__0(IntPtr hMonitor, IntPtr hdcMonitor, RECT& lprcMonitor, IntPtr dwData) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\Platform\MonitorInterop.cs:line 88

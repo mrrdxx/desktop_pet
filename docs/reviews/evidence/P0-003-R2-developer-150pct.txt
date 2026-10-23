@@ -1,0 +1,19 @@
+Environment: Windows=10.0.26200.0; DPI=144; PMv2=True; PID=124228; work=(0,0,2560,1528)
+PASS: HWND DPI awareness context is PER_MONITOR_AWARE_V2 (PMv2=true)
+WS_EX_NOACTIVATE=True (exStyle=0x8080008)
+Open-PetMenu(attempt=1): click=(240,258) hitPID=124228 petPID=124228
+PASS: Recover from startup position; rect=(1190,584,1370,764)
+Open-PetMenu(attempt=1): click=(1280,692) hitPID=124228 petPID=124228
+PASS: repeated Recover; rect=(1190,584,1370,764)
+Foreground before drag: 8850510 vs target: 8850510
+PASS: foreground remains external test window after left-button down
+Drag: before=(1190,584); after=(1281,338)
+PASS: drag moved the window (delta=(91,-246))
+PASS: window within work area after drag clamp
+PASS: foreground remains external test window after drag
+Open-PetMenu(attempt=1): click=(1371,446) hitPID=124228 petPID=124228
+PASS: outside-click menu dismissal
+Open-PetMenu(attempt=1): click=(1371,446) hitPID=124228 petPID=124228
+PASS: Exit naturally ends process with code 0
+
+ALL PASS

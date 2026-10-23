@@ -1,0 +1,20 @@
+using DesktopPet.Core.Input;
+
+var rect=new PetRectPx(500,500,120,120);
+var hover=new HoverDetector();
+Console.WriteLine($"HOVER first entry: {hover.Update(560,560,rect,0)}");
+Console.WriteLine($"HOVER initial dwell: {hover.Update(560,560,rect,1200)} (expected Triggered)");
+for(int t=1233;t<=2223;t+=33) hover.Update(0,0,rect,t);
+Console.WriteLine($"HOVER return after ~1 second outside: {hover.Update(560,560,rect,2256)}");
+Console.WriteLine($"HOVER second dwell: {hover.Update(560,560,rect,3456)} (expected Triggered)");
+
+var sampler=new MouseSampler();
+var swipe=new SwipeDetector();
+foreach(var sample in new[]{new MouseSample(300,560,0),new MouseSample(410,560,33),new MouseSample(430,560,66)})
+{
+    var result=sampler.Sample(sample);
+    var trigger=swipe.Update(result,rect,sample.TimeMs);
+    Console.WriteLine($"SWIPE x={sample.X}, t={sample.TimeMs}, peak={result.EquivalentRecentSegmentSpeedPxPerSec}, trigger={trigger}");
+}
+Console.WriteLine("Last swipe segment =20px/33ms=606px/s; preceding fast segment ended 90px from pet, outside 80px zone. Expected no trigger.");
+Console.WriteLine("Core deterministic inputs only. No real mouse operation, WPF UI automation, or user archives.");

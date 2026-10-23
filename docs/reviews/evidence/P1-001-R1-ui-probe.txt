@@ -1,0 +1,6 @@
+MISSING_IMAGE: sourceNull=True
+BROKEN_PNG: constructorSurvived=True; sourceNull=True
+SIZE_MISMATCH_ACCEPTED: declared=64x64; decoded=120x120
+FOOT_RENDER: idleOpaqueBottomDip=110.0153579711914; curiousOpaqueBottomDip=101.0153579711914; delta=-9; windowTop=100; transform=(7, -9)
+PAUSED_DRAG_SWITCH: playerPausedBefore=True; playerPausedAfter=False; timerEnabled=False
+Only unshown MainWindow objects and isolated assets were used; no App startup or real archives.

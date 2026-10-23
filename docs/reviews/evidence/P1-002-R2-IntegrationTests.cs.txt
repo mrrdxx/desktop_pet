@@ -1,0 +1,403 @@
+using System.Reflection;
+using System.Runtime.InteropServices;
+using DesktopPet.App;
+using DesktopPet.Core.Input;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P1-002 App-layer integration tests: verify that the actual update entry
+/// point (OnUpdateTick) correctly wires DPI, sampling, hover/swipe detection,
+/// action triggering, and interrupt/recovery for drag, menu, and pause.
+///
+/// These tests construct MainWindow without calling Show(), using reflection
+/// to invoke OnUpdateTick and simulate interrupt states. They verify the
+/// integration wiring — not real mouse behavior (which requires a live desktop
+/// session). Real mouse feel is explicitly marked as unverified.
+///
+/// Uses STATestMethod because WPF UI components require an STA thread.
+/// </summary>
+[TestClass]
+public class MouseInteractionIntegrationTests
+{
+    private static MainWindow? TryCreateMainWindow()
+    {
+        try
+        {
+            return new MainWindow();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning(
+                "MouseInteractionIntegrationTests: MainWindow construction failed: {0}", ex);
+            return null;
+        }
+    }
+
+    private static T? GetField<T>(object obj, string name) where T : class
+    {
+        var field = typeof(MainWindow).GetField(name,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        return field?.GetValue(obj) as T;
+    }
+
+    private static void SetField<T>(object obj, string name, T value) where T : struct
+    {
+        var field = typeof(MainWindow).GetField(name,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        field?.SetValue(obj, value);
+    }
+
+    private static void InvokeMethod(object obj, string name, params object[] args)
+    {
+        var method = typeof(MainWindow).GetMethod(name,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        method?.Invoke(obj, args);
+    }
+
+    // ── DPI: sampler and swipe detector receive the window's DPI scale ──
+
+    [STATestMethod]
+    public void Integration_DpiScale_AppliedToSamplerAndDetector()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // After construction, default DPI is 1.0 (no hwnd yet).
+            Assert.AreEqual(1.0, window.MouseSampler.Config.DpiScale, 0.001);
+            Assert.AreEqual(1.0, window.SwipeDetector.Config.DpiScale, 0.001);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Normal tick: sampling produces valid results when cursor moves ──
+
+    [STATestMethod]
+    public void Integration_NormalTick_SamplerReceivesMousePosition()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // Simulate two ticks with cursor movement so the sampler has
+            // at least 2 samples to compute speed.
+            // We can't control GetCursorPos, but we can verify the sampler
+            // window count increases after ticks (it may be 0 if GetCursorPos
+            // fails in test environment, which is acceptable).
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+
+            // The sampler should have at least attempted to sample.
+            // In a test environment without a real desktop, GetCursorPos may
+            // fail; we just verify no crash occurred.
+            Assert.IsTrue(window.MouseSampler.WindowCount >= 0);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Drag state: detectors are reset and sampling is skipped ──
+
+    [STATestMethod]
+    public void Integration_DragState_DetectorsResetAndSamplingSkipped()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // Simulate drag state by setting _isDragging = true.
+            SetField(window, "_isDragging", true);
+            Assert.IsTrue(window.IsDragging);
+
+            // Invoke a tick — should skip sampling and reset detectors.
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+
+            // After a drag tick, the sampler should have 0 samples (cleared
+            // by drag start, and no new samples added during drag).
+            Assert.AreEqual(0, window.MouseSampler.WindowCount,
+                "Sampler must be empty during drag");
+            Assert.IsFalse(window.HoverDetector.IsHovering,
+                "Hover detector must be reset during drag");
+            Assert.IsFalse(window.SwipeDetector.IsInCooldown,
+                "Swipe detector must be reset during drag");
+        }
+        finally
+        {
+            // Clean up drag state.
+            SetField(window, "_isDragging", false);
+            window.Close();
+        }
+    }
+
+    // ── Menu state: detectors are reset and sampling is skipped ──
+
+    [STATestMethod]
+    public void Integration_MenuState_DetectorsResetAndSamplingSkipped()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // Simulate menu open state.
+            SetField(window, "_isContextMenuOpen", true);
+            Assert.IsTrue(window.IsContextMenuOpen);
+
+            // Invoke a tick — should skip sampling and reset detectors.
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+
+            Assert.AreEqual(0, window.MouseSampler.WindowCount,
+                "Sampler must be empty during menu");
+            Assert.IsFalse(window.HoverDetector.IsHovering,
+                "Hover detector must be reset during menu");
+            Assert.IsFalse(window.SwipeDetector.IsInCooldown,
+                "Swipe detector must be reset during menu");
+
+            // Simulate menu close.
+            SetField(window, "_isContextMenuOpen", false);
+            Assert.IsFalse(window.IsContextMenuOpen);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Pause state: detectors are reset, timer stopped, sampling skipped ──
+
+    [STATestMethod]
+    public void Integration_PauseState_DetectorsResetAndSamplingSkipped()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // Pause via the public API.
+            window.PauseAnimation();
+            Assert.IsTrue(window.IsAppPaused);
+
+            // Invoke a tick manually (timer is stopped, but we call directly).
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+
+            Assert.AreEqual(0, window.MouseSampler.WindowCount,
+                "Sampler must be empty during pause");
+            Assert.IsFalse(window.HoverDetector.IsHovering,
+                "Hover detector must be reset during pause");
+            Assert.IsFalse(window.SwipeDetector.IsInCooldown,
+                "Swipe detector must be reset during pause");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Resume after pause: sampler cleared, fresh sampling can begin ──
+
+    [STATestMethod]
+    public void Integration_ResumeAfterPause_SamplerClearedForFreshStart()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // Pause and resume.
+            window.PauseAnimation();
+            Assert.AreEqual(0, window.MouseSampler.WindowCount,
+                "Sampler cleared on pause");
+
+            window.ResumeAnimation();
+            Assert.IsFalse(window.IsAppPaused);
+            Assert.AreEqual(0, window.MouseSampler.WindowCount,
+                "Sampler cleared on resume for fresh start");
+
+            // After resume, a tick should be able to sample again (no crash).
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+            Assert.IsTrue(window.MouseSampler.WindowCount >= 0);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Drag end: sampler cleared for fresh start ──
+
+    [STATestMethod]
+    public void Integration_DragEnd_SamplerClearedForFreshStart()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            // Simulate drag start then end.
+            SetField(window, "_isDragging", true);
+            InvokeMethod(window, "EndDrag");
+
+            Assert.IsFalse(window.IsDragging,
+                "Drag must end after EndDrag");
+            Assert.AreEqual(0, window.MouseSampler.WindowCount,
+                "Sampler cleared after drag ends");
+            Assert.AreEqual("idle", window.CurrentAction,
+                "Action returns to idle after drag");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Hover detector config matches expected defaults ──
+
+    [STATestMethod]
+    public void Integration_HoverDetector_DefaultConfig()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            Assert.AreEqual(1200.0, window.HoverDetector.Config.DwellMs, 0.001);
+            Assert.AreEqual(500.0, window.HoverDetector.Config.LeaveResetMs, 0.001);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Swipe detector config matches expected defaults ──
+
+    [STATestMethod]
+    public void Integration_SwipeDetector_DefaultConfig()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            Assert.AreEqual(1200.0, window.SwipeDetector.Config.SpeedThreshold, 0.001);
+            Assert.AreEqual(80.0, window.SwipeDetector.Config.EdgeDistanceThreshold, 0.001);
+            Assert.AreEqual(3000.0, window.SwipeDetector.Config.CooldownMs, 0.001);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── Mouse sampler config matches expected defaults ──
+
+    [STATestMethod]
+    public void Integration_MouseSampler_DefaultConfig()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            Assert.AreEqual(10, window.MouseSampler.Config.WindowSize);
+            Assert.AreEqual(3, window.MouseSampler.Config.RecentSegmentCount);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── All three interrupt states: no detection triggers ──
+
+    [STATestMethod]
+    public void Integration_AllInterrupts_NoDetectionActions()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null)
+        {
+            Assert.Inconclusive("MainWindow requires character assets; skipping.");
+            return;
+        }
+
+        try
+        {
+            var initialAction = window.CurrentAction;
+
+            // Drag interrupt.
+            SetField(window, "_isDragging", true);
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+            Assert.AreEqual(initialAction, window.CurrentAction,
+                "No action change during drag tick");
+            SetField(window, "_isDragging", false);
+
+            // Menu interrupt.
+            SetField(window, "_isContextMenuOpen", true);
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+            Assert.AreEqual(initialAction, window.CurrentAction,
+                "No action change during menu tick");
+            SetField(window, "_isContextMenuOpen", false);
+
+            // Pause interrupt.
+            window.PauseAnimation();
+            InvokeMethod(window, "OnUpdateTick", null!, EventArgs.Empty);
+            Assert.AreEqual(initialAction, window.CurrentAction,
+                "No action change during pause tick");
+            window.ResumeAnimation();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+}

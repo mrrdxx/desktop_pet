@@ -1,0 +1,136 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-df89ce04\isolated-app\DesktopPet.App.csproj (用时 78 毫秒)。
+  1 个项目(共 2 个)是最新的，无法还原。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-df89ce04\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:02.74
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-df89ce04\data
+CASE: normal; PID=135108; exited=True; exitCode=0
+READY: scenario=normal
+HWND=0x212EE; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Invoking actual ToolStripMenuItem.PerformClick: Pause
+PASS: Pause stops animation timer
+PASS: animation frame stays unchanged while paused
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764); size=180x180 physical px
+PrimaryScreen working area=(0,0,2560,1528); bounds=(0,0,2560,1600)
+PASS: Recover remains usable while paused
+Invoking actual ToolStripMenuItem.PerformClick: Resume
+PASS: Resume restarts animation without accumulated ticks
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: paused-start; PID=149220; exited=True; exitCode=0
+READY: scenario=paused-start
+HWND=0x621250; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=True; timerEnabled=False
+PASS: restart restores pause behavior as well as stored flag
+PASS: saved paused state keeps animation frame unchanged
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: offscreen-start; PID=103124; exited=True; exitCode=0
+READY: scenario=offscreen-start
+HWND=0x41324; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(1586.6666666666665,898.6666666666666); paused=False; timerEnabled=True
+Native window rect=(2380,1348,2560,1528); size=180x180 physical px
+PrimaryScreen working area=(0,0,2560,1528); bounds=(0,0,2560,1600)
+PASS: startup recovers saved offscreen/missing-monitor position
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: fast-final; PID=136448; exited=True; exitCode=0
+READY: scenario=fast-final
+HWND=0xEE11D4; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: debounced dirty state has not written before five seconds
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: final position persisted; expected=(350,260), saved=(350,260)
+CASE: recover-after-save; PID=118792; exited=True; exitCode=0
+READY: scenario=recover-after-save
+HWND=0x612EE; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: dirty state writes after default five-second debounce
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764); size=180x180 physical px
+PrimaryScreen working area=(0,0,2560,1528); bounds=(0,0,2560,1600)
+PASS: tray Recover moves window to visible area
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: final position persisted; expected=(793.3333333333333,389.3333333333333), saved=(793.3333333333333,389.3333333333333)
+CASE: archive-cases; PID=138632; exited=True; exitCode=0
+READY: scenario=archive-cases
+HWND=0x71344; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: isolated state service roundtrip
+PASS: isolated settings service roundtrip
+PASS: corrupt primary preserved byte-for-byte and valid backup selected
+PASS: corrupt file without backup falls back to defaults
+PASS: higher version state remains read-only; incompatibleFields=False
+PASS: higher version state remains read-only; incompatibleFields=True
+PASS: higher version incompatible settings remain read-only
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: second isolated instance PID=148568 shows a dialog; activating its OK button via BM_CLICK
+Second instance exit code=1
+PASS: first instance remains running after duplicate exits
+CASE: hold; PID=129920; exited=True; exitCode=0
+READY: scenario=hold
+HWND=0x912CC; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: restart-position; PID=145952; exited=True; exitCode=0
+READY: scenario=restart-position
+HWND=0x6311F4; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(350,260); paused=False; timerEnabled=True
+PASS: restart loads position written by previous normal tray exit
+PASS: startup loads stored settings value (not animation-speed behavior test)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: readonly-state; PID=142732; exited=True; exitCode=0
+READY: scenario=readonly-state
+HWND=0xB1324; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: startup recognizes newer archive with incompatible field types
+PASS: future archive was not renamed as corrupted
+PASS: tray read-only notification text configured (OS display not asserted)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+PASS: normal tray exit preserves future archive bytes despite final state changes
+Tray Exit handler returned
+CASE: readonly-settings; PID=146048; exited=True; exitCode=0
+READY: scenario=readonly-settings
+HWND=0xB1344; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: startup recognizes newer archive with incompatible field types
+PASS: future archive was not renamed as corrupted
+PASS: tray read-only notification text configured (OS display not asserted)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+PASS: normal tray exit preserves future archive bytes despite final state changes
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged
+ALL ISOLATED LIFECYCLE SCENARIOS PASS

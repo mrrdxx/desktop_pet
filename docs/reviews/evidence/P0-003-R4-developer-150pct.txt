@@ -1,0 +1,38 @@
+Environment: Windows=10.0.26200.0; DPI=144; PMv2=True; PID=126844; work=(0,0,2560,1528)
+PASS: HWND DPI awareness context is PER_MONITOR_AWARE_V2 (PMv2=true)
+WS_EX_NOACTIVATE=True (exStyle=0x8080008)
+Open-PetMenu(attempt=1): click=(240,258) hitPID=126844 petPID=126844
+Assert-Recovered: foot not centered foot=(240,330) workCenter=(1280,764)
+PASS: Recover from startup position; rect=(1190,584,1370,764)
+Open-PetMenu(attempt=1): click=(1280,692) hitPID=126844 petPID=126844
+PASS: repeated Recover; rect=(1190,584,1370,764)
+SetForegroundWindow result=True; fgBefore=44634420 vs target=44634420
+Virtual screen: (0,0,2560,1528) size=(2560,1528)
+Cursor start (GetCursorPos): (1381,712)
+SetCursorPos to pet: result= target=(1280,692) actual=(1280,692)
+Cursor at pet (GetCursorPos): (1280,692) expected=(1280,692)
+Mouse capture after button-down: True
+PASS: foreground unchanged after left-button down (fg=44634420)
+SetCursorPos to drag target: result=True target=(1380,752) actual=(1380,752)
+Cursor end (GetCursorPos): (1380,752) expected=(1380,752)
+Window stabilized at (1290,644) after 183ms
+Mouse capture after button-up: False
+Drag: before=(1190,584); after=(1290,644); delta=(100,60); expected=(100,60)
+Cursor: start=(1280,692); end=(1380,752); cursorDelta=(100,60)
+PASS: cursor delivered to target within 15px tolerance (cursorDelta=(100,60))
+Evidence: cursor start=(1280,692) end=(1380,752) cursorDelta=(100,60)
+Evidence: window before=(1190,584) after=(1290,644) windowDelta=(100,60)
+Evidence: WPF DIP before=(793,389) after=(860,429)
+PASS: drag displacement matches cursor within 2px tolerance (window=(100,60), cursor=(100,60))
+PASS: window within work area after drag clamp
+SetCursorPos to away: result=True target=(1530,852) actual=(1530,852)
+Stop test: cursor moved to (1530,852) expected=(1530,852)
+Stop test: window before mouse-away=(1290,644) after=(1290,644)
+PASS: window stopped moving after mouse-up (cursor moved away to (1530,852), window unchanged)
+PASS: foreground unchanged after drag (fg=44634420)
+Open-PetMenu(attempt=1): click=(1380,752) hitPID=126844 petPID=126844
+PASS: Esc menu dismissal
+Open-PetMenu(attempt=1): click=(1380,752) hitPID=126844 petPID=126844
+PASS: Exit naturally ends process with code 0
+
+ALL PASS

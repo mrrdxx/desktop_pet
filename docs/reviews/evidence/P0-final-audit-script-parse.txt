@@ -1,0 +1,7 @@
+SCRIPT=tests/Integration/Run-Lifecycle.ps1; ERRORS=5; PS=5.1.26100.9711
+UnexpectedToken: line 136: Unexpected token 'PASS:' in expression or statement.
+TerminatorExpectedAtEndOfString: line 155: The string is missing the terminator: '.
+MissingEndCurlyBrace: line 135: Missing closing '}' in statement block or type definition.
+MissingEndCurlyBrace: line 71: Missing closing '}' in statement block or type definition.
+MissingCatchOrFinally: line 156: The Try statement is missing its Catch or Finally block.
+SCRIPT=tests/Integration/Run-Lifecycle-UTF8.ps1; ERRORS=0; PS=5.1.26100.9711

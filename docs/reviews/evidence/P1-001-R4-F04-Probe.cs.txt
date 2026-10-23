@@ -1,0 +1,83 @@
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using DesktopPet.App;
+using DesktopPet.Core.Animation;
+
+internal static class F04Probe
+{
+    const BindingFlags Private=BindingFlags.Instance | BindingFlags.NonPublic;
+    static int checks;
+    static int failures;
+    static void Check(bool condition,string label)
+    {
+        Console.WriteLine($"{(condition?"PASS":"FAIL")} {label}");
+        if(!condition) failures++;
+        checks++;
+    }
+    static (int bottom,double footX) Foot(BitmapSource source)
+    {
+        var bmp=new FormatConvertedBitmap(source,PixelFormats.Bgra32,null,0);
+        var pixels=new byte[bmp.PixelWidth*bmp.PixelHeight*4];
+        bmp.CopyPixels(pixels,bmp.PixelWidth*4,0);
+        for(int y=bmp.PixelHeight-1;y>=0;y--)
+        {
+            int left=bmp.PixelWidth,right=-1;
+            for(int x=0;x<bmp.PixelWidth;x++)
+                if(pixels[(y*bmp.PixelWidth+x)*4+3]>0) {left=Math.Min(left,x);right=Math.Max(right,x);}
+            if(right>=0) return (y,(left+right)/2.0);
+        }
+        throw new InvalidOperationException("No nontransparent foot pixels");
+    }
+    [STAThread]
+    static int Main()
+    {
+        MainWindow? w=null;
+        try
+        {
+            w=new MainWindow(); w.PauseAnimation();
+            var image=(Image)w.FindName("PetImage");
+            var canvas=(Canvas)w.FindName("PetCanvas");
+            var player=(AnimationPlayer)typeof(MainWindow).GetField("_animPlayer",Private)!.GetValue(w)!;
+            var update=typeof(MainWindow).GetMethod("UpdateFrame",Private)!;
+            double startTop=w.Top,startLeft=w.Left;
+            (int bottom,double footX)? baseline=null;
+            int idleSource=-1,curiousSource=-1;
+            foreach(string action in new[]{"idle","curious","drag","dodge","idle","curious","idle"})
+            {
+                player.PlayAction(action);update.Invoke(w,null);
+                canvas.Measure(new Size(120,120));canvas.Arrange(new Rect(0,0,120,120));canvas.UpdateLayout();
+                var source=(BitmapSource)image.Source;
+                var sourceFoot=Foot(source);
+                var rendered=new RenderTargetBitmap(120,120,96,96,PixelFormats.Pbgra32);
+                rendered.Render(canvas);
+                var renderedFoot=Foot(rendered);
+                Console.WriteLine($"MEASURE {action}: decodedFoot={sourceFoot}; dpi={source.DpiX},{source.DpiY}; transform={w.CurrentFrameOffset}; rasterFoot={renderedFoot}; worldDip=({w.Left+renderedFoot.footX},{w.Top+renderedFoot.bottom})");
+                baseline ??= renderedFoot;
+                Check(w.Top==startTop && w.Left==startLeft,$"{action}: world window unchanged");
+                // Raster comparison uses at most 1 source pixel for edge antialiasing.
+                Check(Math.Abs(renderedFoot.bottom-baseline.Value.bottom)<=1,$"{action}: rendered foot Y stable within 1px");
+                Check(Math.Abs(renderedFoot.footX-baseline.Value.footX)<=1,$"{action}: rendered foot X stable within 1px");
+                if(action=="idle") idleSource=sourceFoot.bottom;
+                if(action=="curious")
+                {
+                    curiousSource=sourceFoot.bottom;
+                    Check(image.RenderTransform is TranslateTransform t && t.X==0 && t.Y==9,"curious actual Image transform=(0,9)");
+                }
+            }
+            Check(idleSource-curiousSource==9,"actual PNG foot moved up exactly 9 source pixels");
+            // Negative control: leave actual curious pixels but remove compensation.
+            player.PlayAction("curious");update.Invoke(w,null);
+            image.RenderTransform=new TranslateTransform();
+            var bad=new RenderTargetBitmap(120,120,96,96,PixelFormats.Pbgra32);bad.Render(canvas);
+            var badFoot=Foot(bad);
+            Check(Math.Abs(badFoot.bottom-baseline!.Value.bottom)>1,"negative control without compensation fails foot equality");
+            Console.WriteLine($"F04 PIXEL CHECKS: total={checks}; failures={failures}. Actual PNG pixels and offscreen WPF raster; no desktop input or real archives.");
+            return failures==0?0:1;
+        }
+        catch(Exception ex) {Console.WriteLine(ex);return 1;}
+        finally {w?.Close();}
+    }
+}

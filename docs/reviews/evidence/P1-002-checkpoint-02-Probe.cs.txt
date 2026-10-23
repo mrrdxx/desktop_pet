@@ -1,0 +1,23 @@
+using DesktopPet.Core.Input;
+
+static void Check(bool value,string label)
+{
+    Console.WriteLine($"{(value?"PASS":"FAIL")} {label}");
+    if(!value) throw new InvalidOperationException(label);
+}
+var sampler=new MouseSampler();
+sampler.Sample(new(0,0,0)); sampler.Sample(new(200,0,100));
+var roundTrip=sampler.Sample(new(0,0,200));
+Check(roundTrip.IsValid && roundTrip.EquivalentSpeedPxPerSec==0 && roundTrip.EquivalentRecentSegmentSpeedPxPerSec==2000,"round trip retains recent speed 2000 despite zero net trend");
+sampler.Clear();
+for(int i=0;i<9;i++) sampler.Sample(new(0,0,i*33));
+var flick=sampler.Sample(new(100,0,297));
+Check(flick.IsValid && flick.EquivalentRecentSegmentSpeedPxPerSec>3000,"stationary then flick retains fast segment");
+sampler.Clear();
+for(int i=0;i<8;i++) sampler.Sample(new(i%2==0?0:5,0,i*33));
+var jitter=sampler.Sample(new(0,0,264));
+Check(jitter.EquivalentRecentSegmentSpeedPxPerSec<200,"slow jitter below threshold");
+sampler.Clear(); sampler.Sample(new(0,0,0)); sampler.Sample(new(100,0,33));
+var interrupted=sampler.Sample(new(100,0,1000));
+Check(!interrupted.IsValid && interrupted.EquivalentRecentSegmentSpeedPxPerSec==0,"interruption clears recent peak");
+Console.WriteLine("ALL 4 TARGETED CHECKS PASS. Core only; App wiring not executed.");

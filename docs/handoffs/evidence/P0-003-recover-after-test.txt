@@ -1,0 +1,12 @@
+Environment: Windows=10.0.26200.0; DPI=144; PMv2=False; PID=141136; work=(0,0,2560,1528)
+PASS: Recover from startup position; rect=(1190,584,1370,764)
+PASS: repeated Recover 1; rect=(1190,584,1370,764)
+PASS: repeated Recover 2; rect=(1190,584,1370,764)
+PASS: repeated Recover 3; rect=(1190,584,1370,764)
+PASS: Recover from partially offscreen; rect=(1190,584,1370,764)
+PASS: Recover from fully offscreen (test posts right-button message; no tray yet); rect=(1190,584,1370,764)
+Drag measurement: before=(1190,584); after=(1290,644); expected delta=(100,60)
+PASS: drag after Recover moves by physical cursor delta, mouse-up stops, foreground remains external test window
+PASS: outside-click menu dismissal after Recover
+PASS: Escape menu dismissal after Recover
+PASS: actual Exit menu command naturally ends process with code 0

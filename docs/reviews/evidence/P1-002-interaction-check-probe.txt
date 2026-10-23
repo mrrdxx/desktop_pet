@@ -1,0 +1,9 @@
+HOVER first entry: None
+HOVER initial dwell: Triggered (expected Triggered)
+HOVER return after ~1 second outside: None
+HOVER second dwell: None (expected Triggered)
+SWIPE x=300, t=0, peak=0, trigger=None
+SWIPE x=410, t=33, peak=3333.333333333333, trigger=None
+SWIPE x=430, t=66, peak=3333.333333333333, trigger=Triggered
+Last swipe segment =20px/33ms=606px/s; preceding fast segment ended 90px from pet, outside 80px zone. Expected no trigger.
+Core deterministic inputs only. No real mouse operation, WPF UI automation, or user archives.

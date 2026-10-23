@@ -1,0 +1,9 @@
+Environment: Windows 10.0.26200.0, x64=True, app DPI=144, test app PID=123112
+PASS: right-click position, outside click dismissal, NOACTIVATE restored (cycle 1)
+PASS: subsequent pet left-click keeps the external test window foreground (cycle 1)
+PASS: right-click position, outside click dismissal, NOACTIVATE restored (cycle 2)
+PASS: subsequent pet left-click keeps the external test window foreground (cycle 2)
+PASS: right-click position, outside click dismissal, NOACTIVATE restored (cycle 3)
+PASS: subsequent pet left-click keeps the external test window foreground (cycle 3)
+PASS: Escape dismissal
+PASS: actual Exit click naturally terminates the test app

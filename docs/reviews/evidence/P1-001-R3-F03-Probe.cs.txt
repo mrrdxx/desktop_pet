@@ -1,0 +1,100 @@
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Text.Json;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using DesktopPet.App;
+using DesktopPet.Core.Animation;
+
+internal static class F03Probe
+{
+    const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    static int checks;
+    static void Check(bool value, string label)
+    {
+        Console.WriteLine($"{(value ? "PASS" : "FAIL")} {label}");
+        if (!value) throw new InvalidOperationException(label);
+        checks++;
+    }
+    static string Definition(string path, int size=120) => JsonSerializer.Serialize(new {
+        id="probe",frameWidth=size,frameHeight=size,footAnchorX=size/2,footAnchorY=size-10,
+        actions=new { idle=new {loop="loop",frames=new[]{new {imagePath=path,durationMs=800}}}}
+    });
+    static bool Visible(Image image)
+    {
+        if(image.Source is not BitmapSource source) return false;
+        var bgra=new FormatConvertedBitmap(source,PixelFormats.Bgra32,null,0);
+        var pixels=new byte[bgra.PixelWidth*bgra.PixelHeight*4];
+        bgra.CopyPixels(pixels,bgra.PixelWidth*4,0);
+        for(int i=3;i<pixels.Length;i+=4) if(pixels[i]>0) return true;
+        return false;
+    }
+    static void Case(string label, int cacheCount, bool fallback)
+    {
+        var w=new MainWindow();
+        try
+        {
+            var image=(Image)w.FindName("PetImage");
+            Check(w.CachedImageCount==cacheCount,$"{label}: cache={w.CachedImageCount}");
+            Check(Visible(image),$"{label}: initial image contains nontransparent pixels");
+            Check((image.Source is RenderTargetBitmap)==fallback,$"{label}: expected source kind {image.Source?.GetType().Name}");
+        }
+        finally {w.Close();}
+    }
+    [STAThread]
+    static int Main()
+    {
+        Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+        Trace.AutoFlush=true;
+        try
+        {
+            string root=Directory.GetCurrentDirectory();
+            string dir=Path.Combine(AppContext.BaseDirectory,"assets","pets","default");
+            Directory.CreateDirectory(dir);
+            string json=Path.Combine(dir,"character.json");
+            // Use only this probe's own output copy, never source assets or real archives.
+            File.WriteAllText(json,Definition("not-present.png")); Case("missing first PNG",0,true);
+            File.WriteAllText(Path.Combine(dir,"broken.png"),"not a PNG");
+            File.WriteAllText(json,Definition("broken.png")); Case("corrupt first PNG",0,true);
+            File.Copy(Path.Combine(root,"assets/pets/default/idle_0.png"),Path.Combine(dir,"valid.png"),true);
+            File.WriteAllText(json,Definition("valid.png",64)); Case("declared64 decoded120",0,true);
+            File.WriteAllText(json,Definition("valid.png")); Case("matching PNG",1,false);
+            Directory.CreateDirectory(Path.Combine(dir,"nested"));
+            File.Copy(Path.Combine(dir,"valid.png"),Path.Combine(dir,"nested/valid.png"),true);
+            File.WriteAllText(json,Definition("nested/valid.png")); Case("nested relative PNG",1,false);
+
+            string sibling=Path.Combine(Path.GetDirectoryName(dir)!,"default-sibling");
+            Directory.CreateDirectory(sibling);
+            File.Copy(Path.Combine(dir,"valid.png"),Path.Combine(sibling,"outside.png"),true);
+            foreach(string path in new[]{"../default-sibling/outside.png","../../escape.png"})
+            {
+                bool rejected=false;
+                try {CharacterLoader.Load(Definition(path));} catch(InvalidDataException) {rejected=true;}
+                Check(rejected,$"Core rejects {path}");
+            }
+            var window=new MainWindow();
+            try
+            {
+                var cache=(System.Collections.IDictionary)typeof(MainWindow).GetField("_imageCache",Private)!.GetValue(window)!;
+                cache.Clear();
+                var model=new PetCharacterDef { Actions=new() { ["idle"]=new ActionDef {Frames=[new FrameDef {ImagePath="../default-sibling/outside.png"}]}}};
+                typeof(MainWindow).GetMethod("PreloadImages",Private)!.Invoke(window,[model,dir]);
+                Check(cache.Count==0,"App rejects existing valid sibling PNG with actual resource root");
+            }
+            finally {window.Close();}
+            string copiedIdle=Path.Combine(dir,"idle_0.png");
+            if(File.Exists(copiedIdle)) File.Move(copiedIdle,copiedIdle+".probe-disabled",true);
+            File.WriteAllText(json,"malformed JSON"); Case("invalid JSON independent fallback",0,true);
+            File.Move(json,json+".probe-disabled");
+            // The fixture output is intentionally deep enough that development fallback
+            // candidates cannot resolve the real repository package.
+            Case("missing JSON independent fallback",0,true);
+            File.Move(json+".probe-disabled",json);
+            Console.WriteLine($"ALL {checks} F03 TARGETED CHECKS PASS. Unshown MainWindow; isolated output resources; no App startup or real archives.");
+            return 0;
+        }
+        catch(Exception ex) {Console.WriteLine(ex);return 1;}
+    }
+}

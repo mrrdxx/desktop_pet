@@ -1,0 +1,3 @@
+从实际脚本 AST 提取唯一位移断言；不执行 GUI 脚本其他部分。
+PASS: window=(91,-246), cursor=(100,60), rejected=True
+PASS: window=(100,60), cursor=(100,60), rejected=False

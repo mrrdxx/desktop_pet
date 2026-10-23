@@ -1,0 +1,5 @@
+Environment: Windows=10.0.26200.0; DPI=144; PMv2=True; PID=135128; work=(0,0,2560,1528)
+PASS: Recover from startup position; rect=(1190,584,1370,764)
+PASS: repeated Recover 1; rect=(1190,584,1370,764)
+PASS: repeated Recover 2; rect=(1190,584,1370,764)
+PASS: repeated Recover 3; rect=(1190,584,1370,764)

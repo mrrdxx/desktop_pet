@@ -1,0 +1,60 @@
+﻿=== Idle Performance Resample (F-03) ===
+Time: 2026-10-22 11:07:39
+OS: Windows 10.0.26200.0
+CPU: Intel(R) Core(TM) i7-14650HX
+Physical resolution: 2560x1600 (via WMI Win32_VideoController)
+System scaling (sampler process DPI): 96 DPI (~100%)
+  Note: sampler process DPI awareness may differ from pet window DPI.
+  System scaling is reported by the sampler's own DPI, not independently verified.
+Logical screen bounds (sampler): 1707x1067
+Build: Debug
+Sampling: 22 samples x 15s interval = 330s total, stable period >=300s (excluding first sample)
+CPU denominator: actual elapsed time per interval (Stopwatch), not nominal 15s
+
+Pet started PID=150136 at 11:07:40
+Note: existing DesktopPet instances (if any) are not affected.
+Waiting 10s for startup stabilization...
+Animation observation: Pet uses DispatcherTimer (~500ms) for two-frame placeholder animation.
+  CPU deltas during stable period should show small periodic activity (~16-47ms per 15s)
+  consistent with timer-driven frame changes. Visual frame observation: see manual check below.
+
+Sample,Time,Elapsed_ms,CPU_ms_total,CPU_ms_delta,WS_MB,Priv_MB,Handles,Threads
+1,11:07:50,37,1438,1438,117.5,62.4,644,23
+2,11:08:06,15069,1578,141,118.5,63.1,644,23
+3,11:08:21,30090,1625,47,119.1,63.5,643,22
+4,11:08:36,45118,1719,94,119.9,64.2,643,22
+5,11:08:51,60151,1734,16,120.3,64.5,631,17
+6,11:09:06,75168,1766,31,118.4,65.1,631,17
+7,11:09:21,90194,1781,16,119,65.6,631,17
+8,11:09:36,105219,1812,31,119.6,66.2,631,17
+9,11:09:51,120238,1812,0,120.1,66.7,629,16
+10,11:10:06,135253,1812,0,120.6,67.1,625,13
+11,11:10:21,150264,1844,31,121.1,67.7,625,13
+12,11:10:36,165277,1875,31,121.7,68.2,625,13
+13,11:10:51,180306,2062,188,123.7,69.3,636,14
+14,11:11:06,195329,2078,16,124.2,69.8,633,13
+15,11:11:21,210366,2109,31,124.8,70.4,633,13
+16,11:11:36,225385,2141,31,125.3,70.9,633,13
+17,11:11:51,240400,2172,31,125.9,71.5,633,13
+18,11:12:06,255414,2188,16,126.5,72.1,633,13
+19,11:12:21,270430,2234,47,127,72.6,633,13
+20,11:12:36,285456,2234,0,127.5,73.2,633,13
+21,11:12:51,300483,2281,47,128.4,73.9,633,15
+22,11:13:06,315506,2297,16,128.9,74.4,633,15
+
+=== Summary ===
+Samples collected: 22
+Stable period (excluding first sample): 300.4 seconds (21 samples, 21 intervals)
+CPU time per interval (excluding first): avg=40.9ms min=0ms max=187.5ms
+CPU usage (actual elapsed denominator): 0.29% single-core (859ms CPU / 300437ms elapsed)
+Working Set: avg=122.6MB min=117.5MB max=128.9MB
+Private Memory: avg=68.3MB max=74.4MB
+Handles (final): 633
+Threads (final): 15
+Memory trend: 11.4MB change over sampling period
+Animation indicator: 18 of 21 intervals show non-zero CPU activity
+  (periodic small CPU deltas consistent with ~500ms timer-driven frame changes)
+  Visual frame observation (human): [TO BE CONFIRMED - see manual steps in remediation]
+Attempting clean exit via WM_CLOSE...
+Clean exit via WM_CLOSE successful, exit code=0
+Done at 11:13:06

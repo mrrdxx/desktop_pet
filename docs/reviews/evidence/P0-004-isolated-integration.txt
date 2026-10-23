@@ -1,0 +1,80 @@
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-validation\run-e6346a9a
+CASE: normal; PID=143572; exited=True; exitCode=0
+READY: scenario=normal
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Invoking actual ToolStripMenuItem.PerformClick: Pause
+PASS: Pause stops animation timer
+PASS: animation frame stays unchanged while paused
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764)
+PASS: Recover remains usable while paused
+Invoking actual ToolStripMenuItem.PerformClick: Resume
+PASS: Resume restarts animation without accumulated ticks
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: paused-start; PID=137144; exited=True; exitCode=0
+READY: scenario=paused-start
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=True; timerEnabled=True
+FAIL: restart restores pause behavior as well as stored flag
+FAIL: saved paused state keeps animation frame unchanged
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: offscreen-start; PID=132376; exited=True; exitCode=0
+READY: scenario=offscreen-start
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(21844.666666666664,21844.666666666664); paused=False; timerEnabled=True
+Native window rect=(32767,32767,32947,32947)
+FAIL: startup recovers saved offscreen/missing-monitor position
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: fast-final; PID=133264; exited=True; exitCode=0
+READY: scenario=fast-final
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: debounced dirty state has not written before five seconds
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: final position persisted; expected=(350,260), saved=(350,260)
+CASE: recover-after-save; PID=131364; exited=True; exitCode=0
+READY: scenario=recover-after-save
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: dirty state writes after default five-second debounce
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764)
+PASS: tray Recover moves window to visible area
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+FAIL: final position persisted; expected=(793.333333333333,389.333333333333), saved=(300,240)
+CASE: archive-cases; PID=135348; exited=True; exitCode=0
+READY: scenario=archive-cases
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+PASS: isolated state service roundtrip
+PASS: isolated settings service roundtrip
+PASS: corrupt primary preserved byte-for-byte and valid backup selected
+PASS: corrupt file without backup falls back to defaults
+PASS: higher version state remains read-only; incompatibleFields=False
+FAIL: higher version state remains read-only; incompatibleFields=True
+FAIL: higher version incompatible settings remain read-only
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: second isolated instance shows a dialog; closing its OK button via WM_COMMAND
+FAIL: duplicate process did not exit
+PASS: first instance remains running after duplicate exits
+CASE: hold; PID=137612; exited=True; exitCode=0
+READY: scenario=hold
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged

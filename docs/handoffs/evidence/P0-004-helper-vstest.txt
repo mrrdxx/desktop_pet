@@ -1,0 +1,15 @@
+P0-004 修复后的正式 VSTest 结果
+日期：2026-10-22（Asia/Shanghai）
+工作目录：C:\Users\mrrdxx\Desktop\pet
+命令：dotnet test DesktopPet.slnx -c Debug --no-build --no-restore -m:1
+执行环境：经审批在沙箱外执行，使用已构建的本轮代码。
+工具返回退出码：0
+
+以下为成功执行工具返回的结果摘录：
+DesktopPet.App.Tests.dll：失败 0，通过 33，已跳过 0，总计 33，持续时间 909 ms。
+DesktopPet.Core.Tests.dll：失败 0，通过 22，已跳过 0，总计 22，持续时间 56 ms。
+
+合计：55/55 通过，0 失败，0 跳过。
+此文件整理自成功工具返回结果，不是直接执行器的输出。
+此前沙箱 testhost 连接超时与审批连接失败记录保留为历史；最终重试成功。
+这属于修复作者自测，不代替独立审查结论。

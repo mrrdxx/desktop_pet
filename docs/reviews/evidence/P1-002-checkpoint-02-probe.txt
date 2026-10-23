@@ -1,0 +1,5 @@
+PASS round trip retains recent speed 2000 despite zero net trend
+PASS stationary then flick retains fast segment
+PASS slow jitter below threshold
+PASS interruption clears recent peak
+ALL 4 TARGETED CHECKS PASS. Core only; App wiring not executed.

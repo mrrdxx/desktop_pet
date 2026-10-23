@@ -1,0 +1,14 @@
+PASS real resources loaded
+PASS real player paused drag-action switch
+PASS real EndDrag (also called by native menu) preserves pause
+PASS paused drag/release waits without progress
+PASS App/player/timer resume together
+PASS 99ms active remains frame0
+PASS 100ms active reaches frame1
+PASS menu EndDrag entry freezes new idle origin
+PASS menu resume phase before boundary
+PASS menu resume phase at boundary
+PASS Once stays incomplete during paused action switch
+PASS Once incomplete before active duration
+PASS Once completes at active duration
+ALL F02 TARGETED CHECKS PASS. Unshown window; no real mouse capture or popup interaction; no App startup or archives.

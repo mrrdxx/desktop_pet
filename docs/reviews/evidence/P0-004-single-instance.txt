@@ -1,0 +1,12 @@
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-validation\run-14ac0f97
+PASS: second isolated instance PID=140560 shows a dialog; activating its OK button via BM_CLICK
+Second instance exit code=1
+PASS: first instance remains running after duplicate exits
+CASE: hold; PID=132900; exited=True; exitCode=0
+READY: scenario=hold
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged

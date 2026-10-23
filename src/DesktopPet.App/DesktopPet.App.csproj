@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>DesktopPet.App</RootNamespace>
+    <AssemblyName>DesktopPet</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WFO0003: WinForms analyzer wants ApplicationHighDpiMode, but this is a
+         WPF-first project. PMv2 is declared via app.manifest (WPF standard).
+         UseWindowsForms=true is only for NotifyIcon, not the startup path. -->
+    <NoWarn>WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DesktopPet.Core\DesktopPet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DesktopPet.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pet character assets: PNG frames and character.json -->
+    <None Include="..\..\assets\pets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>assets\pets\%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\DesktopPet.Core.csproj (用时 62 毫秒)。
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-06048555\isolated-app\DesktopPet.App.csproj (用时 67 毫秒)。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-06048555\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:02.79
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-06048555\data
+CASE: normal; PID=151484; exited=True; exitCode=2
+READY: scenario=normal
+HWND=0x40930; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+FAIL: probe exception=System.NullReferenceException: Object reference not set to an instance of an object.
+   at DesktopPet.App.App.ReadField[T](Object instance, String name) in C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-06048555\isolated-app\LifecycleProbe.cs:line 19
+   at DesktopPet.App.App.RunValidationAsync() in C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-06048555\isolated-app\LifecycleProbe.cs:line 56
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged
+FAIL: normal unsuccessful exit
+FAIL: normal FAIL: probe exception=System.NullReferenceException: Object reference not set to an instance of an object.

@@ -1,0 +1,10 @@
+MEASURE idle: decodedFoot=(110, 60); dpi=95.98660278320312,95.98660278320312; transform=(0, 0); rasterFoot=(111, 60); worldDip=(160,211)
+PASS idle: world window unchanged
+PASS idle: rendered foot Y stable within 1px
+PASS idle: rendered foot X stable within 1px
+MEASURE curious: decodedFoot=(95, 59.5); dpi=95.98660278320312,95.98660278320312; transform=(0, 9); rasterFoot=(105, 59.5); worldDip=(159.5,205)
+PASS curious: world window unchanged
+FAIL curious: rendered foot Y stable within 1px
+System.InvalidOperationException: curious: rendered foot Y stable within 1px
+   at F04Probe.Check(Boolean condition, String label) in C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r4-f04\Program.cs:line 16
+   at F04Probe.Main() in C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r4-f04\Program.cs:line 60

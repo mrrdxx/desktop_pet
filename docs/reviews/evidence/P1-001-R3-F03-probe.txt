@@ -1,0 +1,33 @@
+Probe Warning: 0 : Frame image not found: C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r3-f03\isolated\a\b\c\bin\Debug\net10.0-windows\assets\pets\default\not-present.png
+PASS missing first PNG: cache=0
+PASS missing first PNG: initial image contains nontransparent pixels
+PASS missing first PNG: expected source kind RenderTargetBitmap
+Probe Warning: 0 : Failed to load frame image 'C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r3-f03\isolated\a\b\c\bin\Debug\net10.0-windows\assets\pets\default\broken.png': 未找到适用于完成此操作的图像处理组件。
+PASS corrupt first PNG: cache=0
+PASS corrupt first PNG: initial image contains nontransparent pixels
+PASS corrupt first PNG: expected source kind RenderTargetBitmap
+Probe Warning: 0 : Frame image 'C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r3-f03\isolated\a\b\c\bin\Debug\net10.0-windows\assets\pets\default\valid.png' decoded size 120x120 does not match declared 64x64; skipping.
+PASS declared64 decoded120: cache=0
+PASS declared64 decoded120: initial image contains nontransparent pixels
+PASS declared64 decoded120: expected source kind RenderTargetBitmap
+PASS matching PNG: cache=1
+PASS matching PNG: initial image contains nontransparent pixels
+PASS matching PNG: expected source kind BitmapImage
+PASS nested relative PNG: cache=1
+PASS nested relative PNG: initial image contains nontransparent pixels
+PASS nested relative PNG: expected source kind BitmapImage
+PASS Core rejects ../default-sibling/outside.png
+PASS Core rejects ../../escape.png
+Probe Warning: 0 : Frame image path escapes asset directory: ../default-sibling/outside.png
+PASS App rejects existing valid sibling PNG with actual resource root
+Probe Error: 0 : Failed to load character: 'm' is an invalid start of a value. Path: $ | LineNumber: 0 | BytePositionInLine: 0.
+Probe Warning: 0 : Frame image not found: C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r3-f03\isolated\a\b\c\bin\Debug\net10.0-windows\assets\pets\default\idle_0.png
+PASS invalid JSON independent fallback: cache=0
+PASS invalid JSON independent fallback: initial image contains nontransparent pixels
+PASS invalid JSON independent fallback: expected source kind RenderTargetBitmap
+Probe Error: 0 : Character JSON not found: C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r3-f03\isolated\a\b\c\bin\Debug\net10.0-windows\assets\pets\default\character.json
+Probe Warning: 0 : Frame image not found: C:\Users\mrrdxx\Desktop\pet\artifacts\p1-001-r3-f03\isolated\a\b\c\bin\Debug\net10.0-windows\assets\pets\default\idle_0.png
+PASS missing JSON independent fallback: cache=0
+PASS missing JSON independent fallback: initial image contains nontransparent pixels
+PASS missing JSON independent fallback: expected source kind RenderTargetBitmap
+ALL 24 F03 TARGETED CHECKS PASS. Unshown MainWindow; isolated output resources; no App startup or real archives.

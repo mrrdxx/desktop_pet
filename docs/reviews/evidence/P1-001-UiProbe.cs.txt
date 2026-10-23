@@ -1,0 +1,49 @@
+using System;
+using System.IO;
+using System.Reflection;
+using System.Windows.Controls;
+using DesktopPet.App;
+using DesktopPet.Core.Animation;
+
+internal static class UiProbe
+{
+    [STAThread]
+    private static void Main()
+    {
+        var assets = Path.Combine(AppContext.BaseDirectory, "assets", "pets", "default");
+        Directory.CreateDirectory(assets);
+        void WriteDefinition(string image, int offsetX = 0, int offsetY = 0)
+            => File.WriteAllText(Path.Combine(assets, "character.json"),
+                System.Text.Json.JsonSerializer.Serialize(new {
+                    id = "probe", frameWidth = 120, frameHeight = 120, footAnchorX = 60, footAnchorY = 110,
+                    actions = new { idle = new { loop = "loop", frames = new[] { new { imagePath = image, durationMs = 800, offsetX, offsetY } } } }
+                }));
+        WriteDefinition("never-created.png");
+        var missing = new MainWindow();
+        var missingImage = (Image)missing.FindName("PetImage");
+        Console.WriteLine($"MISSING_IMAGE: window_constructed=True; visible_source={missingImage.Source is not null}");
+        missing.Close();
+
+        File.WriteAllText(Path.Combine(assets, "broken.png"), "this is not a PNG image");
+        WriteDefinition("broken.png");
+        try
+        {
+            var broken = new MainWindow();
+            Console.WriteLine("BROKEN_PNG: constructor did not throw");
+            broken.Close();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"BROKEN_PNG: constructor threw {ex.GetType().FullName}: {ex.Message}");
+        }
+
+        File.Copy(Path.Combine(Directory.GetCurrentDirectory(), "assets", "pets", "default", "idle_0.png"), Path.Combine(assets, "valid.png"), true);
+        WriteDefinition("valid.png", 7, -9);
+        var offsetWindow = new MainWindow();
+        var image = (Image)offsetWindow.FindName("PetImage");
+        var player = (AnimationPlayer)typeof(MainWindow).GetField("_animPlayer", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(offsetWindow)!;
+        Console.WriteLine($"FRAME_OFFSET: modelCorrection={player.GetFootOffset()}; canvasLeft={Canvas.GetLeft(image)}; canvasTop={Canvas.GetTop(image)}; transformIsIdentity={image.RenderTransform.Value.IsIdentity}; margin={image.Margin}");
+        offsetWindow.Close();
+        Console.WriteLine("Probe constructed unshown windows only; did not create App or read real archives.");
+    }
+}

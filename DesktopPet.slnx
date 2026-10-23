@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DesktopPet.App/DesktopPet.App.csproj" />
+    <Project Path="src/DesktopPet.Core/DesktopPet.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DesktopPet.App.Tests/DesktopPet.App.Tests.csproj" />
+    <Project Path="tests/DesktopPet.Core.Tests/DesktopPet.Core.Tests.csproj" />
+  </Folder>
+</Solution>

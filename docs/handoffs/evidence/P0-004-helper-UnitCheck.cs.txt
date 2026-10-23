@@ -1,0 +1,45 @@
+using System.Reflection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+// In-sandbox fallback: directly execute the existing plain test methods, init,
+// cleanup and DataRows. This is not a substitute for a successful VSTest run.
+class Program
+{
+    static async Task<int> Main()
+    {
+        var assemblies = new[] {
+            typeof(DesktopPet.Core.Tests.CoordinateTransformTests).Assembly,
+            typeof(DesktopPet.App.Tests.ArchiveServiceTests).Assembly
+        };
+        int passed = 0, failed = 0;
+        foreach (var type in assemblies.SelectMany(a => a.GetTypes()).Where(t => t.IsDefined(typeof(TestClassAttribute))))
+        foreach (var method in type.GetMethods().Where(m => m.IsDefined(typeof(TestMethodAttribute))))
+        {
+            var rows = method.GetCustomAttributes<DataRowAttribute>().Select(r => r.Data).ToArray();
+            if (rows.Length == 0) rows = new[] { Array.Empty<object>() };
+            foreach (var row in rows)
+            {
+                var instance = Activator.CreateInstance(type)!;
+                string name = type.Name + "." + method.Name + "(" + string.Join(",", row) + ")";
+                try
+                {
+                    foreach (var init in type.GetMethods().Where(m => m.IsDefined(typeof(TestInitializeAttribute)))) init.Invoke(instance, null);
+                    if (method.Invoke(instance, row) is Task task) await task;
+                    passed++;
+                    Console.WriteLine("PASS: " + name);
+                }
+                catch (Exception ex)
+                {
+                    failed++;
+                    Console.WriteLine("FAIL: " + name + " " + (ex.InnerException ?? ex));
+                }
+                finally
+                {
+                    foreach (var cleanup in type.GetMethods().Where(m => m.IsDefined(typeof(TestCleanupAttribute)))) cleanup.Invoke(instance, null);
+                }
+            }
+        }
+        Console.WriteLine($"Direct in-sandbox execution: passed={passed}; failed={failed}. Official VSTest/GUI still need separate verification.");
+        return failed == 0 ? 0 : 1;
+    }
+}

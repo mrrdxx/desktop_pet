@@ -1,0 +1,34 @@
+{
+  "id": "default",
+  "frameWidth": 120,
+  "frameHeight": 120,
+  "footAnchorX": 60,
+  "footAnchorY": 110,
+  "actions": {
+    "idle": {
+      "loop": "loop",
+      "frames": [
+        { "imagePath": "idle_0.png", "durationMs": 800, "offsetX": 0, "offsetY": 0 },
+        { "imagePath": "idle_1.png", "durationMs": 200, "offsetX": 0, "offsetY": 0 }
+      ]
+    },
+    "curious": {
+      "loop": "loop",
+      "frames": [
+        { "imagePath": "curious_0.png", "durationMs": 500, "offsetX": 0, "offsetY": 9 }
+      ]
+    },
+    "dodge": {
+      "loop": "once",
+      "frames": [
+        { "imagePath": "dodge_0.png", "durationMs": 600, "offsetX": 0, "offsetY": 0 }
+      ]
+    },
+    "drag": {
+      "loop": "loop",
+      "frames": [
+        { "imagePath": "drag_0.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 }
+      ]
+    }
+  }
+}

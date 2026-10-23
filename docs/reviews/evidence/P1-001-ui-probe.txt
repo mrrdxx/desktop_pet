@@ -1,0 +1,4 @@
+MISSING_IMAGE: window_constructed=True; visible_source=False
+BROKEN_PNG: constructor threw System.NotSupportedException: 未找到适用于完成此操作的图像处理组件。
+FRAME_OFFSET: modelCorrection=(-7, 9); canvasLeft=NaN; canvasTop=NaN; transformIsIdentity=True; margin=0,0,0,0
+Probe constructed unshown windows only; did not create App or read real archives.

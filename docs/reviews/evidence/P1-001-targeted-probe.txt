@@ -1,0 +1,5 @@
+ONCE_SINGLE_FRAME: image=dodge_0.png; completed=False; completionEvents=0; elapsed=1000ms; duration=600ms
+POLLING_PAUSE_WITH_LIVE_CLOCK: before=idle_0.png; after=idle_1.png; pausedWallTime=200ms; expected same phase until resume advances active time
+PARENT_PATH_ACCEPTED: path=../outside.png
+INVALID_METADATA_ACCEPTED: normalized=120x120; anchor=(-20,-90)
+MISSING_ACTION_DIAGNOSTICS: sameIdRequests=2; events=2

@@ -1,0 +1,12 @@
+using DesktopPet.Core.Input;
+
+var backtrack=new MouseSampler();
+backtrack.Sample(new(0,0,0));
+var outbound=backtrack.Sample(new(200,0,100));
+var inbound=backtrack.Sample(new(0,0,200));
+Console.WriteLine($"BACKTRACK: outbound={outbound.EquivalentSpeedPxPerSec}; returnResult={inbound.EquivalentSpeedPxPerSec}; valid={inbound.IsValid}; eachLegSpeed=2000; travelledDistance=400px/200ms");
+var burst=new MouseSampler();
+for(int i=0;i<9;i++) burst.Sample(new(0,0,i*33));
+var burstResult=burst.Sample(new(100,0,297));
+Console.WriteLine($"STATIONARY_THEN_BURST: result={burstResult.EquivalentSpeedPxPerSec}; valid={burstResult.IsValid}; latestSegmentSpeed={100.0/0.033}; window={burst.WindowCount}");
+Console.WriteLine("Diagnostic values only; current App has no mouse reaction integration. No desktop or archives accessed.");

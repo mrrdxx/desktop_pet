@@ -1,0 +1,52 @@
+﻿  姝ｅ湪纭畾瑕佽繕鍘熺殑椤圭洰鈥?
+  宸茶繕鍘?C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-d9dccf66\isolated-app\DesktopPet.App.csproj (鐢ㄦ椂 91 姣)銆?
+  1 涓」鐩?鍏?2 涓?鏄渶鏂扮殑锛屾棤娉曡繕鍘熴€?
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-d9dccf66\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+宸叉垚鍔熺敓鎴愩€?
+    0 涓鍛?
+    0 涓敊璇?
+
+宸茬敤鏃堕棿 00:00:01.70
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-d9dccf66\data
+CASE: offscreen-start; PID=100576; exited=True; exitCode=0
+READY: scenario=offscreen-start
+HWND=0x51290; GetDpiForWindow=96; GetDpiForSystem=96; scale=100%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(2440,1432); paused=False; timerEnabled=True
+Native window rect=(2440,1432,2560,1552); size=120x120 physical px
+PrimaryScreen working area=(0,0,2560,1552); bounds=(0,0,2560,1600)
+PASS: startup recovers saved offscreen/missing-monitor position
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: paused-start; PID=146016; exited=True; exitCode=0
+READY: scenario=paused-start
+HWND=0x51288; GetDpiForWindow=96; GetDpiForSystem=96; scale=100%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=True; timerEnabled=False
+PASS: restart restores pause behavior as well as stored flag
+PASS: saved paused state keeps animation frame unchanged
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: normal; PID=144796; exited=True; exitCode=0
+READY: scenario=normal
+HWND=0xF114C; GetDpiForWindow=96; GetDpiForSystem=96; scale=100%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True
+Invoking actual ToolStripMenuItem.PerformClick: Pause
+PASS: Pause stops animation timer
+PASS: animation frame stays unchanged while paused
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1220,656,1340,776); size=120x120 physical px
+PrimaryScreen working area=(0,0,2560,1552); bounds=(0,0,2560,1600)
+PASS: Recover remains usable while paused
+Invoking actual ToolStripMenuItem.PerformClick: Resume
+PASS: Resume restarts animation without accumulated ticks
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged
+ALL ISOLATED LIFECYCLE SCENARIOS PASS

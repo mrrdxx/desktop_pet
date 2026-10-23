@@ -1,0 +1,72 @@
+using System.Reflection;
+using System.Windows.Controls;
+using System.Windows.Threading;
+using DesktopPet.App;
+using DesktopPet.Core.Animation;
+
+internal static class F02Probe
+{
+    const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    static void Check(bool condition, string label)
+    {
+        Console.WriteLine($"{(condition ? "PASS" : "FAIL")} {label}");
+        if (!condition) throw new InvalidOperationException(label);
+    }
+    static void Invoke(MainWindow window, string method) => typeof(MainWindow).GetMethod(method, Private)!.Invoke(window, null);
+    [STAThread]
+    static int Main()
+    {
+        MainWindow? window = null;
+        try
+        {
+            window = new MainWindow();
+            var timer = (DispatcherTimer)typeof(MainWindow).GetField("_updateTimer", Private)!.GetValue(window)!;
+            var originalPlayer = (AnimationPlayer)typeof(MainWindow).GetField("_animPlayer", Private)!.GetValue(window)!;
+            var cache = (System.Collections.IDictionary)typeof(MainWindow).GetField("_imageCache", Private)!.GetValue(window)!;
+            Check(cache.Count == 5 && ((Image)window.FindName("PetImage")).Source is not null, "real resources loaded");
+            window.PauseAnimation();
+            originalPlayer.PlayAction("drag"); Invoke(window, "UpdateFrame");
+            Check(window.CurrentAction == "drag" && window.IsAppPaused && window.IsPlayerPaused && !timer.IsEnabled, "real player paused drag-action switch");
+            Invoke(window, "EndDrag");
+            Check(window.CurrentAction == "idle" && window.IsAppPaused && window.IsPlayerPaused && !timer.IsEnabled, "real EndDrag (also called by native menu) preserves pause");
+
+            double time = 0;
+            var character = new PetCharacterDef
+            {
+                Actions = new Dictionary<string, ActionDef>
+                {
+                    ["idle"] = new() { Id="idle", Frames=[new() {ImagePath="idle_0.png",DurationMs=100},new() {ImagePath="idle_1.png",DurationMs=100}] },
+                    ["drag"] = new() { Id="drag",Frames=[new() {ImagePath="drag_0.png",DurationMs=100}] },
+                    ["dodge"] = new() {Id="dodge",Loop=LoopMode.Once,Frames=[new() {ImagePath="dodge_0.png",DurationMs=200}]}
+                }
+            };
+            var clockPlayer = new AnimationPlayer(character, () => time);
+            typeof(MainWindow).GetField("_animPlayer", Private)!.SetValue(window, clockPlayer);
+            // The injected clock supplies deterministic elapsed time; actual App pause,
+            // UpdateFrame and EndDrag methods and timer are retained.
+            window.PauseAnimation();
+            time = 500; clockPlayer.PlayAction("drag"); Invoke(window,"UpdateFrame");
+            time = 2500; Invoke(window,"EndDrag");
+            time = 9000;
+            Check(clockPlayer.GetCurrentFrame().frame.ImagePath == "idle_0.png" && window.IsAppPaused && window.IsPlayerPaused && !timer.IsEnabled, "paused drag/release waits without progress");
+            window.ResumeAnimation();
+            Check(!window.IsAppPaused && !window.IsPlayerPaused && timer.IsEnabled, "App/player/timer resume together");
+            time = 9099; Check(clockPlayer.GetCurrentFrame().frame.ImagePath=="idle_0.png", "99ms active remains frame0");
+            time = 9100; Check(clockPlayer.GetCurrentFrame().frame.ImagePath=="idle_1.png", "100ms active reaches frame1");
+            window.PauseAnimation();
+            time=12000; Invoke(window,"EndDrag"); // same interruption entry as menu, no native popup opened
+            time=30000; Check(clockPlayer.GetCurrentFrame().frame.ImagePath=="idle_0.png" && window.IsPlayerPaused && !timer.IsEnabled,"menu EndDrag entry freezes new idle origin");
+            window.ResumeAnimation();
+            time=30099; Check(clockPlayer.GetCurrentFrame().frame.ImagePath=="idle_0.png","menu resume phase before boundary");
+            time=30100; Check(clockPlayer.GetCurrentFrame().frame.ImagePath=="idle_1.png","menu resume phase at boundary");
+            window.PauseAnimation(); time=40000; clockPlayer.PlayAction("dodge");
+            time=90000; clockPlayer.GetCurrentFrame(); Check(!clockPlayer.IsCompleted && clockPlayer.IsPaused,"Once stays incomplete during paused action switch");
+            window.ResumeAnimation(); time=90199; clockPlayer.GetCurrentFrame(); Check(!clockPlayer.IsCompleted,"Once incomplete before active duration");
+            time=90200; clockPlayer.GetCurrentFrame(); Check(clockPlayer.IsCompleted,"Once completes at active duration");
+            Console.WriteLine("ALL F02 TARGETED CHECKS PASS. Unshown window; no real mouse capture or popup interaction; no App startup or archives.");
+            return 0;
+        }
+        catch(Exception ex) {Console.WriteLine(ex);return 1;}
+        finally {window?.Close();}
+    }
+}
