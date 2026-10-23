@@ -449,3 +449,62 @@ R5 版本事实核对发现，之前 F-03 R4 整改记录称"代码已有完整�
 ### 复核请求
 
 F-03 R5 剩余范围（头部矩形内透明像素检测 + PRODUCT 同步）和 G-03 R5 剩余范围（跨对象隔离恢复验证）已整改并补测试覆盖。版本归因更正已追加。F-04/F-05 已由 R5 关闭，不重复整改。请监理复核。
+
+## R6 整改：F-06 暂停状态退出期间仍计入衰减
+
+对应监理 R6（`1a2a8c7`），见 [P1-003-review](../reviews/P1-003-review.md) R6 章节。
+F-01～F-05 均已关闭，不重复整改。仅针对 R6 新增 F-06 整改。
+
+### F-06：暂停状态退出期间仍计入衰减
+
+#### 问题
+
+监理 R6 发现：暂停状态下退出后重启，`MapArchiveToEmotionObjects` 使用存档中旧的 `LastDecayUtc` 创建新 accumulator。`ResumeAnimation` 中的 `SkipInterval` 只补偿本次进程启动后的暂停时长（由 `clockMs` delta 测量），但退出期间的离线间隔没有被排除——新 accumulator 的 `LastDecayUtc` 仍是旧值，`AdvanceTo(DateTime.UtcNow)` 会把整个离线间隔当成衰减时间。
+
+监理用 12 小时离线间隔复现：暂停退出 12 小时后恢复，委屈值从 ~90 降至 ~70（12 小时半衰期衰减），而正确行为应仅衰减活动时间（~90）。
+
+现有 `G03_R5_IsolatedSaveCloseRestore_ExitPaused_NoDoubleCountDecay` 测试使用 10 秒离线间隔，错误衰减量和正确衰减量差异极小（容差 0.01 掩盖了错误）；且存在自比较断言 `Assert.AreEqual(acc2.GrievanceFloat, grievanceAtResume)`，后者刚从同一属性赋值。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/App.xaml.cs` 的 `MapArchiveToEmotionObjects`。
+- 新增可选参数 `DateTime? restoreUtcNow`：生产代码不传（用 `DateTime.UtcNow`），测试传入模拟时间。
+- 当 `state.IsPaused == true` 时，将 `lastDecayUtc` 前移到 `restoreUtcNow ?? DateTime.UtcNow`，即跳过退出期间的冻结间隔。
+- 当 `state.IsPaused == false` 时，保持存档中的 `lastDecayUtc` 不变，离线间隔按正常离线衰减计算。
+- 保留 F-02 回拨保护：`AdvanceTo` 中的负间隔处理不受影响。
+- PRODUCT R-02 暂停语义已同步：明确"暂停状态下退出再重启时，退出期间同样属于冻结时段，不计入衰减；未暂停退出时，离线间隔按正常离线衰减计算"。
+
+#### 自测
+
+替换 1 项旧测试，新增 1 项对照测试（`PauseSemanticsTests.cs`）：
+
+- `F06_IsolatedSaveCloseRestore_12hExitPaused_OnlyActiveDecay`（替换旧 `G03_R5_IsolatedSaveCloseRestore_ExitPaused_NoDoubleCountDecay`）：
+  - 隔离保存→关闭→12 小时离线→新对象恢复→仍暂停→恢复→2 秒活动。
+  - 使用独立前后快照（非自比较），容差 0.001。
+  - 断言恢复后 `LastDecayUtc` 被前移到 ~now（非旧值）。
+  - 断言总衰减匹配 ~2 秒活动时间（从前移后的基准），非 12 小时。
+  - 移除生产修复后此测试失败（已验证：`LastDecayUtc` 未前移，12 小时衰减被计入）。
+
+- `F06_IsolatedSaveCloseRestore_12hExitNotPaused_NormalOfflineDecay`（新增对照）：
+  - 同样隔离链路，但 `IsPaused=false`（正常退出）。
+  - 断言 `LastDecayUtc` 保持存档原值（非前移）。
+  - 断言总衰减 = 12 小时离线 + ~4 秒活动，匹配对照。
+  - 防止 F-06 修复过于激进：只冻结暂停退出，不冻结正常退出。
+
+#### 验证移除修复后测试失败
+
+临时禁用生产修复（`if (state.IsPaused && !state.IsPaused)`），运行 F-06 测试：
+- `F06_IsolatedSaveCloseRestore_12hExitPaused_OnlyActiveDecay` **失败**（`LastDecayUtc` 未前移，12 小时衰减被计入）。
+- `F06_IsolatedSaveCloseRestore_12hExitNotPaused_NormalOfflineDecay` **通过**（正常退出不受影响）。
+恢复修复后两项均通过，确认测试有实际区分度。
+
+### 构建与测试（R6 整改后）
+
+- `dotnet build DesktopPet.slnx -c Debug`：0 警告 0 错误。
+- `dotnet test tests/DesktopPet.App.Tests/DesktopPet.App.Tests.csproj -c Debug --no-build --no-restore`：**App 125/125**，0 失败，0 跳过。
+- App 测试替换 1 项（F-06 暂停退出 12h），新增 1 项（F-06 未暂停退出对照），净增 1 项。
+- Core 208 项未重跑，不把开发方全量写成独立全量通过。
+
+### 复核请求
+
+F-06 已按监理 R6 报告路径修复：生产恢复路径依据暂停状态排除冻结退出间隔，保留未暂停退出的正常离线衰减及 F-02 回拨保护。12 小时隔离恢复验证使用独立快照和紧容差，移除修复后测试失败。未暂停退出对照防止修复过于激进。请监理复核。

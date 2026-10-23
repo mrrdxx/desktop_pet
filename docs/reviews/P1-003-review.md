@@ -127,3 +127,39 @@ PettingDetectionTests.Petting_AccumulatedTime_TriggersIncrement 在无 App.Curre
 PRODUCT 已明确排除暂停时段。SkipInterval 与各计时器平移方案可继续沿用。PauseSemanticsTests 中存在 Thread.Sleep 推进真实 UTC、另用 clockMs 推进不同长度单调时间的用例；不能据此证明精确排除暂停段。建议统一可控 UTC/单调时间来源，或用同一真实间隔记录两者，断言恢复后只计新增活动间隔，避免仅判断恢复后数值继续下降。并覆盖暂停中退出/启动仍暂停后恢复是否重复或漏算暂停间隔；此为暂停/存档接续边界，不扩展到锁屏多屏。
 
 结论：F-01/F-02 保持关闭；F-03～F-05 保持未关闭，仅针对上述剩余范围整改。TASKS 继续 in-progress，不要求用户现在重复体验，不进入 P1-004。
+
+## R5 结论补录及 R6 复核：2026-10-23
+
+本轮发现当前报告止于 R4，上轮监理已写入的 R5 不在当前文件中，原因尚未核实。这里补录上轮结论，不改写原 R4：R5 对象 6fee5a0，App 120/120 独立通过；关闭 F-04/F-05，F-03 只保留透明像素与规格一致性，G-03 只保留真正跨对象恢复。版本对比已证实完整 X/Y 边界在 6fee5a0 新增，4ea4462 没有；开发方本轮更正归因认可。报告历史须完整保留，接手方检查是否存在旧副本覆盖，不能用提交覆盖监理新增段落。
+
+### R6 对象及结果
+
+对象 1a2a8c7。开始有开发方未跟踪脚本 check_coords.py/check_coords2.py/check_coords3.py/check_png.py，未修改或删除。独立运行 App 测试（同 R4 命令）：**124/124 通过，0 失败/跳过，退出码 0**。未重建或重跑 Core，不称为本轮独立 332/332 通过。未改应用代码、未操作鼠标。
+
+### F-03：关闭
+
+IsInHeadZone 在矩形边界后调用 PetImageGeometry.Contains 检查当前帧 Alpha；透明/不透明对照及透明处停止累计已补，PRODUCT/ARCHITECTURE 同步固定区域方案。F-01～F-05 当前均已关闭，已认可部分不返工。
+
+### F-06：暂停状态退出期间仍计入衰减（未关闭）
+
+位置：App.MapArchiveToEmotionObjects/OnStartup、MainWindow.ResumeAnimation，以及测试 G03_R5_IsolatedSaveCloseRestore_ExitPaused_NoDoubleCountDecay。
+开发方明确暂停退出期间冻结。跨对象隔离测试确实建立，认可比前轮进步；但恢复仍使用旧 LastDecayUtc，Resume 只补偿本次进程启动后的暂停时长。保持旧基准不会自动免除离线间隔，反而在下次 AdvanceTo 补算。
+
+本轮用 .NET 10 PowerShell 加载实际 Core DLL，按生产恢复构造与 Resume 相同数值调用（不冒称运行了完整 App 进程重启）：
+
+```text
+reference=2026-10-23T12:00:01.980Z; initial grievance=90
+new EmotionDecayAccumulator(50,90,reference)
+SkipInterval(330ms) // 重启后暂停
+AdvanceTo(reference + 10s退出 + 330ms暂停 + 1.98s活动)
+actual=89.9923119396424
+activeOnly(1.98s)=89.9987292503545
+error=0.006417310712024 < testTolerance=0.01
+同样退出12小时，actual=69.9993646251772，期望约90（仅活动1.98s衰减）
+```
+
+现有 10 秒用例错误补算全部退出间隔也能通过。另有 Assert.AreEqual(acc2.GrievanceFloat, grievanceAtResume)，后者刚从同一属性赋值，是自比较，不能证明前后不变。
+
+整改：在生产共用恢复/保存路径依据暂停状态排除约定冻结时段，明确写入 PRODUCT 的跨退出语义；保留未暂停退出的正常离线衰减及 F-02 回拨保护。沿用现有模型的最小修复，不引入框架。
+验证：隔离保存→关闭旧对象→12小时等长离线→新对象/窗口恢复仍暂停→恢复→活动时间，与只累计活动区间对照；容差明显小于错误衰减量，移除生产修复时必须失败。用独立前后快照替代自比较，补未暂停退出正常衰减对照，防止一律重置基准吞掉正常衰减。
+阻断范围：仅 P1-003 暂停/恢复验收与最终完成。原 G-03 的确定缺陷以 F-06 闭环；在原整改记录追加，不重开已关闭项，不要求用户改系统时间，不进入 P1-004。

@@ -35,12 +35,25 @@ public partial class App : System.Windows.Application
     /// verify the real load→map→save→reload chain without copying code.
     /// </summary>
     internal static (EmotionDecayAccumulator acc, GrievanceExpressionState expr, CornerTracker tracker)
-        MapArchiveToEmotionObjects(PetStateArchive state)
+        MapArchiveToEmotionObjects(PetStateArchive state, DateTime? restoreUtcNow = null)
     {
+        var utcNow = restoreUtcNow ?? DateTime.UtcNow;
+
         var lastDecayUtc = DateTime.TryParse(state.LastDecayUtc, null,
             System.Globalization.DateTimeStyles.RoundtripKind, out var parsedDecay)
             ? DateTime.SpecifyKind(parsedDecay, DateTimeKind.Utc)
-            : DateTime.UtcNow;
+            : utcNow;
+
+        // F-06: When the app was paused when it exited, the offline interval
+        // between save and restart is a frozen period — "暂停时段不计入衰减"
+        // applies to the exit-while-paused scenario. Shift the decay reference
+        // to now so the offline gap is not counted as decay time on the first
+        // AdvanceTo call. When the app was NOT paused, the offline interval
+        // is normal offline decay (per PRODUCT R-02) and the reference is kept.
+        if (state.IsPaused)
+        {
+            lastDecayUtc = utcNow;
+        }
 
         var acc = new EmotionDecayAccumulator(state.Affinity, state.Grievance, lastDecayUtc);
         var expr = new GrievanceExpressionState();
