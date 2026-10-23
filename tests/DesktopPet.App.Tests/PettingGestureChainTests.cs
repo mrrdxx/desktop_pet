@@ -414,4 +414,241 @@ public class PettingGestureChainTests
             window.Close();
         }
     }
+
+    // ── Head zone boundary: X/Y bounds ────────────────────────────────
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone must reject points with X beyond image width.
+    /// A point at (200, 20) with a 120px image is outside the head zone.
+    /// </summary>
+    [STATestMethod]
+    public void F03_HeadZone_XBeyondWidth_NotHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            // X=200 exceeds 120px width.
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(200, 20)),
+                "X beyond image width must NOT be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone must reject points with negative X.
+    /// </summary>
+    [STATestMethod]
+    public void F03_HeadZone_NegativeX_NotHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(-5, 20)),
+                "Negative X must NOT be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone must reject points with negative Y.
+    /// A point at (60, -10) is above the image, not in the head zone.
+    /// </summary>
+    [STATestMethod]
+    public void F03_HeadZone_NegativeY_NotHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(60, -10)),
+                "Negative Y must NOT be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: ProcessPettingMove with a point that has moved laterally
+    /// beyond the image width must end petting (return false), not continue
+    /// accumulating.
+    /// </summary>
+    [STATestMethod]
+    public void F03_LateralMoveBeyondImage_EndsPetting()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            window.TestGetElapsedMs = () => clockMs;
+
+            StartPetting(window, 60, 20, 0.0);
+
+            // A few valid micro-moves in head zone.
+            for (int i = 1; i <= 5; i++)
+            {
+                clockMs = i * 50.0;
+                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+            }
+
+            Assert.IsTrue(window.IsPettingCandidate, "Should be in petting candidate within head zone.");
+
+            // Move laterally beyond image width (X=130 > 120).
+            clockMs = 300.0;
+            var result = window.ProcessPettingMove(new System.Windows.Point(130, 20), clockMs);
+
+            // X=130 exceeds image width — IsInHeadZone returns false → EndPetting.
+            // Also moveDist from last pos (70→130=60) exceeds threshold → candidate cleared.
+            Assert.IsFalse(result, "ProcessPettingMove should return false when X exceeds image width.");
+            Assert.IsFalse(window.IsPettingCandidate,
+                "Petting candidate must be cleared when cursor moves beyond image boundary.");
+
+            var accumulated = GetField<double>(window, "_pettingAccumulatedMs");
+            // The accumulated time from the first 5 moves should NOT have increased
+            // by the lateral-beyond-boundary move.
+            // (The move either ended petting via IsInHeadZone=false or via large moveDist.)
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone at the exact X=0 boundary should be head (inclusive).
+    /// </summary>
+    [STATestMethod]
+    public void F03_HeadZone_XAtZero_IsHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            Assert.IsTrue(window.IsInHeadZone(new System.Windows.Point(0, 20)),
+                "X=0 (left boundary) should be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone at the exact X=width boundary should be head (inclusive).
+    /// </summary>
+    [STATestMethod]
+    public void F03_HeadZone_XAtWidth_IsHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            // X=120 = image width (inclusive boundary).
+            Assert.IsTrue(window.IsInHeadZone(new System.Windows.Point(120, 20)),
+                "X=width (right boundary) should be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── F-03 R4: Transparent area does not continue accumulation ──────
+
+    /// <summary>
+    /// F-03 R4: Moving to a point within the image rectangle but in the
+    /// transparent/empty area (below head zone, i.e. body zone) must end
+    /// petting. This is already covered by MoveOutOfHeadZone, but this test
+    /// specifically verifies that the accumulated time does NOT increase
+    /// when the cursor enters the transparent area — the petting ends
+    /// immediately without adding the transition time.
+    /// </summary>
+    [STATestMethod]
+    public void F03_R4_TransparentArea_DoesNotContinueAccumulating()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            window.TestGetElapsedMs = () => clockMs;
+
+            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            window.TestEmotionAccumulator = accumulator;
+
+            // Start petting at head center.
+            StartPetting(window, 60, 20, 0.0);
+
+            // A few valid micro-moves in head zone to accumulate some time.
+            for (int i = 1; i <= 5; i++)
+            {
+                clockMs = i * 50.0;
+                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+            }
+
+            var accumulatedBefore = GetField<double>(window, "_pettingAccumulatedMs");
+            Assert.IsTrue(accumulatedBefore > 0,
+                $"Should have accumulated some time from valid head-zone moves. Got {accumulatedBefore}ms.");
+
+            // Move to transparent area (Y=80, well below head zone boundary at Y=40).
+            // This is within the image rectangle but in the body/transparent zone.
+            clockMs = 300.0;
+            var result = window.ProcessPettingMove(new System.Windows.Point(70, 80), clockMs);
+
+            Assert.IsFalse(result, "ProcessPettingMove should return false when entering transparent/body area.");
+            Assert.IsFalse(window.IsPettingCandidate,
+                "Petting candidate must be cleared when cursor enters transparent area.");
+
+            // The accumulated time must NOT have increased by the transition.
+            var accumulatedAfter = GetField<double>(window, "_pettingAccumulatedMs");
+            Assert.AreEqual(accumulatedBefore, accumulatedAfter, 0.01,
+                $"Accumulated time must NOT increase when moving to transparent area. " +
+                $"Before: {accumulatedBefore}ms, After: {accumulatedAfter}ms.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone must reject Y=0 at negative X (combined boundary).
+    /// A point at (-1, 0) is outside the image, not in the head zone.
+    /// </summary>
+    [STATestMethod]
+    public void F03_R4_NegativeXZeroY_NotHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(-1, 0)),
+                "Negative X with Y=0 must NOT be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R4: IsInHeadZone must reject a point with very large X and small Y.
+    /// R4 noted "任意大的 X 且 Y=20，仍返回 true" — this must be fixed.
+    /// </summary>
+    [STATestMethod]
+    public void F03_R4_VeryLargeX_SmallY_NotHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(10000, 20)),
+                "Very large X with small Y must NOT be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
 }

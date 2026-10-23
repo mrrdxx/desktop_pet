@@ -89,16 +89,12 @@ public partial class App : System.Windows.Application
         _state = state;
         _settings = settings;
 
-        // P1-003: Initialize emotion objects from archived state.
-        // lastDecayUtc may be null on first run or v1 upgrade; use now as baseline.
-        var lastDecayUtc = DateTime.TryParse(_state.LastDecayUtc, null,
-            System.Globalization.DateTimeStyles.RoundtripKind, out var parsedDecay)
-            ? DateTime.SpecifyKind(parsedDecay, DateTimeKind.Utc)
-            : DateTime.UtcNow;
-        EmotionAccumulator = new EmotionDecayAccumulator(_state.Affinity, _state.Grievance, lastDecayUtc);
-        GrievanceExpression = new GrievanceExpressionState();
-        GrievanceExpression.Restore(_state.PendingGrievanceExpression, _state.GrievanceExpressionDate);
-        CornerTracking = new CornerTracker();
+        // P1-003: Initialize emotion objects from archived state via the
+        // shared production mapping (F-05 R4: same path used by tests).
+        var (emotionAcc, grievanceExpr, cornerTrack) = MapArchiveToEmotionObjects(_state);
+        EmotionAccumulator = emotionAcc;
+        GrievanceExpression = grievanceExpr;
+        CornerTracking = cornerTrack;
 
         if (stateFromBackup)
             System.Diagnostics.Trace.TraceInformation("State restored from backup.");
@@ -218,17 +214,11 @@ public partial class App : System.Windows.Application
                 var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
                 _state.SavedDeviceName = MonitorInterop.GetWindowMonitorDeviceName(hwnd) ?? _state.SavedDeviceName;
             }
-            // P1-003: Sync emotion state to archive.
-            if (EmotionAccumulator is not null)
+            // P1-003: Sync emotion state to archive via the shared production
+            // mapping (F-05 R4: same path used by tests).
+            if (EmotionAccumulator is not null && GrievanceExpression is not null)
             {
-                _state.Affinity = EmotionAccumulator.AffinityInt;
-                _state.Grievance = EmotionAccumulator.GrievanceInt;
-                _state.LastDecayUtc = EmotionAccumulator.LastDecayUtc.ToString("o");
-            }
-            if (GrievanceExpression is not null)
-            {
-                _state.PendingGrievanceExpression = GrievanceExpression.IsPending;
-                _state.GrievanceExpressionDate = GrievanceExpression.MarkedDate;
+                MapEmotionObjectsToArchive(_state, EmotionAccumulator, GrievanceExpression);
             }
             _saveCoordinator.MarkStateDirty(_state);
         }

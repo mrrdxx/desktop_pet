@@ -102,3 +102,28 @@ PettingDetectionTests.Petting_AccumulatedTime_TriggersIncrement 在无 App.Curre
 目前 Pause 停止 tick，但 Resume 后 AdvanceTo(DateTime.UtcNow) 会补算暂停时段；表达和角落停留又使用继续流逝的 nowMs。现有测试只检查暂停期间未更新，不能证明“暂停时段不计入衰减/持续时间”。按 PRODUCT/ARCHITECTURE 确定统一语义并补暂停→长间隔→恢复断言，必要时明确细化规格；不要仅把当前实现写成正确规格。本条为接入语义待明确，不单独扩大阻断范围。
 
 接续：开发方按本报告路径和 F-03～F-05 在原整改记录追加修复/自测；建议先手势，再表达，最后真实隔离存档链，分小步验证。TASKS 保持 in-progress，不以这 15 项通过替代整体验收。
+
+## R4 整改复核：2026-10-23
+
+对象 `4ea4462`，开始工作区干净。独立运行 `dotnet test tests/DesktopPet.App.Tests/DesktopPet.App.Tests.csproj -c Debug --no-build --no-restore --nologo -v minimal`：**App 104/104 通过，0 失败/跳过，退出码 0**。未重建或重跑 Core 208，312 全量为开发方证据。本轮未修改应用代码、未执行真实鼠标。
+
+### F-03：部分通过，未关闭
+
+认可 ProcessPettingMove 与生产事件处理器共用、最小移动/长间隔过滤及实际增量注入断言。剩余：IsInHeadZone 仍只检查 `Y <= height/3`，没有 X/Y 下界或 X 上界，故捕获后横向逐步移出图像、或移动到上方负 Y，仍算头部。比如任意大的 X 且 Y=20，仍返回 true。头部区域仍硬编码，资源区域契约未落实。
+只需补齐有效区域边界和资源约定，测试横向移出/负坐标/透明空白不继续累计；现有下方移出用例保留，不要求重做全部手势。
+
+### F-04：部分通过，未关闭
+
+认可远处不启动、完成回 idle、按下调用 InterruptGrievanceExpression 的修正。剩余原 R3 明确要求的行为优先级：tick 的悬停/甩动分支仍没有 `_isExpressingGrievance` 条件；表达开始后，近处快划仍可 PlayAction("dodge")，而表达状态继续为 true，十秒生命周期与实际动作脱节。
+验证：先实际启动表达，再驱动真实 tick 的近处快划，确认按文档定义维持表达或明确结束该次表达，不能“动作被换走但表达计时继续”。包含正常结束/拖动打断后的输入恢复。无需重做已通过的相遇与结束测试。
+
+### F-05：部分通过，未关闭
+
+隔离文件 I/O 和 +5 断言认可。但 App.MapArchiveToEmotionObjects/MapEmotionObjectsToArchive 只有定义，OnStartup/MarkStateDirty 仍保留各自独立的内联映射；`rg -n 'MapArchiveToEmotionObjects|MapEmotionObjectsToArchive' src/DesktopPet.App/App.xaml.cs` 仅命中定义行 38/58。因此测试调用的是生产未使用的另一份映射，未达到原报告要求的生产共用路径。
+整改：使实际启动及保存调用已测共用映射，或让测试实际走生产原路径，避免两套维护。现有 v2 隔离用例直接 acc.AddAffinity，准确描述为数值变化/映射持久化；至少补一项将真实 ProcessPettingMove/EndPetting 的计分结果接入隔离保存恢复，闭合报告所声称的互动链。不要增加第二套测试专用映射。
+
+### G-03：规格细化和补偿方案认可，验证范围需补齐
+
+PRODUCT 已明确排除暂停时段。SkipInterval 与各计时器平移方案可继续沿用。PauseSemanticsTests 中存在 Thread.Sleep 推进真实 UTC、另用 clockMs 推进不同长度单调时间的用例；不能据此证明精确排除暂停段。建议统一可控 UTC/单调时间来源，或用同一真实间隔记录两者，断言恢复后只计新增活动间隔，避免仅判断恢复后数值继续下降。并覆盖暂停中退出/启动仍暂停后恢复是否重复或漏算暂停间隔；此为暂停/存档接续边界，不扩展到锁屏多屏。
+
+结论：F-01/F-02 保持关闭；F-03～F-05 保持未关闭，仅针对上述剩余范围整改。TASKS 继续 in-progress，不要求用户现在重复体验，不进入 P1-004。

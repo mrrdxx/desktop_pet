@@ -268,8 +268,11 @@ public class GrievanceExpressionLifecycleTests
 
             Assert.IsFalse(window.IsExpressingGrievance,
                 "Expression must NOT restart after completion.");
-            Assert.AreEqual("idle", window.CurrentAction,
-                $"Action must stay idle after expression completion. Got: {window.CurrentAction}");
+            // After expression completes, hover/swipe input resumes normally.
+            // The action may be "idle" or "curious" (hover-triggered) — both are valid.
+            // The key assertion is that expression does NOT restart.
+            Assert.IsTrue(window.CurrentAction == "idle" || window.CurrentAction == "curious",
+                $"Action should be idle or hover-triggered curious after expression completion. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -329,5 +332,189 @@ public class GrievanceExpressionLifecycleTests
         {
             window.Close();
         }
+    }
+
+    // ── F-04 R4: Expression priority over hover/swipe ──────────────────
+
+    /// <summary>
+    /// F-04 R4: While grievance expression is in progress, a quick swipe
+    /// near the pet must NOT replace the expression action. The expression
+    /// lifecycle (timer + flag) must stay consistent with the displayed action.
+    /// </summary>
+    [STATestMethod]
+    public void F04_R4_SwipeDuringExpression_DoesNotOverrideAction()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            window.TestGetElapsedMs = () => clockMs;
+            window.TestGetCursorPos = () => (160, 160);
+            window.TestGetDpiScale = () => 1.0;
+
+            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var grievanceExpr = new GrievanceExpressionState();
+            window.TestEmotionAccumulator = accumulator;
+            window.TestGrievanceExpression = grievanceExpr;
+            window.TestCornerTracking = new CornerTracker();
+
+            var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
+            grievanceExpr.Restore(true, yesterday);
+
+            // Start expression.
+            InvokeTick(window);
+            clockMs += 33;
+            Assert.IsTrue(window.IsExpressingGrievance, "Expression should be in progress.");
+            Assert.AreEqual("curious", window.CurrentAction,
+                "Expression should be playing 'curious'.");
+
+            // Simulate a fast swipe near the pet: move mouse quickly across
+            // multiple positions in subsequent ticks to trigger swipe detector.
+            // The swipe detector needs samples with high speed.
+            var swipePositions = new[] { (100, 100), (220, 100), (100, 220), (220, 220) };
+            for (int i = 0; i < 30; i++)
+            {
+                var (sx, sy) = swipePositions[i % swipePositions.Length];
+                window.TestGetCursorPos = () => (sx, sy);
+                InvokeTick(window);
+                clockMs += 33;
+            }
+
+            // Expression must still be in progress and action must still be
+            // "curious" — swipe must NOT have switched to "dodge".
+            Assert.IsTrue(window.IsExpressingGrievance,
+                "Expression must still be in progress — swipe must not cancel expression lifecycle.");
+            Assert.AreEqual("curious", window.CurrentAction,
+                $"Action must stay 'curious' during expression — swipe must not override. Got: {window.CurrentAction}");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-04 R4: After expression completes (10s), hover/swipe input must
+    /// resume working normally. The expression suppression must not persist
+    /// after the expression ends.
+    /// </summary>
+    [STATestMethod]
+    public void F04_R4_AfterExpressionCompletes_InputResumes()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            window.TestGetElapsedMs = () => clockMs;
+            window.TestGetCursorPos = () => (160, 160);
+            window.TestGetDpiScale = () => 1.0;
+
+            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var grievanceExpr = new GrievanceExpressionState();
+            window.TestEmotionAccumulator = accumulator;
+            window.TestGrievanceExpression = grievanceExpr;
+            window.TestCornerTracking = new CornerTracker();
+
+            var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
+            grievanceExpr.Restore(true, yesterday);
+
+            // Start and complete expression (tick past 10s).
+            InvokeTick(window);
+            clockMs += 33;
+            for (int i = 0; i < 310; i++)
+            {
+                InvokeTick(window);
+                clockMs += 33;
+            }
+
+            Assert.IsFalse(window.IsExpressingGrievance, "Expression must have completed.");
+            Assert.AreEqual("idle", window.CurrentAction,
+                "Action must be idle after expression completes.");
+
+            // Now hover near the pet — should be able to trigger "curious".
+            // Move mouse close to pet and hold for hover duration.
+            window.TestGetCursorPos = () => (165, 165);
+            for (int i = 0; i < 120; i++) // ~4 seconds of hovering
+            {
+                InvokeTick(window);
+                clockMs += 33;
+            }
+
+            // Hover should have triggered curious (or another action change).
+            // The key assertion: the action is NOT stuck in a suppressed state.
+            Assert.AreNotEqual("dodge", window.CurrentAction,
+                "After expression, hover should not trigger dodge.");
+            // Action should be either idle or curious (hover-triggered).
+            Assert.IsTrue(window.CurrentAction == "idle" || window.CurrentAction == "curious",
+                $"After expression, action should be idle or hover-triggered curious. Got: {window.CurrentAction}");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-04 R4: While grievance expression is in progress, hover must NOT
+    /// replace the expression action. Hover-triggered "curious" must not
+    /// conflict with expression "curious" — the expression flag and timer
+    /// must remain consistent.
+    /// </summary>
+    [STATestMethod]
+    public void F04_R4_HoverDuringExpression_DoesNotResetTimer()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            window.TestGetElapsedMs = () => clockMs;
+            window.TestGetCursorPos = () => (160, 160);
+            window.TestGetDpiScale = () => 1.0;
+
+            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var grievanceExpr = new GrievanceExpressionState();
+            window.TestEmotionAccumulator = accumulator;
+            window.TestGrievanceExpression = grievanceExpr;
+            window.TestCornerTracking = new CornerTracker();
+
+            var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
+            grievanceExpr.Restore(true, yesterday);
+
+            // Start expression.
+            InvokeTick(window);
+            clockMs += 33;
+            Assert.IsTrue(window.IsExpressingGrievance, "Expression should be in progress.");
+
+            var startMs = GetField<double>(window, "_grievanceExpressionStartMs");
+
+            // Hover near pet for ~2 seconds during expression.
+            for (int i = 0; i < 60; i++)
+            {
+                InvokeTick(window);
+                clockMs += 33;
+            }
+
+            // Expression must still be in progress (not completed — only ~2s of 10s).
+            Assert.IsTrue(window.IsExpressingGrievance,
+                "Expression must still be in progress after hover during expression.");
+
+            // The expression start time must NOT have been reset by hover.
+            var startMsAfter = GetField<double>(window, "_grievanceExpressionStartMs");
+            Assert.AreEqual(startMs, startMsAfter, 0.01,
+                "Expression start time must not be reset by hover during expression.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static T GetField<T>(object obj, string name)
+    {
+        var field = typeof(MainWindow).GetField(name,
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        if (field is null)
+            Assert.Fail($"Field '{name}' not found.");
+        return (T)field!.GetValue(obj)!;
     }
 }

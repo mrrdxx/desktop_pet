@@ -88,6 +88,13 @@ public partial class MainWindow : System.Windows.Window
     internal Func<double>? TestGetElapsedMs;
     internal Func<double>? TestGetDpiScale;
 
+    // G-03 R4: Test injection point for controlled UTC time source.
+    // When non-null, OnUpdateTick uses this instead of DateTime.UtcNow
+    // so tests can use a single consistent time base for both monotonic
+    // clock (TestGetElapsedMs) and UTC (TestGetUtcNow), avoiding the
+    // divergence between Thread.Sleep-driven real UTC and injected clockMs.
+    internal Func<DateTime>? TestGetUtcNow;
+
     // P1-003: Test injection points for emotion objects (G-01/G-02 runtime tests).
     // When non-null, OnUpdateTick uses these instead of App.Current.
     // Production code leaves these null — OnUpdateTick falls back to App.Current.
@@ -585,7 +592,11 @@ public partial class MainWindow : System.Windows.Window
 
         // P1-002: Feed hover and swipe detectors when not in an interrupt state.
         // P1-003: Also suppress during petting candidate.
-        if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused && sampleResult.IsValid)
+        // F-04 R4: Suppress hover/swipe during grievance expression so that
+        // a quick swipe near the pet doesn't replace the expression action
+        // while the expression lifecycle timer continues running.
+        if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused
+            && !_isExpressingGrievance && sampleResult.IsValid)
         {
             // Compute pet entity rectangle in physical pixels for distance checks.
             var petRectPx = GetPetRectPhysicalPx();
@@ -626,7 +637,11 @@ public partial class MainWindow : System.Windows.Window
 
         if (!_isAppPaused && emotionAcc is not null)
         {
-            emotionAcc.AdvanceTo(DateTime.UtcNow);
+            // G-03 R4: Use injected UTC time source when available so tests
+            // can use a single consistent time base for both monotonic and
+            // UTC clocks. Production uses DateTime.UtcNow.
+            var utcNow = TestGetUtcNow?.Invoke() ?? DateTime.UtcNow;
+            emotionAcc.AdvanceTo(utcNow);
 
             // P1-003: Corner tracking — check stay and award grievance (G-02).
             if (cornerTrack is not null)
@@ -1047,14 +1062,22 @@ public partial class MainWindow : System.Windows.Window
 
     /// <summary>
     /// P1-003: Check if a local point (relative to PetImage) is in the head zone.
-    /// Head zone = upper 1/3 of the image area.
+    /// Head zone = upper 1/3 of the image area, bounded by [0, width] × [0, height/3].
+    /// Points outside the image rectangle (negative coords, X beyond width, or
+    /// Y beyond the head boundary) are NOT in the head zone.
     /// Returns false if the image source is unavailable.
+    /// Region source: upper 1/3 of frameHeight per ARCHITECTURE §8; per-character
+    /// interaction region fields are deferred to a later stage.
     /// </summary>
     internal bool IsInHeadZone(Point localPoint)
     {
         double imgHeight = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : PetImage.Height;
-        if (imgHeight <= 0) return false;
-        return localPoint.Y <= imgHeight * HeadZoneRatio;
+        double imgWidth = PetImage.ActualWidth > 0 ? PetImage.ActualWidth : PetImage.Width;
+        if (imgHeight <= 0 || imgWidth <= 0) return false;
+        return localPoint.X >= 0
+            && localPoint.X <= imgWidth
+            && localPoint.Y >= 0
+            && localPoint.Y <= imgHeight * HeadZoneRatio;
     }
 
     /// <summary>

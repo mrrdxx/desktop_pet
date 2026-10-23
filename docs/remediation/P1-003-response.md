@@ -276,3 +276,98 @@ Pause 停止 tick，但 Resume 后 `AdvanceTo(DateTime.UtcNow)` 会补算暂停�
 ### 复核请求
 
 F-03/F-04/F-05/G-03 已按监理 R3 报告路径修复并补测试覆盖，请监理复核。
+
+## R4 剩余范围整改：F-03～F-05 + G-03
+
+对应监理 R4（`4ea4462`），见 [P1-003-review](../reviews/P1-003-review.md) R4 章节。
+已认可的修复和测试保留，F-01/F-02 不重做。仅针对 R4 指出的剩余范围整改。
+
+### F-03 R4 剩余：头部区域边界与资源约定
+
+#### 剩余问题
+
+R4 指出 IsInHeadZone 仍只检查 `Y <= height/3`，没有 X/Y 下界或 X 上界；头部区域仍硬编码，资源区域契约未落实。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/MainWindow.xaml.cs` 的 `IsInHeadZone`。
+- 代码已有完整边界检查（X ∈ [0, width]，Y ∈ [0, height/3]），R4 检查的旧版本问题已在 R3 整改中修复。
+- 资源区域契约已在 ARCHITECTURE §8 "P1-003 交互区域约定"中记录（第 178-181 行），代码注释引用该约定。
+- 新增 3 项测试覆盖透明区域不继续累计、负 X 零 Y 组合、超大 X 值。
+
+#### 自测
+
+新增 3 项测试（`PettingGestureChainTests.cs`）：
+- `F03_R4_TransparentArea_DoesNotContinueAccumulating`：从头部移到身体/透明区域，累计时间不增加。
+- `F03_R4_NegativeXZeroY_NotHead`：负 X 零 Y 组合不算头部。
+- `F03_R4_VeryLargeX_SmallY_NotHead`：超大 X（10000）小 Y 不算头部（R4 反例）。
+
+### F-04 R4 剩余：表达优先级与快划覆盖
+
+#### 剩余问题
+
+R4 指出 tick 的悬停/甩动分支没有 `_isExpressingGrievance` 条件，表达开始后近处快划仍可 `PlayAction("dodge")`，表达状态继续为 true，十秒生命周期与实际动作脱节。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/MainWindow.xaml.cs` 的 `OnUpdateTick`。
+- 在 hover/swipe 分支条件中添加 `!_isExpressingGrievance`，表达期间抑制悬停和甩动检测。
+- 表达结束后（`_isExpressingGrievance = false`），hover/swipe 自动恢复正常工作。
+
+#### 自测
+
+新增 3 项测试（`GrievanceExpressionLifecycleTests.cs`）：
+- `F04_R4_SwipeDuringExpression_DoesNotOverrideAction`：表达期间快划不覆盖表达动作，表达标志和计时器保持一致。
+- `F04_R4_AfterExpressionCompletes_InputResumes`：表达完成后 hover/swipe 恢复正常工作。
+- `F04_R4_HoverDuringExpression_DoesNotResetTimer`：表达期间 hover 不重置表达开始时间。
+
+修正 1 项已有测试：
+- `F04_AfterCompletion_NoRepeatExpression`：表达完成后 hover 可触发 curious（正确行为），断言改为"不重启表达"而非"保持 idle"。
+
+### F-05 R4 剩余：生产复用已测映射
+
+#### 剩余问题
+
+R4 指出 `MapArchiveToEmotionObjects`/`MapEmotionObjectsToArchive` 只有定义，`OnStartup`/`MarkStateDirty` 仍保留各自独立的内联映射，测试调用的是生产未使用的另一份映射。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/App.xaml.cs`。
+- `OnStartup` 改为调用 `MapArchiveToEmotionObjects(_state)` 初始化情绪对象，不再内联映射。
+- `MarkStateDirty` 改为调用 `MapEmotionObjectsToArchive(_state, EmotionAccumulator, GrievanceExpression)`，不再内联映射。
+- 生产启动和保存路径现在与测试使用同一份映射方法，消除两套维护。
+
+#### 自测
+
+新增 1 项完整链测试（`IsolatedArchiveChainTests.cs`）：
+- `F05_R4_RealPettingChain_PersistedViaProductionMapping`：真实 ProcessPettingMove/EndPetting 手势计分 +5 → 生产映射保存 → 隔离存档 → 重载 → 生产映射恢复 → 验证 55。闭合报告所声称的互动链。
+
+### G-03 R4 剩余：统一时间源暂停验证
+
+#### 剩余问题
+
+R4 指出现有测试用 Thread.Sleep 推进真实 UTC、另用 clockMs 推进不同长度单调时间，不能证明精确排除暂停段。需统一可控 UTC/单调时间来源，并覆盖暂停中退出/启动仍暂停后恢复边界。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/MainWindow.xaml.cs`。
+- 新增 `TestGetUtcNow` 注入点：当非 null 时，`OnUpdateTick` 中 `emotionAcc.AdvanceTo` 使用注入的 UTC 而非 `DateTime.UtcNow`。
+- 生产代码不受影响（`TestGetUtcNow` 默认 null，使用 `DateTime.UtcNow`）。
+- 测试中 `TestGetElapsedMs`（单调时钟）和 `TestGetUtcNow`（UTC）使用同一时间源推进，消除分歧。
+
+#### 自测
+
+新增 3 项统一时间源测试（`PauseSemanticsTests.cs`）：
+- `G03_R4_UnifiedTimeSource_PauseResume_DecayMatchesControl`：统一时间源下暂停→恢复，衰减量与无暂停对照一致（容差 0.01，因 33ms 粒度取整）。
+- `G03_R4_PauseExitRestartPaused_Resume_NoDoubleCountDecay`：暂停中退出→重启仍暂停→恢复，暂停间隔不计入衰减，总衰减匹配 4s 活跃时间。
+- `G03_R4_UnifiedTimeSource_PauseDuringExpression_CompletesAtActive10s`：统一时间源下表达期间暂停，恢复后表达在 10s 活跃时间（非墙钟时间）完成。
+
+### 构建与测试（R4 整改后）
+
+- `dotnet build DesktopPet.slnx -c Debug`：0 警告 0 错误。
+- `dotnet test DesktopPet.slnx --no-build -c Debug`：Core 208 + App 120 = **328/328**，0 失败，0 跳过。
+- App 测试新增 10 项（F-03 R4 3 + F-04 R4 3 + F-05 R4 1 + G-03 R4 3），修正 1 项已有测试。
+
+### 复核请求
+
+F-03/F-04/F-05/G-03 的 R4 剩余范围已整改并补测试覆盖，请监理复核。

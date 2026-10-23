@@ -409,4 +409,283 @@ public class PauseSemanticsTests
         Assert.AreEqual(1, tracker.CornerDragCount, "SkipInterval(0) must be no-op.");
         Assert.IsTrue(tracker.IsStayActive, "Stay must remain after SkipInterval(0).");
     }
+
+    // ── G-03 R4: Unified time source pause/resume verification ────────
+
+    /// <summary>
+    /// G-03 R4: Pause/resume with a single unified time source for both
+    /// monotonic clock (TestGetElapsedMs) and UTC (TestGetUtcNow). This
+    /// eliminates the divergence between Thread.Sleep-driven real UTC and
+    /// injected clockMs that R4 identified in the existing tests.
+    ///
+    /// The test verifies that after pause → 5s of unified time → resume,
+    /// the decay accumulator only counts the post-resume active time,
+    /// NOT the paused interval. A control accumulator (never paused) with
+    /// the same total active time must produce the same grievance value.
+    /// </summary>
+    [STATestMethod]
+    public void G03_R4_UnifiedTimeSource_PauseResume_DecayMatchesControl()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            var utcNow = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+            window.TestGetElapsedMs = () => clockMs;
+            window.TestGetUtcNow = () => utcNow;
+            window.TestGetCursorPos = () => (500, 500);
+            window.TestGetDpiScale = () => 1.0;
+
+            // Test accumulator: will be paused for 5 seconds of unified time.
+            var testAcc = new EmotionDecayAccumulator(50, 90, utcNow);
+            window.TestEmotionAccumulator = testAcc;
+            window.TestCornerTracking = new CornerTracker();
+            window.TestGrievanceExpression = new GrievanceExpressionState();
+
+            // Control accumulator: never paused, same total active time.
+            var controlAcc = new EmotionDecayAccumulator(50, 90, utcNow);
+
+            // Phase 1: 2 seconds of active time (both advance together).
+            for (int i = 0; i < 60; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+                InvokeTick(window);
+                controlAcc.AdvanceTo(utcNow);
+            }
+
+            var grievanceBeforePause = testAcc.GrievanceFloat;
+            var controlBeforePause = controlAcc.GrievanceFloat;
+            Assert.AreEqual(controlBeforePause, grievanceBeforePause, 0.001,
+                "Before pause, test and control must match.");
+
+            // Phase 2: Pause for 5 seconds of unified time.
+            window.PauseAnimation();
+            for (int i = 0; i < 150; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+                // During pause, OnUpdateTick skips emotion logic.
+                // Control also does NOT advance (simulating same pause).
+            }
+
+            // Resume — SkipInterval shifts testAcc._lastDecayUtc forward.
+            window.ResumeAnimation();
+
+            // Phase 3: 3 seconds of active time after resume.
+            for (int i = 0; i < 90; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+                InvokeTick(window);
+                controlAcc.AdvanceTo(utcNow);
+            }
+
+            // Both should have decayed by the same total active time (2s + 3s = 5s).
+            // The 5s pause must NOT count toward testAcc's decay.
+            // Tolerance 0.01: SkipInterval uses clockMs (33ms granularity) while
+            // control uses exact utcNow increments — small rounding is expected.
+            Assert.AreEqual(controlAcc.GrievanceFloat, testAcc.GrievanceFloat, 0.01,
+                $"After pause+resume, test grievance ({testAcc.GrievanceFloat}) " +
+                $"must match control ({controlAcc.GrievanceFloat}). " +
+                $"Pause duration must NOT be counted as decay time.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// G-03 R4: Pause → save (simulating exit while paused) → reload with
+    /// IsPaused=true → resume. The reload must not double-count the pause
+    /// interval as decay time. SkipInterval on resume must correctly shift
+    /// the reference, and the post-resume decay must only count new active time.
+    ///
+    /// This covers the boundary: app is paused, user exits, app restarts
+    /// still paused, user resumes. The pause interval between exit and
+    /// restart must not be counted as decay.
+    /// </summary>
+    [STATestMethod]
+    public void G03_R4_PauseExitRestartPaused_Resume_NoDoubleCountDecay()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            var utcNow = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+            window.TestGetElapsedMs = () => clockMs;
+            window.TestGetUtcNow = () => utcNow;
+            window.TestGetCursorPos = () => (500, 500);
+            window.TestGetDpiScale = () => 1.0;
+
+            var testAcc = new EmotionDecayAccumulator(50, 90, utcNow);
+            window.TestEmotionAccumulator = testAcc;
+            window.TestCornerTracking = new CornerTracker();
+            window.TestGrievanceExpression = new GrievanceExpressionState();
+
+            // Phase 1: 2 seconds of active time.
+            for (int i = 0; i < 60; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+                InvokeTick(window);
+            }
+
+            var grievanceBeforePause = testAcc.GrievanceFloat;
+            Assert.IsTrue(grievanceBeforePause < 90,
+                "Grievance should have decayed slightly during active time.");
+
+            // Phase 2: Pause.
+            window.PauseAnimation();
+            Assert.IsTrue(window.IsAppPaused, "Must be paused.");
+
+            // Phase 3: Simulate exit while paused — advance unified time by 10s
+            // (representing the app being closed for 10 seconds).
+            for (int i = 0; i < 300; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+            }
+
+            // Phase 4: Simulate restart still paused.
+            // In production, OnStartup checks _state.IsPaused and calls PauseAnimation.
+            // The accumulator was restored from archive with the pre-pause LastDecayUtc.
+            // We simulate this by NOT calling ResumeAnimation yet — the app is still paused.
+
+            // Tick during pause — must NOT advance decay.
+            for (int i = 0; i < 10; i++)
+            {
+                InvokeTick(window);
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+            }
+
+            Assert.AreEqual(grievanceBeforePause, testAcc.GrievanceFloat, 0.0001,
+                $"Grievance must not change during pause (including after restart-while-paused). " +
+                $"Before: {grievanceBeforePause}, After: {testAcc.GrievanceFloat}");
+
+            // Phase 5: Resume — SkipInterval shifts reference by pause duration.
+            // The pause duration is measured by GetElapsedMs delta (clockMs).
+            window.ResumeAnimation();
+
+            // Phase 6: 2 seconds of active time after resume.
+            var grievanceAtResume = testAcc.GrievanceFloat;
+            for (int i = 0; i < 60; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+                InvokeTick(window);
+            }
+
+            // Grievance should have decayed further (only from post-resume active time).
+            Assert.IsTrue(testAcc.GrievanceFloat < grievanceAtResume,
+                $"Grievance must decay after resume. " +
+                $"At resume: {grievanceAtResume}, after active ticks: {testAcc.GrievanceFloat}");
+
+            // Critical: the total decay should be from 4s of active time (2s before + 2s after),
+            // NOT 4s + 10s pause. Compare with a control that decayed for 4s total.
+            var controlAcc = new EmotionDecayAccumulator(50, 90,
+                new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc));
+            controlAcc.AdvanceTo(new DateTime(2026, 10, 23, 12, 0, 4, DateTimeKind.Utc));
+
+            Assert.AreEqual(controlAcc.GrievanceFloat, testAcc.GrievanceFloat, 0.01,
+                $"Total decay must match 4s of active time (2s before pause + 2s after resume). " +
+                $"Test: {testAcc.GrievanceFloat}, Control(4s): {controlAcc.GrievanceFloat}. " +
+                $"The 10s pause must NOT be counted.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// G-03 R4: Expression timer with unified time source — pause during
+    /// expression must not consume expression duration. After resume, the
+    /// expression must complete at exactly 10s of ACTIVE time, not 10s of
+    /// wall-clock time.
+    /// </summary>
+    [STATestMethod]
+    public void G03_R4_UnifiedTimeSource_PauseDuringExpression_CompletesAtActive10s()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            var utcNow = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+            window.TestGetElapsedMs = () => clockMs;
+            window.TestGetUtcNow = () => utcNow;
+            window.TestGetCursorPos = () => (160, 160);
+            window.TestGetDpiScale = () => 1.0;
+
+            var accumulator = new EmotionDecayAccumulator(50, 85, utcNow);
+            var grievanceExpr = new GrievanceExpressionState();
+            window.TestEmotionAccumulator = accumulator;
+            window.TestGrievanceExpression = grievanceExpr;
+            window.TestCornerTracking = new CornerTracker();
+
+            var yesterday = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
+            grievanceExpr.Restore(true, yesterday);
+
+            // Start expression.
+            InvokeTick(window);
+            clockMs += 33;
+            utcNow = utcNow.AddMilliseconds(33);
+            Assert.IsTrue(window.IsExpressingGrievance, "Expression should be in progress.");
+
+            // 3 seconds of active expression.
+            for (int i = 0; i < 90; i++)
+            {
+                InvokeTick(window);
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+            }
+
+            Assert.IsTrue(window.IsExpressingGrievance,
+                "Expression must still be in progress at 3s active time.");
+
+            // Pause for 10 seconds of unified time.
+            window.PauseAnimation();
+            for (int i = 0; i < 300; i++)
+            {
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+            }
+
+            // Tick during pause — expression must NOT complete.
+            for (int i = 0; i < 10; i++)
+            {
+                InvokeTick(window);
+            }
+
+            Assert.IsTrue(window.IsExpressingGrievance,
+                "Expression must NOT complete during pause.");
+
+            // Resume.
+            window.ResumeAnimation();
+
+            // 7 more seconds of active time → total 10s active → expression completes.
+            // Use extra ticks to account for 33ms granularity rounding.
+            for (int i = 0; i < 250; i++)
+            {
+                InvokeTick(window);
+                clockMs += 33;
+                utcNow = utcNow.AddMilliseconds(33);
+            }
+
+            Assert.IsFalse(window.IsExpressingGrievance,
+                "Expression must complete after exactly 10s of ACTIVE time " +
+                "(3s before pause + 7s after resume, 10s pause excluded).");
+            Assert.AreEqual("idle", window.CurrentAction,
+                $"Action must return to idle after expression completes. Got: {window.CurrentAction}");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
 }

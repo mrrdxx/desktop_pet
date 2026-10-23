@@ -175,6 +175,11 @@ P1-001 已实现：
 - 暂停/恢复：AnimationPlayer.Pause/Resume 冻结动画时间，暂停期间 elapsed 不推进，恢复后从有效时间继续。PlayAction 在暂停中切换动作时保持暂停状态，新动作从起点冻结，不隐式解除暂停。App PauseAnimation/ResumeAnimation 调用播放器 Pause/Resume 并维护 _isAppPaused 标志，确保 App 暂停状态、timer 和播放器三者一致。
 - 资源校验：CharacterLoader 拒绝路径遍历（../）、负/零尺寸、脚点越界；路径比较确保目录分隔边界，兄弟目录前缀路径被拒绝。PreloadImages 包裹 try/catch，坏 PNG 不崩溃；PNG 解码后比较 PixelWidth/PixelHeight 与 JSON 声明尺寸，不匹配则跳过；缺帧回退 idle 首帧；缺动作诊断去重。全资源不可用时生成程序绘制的可见回退位图，不留透明空窗。
 
+P1-003 交互区域约定：
+- 头部区域（抚摸命中）：图像矩形内上 1/3，即 X ∈ [0, frameWidth] 且 Y ∈ [0, frameHeight/3]。坐标超出图像边界（负值或超出宽高）不算头部。
+- 身体区域（拖动命中）：图像矩形内 Y > frameHeight/3 的部分。
+- 当前区域比例硬编码为上 1/3（`HeadZoneRatio`），来源为 frameHeight；角色 JSON 中的 per-character 交互区域字段待后续阶段加入。
+
 ## 9. 后期 Windows 能力边界
 
 窗口栖息先验证枚举、可见外框、最小化/关闭与 Z 序，随后评估 `SetWinEventHook` 配合低频校验。
