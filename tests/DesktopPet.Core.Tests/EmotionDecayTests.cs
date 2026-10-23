@@ -304,4 +304,208 @@ public class EmotionDecayTests
 
         Assert.AreEqual(direct, acc.AffinityFloat, 0.0001);
     }
+
+    // ── F-02: Rollback must not move reference backward ────────────────
+    // Core invariant: start → rollback → return to original → go past original
+    // must produce the same values as start → go past original with no rollback.
+
+    [TestMethod]
+    public void F02_RollbackThenReturnToOriginal_NoExtraDecay_Grievance()
+    {
+        // Reproduces the监理's exact scenario: grievance 90, start at 12:00,
+        // rollback to 00:00, return to 12:00 — should still be 90, not 70.
+        var start = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+        // With rollback.
+        var rolled = new EmotionDecayAccumulator(50, 90, start);
+        rolled.AdvanceTo(start - TimeSpan.FromHours(12)); // rollback to 00:00
+        var afterRollback = rolled.GrievanceInt;
+        rolled.AdvanceTo(start); // return to 12:00
+        var afterReturn = rolled.GrievanceInt;
+
+        // Without rollback (control).
+        var control = new EmotionDecayAccumulator(50, 90, start);
+        control.AdvanceTo(start); // zero elapsed
+        var controlVal = control.GrievanceInt;
+
+        Assert.AreEqual(90, afterRollback, "Rollback should not change grievance.");
+        Assert.AreEqual(controlVal, afterReturn, "Returning to original time should not cause extra decay.");
+        Assert.AreEqual(90, afterReturn, "Grievance should still be 90 after rollback+return.");
+    }
+
+    [TestMethod]
+    public void F02_RollbackThenReturnToOriginal_NoExtraDecay_Affinity()
+    {
+        var start = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+        // With rollback.
+        var rolled = new EmotionDecayAccumulator(80, 50, start);
+        rolled.AdvanceTo(start - TimeSpan.FromDays(2));
+        var afterRollback = rolled.AffinityInt;
+        rolled.AdvanceTo(start);
+        var afterReturn = rolled.AffinityInt;
+
+        // Without rollback.
+        var control = new EmotionDecayAccumulator(80, 50, start);
+        control.AdvanceTo(start);
+        var controlVal = control.AffinityInt;
+
+        Assert.AreEqual(80, afterRollback);
+        Assert.AreEqual(controlVal, afterReturn);
+        Assert.AreEqual(80, afterReturn);
+    }
+
+    [TestMethod]
+    public void F02_RollbackThenGoPastOriginal_OnlyNewIntervalDecayed_Grievance()
+    {
+        // start → rollback → return to original → advance 12h past original.
+        // Should equal start → advance 12h (no rollback).
+        var start = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+        var extraElapsed = TimeSpan.FromHours(12);
+
+        // With rollback.
+        var rolled = new EmotionDecayAccumulator(50, 90, start);
+        rolled.AdvanceTo(start - TimeSpan.FromHours(6));  // rollback 6h
+        rolled.AdvanceTo(start);                           // return to original
+        rolled.AdvanceTo(start + extraElapsed);            // advance 12h past original
+        var rolledVal = rolled.GrievanceFloat;
+
+        // Without rollback (control): start → advance 12h directly.
+        var control = new EmotionDecayAccumulator(50, 90, start);
+        control.AdvanceTo(start + extraElapsed);
+        var controlVal = control.GrievanceFloat;
+
+        Assert.AreEqual(controlVal, rolledVal, 0.001,
+            "Rollback+return+advance should match direct advance of the same total new interval.");
+    }
+
+    [TestMethod]
+    public void F02_RollbackThenGoPastOriginal_OnlyNewIntervalDecayed_Affinity()
+    {
+        var start = new DateTime(2026, 10, 23, 0, 0, 0, DateTimeKind.Utc);
+        var extraElapsed = TimeSpan.FromDays(3);
+
+        // With rollback.
+        var rolled = new EmotionDecayAccumulator(80, 50, start);
+        rolled.AdvanceTo(start - TimeSpan.FromDays(1));  // rollback 1 day
+        rolled.AdvanceTo(start);                          // return
+        rolled.AdvanceTo(start + extraElapsed);           // advance 3 days
+        var rolledVal = rolled.AffinityFloat;
+
+        // Without rollback.
+        var control = new EmotionDecayAccumulator(80, 50, start);
+        control.AdvanceTo(start + extraElapsed);
+        var controlVal = control.AffinityFloat;
+
+        Assert.AreEqual(controlVal, rolledVal, 0.001);
+    }
+
+    [TestMethod]
+    public void F02_RollbackThenGoPastOriginal_BothEmotions()
+    {
+        // Cover both affinity and grievance in one sequence.
+        var start = new DateTime(2026, 10, 23, 6, 0, 0, DateTimeKind.Utc);
+        var extra = TimeSpan.FromHours(18);
+
+        var rolled = new EmotionDecayAccumulator(75, 85, start);
+        rolled.AdvanceTo(start - TimeSpan.FromHours(3));  // rollback
+        rolled.AdvanceTo(start);                           // return
+        rolled.AdvanceTo(start + extra);                   // advance past original
+
+        var control = new EmotionDecayAccumulator(75, 85, start);
+        control.AdvanceTo(start + extra);
+
+        Assert.AreEqual(control.AffinityFloat, rolled.AffinityFloat, 0.001,
+            "Affinity should match control after rollback+return+advance.");
+        Assert.AreEqual(control.GrievanceFloat, rolled.GrievanceFloat, 0.001,
+            "Grievance should match control after rollback+return+advance.");
+    }
+
+    [TestMethod]
+    public void F02_RepeatedRollback_NoExtraDecay()
+    {
+        // Multiple rollback cycles should not accumulate any extra decay.
+        var start = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+
+        var rolled = new EmotionDecayAccumulator(80, 90, start);
+
+        // Cycle 1: rollback 2h, return.
+        rolled.AdvanceTo(start - TimeSpan.FromHours(2));
+        rolled.AdvanceTo(start);
+
+        // Cycle 2: rollback 5h, return.
+        rolled.AdvanceTo(start - TimeSpan.FromHours(5));
+        rolled.AdvanceTo(start);
+
+        // Cycle 3: rollback 1h, return.
+        rolled.AdvanceTo(start - TimeSpan.FromHours(1));
+        rolled.AdvanceTo(start);
+
+        // No net decay should have occurred — all rollbacks returned to start.
+        Assert.AreEqual(80, rolled.AffinityInt, "Affinity unchanged after repeated rollback cycles.");
+        Assert.AreEqual(90, rolled.GrievanceInt, "Grievance unchanged after repeated rollback cycles.");
+    }
+
+    [TestMethod]
+    public void F02_RepeatedRollbackThenAdvance_MatchesControl()
+    {
+        // Repeated rollback cycles, then a real advance — should match control.
+        var start = new DateTime(2026, 10, 23, 0, 0, 0, DateTimeKind.Utc);
+        var realAdvance = TimeSpan.FromHours(24);
+
+        var rolled = new EmotionDecayAccumulator(80, 90, start);
+
+        // Several rollback cycles.
+        for (int i = 0; i < 5; i++)
+        {
+            rolled.AdvanceTo(start - TimeSpan.FromHours(i + 1));
+            rolled.AdvanceTo(start);
+        }
+
+        // Now advance for real.
+        rolled.AdvanceTo(start + realAdvance);
+
+        var control = new EmotionDecayAccumulator(80, 90, start);
+        control.AdvanceTo(start + realAdvance);
+
+        Assert.AreEqual(control.AffinityFloat, rolled.AffinityFloat, 0.001);
+        Assert.AreEqual(control.GrievanceFloat, rolled.GrievanceFloat, 0.001);
+    }
+
+    [TestMethod]
+    public void F02_RollbackDoesNotMoveReference()
+    {
+        // Verify that _lastDecayUtc is not moved backward by a rollback.
+        var start = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+        var acc = new EmotionDecayAccumulator(80, 90, start);
+
+        acc.AdvanceTo(start - TimeSpan.FromHours(5));
+
+        Assert.AreEqual(start, acc.LastDecayUtc,
+            "Reference time should not move backward after rollback.");
+    }
+
+    [TestMethod]
+    public void F02_RollbackAfterAdvance_ThenReturn_MatchesControl()
+    {
+        // More complex: advance 6h, then rollback 2h (to 4h mark),
+        // then advance to 12h total.
+        // The rollback to 4h should not re-decay the 4-6h segment.
+        // Final should equal direct advance to 12h.
+        var start = new DateTime(2026, 10, 23, 0, 0, 0, DateTimeKind.Utc);
+        var totalAdvance = TimeSpan.FromHours(12);
+
+        var rolled = new EmotionDecayAccumulator(50, 90, start);
+        rolled.AdvanceTo(start + TimeSpan.FromHours(6));   // advance 6h
+        rolled.AdvanceTo(start + TimeSpan.FromHours(4));   // rollback 2h (to 4h)
+        rolled.AdvanceTo(start + TimeSpan.FromHours(6));   // return to 6h
+        rolled.AdvanceTo(start + totalAdvance);             // advance to 12h
+
+        var control = new EmotionDecayAccumulator(50, 90, start);
+        control.AdvanceTo(start + totalAdvance);
+
+        Assert.AreEqual(control.GrievanceFloat, rolled.GrievanceFloat, 0.001,
+            "Rollback after advance should not cause extra decay when returning.");
+        Assert.AreEqual(control.AffinityFloat, rolled.AffinityFloat, 0.001);
+    }
 }

@@ -88,12 +88,24 @@ public sealed class EmotionDecayAccumulator
     /// <summary>
     /// Advances decay to the given UTC time, updating internal float state.
     /// Returns the rounded integer snapshot for EmotionState.
-    /// Clock rollback (currentUtc earlier than lastDecayUtc) is treated as zero elapsed.
+    /// Clock rollback (currentUtc earlier than lastDecayUtc) is treated as
+    /// zero elapsed and does NOT move the reference time backward.
+    /// When the clock later returns to or past the original reference,
+    /// only the genuinely new interval is decayed — already-processed
+    /// time is not re-decayed.
     /// </summary>
     public (int Affinity, int Grievance) AdvanceTo(DateTime currentUtc)
     {
         var elapsed = currentUtc - _lastDecayUtc;
-        if (elapsed < TimeSpan.Zero) elapsed = TimeSpan.Zero;
+
+        if (elapsed < TimeSpan.Zero)
+        {
+            // Clock rollback: do not decay and do not move the reference
+            // backward. This ensures that when the clock later returns to
+            // or past the original reference time, the already-processed
+            // interval is not re-decayed.
+            return (AffinityInt, GrievanceInt);
+        }
 
         var elapsedDays = elapsed.TotalDays;
         var elapsedHours = elapsed.TotalHours;

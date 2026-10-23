@@ -35,6 +35,10 @@
 
 F-01 已修正并测试覆盖同日/次日/回拨/跨月跨年/非法日期/存档恢复场景，请监理复核。
 
+### R1 复核结果
+
+监理 R1（2026-10-23）已**关闭** F-01：确认 ShouldExpress 使用 DateOnly 解析并比较 `current > marked`，回拨/同日/无效日期不触发，补充恢复路径测试。TryParse 为日期解析，不限定 yyyy-MM-dd 的 TryParseExact；本次要求的日期先后关系已满足。
+
 ## G-01：衰减接入须保留累计精度
 
 ### 问题
@@ -88,11 +92,44 @@ F-01 已修正并测试覆盖同日/次日/回拨/跨月跨年/非法日期/存�
 - `NoDoubleAward_AfterConditionMetAndClear`：计分后 Clear，后续 tick 不重复加分。
 - `RecordStayStart_BeforeAnyDrag_Ignored`：无拖动时停留被忽略。
 
+## F-02：回拨后恢复时间会重复衰减
+
+### 问题
+
+`EmotionDecayAccumulator.AdvanceTo` 在负间隔被改为零后仍无条件执行 `_lastDecayUtc = currentUtc`，将基准倒退。后续时钟恢复到原时刻会把已经处理过的区间再次衰减。
+
+监理 R1 复现：`new EmotionDecayAccumulator(50, 90, 2026-10-23T12:00:00Z)` → `AdvanceTo(00:00:00Z)` → `AdvanceTo(12:00:00Z)` 期望 90，实际降至 70。
+
+### 修复
+
+- 位置：`src/DesktopPet.Core/Emotion/EmotionDecay.cs` 的 `EmotionDecayAccumulator.AdvanceTo`。
+- 回拨（`currentUtc < _lastDecayUtc`）时直接返回当前快照，**不更新 `_lastDecayUtc`**，保留原基准。
+- 恢复到原时刻时 elapsed=0，不产生额外衰减；超过原时刻只计算新间隔。
+- 存档恢复时沿用同样的时间约定：`EmotionDecayAccumulator` 构造函数接收 `lastDecayUtc` 作为基准，回拨逻辑一致。
+
+### 自测
+
+新增 9 项测试（`EmotionDecayTests.cs`，F-02 区段）：
+
+- `F02_RollbackThenReturnToOriginal_NoExtraDecay_Grievance`：监理复现场景，回拨→恢复后仍为 90。
+- `F02_RollbackThenReturnToOriginal_NoExtraDecay_Affinity`：亲近度回拨→恢复后不变。
+- `F02_RollbackThenGoPastOriginal_OnlyNewIntervalDecayed_Grievance`：回拨→恢复→超过原时刻，与无回拨对照一致（浮点容差 0.001）。
+- `F02_RollbackThenGoPastOriginal_OnlyNewIntervalDecayed_Affinity`：同上，亲近度。
+- `F02_RollbackThenGoPastOriginal_BothEmotions`：亲近度+委屈同时覆盖。
+- `F02_RepeatedRollback_NoExtraDecay`：3 次重复回拨→恢复，值不变。
+- `F02_RepeatedRollbackThenAdvance_MatchesControl`：5 次重复回拨后真实推进，与对照一致。
+- `F02_RollbackDoesNotMoveReference`：验证 `_lastDecayUtc` 不被回拨移动。
+- `F02_RollbackAfterAdvance_ThenReturn_MatchesControl`：先推进 6h→回拨 2h→恢复→继续推进到 12h，与直接推进 12h 一致。
+
+### 复核请求
+
+F-02 已修正并测试覆盖"起点→回拨→恢复原时刻→超过原时刻"连续序列，与无回拨对照一致；覆盖亲近度、委屈值和重复回拨。请监理复核。
+
 ## 构建与测试
 
 - `dotnet build DesktopPet.slnx -c Debug`：0 警告 0 错误。
-- `dotnet test DesktopPet.slnx -c Debug`：Core 199 + App 58 = **257/257**，0 失败，0 跳过。
-- 新增 29 项测试（F-01 12 + G-01 10 + G-02 7）。
+- `dotnet test DesktopPet.slnx --no-build -c Debug`：Core 208 + App 58 = **266/266**，0 失败，0 跳过。
+- 新增 38 项测试（F-01 12 + G-01 10 + G-02 7 + F-02 9）。
 
 ## 限制
 
