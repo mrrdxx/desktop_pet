@@ -1,6 +1,7 @@
 using System.Windows;
 using DesktopPet.App.Platform;
 using DesktopPet.App.Persistence;
+using DesktopPet.Core.Emotion;
 using DesktopPet.Core.Persistence;
 
 namespace DesktopPet.App;
@@ -21,6 +22,12 @@ public partial class App : System.Windows.Application
     private PetSettingsArchive? _settings;
     private bool _isPaused;
     private bool _isShuttingDown;
+
+    // P1-003: Emotion objects held at App level so they survive window recreation
+    // and are accessible from MainWindow via App.Current.
+    internal EmotionDecayAccumulator? EmotionAccumulator { get; private set; }
+    internal GrievanceExpressionState? GrievanceExpression { get; private set; }
+    internal CornerTracker? CornerTracking { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -45,6 +52,17 @@ public partial class App : System.Windows.Application
 
         _state = state;
         _settings = settings;
+
+        // P1-003: Initialize emotion objects from archived state.
+        // lastDecayUtc may be null on first run or v1 upgrade; use now as baseline.
+        var lastDecayUtc = DateTime.TryParse(_state.LastDecayUtc, null,
+            System.Globalization.DateTimeStyles.RoundtripKind, out var parsedDecay)
+            ? DateTime.SpecifyKind(parsedDecay, DateTimeKind.Utc)
+            : DateTime.UtcNow;
+        EmotionAccumulator = new EmotionDecayAccumulator(_state.Affinity, _state.Grievance, lastDecayUtc);
+        GrievanceExpression = new GrievanceExpressionState();
+        GrievanceExpression.Restore(_state.PendingGrievanceExpression, _state.GrievanceExpressionDate);
+        CornerTracking = new CornerTracker();
 
         if (stateFromBackup)
             System.Diagnostics.Trace.TraceInformation("State restored from backup.");
@@ -163,6 +181,18 @@ public partial class App : System.Windows.Application
             {
                 var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
                 _state.SavedDeviceName = MonitorInterop.GetWindowMonitorDeviceName(hwnd) ?? _state.SavedDeviceName;
+            }
+            // P1-003: Sync emotion state to archive.
+            if (EmotionAccumulator is not null)
+            {
+                _state.Affinity = EmotionAccumulator.AffinityInt;
+                _state.Grievance = EmotionAccumulator.GrievanceInt;
+                _state.LastDecayUtc = EmotionAccumulator.LastDecayUtc.ToString("o");
+            }
+            if (GrievanceExpression is not null)
+            {
+                _state.PendingGrievanceExpression = GrievanceExpression.IsPending;
+                _state.GrievanceExpressionDate = GrievanceExpression.MarkedDate;
             }
             _saveCoordinator.MarkStateDirty(_state);
         }

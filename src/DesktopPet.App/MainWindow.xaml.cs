@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using DesktopPet.App.Platform;
 using DesktopPet.Core.Animation;
+using DesktopPet.Core.Emotion;
 using DesktopPet.Core.Input;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
@@ -35,6 +36,20 @@ public partial class MainWindow : System.Windows.Window
 
     private bool _isDragging;
     private System.Windows.Point _dragOffset;
+
+    // P1-003: Petting detection state (R-02).
+    // Head zone = upper 1/3 of the pet image (resource-driven zones deferred).
+    // Petting: head press + small movement accumulated >= 1s → +5 affinity, 2s cooldown.
+    // Drag: body press → existing drag logic.
+    private bool _isPettingCandidate;
+    private double _pettingStartMs;
+    private double _pettingAccumulatedMs;
+    private double _pettingCooldownUntilMs;
+    private System.Windows.Point _pettingLastPos;
+    private const double PettingRequiredMs = 1000.0;
+    private const double PettingCooldownMs = 2000.0;
+    private const double PettingMaxMovePerFramePx = 8.0; // small movement threshold in DIP
+    private const double HeadZoneRatio = 1.0 / 3.0; // upper 1/3 is head
 
     // F-02: Tracks whether the app is in a lifecycle-level pause (tray Pause).
     // When true, action switches from drag/menu must not implicitly resume
@@ -537,8 +552,9 @@ public partial class MainWindow : System.Windows.Window
 
         // P1-002: Sample mouse position for speed/distance tracking.
         // F-04: TestGetCursorPos injects a controlled position for testing.
+        // P1-003: Also skip during petting candidate state.
         MouseSampleResult sampleResult = MouseSampleResult.Invalid;
-        if (!_isDragging && !_isContextMenuOpen && !_isAppPaused)
+        if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused)
         {
             if (TestGetCursorPos is not null)
             {
@@ -552,7 +568,8 @@ public partial class MainWindow : System.Windows.Window
         }
 
         // P1-002: Feed hover and swipe detectors when not in an interrupt state.
-        if (!_isDragging && !_isContextMenuOpen && !_isAppPaused && sampleResult.IsValid)
+        // P1-003: Also suppress during petting candidate.
+        if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused && sampleResult.IsValid)
         {
             // Compute pet entity rectangle in physical pixels for distance checks.
             var petRectPx = GetPetRectPhysicalPx();
@@ -653,13 +670,29 @@ public partial class MainWindow : System.Windows.Window
 
     private void PetCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (_isDragging)
+        if (_isDragging || _isPettingCandidate)
             return;
 
-        // F-03: Capture first, only enter drag state if capture succeeds.
+        // F-03: Capture first, only enter interaction state if capture succeeds.
         PetCanvas.CaptureMouse();
         if (!PetCanvas.IsMouseCaptured)
             return;
+
+        // P1-003: Determine if press is on head zone (petting) or body (drag).
+        var localPos = e.GetPosition(PetImage);
+        var isHeadPress = IsInHeadZone(localPos);
+
+        if (isHeadPress)
+        {
+            // Start petting candidate — may convert to drag if movement exceeds threshold.
+            _isPettingCandidate = true;
+            _pettingStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+            _pettingAccumulatedMs = 0;
+            _pettingLastPos = localPos;
+            _mouseSampler.Clear();
+            e.Handled = true;
+            return;
+        }
 
         // F-02: PointToScreen returns physical pixels; Window.Left/Top are DIP.
         // Convert screen pixel offset to DIP using the device transform.
@@ -684,6 +717,37 @@ public partial class MainWindow : System.Windows.Window
 
     private void PetCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
+        if (_isPettingCandidate)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                EndPetting();
+                return;
+            }
+
+            var localPos = e.GetPosition(PetImage);
+            var dx = localPos.X - _pettingLastPos.X;
+            var dy = localPos.Y - _pettingLastPos.Y;
+            var moveDist = Math.Sqrt(dx * dx + dy * dy);
+
+            if (moveDist <= PettingMaxMovePerFramePx)
+            {
+                // Small movement — accumulate petting time.
+                var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+                _pettingAccumulatedMs += nowMs - _pettingStartMs;
+                _pettingStartMs = nowMs;
+            }
+            else
+            {
+                // Large movement — convert to drag.
+                ConvertPettingToDrag(e);
+            }
+
+            _pettingLastPos = localPos;
+            e.Handled = true;
+            return;
+        }
+
         if (!_isDragging || e.LeftButton != MouseButtonState.Pressed)
         {
             // F-03: If left button is no longer pressed but we're still dragging,
@@ -707,7 +771,12 @@ public partial class MainWindow : System.Windows.Window
 
     private void PetCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if (_isDragging)
+        if (_isPettingCandidate)
+        {
+            EndPetting();
+            e.Handled = true;
+        }
+        else if (_isDragging)
         {
             EndDrag();
             e.Handled = true;
@@ -744,6 +813,65 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
+    /// P1-003: End petting candidate state. If accumulated time >= 1s and
+    /// cooldown has elapsed, trigger a pet increment (+5 affinity).
+    /// </summary>
+    private void EndPetting()
+    {
+        _isPettingCandidate = false;
+        if (PetCanvas.IsMouseCaptured)
+            PetCanvas.ReleaseMouseCapture();
+
+        var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+
+        // Check if petting threshold was met and cooldown has elapsed.
+        if (_pettingAccumulatedMs >= PettingRequiredMs && nowMs >= _pettingCooldownUntilMs)
+        {
+            if (System.Windows.Application.Current is App app
+                && app.EmotionAccumulator is not null)
+            {
+                app.EmotionAccumulator.AddAffinity(5);
+                _pettingCooldownUntilMs = nowMs + PettingCooldownMs;
+                app.MarkStateDirty();
+            }
+        }
+
+        _mouseSampler.Clear();
+    }
+
+    /// <summary>
+    /// P1-003: Convert petting candidate to drag when movement exceeds threshold.
+    /// Sets up drag offset from current mouse position.
+    /// </summary>
+    private void ConvertPettingToDrag(System.Windows.Input.MouseEventArgs e)
+    {
+        _isPettingCandidate = false;
+
+        var screenPosPx = PointToScreen(e.GetPosition(this));
+        var source = PresentationSource.FromVisual(this);
+        var transform = source?.CompositionTarget?.TransformFromDevice
+                        ?? Matrix.Identity;
+        var screenPosDip = transform.Transform(screenPosPx);
+
+        _isDragging = true;
+        _dragOffset = new System.Windows.Point(screenPosDip.X - Left, screenPosDip.Y - Top);
+        _animPlayer.PlayAction("drag");
+        UpdateFrame();
+    }
+
+    /// <summary>
+    /// P1-003: Check if a local point (relative to PetImage) is in the head zone.
+    /// Head zone = upper 1/3 of the image area.
+    /// Returns false if the image source is unavailable.
+    /// </summary>
+    internal bool IsInHeadZone(Point localPoint)
+    {
+        double imgHeight = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : PetImage.Height;
+        if (imgHeight <= 0) return false;
+        return localPoint.Y <= imgHeight * HeadZoneRatio;
+    }
+
+    /// <summary>
     /// F-03: Handle capture loss (e.g. menu or another window stole capture).
     /// Cancel drag state so the pet doesn't follow the mouse without a grab.
     /// </summary>
@@ -751,6 +879,8 @@ public partial class MainWindow : System.Windows.Window
     {
         if (_isDragging)
             EndDrag();
+        if (_isPettingCandidate)
+            EndPetting();
     }
 
     /// <summary>
@@ -909,6 +1039,12 @@ public partial class MainWindow : System.Windows.Window
     public bool IsDragging => _isDragging;
 
     /// <summary>
+    /// P1-003: Public accessor for the petting candidate state (for testing/diagnostics).
+    /// True while the user is pressing the head zone and may be petting.
+    /// </summary>
+    public bool IsPettingCandidate => _isPettingCandidate;
+
+    /// <summary>
     /// P1-002: Public accessor for the context menu open state (for testing/diagnostics).
     /// True while the native context menu is open; sampling and detection are skipped.
     /// </summary>
@@ -925,6 +1061,9 @@ public partial class MainWindow : System.Windows.Window
         // F-03: Clean up drag state on window close.
         if (_isDragging)
             EndDrag();
+        // P1-003: Clean up petting state on window close.
+        if (_isPettingCandidate)
+            EndPetting();
         _updateTimer.Stop();
         base.OnClosed(e);
     }
