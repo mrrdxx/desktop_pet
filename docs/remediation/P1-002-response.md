@@ -374,3 +374,57 @@
 - **覆盖描述收窄确认**：测试主动清理采样及反射设置拖动/菜单状态的限制已明确收窄，生产入口 Clear 调用由静态核对补充；不声称已自动操作原生菜单或真实鼠标捕获。
 - **F-04 通过，关闭。F-01～F-04 全部关闭。** 开发方不再返工或重复请求这些问题关闭。
 - **P1-002 继续 awaiting-verification**：真实鼠标手感尚未执行，用户未明确豁免。有运行条件时补实机证据，或由用户明确决定是否接受此项暂未验证。不进入 P1-003，不要求用户现在重新操作，不追加无关测试。
+
+## 帮手实机修复核对与用户体验反馈
+
+日期：2026-10-23。对应：[修复交接](../handoffs/P1-002-live-input-fix.md)、[实机验证](../history/P1-002-live-validation.md)。
+
+### 帮手修复背景
+
+用户授权助手"请你来验证，遇到问题你直接编码解决"。助手在真实桌面执行 18 项自动输入验证，发现透明窗口角落停留也触发 curious（基线 17/18 通过），随后修复并再次验证 18/18 通过。助手同时是实现者和自测者，不是独立审查签字。
+
+### 代码改动核对
+
+接手者核对了实际 diff（git diff），确认以下改动：
+
+1. **`src/DesktopPet.App/Platform/PetImageGeometry.cs`（新增）**：缓存 BitmapSource 的 BGRA Alpha 到 `ConditionalWeakTable`，提供 `Contains`（按像素 Alpha 命中）和 `OpaqueBounds`（不透明区域外接矩形）。实现合理：按 Stretch=None 自然 DIP 尺寸映射，居中偏移正确。
+2. **`src/DesktopPet.Core/Input/HoverDetector.cs`**：`Update` 新增可选 `isOverEntity` 参数，null 时保留原矩形逻辑。改动最小化，不破坏纯 Core 调用方。
+3. **`src/DesktopPet.App/MainWindow.xaml.cs`**：
+   - 悬停调用传入 `IsOverVisiblePet`（Alpha 命中），通过 `PetImage.PointFromScreen` 转换屏幕坐标到图像本地坐标。
+   - `GetPetRectPhysicalPx` 改为使用 `PetImageGeometry.OpaqueBounds` + `PetImage.PointToScreen`，不再用 Left/Top × DPI 推断。
+   - 未显示窗口时有 `TransformToAncestor` 回退路径。
+4. **`tests/DesktopPet.App.Tests/VisiblePetInteractionTests.cs`（新增 3 项）**：透明像素不命中/不透明命中、透明角落不触发但身体触发、甩动边界使用可见区域。断言具体，无恒真。
+5. **`tests/DesktopPet.InteractionProbe/`（新增）**：真实鼠标轨迹入口，不作为产品功能。
+6. **文档同步**：ARCHITECTURE.md 悬停检测器描述已更新；STATUS/TASKS 已同步。
+
+### 构建与测试验证
+
+- 构建：`dotnet build DesktopPet.slnx -c Debug` 成功，0 警告 0 错误。
+- 测试：`dotnet test DesktopPet.slnx --no-build -c Debug`：Core 108 + App 55 = **163/163**，0 失败，0 跳过。
+- 帮手实机自动输入：18/18 通过（两轮，含 150% DPI 真实 HWND），十场景生命周期全部通过。详见 [实机验证](../history/P1-002-live-validation.md)。
+
+### 用户体验反馈
+
+用户原话（2026-10-23）："我已人工体验当前版本，暂未发现阻碍继续开发的问题。当前素材是占位图，本次接受的是 P1-002 的交互功能，不代表最终表情、美术和动作观感验收完成。"
+
+- 用户明确接受 P1-002 交互功能（悬停触发好奇、快划触发躲避、拖动/菜单/暂停禁用）。
+- 用户明确区分：接受的是交互功能，不是最终美术/表情/动作观感。
+- 用户未发现阻碍继续开发的问题。
+
+### 完成门槛评估
+
+按 REVIEW_PROCESS §6 关闭条件：
+
+1. **正常任务验收证据**：163/163 自动测试通过；18/18 实机自动输入两轮通过；十场景生命周期通过；用户人工体验通过且明确接受交互功能。
+2. **同步的文档**：ARCHITECTURE.md、STATUS.md、TASKS.md、整改记录均已同步。
+3. **阻断项的监理通过/用户明确豁免**：
+   - 原 F-01～F-04 已由监理 R4 全部关闭。
+   - 帮手修复（透明角落误触）是 R4 之后的新代码改动，帮手同时为实现者，按 REVIEW_PROCESS 不代签监理结论。
+   - 用户明确接受 P1-002 交互功能并要求收尾标 done，构成对剩余"真实鼠标手感"验收项的用户明确豁免（REVIEW_PROCESS §5："用户可以明确豁免某个问题对指定任务/阶段的阻断"）。
+   - 帮手修复的独立核对由接手者通过 diff 审查和构建/测试重验完成，核对结果记录于此。接手者非帮手本人，核对范围：代码 diff、Alpha 命中逻辑、坐标转换、测试断言有效性、构建和测试重跑。
+
+### 限制
+
+- 帮手修复的独立核对由本轮接手者完成（非帮手本人），但接手者仍属开发方，不等于监理复核签字。用户已明确豁免真实鼠标手感验收项并要求标 done。
+- 占位美术不是最终表情/动作观感验收；100% DPI 新版本、混合 DPI 双屏、真实锁屏/睡眠恢复仍未重测。
+- InteractionProbe 真实鼠标轨迹入口占用鼠标，不作为常规 CI 使用。

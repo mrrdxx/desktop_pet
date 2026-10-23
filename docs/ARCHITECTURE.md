@@ -58,7 +58,7 @@ artifacts/                 # 构建/验证产物，已加入 .gitignore
 - 第一原型优先验证 WPF/layered window 的透明像素行为；如需原生命中或分区，先验证跨进程效果再采用。
 - 阶段 1 鼠标位置由一个共享采样器读取 `GetCursorPos`，建议 30 Hz；实体点击/拖动通过窗口消息与鼠标捕获处理。
 - 鼠标速度/距离采样器已实现于 `DesktopPet.Core.Input.MouseSampler`：滑动窗口（默认 10 样本）、过滤采样中断（间隔超限清窗）和瞬移（等效位移超限清窗）、输出两种速度信号——净位移速度（移动趋势，方向反转会抵消）和近期分段速度（最近 N 段最大单段速率，不抵消、不被旧静止样本稀释，供甩动检测使用）。跨屏 DPI 等效换算。纯 Core 逻辑，参数可配置（`MouseSamplerConfig`），DPI 缩放运行时可调。已接入 App 层：`MainWindow.OnUpdateTick` 在 ~30Hz 调用 `GetCursorPos` 喂给采样器，拖动/菜单/暂停时 Clear。DPI 已接入窗口实际显示器（`MonitorInterop.GetWindowDpiScale`），DPI 变化时清空采样器。
-- 悬停检测器已实现于 `DesktopPet.Core.Input.HoverDetector`：纯 Core 逻辑，鼠标在实体矩形内驻留 1.2 秒触发一次（R-01），离开 0.5 秒后重新允许，连续悬停只触发一次。参数可配置（`HoverDetectorConfig`：DwellMs/LeaveResetMs/HoverMarginPx）。已接入 App 层 `OnUpdateTick`，触发时 `PlayAction("curious")`，拖动/菜单/暂停时 Reset。
+- 悬停检测器已实现于 `DesktopPet.Core.Input.HoverDetector`：驻留 1.2 秒触发一次，离开 0.5 秒重新允许。App 通过可选 isOverEntity 提供当前帧 Alpha 命中，完全透明点不计驻留；纯 Core 未传该输入时保留矩形/边距逻辑。App 的 PetImageGeometry 按 Stretch=None 自然尺寸缓存 Alpha，含帧 Transform，通过 Image.PointFromScreen/PointToScreen 映射实际坐标；距离检测使用不透明区域外接矩形，不用透明窗口全框。触发 curious，拖动/菜单/暂停时 Reset。实现方实机记录见 [P1-002 验证](history/P1-002-live-validation.md)。
 - 甩动检测器已实现于 `DesktopPet.Core.Input.SwipeDetector`：消费近期最大分段速度及其 PeakSegmentEnd 终点的边缘距离，冷却参数为 3 秒，已接入 App `OnUpdateTick` 和 dodge 动作。参数由 SwipeDetectorConfig 配置，拖动/菜单/暂停时 Reset；不将最新慢段位置错误匹配给旧峰值。
 - 悬停离开时间使用 `_leaveStartMs` 仅记录离开段首个样本，连续 outside 不覆盖。[复核 R1](reviews/P1-002-review.md) 已关闭原悬停重置与峰值位置组合的 F-02/F-03；完整 App 交互和真实手感尚未验收。
 - 头部抚摸与身体拖动的命中区由资源提供；在手势识别完成前不能同时启动两种操作。

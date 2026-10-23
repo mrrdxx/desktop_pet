@@ -109,10 +109,13 @@ public sealed class HoverDetector
     /// <param name="mouseY">Mouse Y in physical pixels.</param>
     /// <param name="petRect">Pet entity rectangle in physical pixels.</param>
     /// <param name="timeMs">Monotonic timestamp in milliseconds.</param>
+    /// <param name="isOverEntity">Optional renderer-provided opaque hit result; null uses the rectangle and margin.</param>
     /// <returns>Triggered if the dwell threshold was reached this tick.</returns>
-    public HoverTrigger Update(double mouseX, double mouseY, PetRectPx petRect, double timeMs)
+    public HoverTrigger Update(double mouseX, double mouseY, PetRectPx petRect, double timeMs, bool? isOverEntity = null)
     {
-        var inside = IsInsideHoverZone(mouseX, mouseY, petRect);
+        // The App can provide an alpha-aware hit; non-rendering callers retain
+        // the rectangular detector contract.
+        var inside = isOverEntity ?? IsInsideHoverZone(mouseX, mouseY, petRect);
 
         if (inside)
         {

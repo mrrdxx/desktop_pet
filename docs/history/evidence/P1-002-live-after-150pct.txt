@@ -1,0 +1,20 @@
+2026-10-23T13:58:29.5261174+08:00 WINDOW hwnd=925006; dpi=144; visible=True; build=C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\bin\Debug\net10.0-windows\DesktopPet.dll
+2026-10-23T13:58:31.4435798+08:00 PASS transparent corner does not trigger curiosity
+2026-10-23T13:58:34.4988804+08:00 PASS real cursor dwell triggers curious
+2026-10-23T13:58:36.1122577+08:00 PASS continuous dwell does not replay action
+2026-10-23T13:58:39.5133401+08:00 PASS leave then re-enter generates a new curious action
+2026-10-23T13:58:42.4236239+08:00 PASS slow approach does not dodge
+2026-10-23T13:58:43.0469442+08:00 PASS real fast cursor swipe triggers dodge
+2026-10-23T13:58:43.3701763+08:00 PASS repeat swipe inside cooldown does not replay
+2026-10-23T13:58:46.8828528+08:00 PASS new swipe after cooldown triggers again
+2026-10-23T13:58:49.7365920+08:00 PASS far fast motion followed by slow approach does not dodge
+2026-10-23T13:58:50.1702376+08:00 PASS actual left button captures and selects drag
+2026-10-23T13:58:52.1542776+08:00 PASS held drag suppresses curiosity and swipe
+2026-10-23T13:58:52.4627770+08:00 PASS button up stops capture and cursor following
+2026-10-23T13:58:53.1004564+08:00 PASS actual right click opens native menu
+2026-10-23T13:58:54.6030035+08:00 PASS native menu suppresses mouse actions
+2026-10-23T13:58:54.8208473+08:00 PASS Esc dismisses real native menu
+2026-10-23T13:58:57.0532658+08:00 PASS Pause API blocks real cursor interactions
+2026-10-23T13:58:57.3175335+08:00 PASS Resume does not replay paused input immediately
+2026-10-23T13:58:58.8250148+08:00 PASS fresh dwell after Resume triggers normally
+2026-10-23T13:58:58.8454584+08:00 RESULT failures=0; real cursor + visible HWND; no archives; operator subjective feel not measured

@@ -13,6 +13,7 @@ using DesktopPet.Core.Input;
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
 using MediaColor = System.Windows.Media.Color;
 using MediaBrushes = System.Windows.Media.Brushes;
+using Point = System.Windows.Point;
 
 namespace DesktopPet.App;
 
@@ -559,7 +560,7 @@ public partial class MainWindow : System.Windows.Window
             // Hover detection.
             var hoverResult = _hoverDetector.Update(
                 sampleResult.Latest.X, sampleResult.Latest.Y,
-                petRectPx, nowMs);
+                petRectPx, nowMs, IsOverVisiblePet(sampleResult.Latest.X, sampleResult.Latest.Y));
             if (hoverResult == HoverTrigger.Triggered)
                 _animPlayer.PlayAction("curious");
 
@@ -585,14 +586,23 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     private PetRectPx GetPetRectPhysicalPx()
     {
-        // Convert WPF DIP Left/Top/Width/Height to physical pixels.
-        var source = PresentationSource.FromVisual(this);
-        var toDevice = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
-        var leftPx = Left * toDevice.M11;
-        var topPx = Top * toDevice.M22;
-        var widthPx = Width * toDevice.M11;
-        var heightPx = Height * toDevice.M22;
-        return new PetRectPx(leftPx, topPx, widthPx, heightPx);
+        var bounds = PetImageGeometry.OpaqueBounds(PetImage);
+        if (bounds.IsEmpty) return new PetRectPx(Left, Top, 0, 0);
+        Point Screen(Point local) => PresentationSource.FromVisual(this) is not null
+            ? PetImage.PointToScreen(local)
+            : PetImage.TransformToAncestor(PetCanvas).Transform(local) + new Vector(Left, Top);
+        var first = Screen(bounds.TopLeft);
+        var last = Screen(bounds.BottomRight);
+        return new PetRectPx(first.X, first.Y, last.X - first.X, last.Y - first.Y);
+    }
+
+    private bool IsOverVisiblePet(double screenX, double screenY)
+    {
+        var point = new System.Windows.Point(screenX, screenY);
+        var local = PresentationSource.FromVisual(this) is not null
+            ? PetImage.PointFromScreen(point)
+            : PetImage.TransformToAncestor(PetCanvas).Inverse!.Transform(point - new Vector(Left, Top));
+        return PetImageGeometry.Contains(PetImage, local);
     }
 
     /// <summary>
