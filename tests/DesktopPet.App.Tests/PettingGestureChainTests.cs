@@ -118,10 +118,12 @@ public class PettingGestureChainTests
     // ── Continuous micro-moves reaching 1s → +5 affinity ───────────────
 
     /// <summary>
-    /// F-03: Continuous effective micro-moves (each 2 DIP, 50ms apart) that
+    /// F-03: Continuous effective micro-moves (each 1 DIP, 50ms apart) that
     /// total >= 1000ms of accumulated time must trigger +5 affinity when
     /// EndPetting is called. This drives the real gesture chain, not pre-set
     /// accumulatedMs.
+    /// F-03 R5: Moves stay on opaque pixels (y=30, x ∈ [60, 75] pingpong)
+    /// to ensure the Alpha check in IsInHeadZone does not reject them.
     /// </summary>
     [STATestMethod]
     public void F03_ContinuousMicroMoves_AccumulateToThreshold_TriggersPlus5()
@@ -136,17 +138,19 @@ public class PettingGestureChainTests
             var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
             window.TestEmotionAccumulator = accumulator;
 
-            // Start petting at head center.
-            StartPetting(window, 60, 20, 0.0);
+            // Start petting at an opaque head pixel (60, 30).
+            StartPetting(window, 60, 30, 0.0);
 
-            // Simulate 25 micro-moves, each 2 DIP horizontally, 50ms apart.
+            // Simulate 25 micro-moves, each 1 DIP horizontally, 50ms apart.
+            // Pingpong between x=60 and x=67 to stay within opaque pixels
+            // at y=30 (opaque range covers x=55-79 at y>=23).
+            // Max step distance = 7 DIP < PettingMaxMovePerFramePx (8).
             // Total accumulated time: 25 * 50 = 1250ms > 1000ms threshold.
             for (int i = 1; i <= 25; i++)
             {
                 clockMs = i * 50.0;
-                var x = 60 + i * 2;
-                // Keep within head zone (Y=20, well within upper 1/3 of 120px).
-                var result = window.ProcessPettingMove(new System.Windows.Point(x, 20), clockMs);
+                var x = 60 + (i % 8); // pingpong 60..67, max step 7 DIP
+                var result = window.ProcessPettingMove(new System.Windows.Point(x, 30), clockMs);
                 Assert.IsTrue(result, $"Move {i} should remain in petting candidate state.");
             }
 
@@ -179,6 +183,7 @@ public class PettingGestureChainTests
     /// <summary>
     /// F-03: When the cursor moves from the head zone to the body zone
     /// (Y > 40 for 120px image), petting candidate must be ended.
+    /// F-03 R5: Uses y=30 for head moves (opaque) and y=80 for body (opaque, below head).
     /// </summary>
     [STATestMethod]
     public void F03_MoveOutOfHeadZone_EndsPetting()
@@ -192,14 +197,14 @@ public class PettingGestureChainTests
             var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
             window.TestEmotionAccumulator = accumulator;
 
-            // Start petting at head center.
-            StartPetting(window, 60, 20, 0.0);
+            // Start petting at an opaque head pixel (60, 30).
+            StartPetting(window, 60, 30, 0.0);
 
-            // A few micro-moves in head zone.
+            // A few micro-moves in head zone (y=30, opaque).
             for (int i = 1; i <= 5; i++)
             {
                 clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 4), 30), clockMs);
             }
 
             Assert.IsTrue(window.IsPettingCandidate,
@@ -224,6 +229,7 @@ public class PettingGestureChainTests
     /// <summary>
     /// F-03: A movement exceeding PettingMaxMovePerFramePx (8 DIP) during
     /// petting candidate must end the candidate (convert to drag in real handler).
+    /// F-03 R5: Uses y=30 for head moves (opaque).
     /// </summary>
     [STATestMethod]
     public void F03_LargeMovement_EndsPettingCandidate()
@@ -234,21 +240,21 @@ public class PettingGestureChainTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
 
-            // Start petting at head center.
-            StartPetting(window, 60, 20, 0.0);
+            // Start petting at an opaque head pixel (60, 30).
+            StartPetting(window, 60, 30, 0.0);
 
             // Small moves first to establish petting.
             for (int i = 1; i <= 3; i++)
             {
                 clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 4), 30), clockMs);
             }
 
             Assert.IsTrue(window.IsPettingCandidate, "Should be in petting candidate.");
 
             // Large movement: 15 DIP in one step (exceeds 8 DIP threshold).
             clockMs = 200.0;
-            var result = window.ProcessPettingMove(new System.Windows.Point(80, 20), clockMs);
+            var result = window.ProcessPettingMove(new System.Windows.Point(78, 30), clockMs);
 
             Assert.IsFalse(result, "ProcessPettingMove should return false for large movement.");
             Assert.IsFalse(window.IsPettingCandidate,
@@ -265,6 +271,7 @@ public class PettingGestureChainTests
     /// <summary>
     /// F-03/F-05: After a successful petting (+5), a second petting within
     /// the 2-second cooldown window must NOT add another +5.
+    /// F-03 R5: Uses y=30 with 1 DIP pingpong moves to stay on opaque pixels.
     /// </summary>
     [STATestMethod]
     public void F03_CooldownPreventsRepeatPlus5()
@@ -279,11 +286,11 @@ public class PettingGestureChainTests
             window.TestEmotionAccumulator = accumulator;
 
             // First petting session: accumulate enough time.
-            StartPetting(window, 60, 20, 0.0);
+            StartPetting(window, 60, 30, 0.0);
             for (int i = 1; i <= 25; i++)
             {
                 clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 8), 30), clockMs);
             }
             InvokeMethod(window, "EndPetting");
 
@@ -292,11 +299,11 @@ public class PettingGestureChainTests
 
             // Second petting session within cooldown.
             clockMs += 100.0; // Only 100ms after first petting ended (within 2s cooldown).
-            StartPetting(window, 60, 20, clockMs, resetCooldown: false);
+            StartPetting(window, 60, 30, clockMs, resetCooldown: false);
             for (int i = 1; i <= 25; i++)
             {
                 clockMs += 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 8), 30), clockMs);
             }
             InvokeMethod(window, "EndPetting");
 
@@ -308,11 +315,11 @@ public class PettingGestureChainTests
             // Advance clock past cooldown.
             var cooldown = GetField<double>(window, "_pettingCooldownUntilMs");
             clockMs = cooldown + 100.0;
-            StartPetting(window, 60, 20, clockMs, resetCooldown: false);
+            StartPetting(window, 60, 30, clockMs, resetCooldown: false);
             for (int i = 1; i <= 25; i++)
             {
                 clockMs += 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 8), 30), clockMs);
             }
             InvokeMethod(window, "EndPetting");
 
@@ -331,6 +338,7 @@ public class PettingGestureChainTests
     /// F-03: Repeated ProcessPettingMove calls with the same position
     /// (zero displacement) must NOT accumulate any time, even if the
     /// clock advances. Per R-02 "按住未移动不算抚摸".
+    /// F-03 R5: Uses y=30 (opaque pixel).
     /// </summary>
     [STATestMethod]
     public void F03_ZeroDisplacement_DoesNotAccumulate()
@@ -341,14 +349,14 @@ public class PettingGestureChainTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
 
-            // Start petting at head center.
-            StartPetting(window, 60, 20, 0.0);
+            // Start petting at an opaque head pixel (60, 30).
+            StartPetting(window, 60, 30, 0.0);
 
             // Send 20 zero-displacement "moves" (same position) over 1 second.
             for (int i = 1; i <= 20; i++)
             {
                 clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60, 30), clockMs);
             }
 
             var accumulated = GetField<double>(window, "_pettingAccumulatedMs");
@@ -368,6 +376,7 @@ public class PettingGestureChainTests
     /// The gap must NOT be accumulated (exceeds PettingMaxInterEventMs).
     /// Only the inter-event time of the second move (from the gap reset)
     /// is counted, which is also small.
+    /// F-03 R5: Uses y=30 (opaque pixel).
     /// </summary>
     [STATestMethod]
     public void F03_LongGapBetweenMoves_GapNotAccumulated()
@@ -378,12 +387,12 @@ public class PettingGestureChainTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
 
-            // Start petting.
-            StartPetting(window, 60, 20, 0.0);
+            // Start petting at an opaque head pixel (60, 30).
+            StartPetting(window, 60, 30, 0.0);
 
             // First effective move at t=50ms.
             clockMs = 50.0;
-            window.ProcessPettingMove(new System.Windows.Point(62, 20), clockMs);
+            window.ProcessPettingMove(new System.Windows.Point(62, 30), clockMs);
 
             var accAfterFirst = GetField<double>(window, "_pettingAccumulatedMs");
             Assert.AreEqual(50.0, accAfterFirst, 0.01,
@@ -393,7 +402,7 @@ public class PettingGestureChainTests
             // _pettingStartMs was set to 50ms by the first move.
             // The second move at t=1050ms has interEventMs = 1000ms > 500ms threshold.
             clockMs = 1050.0;
-            window.ProcessPettingMove(new System.Windows.Point(64, 20), clockMs);
+            window.ProcessPettingMove(new System.Windows.Point(64, 30), clockMs);
 
             var accAfterSecond = GetField<double>(window, "_pettingAccumulatedMs");
             // The 1000ms gap should NOT be accumulated. accumulated stays at 50ms.
@@ -402,7 +411,7 @@ public class PettingGestureChainTests
 
             // Now a third move shortly after (within threshold).
             clockMs = 1100.0; // 50ms after the second move.
-            window.ProcessPettingMove(new System.Windows.Point(66, 20), clockMs);
+            window.ProcessPettingMove(new System.Windows.Point(66, 30), clockMs);
 
             var accAfterThird = GetField<double>(window, "_pettingAccumulatedMs");
             // 50ms from second move should be accumulated: 50 + 50 = 100ms.
@@ -521,16 +530,21 @@ public class PettingGestureChainTests
     }
 
     /// <summary>
-    /// F-03 R4: IsInHeadZone at the exact X=0 boundary should be head (inclusive).
+    /// F-03 R4/R5: IsInHeadZone at X=0 (left image boundary) returns false because
+    /// the point is on a transparent pixel, even though it is within the head
+    /// rectangle. The rectangular boundary is inclusive, but the Alpha check
+    /// (R5) requires a visible pixel.
     /// </summary>
     [STATestMethod]
-    public void F03_HeadZone_XAtZero_IsHead()
+    public void F03_HeadZone_XAtZero_Transparent_NotHead()
     {
         var window = CreateMainWindowOrFail();
         try
         {
-            Assert.IsTrue(window.IsInHeadZone(new System.Windows.Point(0, 20)),
-                "X=0 (left boundary) should be in head zone.");
+            // X=0 is within the image rectangle but on a transparent pixel
+            // (opaque bounds start at X≈30 for the default character).
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(0, 20)),
+                "X=0 is in the head rectangle but on a transparent pixel — must NOT be head zone (R5 Alpha check).");
         }
         finally
         {
@@ -539,17 +553,39 @@ public class PettingGestureChainTests
     }
 
     /// <summary>
-    /// F-03 R4: IsInHeadZone at the exact X=width boundary should be head (inclusive).
+    /// F-03 R4/R5: IsInHeadZone at X=width (right image boundary) returns false
+    /// because the point is beyond the opaque pixel area.
     /// </summary>
     [STATestMethod]
-    public void F03_HeadZone_XAtWidth_IsHead()
+    public void F03_HeadZone_XAtWidth_Transparent_NotHead()
     {
         var window = CreateMainWindowOrFail();
         try
         {
-            // X=120 = image width (inclusive boundary).
-            Assert.IsTrue(window.IsInHeadZone(new System.Windows.Point(120, 20)),
-                "X=width (right boundary) should be in head zone.");
+            // X=120 = image width, but on a transparent pixel.
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(120, 20)),
+                "X=width is in the head rectangle but on a transparent pixel — must NOT be head zone (R5 Alpha check).");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R5: A point on a visible (opaque) pixel within the head rectangle
+    /// IS in the head zone. This confirms the Alpha check does not reject
+    /// valid head pixels.
+    /// </summary>
+    [STATestMethod]
+    public void F03_HeadZone_OpaquePixelInHead_IsHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            // (60, 20) is an opaque pixel in the upper 1/3 of the default character.
+            Assert.IsTrue(window.IsInHeadZone(new System.Windows.Point(60, 20)),
+                "Opaque pixel within head rectangle must be in head zone.");
         }
         finally
         {
@@ -645,6 +681,114 @@ public class PettingGestureChainTests
         {
             Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(10000, 20)),
                 "Very large X with small Y must NOT be in head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // ── F-03 R5: Transparent pixel within head rectangle ─────────────
+
+    /// <summary>
+    /// F-03 R5: A point inside the head rectangle (upper 1/3) but on a
+    /// transparent pixel must NOT be considered head zone. The default
+    /// character's opaque bounds start at approximately (30, 13), so
+    /// (60, 5) is within the head rectangle (Y=5 < 40) but fully transparent.
+    /// An adjacent point (60, 20) is on an opaque pixel and IS head zone.
+    /// This test verifies the contrast: transparent → false, adjacent opaque → true.
+    /// </summary>
+    [STATestMethod]
+    public void F03_R5_TransparentInHeadRect_NotHead_AdjacentOpaque_IsHead()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            // (60, 5) is in the head rectangle (Y=5 < 40) but transparent.
+            Assert.IsFalse(window.IsInHeadZone(new System.Windows.Point(60, 5)),
+                "Transparent pixel within head rectangle must NOT be head zone (R5).");
+
+            // (60, 20) is in the head rectangle AND on an opaque pixel.
+            Assert.IsTrue(window.IsInHeadZone(new System.Windows.Point(60, 20)),
+                "Adjacent opaque pixel within head rectangle must be head zone.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-03 R5: When the cursor moves from an opaque head pixel to a transparent
+    /// area within the head rectangle (e.g. above the character's head), petting
+    /// must end and accumulated time must NOT increase. This verifies that the
+    /// Alpha check in IsInHeadZone prevents continued accumulation on transparent
+    /// space within the head rectangle — the specific gap R5 identified.
+    /// </summary>
+    [STATestMethod]
+    public void F03_R5_TransparentInHeadRect_EndsPetting_NoAccumulation()
+    {
+        var window = CreateMainWindowOrFail();
+        try
+        {
+            var clockMs = 0.0;
+            window.TestGetElapsedMs = () => clockMs;
+
+            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            window.TestEmotionAccumulator = accumulator;
+
+            // Start petting at an opaque head pixel (60, 20).
+            StartPetting(window, 60, 20, 0.0);
+
+            // A few valid micro-moves on opaque head pixels to accumulate time.
+            for (int i = 1; i <= 5; i++)
+            {
+                clockMs = i * 50.0;
+                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+            }
+
+            Assert.IsTrue(window.IsPettingCandidate,
+                "Should still be in petting candidate on opaque head pixels.");
+
+            var accumulatedBefore = GetField<double>(window, "_pettingAccumulatedMs");
+            Assert.IsTrue(accumulatedBefore > 0,
+                $"Should have accumulated time from valid head moves. Got {accumulatedBefore}ms.");
+
+            // Move to a transparent point within the head rectangle.
+            // (60, 5) is Y=5 < 40 (head rect) but alpha=0 (transparent).
+            // The move from (70, 20) to (60, 5) is ~15.8 DIP, which exceeds
+            // PettingMaxMovePerFramePx (8). To isolate the Alpha check from
+            // the large-move check, we use a small move to a nearby transparent
+            // pixel. (66, 10) is ~10.8 DIP from (70, 20) — still too large.
+            // Instead, move to (68, 10): dist = sqrt(4 + 100) ≈ 10.2 — still large.
+            // We need a transparent pixel close to the last position.
+            // Last position is (70, 20). (70, 10) is 10 DIP away — still > 8.
+            // Use (69, 12): dist = sqrt(1 + 64) ≈ 8.06 — just over threshold.
+            // Use (69, 13): dist = sqrt(1 + 49) ≈ 7.07 — under threshold.
+            // (69, 13) is opaque (alpha=180 at y=14 per PNG analysis, y=13 is
+            // the first opaque row at x=52-69). Let's check: y=13 has opaque
+            // pixels starting at x=52. So (69, 13) might be opaque.
+            // Instead, use a transparent point that is a small move from the
+            // last opaque position. Move to (70, 12): dist = sqrt(0 + 64) = 8.0,
+            // which equals PettingMaxMovePerFramePx. The check is >, so 8.0
+            // does NOT trigger large-move. (70, 12) — is it transparent?
+            // Opaque at y=14 starts at x=52-69. y=12 should be transparent.
+            // But x=70 at y=14 is NOT opaque (range is 52-69). So (70, 12)
+            // is transparent.
+            clockMs = 300.0;
+            var result = window.ProcessPettingMove(new System.Windows.Point(70, 12), clockMs);
+
+            // IsInHeadZone should return false (transparent pixel) → EndPetting.
+            Assert.IsFalse(result,
+                "ProcessPettingMove should return false when cursor is on a transparent pixel within head rectangle.");
+            Assert.IsFalse(window.IsPettingCandidate,
+                "Petting candidate must be cleared when cursor moves to transparent area within head rectangle.");
+
+            // Accumulated time must NOT have increased.
+            var accumulatedAfter = GetField<double>(window, "_pettingAccumulatedMs");
+            Assert.AreEqual(accumulatedBefore, accumulatedAfter, 0.01,
+                $"Accumulated time must NOT increase when moving to transparent area within head rect. " +
+                $"Before: {accumulatedBefore}ms, After: {accumulatedAfter}ms.");
         }
         finally
         {

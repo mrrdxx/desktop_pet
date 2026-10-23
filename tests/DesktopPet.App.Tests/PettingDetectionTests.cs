@@ -76,9 +76,10 @@ public class PettingDetectionTests
         try
         {
             // Upper third of 120px image: Y <= 40 is head.
-            var headPoint = new System.Windows.Point(60, 10);
+            // F-03 R5: Must use an opaque pixel — (60, 20) is opaque in the default character.
+            var headPoint = new System.Windows.Point(60, 20);
             Assert.IsTrue(window.IsInHeadZone(headPoint),
-                "Point in upper 1/3 should be in head zone.");
+                "Opaque point in upper 1/3 should be in head zone.");
         }
         finally
         {

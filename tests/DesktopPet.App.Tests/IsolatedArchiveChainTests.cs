@@ -287,11 +287,12 @@ public class IsolatedArchiveChainTests
             SetField(window, "_pettingLastPos", new System.Windows.Point(60, 20));
             SetField(window, "_pettingCooldownUntilMs", 0.0);
 
-            // 25 micro-moves, each 2 DIP, 50ms apart → 1250ms accumulated.
+            // 25 micro-moves, each within 8 DIP, 50ms apart → 1250ms accumulated.
+            // Pingpong x=60..67 at y=20 (opaque pixels in default character).
             for (int i = 1; i <= 25; i++)
             {
                 clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 8), 20), clockMs);
             }
 
             // EndPetting triggers +5 via the injected accumulator.

@@ -1065,6 +1065,11 @@ public partial class MainWindow : System.Windows.Window
     /// Head zone = upper 1/3 of the image area, bounded by [0, width] × [0, height/3].
     /// Points outside the image rectangle (negative coords, X beyond width, or
     /// Y beyond the head boundary) are NOT in the head zone.
+    /// F-03 R5: Additionally requires the point to be on a non-transparent pixel
+    /// of the current frame. A point inside the head rectangle but on a transparent
+    /// area (e.g. above the character's head in the upper 1/3) does NOT count as
+    /// head zone — this prevents accumulating petting time while the cursor is on
+    /// empty space within the head rectangle.
     /// Returns false if the image source is unavailable.
     /// Region source: upper 1/3 of frameHeight per ARCHITECTURE §8; per-character
     /// interaction region fields are deferred to a later stage.
@@ -1074,10 +1079,18 @@ public partial class MainWindow : System.Windows.Window
         double imgHeight = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : PetImage.Height;
         double imgWidth = PetImage.ActualWidth > 0 ? PetImage.ActualWidth : PetImage.Width;
         if (imgHeight <= 0 || imgWidth <= 0) return false;
-        return localPoint.X >= 0
+
+        // Rectangular boundary check.
+        if (!(localPoint.X >= 0
             && localPoint.X <= imgWidth
             && localPoint.Y >= 0
-            && localPoint.Y <= imgHeight * HeadZoneRatio;
+            && localPoint.Y <= imgHeight * HeadZoneRatio))
+            return false;
+
+        // F-03 R5: Also require the point to be on a visible (non-transparent)
+        // pixel of the current frame. This prevents petting accumulation when
+        // the cursor is on empty space within the head rectangle.
+        return PetImageGeometry.Contains(PetImage, localPoint);
     }
 
     /// <summary>

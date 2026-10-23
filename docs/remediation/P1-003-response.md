@@ -291,8 +291,8 @@ R4 指出 IsInHeadZone 仍只检查 `Y <= height/3`，没有 X/Y 下界或 X 上
 #### 修复
 
 - 位置：`src/DesktopPet.App/MainWindow.xaml.cs` 的 `IsInHeadZone`。
-- 代码已有完整边界检查（X ∈ [0, width]，Y ∈ [0, height/3]），R4 检查的旧版本问题已在 R3 整改中修复。
-- 资源区域契约已在 ARCHITECTURE §8 "P1-003 交互区域约定"中记录（第 178-181 行），代码注释引用该约定。
+- **版本更正（R5）**：之前记录称"代码已有完整边界检查，R4 检查的旧版本问题已在 R3 整改中修复"是不准确的。经 R5 核对 `git show 4ea4462:src/DesktopPet.App/MainWindow.xaml.cs`，`4ea4462` 的 IsInHeadZone 仍仅检查 `Y <= height/3`，没有 X/Y 下界或 X 上界。完整 X/Y 边界检查（X ∈ [0, width]，Y ∈ [0, height/3]）是在 `6fee5a0` 中新增的。R4 关于当时版本的发现保留，当前修复认可。
+- 资源区域契约已在 ARCHITECTURE §8 "P1-003 交互区域约定"中记录，代码注释引用该约定。
 - 新增 3 项测试覆盖透明区域不继续累计、负 X 零 Y 组合、超大 X 值。
 
 #### 自测
@@ -371,3 +371,81 @@ R4 指出现有测试用 Thread.Sleep 推进真实 UTC、另用 clockMs 推进�
 ### 复核请求
 
 F-03/F-04/F-05/G-03 的 R4 剩余范围已整改并补测试覆盖，请监理复核。
+
+## R5 剩余范围整改：F-03 + G-03 + 版本归因更正
+
+对应监理 R5（`6fee5a0`），见 [P1-003-review](../reviews/P1-003-review.md) R5 章节。
+F-04/F-05 已关闭，不重复整改。仅针对 R5 指出的剩余范围整改。
+
+### F-04 关闭依据（R5）
+
+监理 R5 已**关闭** F-04：hover/swipe 分支已有 `!_isExpressingGrievance`，表达期间动作/计时不被覆盖；结束后输入恢复的断言与正常 hover 重新触发相容。不重做此前通过部分。
+
+### F-05 关闭依据（R5）
+
+监理 R5 已**关闭** F-05：OnStartup/MarkStateDirty 已分别实际调用共用映射，原重复内联消除；F05_R4_RealPettingChain_PersistedViaProductionMapping 驱动生产 ProcessPettingMove/EndPetting 增加至 55，再经共用映射、隔离文件保存/重载、共用恢复验证。不重做此前通过部分。
+
+### F-03 R5 剩余：头部矩形内透明像素检测
+
+#### 剩余问题
+
+R5 指出 IsInHeadZone 只检查矩形边界，未结合当前帧 Alpha。测试 F03_R4_TransparentArea_DoesNotContinueAccumulating 移到 (70,80) 是下方身体区，不能证明"上 1/3 内透明空白"的行为。
+
+#### 修复
+
+- 位置：`src/DesktopPet.App/MainWindow.xaml.cs` 的 `IsInHeadZone`。
+- IsInHeadZone 在矩形边界检查通过后，额外调用 `PetImageGeometry.Contains(PetImage, localPoint)` 检查当前帧该坐标的 Alpha 值。透明像素（Alpha=0）不算头部，防止在头部矩形内的空白处继续累计抚摸时间。
+- ARCHITECTURE §8 已同步补充 Alpha 检查说明。
+- PRODUCT R-02 已同步：当前头部区域为图像矩形内上 1/3 且需命中当前帧不透明像素（固定方案），角色 JSON 中的 per-character 交互区域字段待后续阶段加入。
+
+#### 自测
+
+新增 2 项 R5 测试（`PettingGestureChainTests.cs`）：
+- `F03_R5_TransparentInHeadRect_NotHead_AdjacentOpaque_IsHead`：(60,5) 透明 → false，(60,20) 不透明 → true，对照验证。
+- `F03_R5_TransparentInHeadRect_EndsPetting_NoAccumulation`：从不透明头部像素移动到头部矩形内透明区域，抚摸结束且累计时间不增加。
+
+修正 4 项已有测试（坐标适配 Alpha 检查）：
+- `Petting_HeadZone_UpperThird_IsHead`：(60,10) 透明 → 改为 (60,20) 不透明。
+- `F03_ContinuousMicroMoves_AccumulateToThreshold_TriggersPlus5`：pingpong 范围从 60..75 改为 60..67（最大步距 7 < 8 DIP）。
+- `F03_CooldownPreventsRepeatPlus5`：同上 pingpong 范围修正。
+- `F05_R4_RealPettingChain_PersistedViaProductionMapping`：移动序列从 `60+i*2` 改为 `60+(i%8)` pingpong。
+
+### G-03 R5 剩余：跨对象隔离恢复验证
+
+#### 剩余问题
+
+R5 指出 G03_R4_PauseExitRestartPaused_Resume_NoDoubleCountDecay 全程仍使用同一个 window/testAcc，只以注释模拟退出重启。需补真正的隔离状态保存→关闭旧对象→共用映射恢复新对象/新窗口→仍暂停→恢复断言。
+
+#### 修复
+
+- 语义明确：暂停状态退出期间属于冻结时段，与活跃暂停同等对待（PRODUCT "暂停时段不计入衰减"）。存档保存的 LastDecayUtc 不因退出而推进，恢复后新 accumulator 从保存的基准继续，退出间隔不计入衰减。
+- 新增 `G03_R5_IsolatedSaveCloseRestore_ExitPaused_NoDoubleCountDecay` 测试（`PauseSemanticsTests.cs`）：
+  1. 创建 window1 + accumulator1，运行 2s 活跃 tick。
+  2. 暂停 window1。
+  3. 通过 `MapEmotionObjectsToArchive` + `ArchiveService` 保存到隔离临时目录。
+  4. 关闭 window1（旧对象释放）。
+  5. 推进统一时间 10s（模拟退出期间）。
+  6. 从隔离存档加载，通过 `MapArchiveToEmotionObjects` 恢复新 accumulator2（新对象、新单调时钟）。
+  7. 创建 window2，注入 accumulator2，设为暂停（模拟 OnStartup 检测 IsPaused=true）。
+  8. 恢复 window2，运行 2s 活跃 tick。
+  9. 断言恢复后衰减只匹配 2s 活跃时间，10s 退出间隔不计入。
+
+#### 自测
+
+- 1 项新增测试通过：`G03_R5_IsolatedSaveCloseRestore_ExitPaused_NoDoubleCountDecay`。
+- 真正执行了保存→关闭→重载→新对象恢复链路，不再复用同一对象和注释模拟。
+
+### 版本归因更正
+
+R5 版本事实核对发现，之前 F-03 R4 整改记录称"代码已有完整边界检查，R4 检查的旧版本问题已在 R3 整改中修复"是不准确的。实际 `git show 4ea4462:src/DesktopPet.App/MainWindow.xaml.cs` 的 IsInHeadZone 仍仅 `Y <= height/3`；`git diff 4ea4462..6fee5a0` 明确显示完整 X/Y 边界在 `6fee5a0` 新增。已在 F-03 R4 整改记录中追加版本更正说明，保留旧记录不删除，不修改监理报告。
+
+### 构建与测试（R5 整改后）
+
+- `dotnet build DesktopPet.slnx -c Debug`：0 警告 0 错误。
+- `dotnet test tests/DesktopPet.App.Tests/DesktopPet.App.Tests.csproj -c Debug --no-build --no-restore`：**App 124/124**，0 失败，0 跳过。
+- App 测试新增 1 项（G-03 R5 1），修正 4 项已有测试（F-03 坐标适配 + F-05 坐标适配）。
+- Core 208 项未重跑，不把开发方全量写成独立全量通过。
+
+### 复核请求
+
+F-03 R5 剩余范围（头部矩形内透明像素检测 + PRODUCT 同步）和 G-03 R5 剩余范围（跨对象隔离恢复验证）已整改并补测试覆盖。版本归因更正已追加。F-04/F-05 已由 R5 关闭，不重复整改。请监理复核。
