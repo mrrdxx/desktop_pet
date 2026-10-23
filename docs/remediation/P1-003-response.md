@@ -557,3 +557,60 @@ R7 指出 `MapArchiveToEmotionObjects` 中 `if (state.IsPaused) lastDecayUtc = u
 ### 复核请求
 
 F-06 R7 剩余回拨保护恢复边界已修复：暂停恢复前移条件增加 `utcNow > lastDecayUtc` 防止倒退，未暂停路径不变。连续测试覆盖存档基准晚于 restoreUtcNow → 生产映射恢复 → 回到原时刻不衰减 → 超过原时刻只计新间隔，亲近度和委屈值均有对照。移除修复后测试失败。F-01～F-05 不重做，P1-003 保持 in-progress，不进入 P1-004。请监理复核。
+
+### R8 复核结果
+
+监理 R8（2026-10-24，对象 `844c41c`）已**关闭** F-06：确认暂停恢复仅在 `utcNow > lastDecayUtc` 时前移基准；回拨保留原有效基准，恢复到原时刻零间隔，超过只计新间隔；未暂停分支和 `AdvanceTo` 未改变。独立运行 App 126/126 通过。F-01～F-06 现均关闭；G-01/G-02/G-03 接入整改及验证接受，解除阻断。
+
+## P1-003 最终验收收尾
+
+### R-02 任务范围核对
+
+| R-02 要求 | 实现状态 | 证据 |
+|---|---|---|
+| 亲近度/委屈值 0-100 有界，中性 50 | 已实现 | `EmotionDecay` 浮点累计 + 取整快照 |
+| 头部按住小幅移动累计 1 秒 = 抚摸 | 已实现 | F-03 完整头部边界 + Alpha 检测，8 项手势链测试 |
+| 拖动从身体区域开始 | 已实现 | `PetCanvas_MouseMove` 距离判定区分抚摸/拖动 |
+| 按住未移动不算抚摸 | 已实现 | `PettingMinMovePx = 0.5` 过滤零位移 |
+| 离开/松开后结束手势 | 已实现 | `ProcessPettingMove` 入口检查 `IsInHeadZone`，离开调 `EndPetting` |
+| 抚摸 +5 亲近度，冷却 2 秒 | 已实现 | `EndPetting` 累计达 1s → +5，`PettingCooldownUntilMs` 2s |
+| 委屈阈值 >= 80 触发表达 | 已实现 | `OnUpdateTick` 检查 `GrievanceInt >= 80` |
+| 角落计分：5 分钟 3 次拖至角落 + 最后停留 30s → +20 | 已实现 | `CornerTracker` 窗口/计数/停留判定，G-02 防重复计分测试 |
+| 委屈表达：次日首次相遇，持续 10 秒 | 已实现 | `GrievanceExpressionState` 日期判定 + 10s 持续 + `IsMouseInInteractionRange` |
+| 表达完成后委屈值设 50，清空待表达 | 已实现 | `OnUpdateTick` 10s 后 `ResetGrievanceAfterExpression` + `Clear` |
+| 拖动打断表达 → 清空 + 设 50 | 已实现 | `InterruptGrievanceExpression` 在 `MouseLeftButtonDown` 调用 |
+| 表达优先级抑制 hover/swipe | 已实现 | F-04 `!_isExpressingGrievance` 条件，3 项测试 |
+| 衰减：亲近度半衰期 7 天，委屈半衰期 12 小时 | 已实现 | `EmotionDecay` 公式 + `EmotionDecayAccumulator` |
+| 衰减目标中性 50，双向 | 已实现 | `DecayAffinityFloat`/`DecayGrievanceFloat` |
+| 离线衰减同一公式 | 已实现 | 存档 `lastDecayUtc` 恢复后 `AdvanceTo` |
+| 时钟回拨不增加情绪 | 已实现 | F-02 `AdvanceTo` 负间隔返回快照不移动基准 |
+| 暂停时段不计入衰减 | 已实现 | `SkipInterval` 补偿，G-03 统一时间源测试 |
+| 暂停退出再重启冻结退出间隔 | 已实现 | F-06 `MapArchiveToEmotionObjects` 依据 IsPaused 前移 |
+| 回拨保护恢复边界 | 已实现 | F-06 R7 `utcNow > lastDecayUtc` 条件 |
+| 存档 v2 五字段 + v1 回退 | 已实现 | `PetStateArchive` + `ArchiveService.LoadState` v1→v2 |
+| 重启不重复累计/表达 | 已实现 | 角落计数器不持久化，待表达+防重复日期持久化 |
+| 高亲近主动靠近（>= 70） | **未实现** | R-02 提及但属后续行为扩展，P1-003 范围为情绪模型+存档，主动靠近行为待后续阶段 |
+
+### 已有自动测试证据
+
+- Core 208 项：EmotionState/EmotionDecay（含 F-02 回拨保护 9 项）、CornerTracker（G-02 7 项）、GrievanceExpressionState（F-01 12 项）、ArchiveService v1/v2。
+- App 126 项：抚摸手势链（F-03 8+3 项）、情绪衰减运行时（G-01 3 项）、角落防重复计分（G-02 4 项）、委屈表达生命周期（F-04 7 项）、隔离存档链（F-05 6 项）、暂停语义（G-03 8 项，含 F-06 3 项：12h 暂停退出隔离恢复 + 12h 未暂停正常离线对照 + R7 回拨边界连续测试）。
+- 跨天、离线衰减、回拨保护、次日表达均有自动测试覆盖，不要求用户等待次日或修改系统时间。
+
+### 占位动作限制
+
+- 委屈表达使用 `curious` 动作作为占位，最终"背对用户"美术待后续阶段。
+- 资源仍是程序导出的占位美术，不作为最终表情/动作观感验收。
+- 高亲近主动靠近行为（R-02 提及 >= 70 触发靠近）未在 P1-003 实现，属后续行为扩展。
+
+### 当前版本必要人工体验步骤
+
+以下步骤供用户在当前版本验证实际手感，不要求等待跨天/离线/回拨（已有自动证据覆盖）：
+
+1. **抚摸**：在宠物头部区域按住鼠标并小幅移动约 1 秒，观察是否触发亲近度增加（当前无 UI 显示数值，可通过存档文件 `state.json` 中 `affinity` 字段确认 +5）。
+2. **身体拖动**：在宠物身体区域按住拖动到桌面其他位置，确认拖动正常且不误判为抚摸。
+3. **暂停恢复**：右键菜单 → 暂停 → 等待数秒 → 恢复，确认宠物动画恢复且无异常行为。
+
+### 结论
+
+F-01～F-06 全部关闭，G-01/G-02/G-03 接入验证接受。R-02 范围内除"高亲近主动靠近"（后续阶段）外均已实现并有自动测试覆盖。剩余仅人工体验（抚摸手感、身体拖动、暂停恢复），TASKS 改为 `awaiting-verification`。不标 `done`，不进入 P1-004。
