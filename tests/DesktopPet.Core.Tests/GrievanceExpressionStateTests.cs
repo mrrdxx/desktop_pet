@@ -190,4 +190,139 @@ public class GrievanceExpressionStateTests
         Assert.IsFalse(result);
         Assert.AreEqual("2026-10-22", state.MarkedDate);
     }
+
+    // ── F-01: Clock rollback does not trigger expression ───────────────
+
+    [TestMethod]
+    public void ShouldExpress_ClockRollbackEarlierDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-23", grievanceReachedThreshold: true);
+
+        // Clock rolled back to previous day — must NOT trigger.
+        Assert.IsFalse(state.ShouldExpress("2026-10-22"));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_ClockRollbackSameDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-23", grievanceReachedThreshold: true);
+
+        // Same date — must NOT trigger (not "next day").
+        Assert.IsFalse(state.ShouldExpress("2026-10-23"));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_LaterDate_Triggers()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-23", grievanceReachedThreshold: true);
+
+        // Two days later — should trigger.
+        Assert.IsTrue(state.ShouldExpress("2026-10-25"));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_MonthBoundary_Triggers()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-31", grievanceReachedThreshold: true);
+
+        // Next day is November 1st — should trigger.
+        Assert.IsTrue(state.ShouldExpress("2026-11-01"));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_YearBoundary_Triggers()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-12-31", grievanceReachedThreshold: true);
+
+        // Next day is January 1st of next year — should trigger.
+        Assert.IsTrue(state.ShouldExpress("2027-01-01"));
+    }
+
+    // ── F-01: Invalid / missing date recovery ──────────────────────────
+
+    [TestMethod]
+    public void ShouldExpress_InvalidCurrentDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-23", grievanceReachedThreshold: true);
+
+        // Garbage current date — must not trigger.
+        Assert.IsFalse(state.ShouldExpress("not-a-date"));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_EmptyCurrentDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-23", grievanceReachedThreshold: true);
+
+        Assert.IsFalse(state.ShouldExpress(""));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_NullCurrentDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        state.TryMarkPending("2026-10-23", grievanceReachedThreshold: true);
+
+        Assert.IsFalse(state.ShouldExpress(null!));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_InvalidMarkedDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        // Simulate corrupted archive with invalid marked date.
+        state.Restore(pending: true, markedDate: "corrupted");
+
+        // Even with a valid current date, invalid marked date must not trigger.
+        Assert.IsFalse(state.ShouldExpress("2026-10-24"));
+    }
+
+    [TestMethod]
+    public void ShouldExpress_NullMarkedDate_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        // Pending but marked date is null (shouldn't normally happen, but test recovery).
+        state.Restore(pending: true, markedDate: null);
+
+        Assert.IsFalse(state.ShouldExpress("2026-10-24"));
+    }
+
+    [TestMethod]
+    public void Restore_InvalidMarkedDate_CanBeRemarkWithValidDate()
+    {
+        var state = new GrievanceExpressionState();
+        state.Restore(pending: true, markedDate: "corrupted");
+
+        // ShouldExpress won't fire with corrupted date.
+        Assert.IsFalse(state.ShouldExpress("2026-10-24"));
+
+        // Clear and re-mark with valid date should work.
+        state.Clear();
+        var result = state.TryMarkPending("2026-10-24", grievanceReachedThreshold: true);
+        Assert.IsTrue(result);
+        Assert.IsTrue(state.ShouldExpress("2026-10-25"));
+    }
+
+    // ── F-01: Rollback after restore ───────────────────────────────────
+
+    [TestMethod]
+    public void Restore_PendingThenRollback_DoesNotTrigger()
+    {
+        var state = new GrievanceExpressionState();
+        state.Restore(pending: true, markedDate: "2026-10-23");
+
+        // Clock rollback to before marked date.
+        Assert.IsFalse(state.ShouldExpress("2026-10-22"));
+        // Same date.
+        Assert.IsFalse(state.ShouldExpress("2026-10-23"));
+        // Next day still works.
+        Assert.IsTrue(state.ShouldExpress("2026-10-24"));
+    }
 }

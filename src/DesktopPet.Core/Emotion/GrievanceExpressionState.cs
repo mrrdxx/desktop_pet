@@ -30,13 +30,24 @@ public sealed class GrievanceExpressionState
 
     /// <summary>
     /// Checks whether the expression should fire now:
-    /// pending is true AND current local date is different from the marked date.
+    /// pending is true AND current local date is strictly later than the marked date.
+    /// Clock rollback (current date earlier than or equal to marked date) does not trigger.
+    /// Invalid or unparseable dates are treated as "not later", so expression does not fire
+    /// on corrupted date input; the caller should re-mark with a valid date if needed.
     /// </summary>
     /// <param name="currentLocalDate">Current local date as yyyy-MM-dd.</param>
     /// <returns>True if expression should fire.</returns>
     public bool ShouldExpress(string currentLocalDate)
     {
-        return IsPending && MarkedDate != currentLocalDate;
+        if (!IsPending || string.IsNullOrEmpty(MarkedDate)) return false;
+
+        // Strict date comparison: only fire when current date is after marked date.
+        if (!DateOnly.TryParse(currentLocalDate, out var current))
+            return false;
+        if (!DateOnly.TryParse(MarkedDate, out var marked))
+            return false;
+
+        return current > marked;
     }
 
     /// <summary>

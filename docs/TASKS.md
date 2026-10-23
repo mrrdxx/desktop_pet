@@ -85,7 +85,7 @@
 - 状态：`in-progress`。依赖：P1-002。关联：R-02。
 - 范围：先确定并记录 R-02 尚缺的增量/阈值；实现抚摸、委屈判定、衰减与次日表达；演进存档并保留旧版读取路径。
 - 验收：PRODUCT R-02；普通拖动不误判；离线、回拨与跨天测试通过；情绪动画不妨碍操作。
-- 当前进度：R-02 细化参数已写入 PRODUCT.md。Core 情绪模型已实现并测试通过（EmotionState/EmotionDecay/CornerTracker/GrievanceExpressionState，62 项 Core 测试）。存档 v2 已更新（PetStateArchive v2 字段 + ArchiveService v1→v2 兼容，3 项 App 存档测试）。构建 0 警告 0 错误，228/228 测试通过。下一步：接入 App 层（抚摸检测、角落判定、情绪更新接入 OnUpdateTick）。
+- 当前进度：R-02 细化参数已写入 PRODUCT.md。Core 情绪模型已实现并测试通过。存档 v2 已更新。监理阶段检查发现 F-01（日期回拨误触发）已修正，G-01（衰减累计精度）和 G-02（角落停留重置）已落实。257/257 测试通过。整改记录见 [P1-003-response](remediation/P1-003-response.md)。下一步：接入 App 层。
 
 ### P1-004 第一个稀有事件
 
