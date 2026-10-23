@@ -132,10 +132,39 @@ F-02 已修正并测试覆盖"起点→回拨→恢复原时刻→超过原时�
 ## 构建与测试
 
 - `dotnet build DesktopPet.slnx -c Debug`：0 警告 0 错误。
-- `dotnet test DesktopPet.slnx --no-build -c Debug`：Core 208 + App 58 = **266/266**，0 失败，0 跳过。
-- 新增 38 项测试（F-01 12 + G-01 10 + G-02 7 + F-02 9）。
+- `dotnet test DesktopPet.slnx --no-build -c Debug`：Core 208 + App 82 = **290/290**，0 失败，0 跳过。
+- 新增 38 项 Core 测试（F-01 12 + G-01 10 + G-02 7 + F-02 9）。
+- 新增 15 项 App 运行时验证测试（G-01 衰减推进/暂停停止/多步一致性/表达标记/10秒持续/拖动打断/抚摸阻止/菜单阻止/重启恢复/v1回退）。
+
+## App 接入运行时验证
+
+### G-01 衰减推进
+
+- `G01_DecayAdvancesAcrossMultipleTicks_GrievanceDecreases`：OnUpdateTick 中 AdvanceTo 实际推进衰减，多 tick 后浮点值持续下降。
+- `G01_ManySmallTicks_MatchOneBigStep`：1000 步 vs 1 步总时间相同，结果一致（容差 0.001）。
+- `G01_PauseStopsDecay_GrievanceUnchanged`：暂停时 OnUpdateTick 跳过 AdvanceTo，grievance 不变；恢复后继续衰减。
+
+### G-02 角落防重复计分
+
+- `G02_CornerStayConditionMet_AwardsGrievance_NoDoubleAward`：3 次角落拖动 + 30 秒停留 → +20 委屈 → Clear → 后续不重复加分。
+- `G02_NewDragCancelsPreviousStay_OnlyLastStayCounts`：新拖动取消旧停留，只有最后释放后的停留计入 30 秒条件。
+- `G02_LeaveCornerCancelsStay_ReenterStartsFresh`：离开角落取消停留，重新进入从头开始计 30 秒。
+- `G02_DragInterruptsCornerTracking_InOnUpdateTick`：拖动时 OnUpdateTick 跳过角落跟踪，不触发计分。
+
+### 委屈表达 10 秒持续与打断
+
+- `G01_GrievanceExpression_Lasts10Seconds_ThenResets`：表达持续 10 秒，期间 pending 和 grievance 不变；10 秒后清空 pending + 重置 grievance 为 50。
+- `G01_GrievanceExpression_InterruptedByDrag`：拖动打断表达 → 清空 pending + 重置 grievance 为 50（R-02）。
+- `G01_GrievanceExpression_InterruptedByPetting`：抚摸候选状态阻止表达启动；结束后表达可启动。
+- `G01_GrievanceExpression_InterruptedByMenu`：菜单打开阻止表达启动；关闭后表达可启动。
+
+### 重启存档恢复
+
+- `G01_RestartRestore_EmotionStateFromArchive`：从存档值恢复 accumulator 和 grievance expression 状态。
+- `G01_V1ArchiveFallback_NeutralEmotionAndCurrentTime`：v1 存档回退默认值 50 + 当前时间作为衰减基准。
 
 ## 限制
 
-- App 层尚未接入，G-01/G-02 的运行时行为待接入后验证。
 - 整改不修改监理报告。
+- IsInCornerZone 依赖真实显示器几何，测试中通过直接操作 CornerTracker 验证角落逻辑；OnUpdateTick 中的角落判定路径在无显示器环境下不走 IsInCornerZone=true 分支。
+- 委屈表达使用 curious 动作作为占位，最终"背对用户"美术待后续阶段。

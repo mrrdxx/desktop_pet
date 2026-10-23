@@ -51,6 +51,13 @@ public partial class MainWindow : System.Windows.Window
     private const double PettingMaxMovePerFramePx = 8.0; // small movement threshold in DIP
     private const double HeadZoneRatio = 1.0 / 3.0; // upper 1/3 is head
 
+    // P1-003: Grievance expression state (R-02).
+    // Expression lasts 10 seconds, then resets grievance to neutral.
+    // Drag/petting/menu interrupts expression: clears pending, resets grievance.
+    private bool _isExpressingGrievance;
+    private double _grievanceExpressionStartMs;
+    private const double GrievanceExpressionDurationMs = 10000.0;
+
     // F-02: Tracks whether the app is in a lifecycle-level pause (tray Pause).
     // When true, action switches from drag/menu must not implicitly resume
     // the animation player; the player stays paused until the user resumes.
@@ -78,6 +85,13 @@ public partial class MainWindow : System.Windows.Window
     internal Func<(int x, int y)>? TestGetCursorPos;
     internal Func<double>? TestGetElapsedMs;
     internal Func<double>? TestGetDpiScale;
+
+    // P1-003: Test injection points for emotion objects (G-01/G-02 runtime tests).
+    // When non-null, OnUpdateTick uses these instead of App.Current.
+    // Production code leaves these null — OnUpdateTick falls back to App.Current.
+    internal EmotionDecayAccumulator? TestEmotionAccumulator;
+    internal CornerTracker? TestCornerTracking;
+    internal GrievanceExpressionState? TestGrievanceExpression;
 
     // Win32 constants for no-activate window (F-01) and native popup menu.
     private const int GWL_EXSTYLE = -20;
@@ -597,34 +611,45 @@ public partial class MainWindow : System.Windows.Window
         // P1-003: Advance emotion decay every tick (G-01: use float accumulator).
         // Decay runs even during drag/menu/petting — only paused stops it.
         // The accumulator handles clock rollback internally (F-02).
-        if (!_isAppPaused && System.Windows.Application.Current is App app
-            && app.EmotionAccumulator is not null)
+        // Test injection: TestEmotionAccumulator bypasses App.Current for unit tests.
+        EmotionDecayAccumulator? emotionAcc = TestEmotionAccumulator;
+        CornerTracker? cornerTrack = TestCornerTracking;
+        GrievanceExpressionState? grievanceExpr = TestGrievanceExpression;
+        if (emotionAcc is null && System.Windows.Application.Current is App app)
         {
-            app.EmotionAccumulator.AdvanceTo(DateTime.UtcNow);
+            emotionAcc = app.EmotionAccumulator;
+            cornerTrack = app.CornerTracking;
+            grievanceExpr = app.GrievanceExpression;
+        }
+
+        if (!_isAppPaused && emotionAcc is not null)
+        {
+            emotionAcc.AdvanceTo(DateTime.UtcNow);
 
             // P1-003: Corner tracking — check stay and award grievance (G-02).
-            if (app.CornerTracking is not null)
+            if (cornerTrack is not null)
             {
                 if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen)
                 {
                     if (IsInCornerZone())
                     {
                         // Pet is in corner zone — start or continue stay.
-                        if (!app.CornerTracking.IsStayActive)
-                            app.CornerTracking.RecordStayStart(nowMs);
+                        if (!cornerTrack.IsStayActive)
+                            cornerTrack.RecordStayStart(nowMs);
 
                         // Check if condition is met → award grievance.
-                        if (app.CornerTracking.IsConditionMet(nowMs))
+                        if (cornerTrack.IsConditionMet(nowMs))
                         {
-                            app.EmotionAccumulator.AddGrievance(20);
-                            app.CornerTracking.Clear();
-                            app.MarkStateDirty();
+                            emotionAcc.AddGrievance(20);
+                            cornerTrack.Clear();
+                            if (System.Windows.Application.Current is App app2)
+                                app2.MarkStateDirty();
                         }
                     }
                     else
                     {
                         // Pet left corner zone — cancel stay.
-                        app.CornerTracking.CancelStay();
+                        cornerTrack.CancelStay();
                     }
                 }
             }
@@ -632,21 +657,34 @@ public partial class MainWindow : System.Windows.Window
             // P1-003: Check grievance expression on each tick.
             // Mark pending when grievance reaches threshold.
             // Expression fires on next local day when not in an interrupt state.
-            if (app.GrievanceExpression is not null)
+            // Expression lasts 10 seconds (R-02), then resets grievance to neutral.
+            // Drag/petting/menu interrupts expression: clears pending + resets grievance.
+            if (grievanceExpr is not null)
             {
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
-                app.GrievanceExpression.TryMarkPending(today, app.EmotionAccumulator.GrievanceInt >= EmotionState.GrievanceExpressionThreshold);
+                grievanceExpr.TryMarkPending(today, emotionAcc.GrievanceInt >= EmotionState.GrievanceExpressionThreshold);
 
-                // Check if expression should fire (next day + not interacting).
-                if (app.GrievanceExpression.ShouldExpress(today)
+                if (_isExpressingGrievance)
+                {
+                    // Expression in progress — check if 10 seconds have elapsed.
+                    if (nowMs - _grievanceExpressionStartMs >= GrievanceExpressionDurationMs)
+                    {
+                        // Expression complete — reset grievance to neutral.
+                        _isExpressingGrievance = false;
+                        grievanceExpr.Clear();
+                        emotionAcc.ResetGrievanceAfterExpression();
+                        if (System.Windows.Application.Current is App app3)
+                            app3.MarkStateDirty();
+                    }
+                }
+                else if (grievanceExpr.ShouldExpress(today)
                     && !_isDragging && !_isPettingCandidate && !_isContextMenuOpen)
                 {
-                    // Fire expression: play a "turn away" action (reuse curious for now).
-                    // Expression lasts 10 seconds, then resets grievance to neutral.
+                    // Start expression: play "turn away" action (reuse curious for now).
+                    // Expression will last 10 seconds, then resets grievance.
+                    _isExpressingGrievance = true;
+                    _grievanceExpressionStartMs = nowMs;
                     _animPlayer.PlayAction("curious");
-                    app.GrievanceExpression.Clear();
-                    app.EmotionAccumulator.ResetGrievanceAfterExpression();
-                    app.MarkStateDirty();
                 }
             }
         }
@@ -853,21 +891,42 @@ public partial class MainWindow : System.Windows.Window
         if (PetCanvas.IsMouseCaptured)
             PetCanvas.ReleaseMouseCapture();
 
+        // P1-003: Drag interrupts grievance expression (R-02).
+        // Clear pending, reset grievance to neutral, stop expression.
+        if (_isExpressingGrievance)
+        {
+            _isExpressingGrievance = false;
+            var grievanceExpr = TestGrievanceExpression;
+            var emotionAcc = TestEmotionAccumulator;
+            if (grievanceExpr is null && System.Windows.Application.Current is App appExpr)
+            {
+                grievanceExpr = appExpr.GrievanceExpression;
+                emotionAcc = appExpr.EmotionAccumulator;
+            }
+            grievanceExpr?.Clear();
+            emotionAcc?.ResetGrievanceAfterExpression();
+            if (System.Windows.Application.Current is App appDirty)
+                appDirty.MarkStateDirty();
+        }
+
         // F-02: Constrain the pet to a visible work area after dragging.
         ClampWindowToWorkArea();
 
         // P1-003: Record corner drag if the pet was released in a corner zone.
-        if (System.Windows.Application.Current is App app && app.CornerTracking is not null)
+        var cornerTrack = TestCornerTracking;
+        if (cornerTrack is null && System.Windows.Application.Current is App app)
+            cornerTrack = app.CornerTracking;
+        if (cornerTrack is not null)
         {
             var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
             if (IsInCornerZone())
             {
-                app.CornerTracking.RecordCornerDrag(nowMs);
+                cornerTrack.RecordCornerDrag(nowMs);
             }
             else
             {
                 // Left corner zone — cancel any pending stay.
-                app.CornerTracking.CancelStay();
+                cornerTrack.CancelStay();
             }
         }
 
@@ -1156,6 +1215,12 @@ public partial class MainWindow : System.Windows.Window
     /// True while the user is pressing the head zone and may be petting.
     /// </summary>
     public bool IsPettingCandidate => _isPettingCandidate;
+
+    /// <summary>
+    /// P1-003: Public accessor for the grievance expression state (for testing/diagnostics).
+    /// True while the pet is expressing grievance (10-second duration, R-02).
+    /// </summary>
+    public bool IsExpressingGrievance => _isExpressingGrievance;
 
     /// <summary>
     /// P1-002: Public accessor for the context menu open state (for testing/diagnostics).
