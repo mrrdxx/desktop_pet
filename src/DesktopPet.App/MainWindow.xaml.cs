@@ -594,6 +594,63 @@ public partial class MainWindow : System.Windows.Window
             _swipeDetector.Reset();
         }
 
+        // P1-003: Advance emotion decay every tick (G-01: use float accumulator).
+        // Decay runs even during drag/menu/petting — only paused stops it.
+        // The accumulator handles clock rollback internally (F-02).
+        if (!_isAppPaused && System.Windows.Application.Current is App app
+            && app.EmotionAccumulator is not null)
+        {
+            app.EmotionAccumulator.AdvanceTo(DateTime.UtcNow);
+
+            // P1-003: Corner tracking — check stay and award grievance (G-02).
+            if (app.CornerTracking is not null)
+            {
+                if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen)
+                {
+                    if (IsInCornerZone())
+                    {
+                        // Pet is in corner zone — start or continue stay.
+                        if (!app.CornerTracking.IsStayActive)
+                            app.CornerTracking.RecordStayStart(nowMs);
+
+                        // Check if condition is met → award grievance.
+                        if (app.CornerTracking.IsConditionMet(nowMs))
+                        {
+                            app.EmotionAccumulator.AddGrievance(20);
+                            app.CornerTracking.Clear();
+                            app.MarkStateDirty();
+                        }
+                    }
+                    else
+                    {
+                        // Pet left corner zone — cancel stay.
+                        app.CornerTracking.CancelStay();
+                    }
+                }
+            }
+
+            // P1-003: Check grievance expression on each tick.
+            // Mark pending when grievance reaches threshold.
+            // Expression fires on next local day when not in an interrupt state.
+            if (app.GrievanceExpression is not null)
+            {
+                var today = DateTime.Now.ToString("yyyy-MM-dd");
+                app.GrievanceExpression.TryMarkPending(today, app.EmotionAccumulator.GrievanceInt >= EmotionState.GrievanceExpressionThreshold);
+
+                // Check if expression should fire (next day + not interacting).
+                if (app.GrievanceExpression.ShouldExpress(today)
+                    && !_isDragging && !_isPettingCandidate && !_isContextMenuOpen)
+                {
+                    // Fire expression: play a "turn away" action (reuse curious for now).
+                    // Expression lasts 10 seconds, then resets grievance to neutral.
+                    _animPlayer.PlayAction("curious");
+                    app.GrievanceExpression.Clear();
+                    app.EmotionAccumulator.ResetGrievanceAfterExpression();
+                    app.MarkStateDirty();
+                }
+            }
+        }
+
         UpdateFrame();
     }
 
@@ -799,9 +856,24 @@ public partial class MainWindow : System.Windows.Window
         // F-02: Constrain the pet to a visible work area after dragging.
         ClampWindowToWorkArea();
 
+        // P1-003: Record corner drag if the pet was released in a corner zone.
+        if (System.Windows.Application.Current is App app && app.CornerTracking is not null)
+        {
+            var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+            if (IsInCornerZone())
+            {
+                app.CornerTracking.RecordCornerDrag(nowMs);
+            }
+            else
+            {
+                // Left corner zone — cancel any pending stay.
+                app.CornerTracking.CancelStay();
+            }
+        }
+
         // P0-004: Mark state dirty so position is persisted.
-        if (System.Windows.Application.Current is App app)
-            app.MarkStateDirty();
+        if (System.Windows.Application.Current is App app2)
+            app2.MarkStateDirty();
 
         // P1-001: Return to idle after drag ends.
         _animPlayer.PlayAction("idle");
@@ -869,6 +941,47 @@ public partial class MainWindow : System.Windows.Window
         double imgHeight = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : PetImage.Height;
         if (imgHeight <= 0) return false;
         return localPoint.Y <= imgHeight * HeadZoneRatio;
+    }
+
+    /// <summary>
+    /// P1-003: Check if the pet window is currently in a screen corner zone.
+    /// Corner zone = 15% of work area width/height at each of the four corners.
+    /// Uses the work area of the monitor the pet is currently on.
+    /// </summary>
+    internal bool IsInCornerZone()
+    {
+        var monitors = MonitorInterop.EnumerateMonitors();
+        if (monitors.Count == 0) return false;
+
+        // Find the monitor the pet is on (by center point in physical pixels).
+        var source = PresentationSource.FromVisual(this);
+        var transform = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
+        var centerDip = new Point(Left + Width / 2, Top + Height / 2);
+        var centerPx = transform.Transform(centerDip);
+        var cx = (int)centerPx.X;
+        var cy = (int)centerPx.Y;
+
+        var monitor = monitors.FirstOrDefault(m => m.FullBounds.Contains(cx, cy));
+        if (monitor.DeviceName is null)
+            monitor = monitors.FirstOrDefault(m => m.WorkArea.Bounds.Contains(cx, cy));
+        if (monitor.DeviceName is null)
+            return false;
+
+        var wa = monitor.WorkArea.Bounds;
+        var cornerW = wa.Width * 0.15;
+        var cornerH = wa.Height * 0.15;
+
+        // Four corner rectangles.
+        var topLeft = cx >= wa.Left && cx < wa.Left + cornerW
+                   && cy >= wa.Top && cy < wa.Top + cornerH;
+        var topRight = cx >= wa.Right - cornerW && cx < wa.Right
+                    && cy >= wa.Top && cy < wa.Top + cornerH;
+        var bottomLeft = cx >= wa.Left && cx < wa.Left + cornerW
+                      && cy >= wa.Bottom - cornerH && cy < wa.Bottom;
+        var bottomRight = cx >= wa.Right - cornerW && cx < wa.Right
+                       && cy >= wa.Bottom - cornerH && cy < wa.Bottom;
+
+        return topLeft || topRight || bottomLeft || bottomRight;
     }
 
     /// <summary>
