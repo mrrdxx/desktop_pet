@@ -1,0 +1,27 @@
+2026-10-24T12:44:58.2507052+08:00 HWND=4856020; DPI=144; visible=True; affinity=50; real cursor/time; production App startup/save; isolated archive
+2026-10-24T12:44:58.2532269+08:00 PASS all Test input/time/emotion injection fields remain null
+2026-10-24T12:44:58.3671147+08:00 PASS actual image has opaque head and transparent control point
+2026-10-24T12:45:00.2426806+08:00 PASS stationary head hold does not award affection
+2026-10-24T12:45:00.6720187+08:00 PASS real head press starts petting, not dragging
+2026-10-24T12:45:02.7580508+08:00 Real stroke accumulatedMs=2094
+2026-10-24T12:45:02.8231187+08:00 PASS real micro-movement and release awards exactly +5 affinity
+2026-10-24T12:45:03.1481468+08:00 PASS real head press starts petting, not dragging
+2026-10-24T12:45:04.5106270+08:00 Real stroke accumulatedMs=1360
+2026-10-24T12:45:04.5870876+08:00 PASS second real gesture inside two-second cooldown does not award twice
+2026-10-24T12:45:10.2006729+08:00 PASS actual default five-second debounced state.json persists affinity +5
+2026-10-24T12:45:11.2573624+08:00 PASS real move into transparent head region ends petting
+2026-10-24T12:45:11.3502101+08:00 PASS incomplete transparent-exit gesture awards no affection
+2026-10-24T12:45:11.8132736+08:00 PASS real body press selects drag, not petting
+2026-10-24T12:45:12.3126065+08:00 PASS body drag follows pointer displacement; windowDelta=(120,60), scale=1.5
+2026-10-24T12:45:12.6375338+08:00 PASS real mouse release stops following
+2026-10-24T12:45:12.6379431+08:00 PASS body dragging does not award petting affinity
+2026-10-24T12:45:12.7444353+08:00 Actual tray ToolStripMenuItem.PerformClick(Pause); not an Explorer icon click
+2026-10-24T12:45:12.7507013+08:00 PASS actual tray Pause handler pauses app, player and timer together
+2026-10-24T12:45:14.7163997+08:00 PASS during pause real cursor dwell does not animate or trigger curious
+2026-10-24T12:45:14.7168942+08:00 Actual tray ToolStripMenuItem.PerformClick(Resume); not an Explorer icon click
+2026-10-24T12:45:14.7186238+08:00 PASS actual tray Resume handler resumes app, player and timer together
+2026-10-24T12:45:17.6557036+08:00 PASS fresh real cursor dwell works after Resume
+2026-10-24T12:45:17.6576569+08:00 FINAL affinity=55; checksFailures=0
+2026-10-24T12:45:17.6593260+08:00 Cursor restored; normal tray Exit follows
+2026-10-24T12:45:17.6598071+08:00 Actual tray ToolStripMenuItem.PerformClick(Exit); not an Explorer icon click
+2026-10-24T12:45:17.6824805+08:00 RESULT failures=0; real input, no Test providers; tray event handlers not Shell clicks

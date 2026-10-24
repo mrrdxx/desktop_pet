@@ -1,5 +1,16 @@
 # 生命周期隔离集成验证
 
+## P1-003 真实抚摸与拖动输入验证
+
+```powershell
+./tests/Integration/Run-EmotionLive.ps1
+```
+
+此命令需要用户授权占用系统鼠标和已解锁桌面。约二十秒内不要同时操作鼠标。它构建隔离 App/Core 副本，使用独立存档/互斥锁，在生产 Show 后插入 EmotionLiveProbe；实际 App、鼠标事件、时钟、计分及保存路径不替换，不设置 Test 注入字段。真实微移检查 +5、静止不计分、冷却、透明区退出、身体拖动和松手。托盘 Pause/Resume/Exit 通过实际菜单 PerformClick 验证事件，不冒称 Explorer 图标点击。测试结束恢复指针并正常退出自建实例，比较真实存档前后摘要；不强杀其他进程、不调整系统设置。
+只检查构建可用 `-BuildOnly`，不占用鼠标。日志/隔离存档位于 artifacts/emotion-live/run-*/data/，latest-run.txt 指向最近一轮；保留失败材料，任一检查失败不得宣称通过。2026-10-24 验收及可随 Git 保存的证据见 [实机结果](../../docs/history/P1-003-live-validation.md)。
+
+## 生命周期隔离验证
+
 在 Windows 项目根目录运行：
 
 ```powershell
