@@ -2,6 +2,7 @@ using System.Windows;
 using DesktopPet.App.Platform;
 using DesktopPet.App.Persistence;
 using DesktopPet.Core.Emotion;
+using DesktopPet.Core.Events;
 using DesktopPet.Core.Persistence;
 
 namespace DesktopPet.App;
@@ -29,12 +30,16 @@ public partial class App : System.Windows.Application
     internal GrievanceExpressionState? GrievanceExpression { get; private set; }
     internal CornerTracker? CornerTracking { get; private set; }
 
+    // P1-004: Peek event scheduler held at App level (R-03).
+    internal PeekScheduler? PeekScheduler { get; private set; }
+
     /// <summary>
     /// F-05: Production mapping from PetStateArchive to emotion objects.
     /// This is the same logic used in OnStartup, extracted so tests can
     /// verify the real load→map→save→reload chain without copying code.
+    /// P1-004: Also restores PeekScheduler state from archive.
     /// </summary>
-    internal static (EmotionDecayAccumulator acc, GrievanceExpressionState expr, CornerTracker tracker)
+    internal static (EmotionDecayAccumulator acc, GrievanceExpressionState expr, CornerTracker tracker, PeekScheduler peek)
         MapArchiveToEmotionObjects(PetStateArchive state, DateTime? restoreUtcNow = null)
     {
         var utcNow = restoreUtcNow ?? DateTime.UtcNow;
@@ -65,22 +70,47 @@ public partial class App : System.Windows.Application
         expr.Restore(state.PendingGrievanceExpression, state.GrievanceExpressionDate);
         var tracker = new CornerTracker();
 
-        return (acc, expr, tracker);
+        // P1-004: Restore peek scheduler from archive. Production uses a
+        // non-deterministic Random; tests inject their own via the TestPeekScheduler
+        // property on MainWindow. The restored state takes precedence over the
+        // random seed — if a plan already exists for today, it is preserved.
+        // ShouldFire is derived: if HasAttempted && !HasTriggered, the probability
+        // check passed but the peek was deferred — restore ShouldFire=true so
+        // the scheduler will fire when idle. If HasTriggered is already true,
+        // ShouldFire doesn't matter (quota consumed).
+        var peek = new PeekScheduler(new Random());
+        var restoredShouldFire = state.PeekHasAttempted && !state.PeekHasTriggered;
+        peek.Restore(state.PeekEventDate, state.PeekCandidateMinutes,
+            state.PeekHasAttempted, restoredShouldFire,
+            state.PeekHasTriggered, state.PeekEffectiveRunMs);
+
+        return (acc, expr, tracker, peek);
     }
 
     /// <summary>
     /// F-05: Production mapping from emotion objects to PetStateArchive.
     /// This is the same logic used in MarkStateDirty, extracted so tests
     /// can verify the save path without a full App instance.
+    /// P1-004: Also syncs PeekScheduler state to archive.
     /// </summary>
     internal static void MapEmotionObjectsToArchive(
-        PetStateArchive state, EmotionDecayAccumulator acc, GrievanceExpressionState expr)
+        PetStateArchive state, EmotionDecayAccumulator acc, GrievanceExpressionState expr,
+        PeekScheduler? peek = null)
     {
         state.Affinity = acc.AffinityInt;
         state.Grievance = acc.GrievanceInt;
         state.LastDecayUtc = acc.LastDecayUtc.ToString("o");
         state.PendingGrievanceExpression = expr.IsPending;
         state.GrievanceExpressionDate = expr.MarkedDate;
+
+        if (peek is not null)
+        {
+            state.PeekEventDate = peek.EventDate;
+            state.PeekCandidateMinutes = peek.CandidateMinutes;
+            state.PeekHasAttempted = peek.HasAttempted;
+            state.PeekHasTriggered = peek.HasTriggered;
+            state.PeekEffectiveRunMs = peek.EffectiveRunMs;
+        }
     }
 
     protected override void OnStartup(StartupEventArgs e)
@@ -109,10 +139,12 @@ public partial class App : System.Windows.Application
 
         // P1-003: Initialize emotion objects from archived state via the
         // shared production mapping (F-05 R4: same path used by tests).
-        var (emotionAcc, grievanceExpr, cornerTrack) = MapArchiveToEmotionObjects(_state);
+        // P1-004: Also initializes PeekScheduler from archived state.
+        var (emotionAcc, grievanceExpr, cornerTrack, peekScheduler) = MapArchiveToEmotionObjects(_state);
         EmotionAccumulator = emotionAcc;
         GrievanceExpression = grievanceExpr;
         CornerTracking = cornerTrack;
+        PeekScheduler = peekScheduler;
 
         if (stateFromBackup)
             System.Diagnostics.Trace.TraceInformation("State restored from backup.");
@@ -234,9 +266,10 @@ public partial class App : System.Windows.Application
             }
             // P1-003: Sync emotion state to archive via the shared production
             // mapping (F-05 R4: same path used by tests).
+            // P1-004: Also sync peek scheduler state.
             if (EmotionAccumulator is not null && GrievanceExpression is not null)
             {
-                MapEmotionObjectsToArchive(_state, EmotionAccumulator, GrievanceExpression);
+                MapEmotionObjectsToArchive(_state, EmotionAccumulator, GrievanceExpression, PeekScheduler);
             }
             _saveCoordinator.MarkStateDirty(_state);
         }

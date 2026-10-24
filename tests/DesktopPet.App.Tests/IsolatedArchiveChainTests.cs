@@ -68,7 +68,7 @@ public class IsolatedArchiveChainTests
         Assert.AreEqual(50, loadedState.Affinity, "Loaded affinity should be 50.");
 
         // Map to emotion objects (same as App.OnStartup).
-        var (acc, expr, tracker) = App.MapArchiveToEmotionObjects(loadedState);
+        var (acc, expr, tracker, _) = App.MapArchiveToEmotionObjects(loadedState);
         Assert.AreEqual(50, acc.AffinityInt, "Accumulator affinity should be 50.");
 
         // Simulate petting: add +5 affinity.
@@ -83,7 +83,7 @@ public class IsolatedArchiveChainTests
         var (reloadedState, _, _) = archive.LoadState();
         Assert.AreEqual(55, reloadedState.Affinity,
             $"Reloaded affinity must be 55 after save. Got {reloadedState.Affinity}.");
-        Assert.AreEqual(2, reloadedState.SchemaVersion, "Schema version must be 2.");
+        Assert.AreEqual(3, reloadedState.SchemaVersion, "Schema version must be 3.");
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public class IsolatedArchiveChainTests
             "v1 LastDecayUtc should fall back to LastSavedUtc.");
 
         // Map to emotion objects.
-        var (acc, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
+        var (acc, expr, _, _) = App.MapArchiveToEmotionObjects(loadedState);
         Assert.AreEqual(50, acc.AffinityInt, "v1 accumulator affinity should be 50.");
         Assert.IsFalse(expr.IsPending, "v1 expression should not be pending.");
 
@@ -128,7 +128,7 @@ public class IsolatedArchiveChainTests
 
         // Reload — should now be v2 with persisted defaults.
         var (reloadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(2, reloadedState.SchemaVersion, "After save, schema should be v2.");
+        Assert.AreEqual(3, reloadedState.SchemaVersion, "After save, schema should be v3.");
         Assert.AreEqual(50, reloadedState.Affinity, "v2 affinity should still be 50.");
     }
 
@@ -158,7 +158,7 @@ public class IsolatedArchiveChainTests
         Assert.AreEqual("2026-10-22", loadedState.GrievanceExpressionDate, "Expression date should be persisted.");
 
         // Map to emotion objects — should restore pending state.
-        var (_, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
+        var (_, expr, _, _) = App.MapArchiveToEmotionObjects(loadedState);
         Assert.IsTrue(expr.IsPending, "Expression should be pending after restore.");
         Assert.AreEqual("2026-10-22", expr.MarkedDate, "MarkedDate should be restored.");
 
@@ -192,7 +192,7 @@ public class IsolatedArchiveChainTests
             "LastDecayUtc should be persisted exactly.");
 
         // Map to emotion objects — accumulator should use the persisted time.
-        var (acc, _, _) = App.MapArchiveToEmotionObjects(loadedState);
+        var (acc, _, _, _) = App.MapArchiveToEmotionObjects(loadedState);
         Assert.AreEqual(testTime, acc.LastDecayUtc,
             "Accumulator should restore LastDecayUtc from archive.");
 
@@ -220,7 +220,7 @@ public class IsolatedArchiveChainTests
         archive.SaveState(state);
 
         var (loadedState, _, _) = archive.LoadState();
-        var (acc, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
+        var (acc, expr, _, _) = App.MapArchiveToEmotionObjects(loadedState);
 
         // Simulate corner award: +20 grievance.
         acc.AddGrievance(20);
@@ -267,7 +267,7 @@ public class IsolatedArchiveChainTests
         var (loadedState, _, _) = archive.LoadState();
 
         // Step 3: Map to emotion objects via production mapping (same as OnStartup).
-        var (acc, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
+        var (acc, expr, _, _) = App.MapArchiveToEmotionObjects(loadedState);
         Assert.AreEqual(50, acc.AffinityInt, "Initial affinity from archive should be 50.");
 
         // Step 4: Drive real gesture chain through MainWindow.ProcessPettingMove
@@ -319,10 +319,10 @@ public class IsolatedArchiveChainTests
         var (reloadedState, _, _) = archive.LoadState();
         Assert.AreEqual(55, reloadedState.Affinity,
             $"Reloaded affinity must be 55 after full chain. Got {reloadedState.Affinity}.");
-        Assert.AreEqual(2, reloadedState.SchemaVersion, "Schema version must remain 2.");
+        Assert.AreEqual(3, reloadedState.SchemaVersion, "Schema version must be 3.");
 
         // Step 8: Map reloaded state back to emotion objects (simulating restart).
-        var (reloadedAcc, _, _) = App.MapArchiveToEmotionObjects(reloadedState);
+        var (reloadedAcc, _, _, _) = App.MapArchiveToEmotionObjects(reloadedState);
         Assert.AreEqual(55, reloadedAcc.AffinityInt,
             $"Restored accumulator affinity must be 55. Got {reloadedAcc.AffinityInt}.");
     }

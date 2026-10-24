@@ -58,12 +58,17 @@ public sealed class ArchiveService
         // v1 → v2 compatibility: v1 files have no lastDecayUtc field.
         // Per PRODUCT R-02, fall back to lastSavedUtc so decay calculation
         // has a baseline timestamp after upgrade.
-        if (result.SchemaVersion < PetStateArchive.CurrentSchemaVersion
+        if (result.SchemaVersion < 2
             && string.IsNullOrEmpty(result.LastDecayUtc)
             && !string.IsNullOrEmpty(result.LastSavedUtc))
         {
             result.LastDecayUtc = result.LastSavedUtc;
         }
+
+        // v2 → v3 compatibility: v2 files have no peek event fields.
+        // PeekScheduler.Restore handles default values (null/0/false),
+        // so no explicit fallback is needed here. The fields default to
+        // their C# defaults which are the correct v1/v2 fallback values.
 
         return (result, fromBackup, unknownVersion);
     }

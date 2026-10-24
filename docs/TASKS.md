@@ -91,9 +91,13 @@
 
 ### P1-004 第一个稀有事件
 
-- 状态：`todo`。依赖：P1-003。关联：R-03。
+- 状态：`awaiting-verification`。依赖：P1-003。关联：R-03。
 - 范围：探头动作、每日计划与共享额度、持久化和时钟异常；测试入口与正式概率分开。
+- 细化参数已写入 PRODUCT R-03；存档 v3 字段已写入 ARCHITECTURE §7。
 - 验收：PRODUCT R-03；固定种子可复现；重启不重抽；不合适时延迟或跳过。
+- 实现内容：Core `PeekScheduler`（候选抽取 20–120 分钟、50% 概率判定、有效运行时间累计、日期切换/回拨、延迟/跳过/打断、5 秒探头持续）；存档 v3 五字段（`peekEventDate`/`peekCandidateMinutes`/`peekHasAttempted`/`peekHasTriggered`/`peekEffectiveRunMs`）+ v1/v2 兼容回退；App `OnUpdateTick` 接入调度+行为优先级（拖动/抚摸/菜单/暂停/委屈表达期间不启动）；`MapArchiveToEmotionObjects`/`MapEmotionObjectsToArchive` 对接存档；暂停补偿 peek 计时；拖动打断 peek 并标记额度消耗。
+- 测试：Core 22 项（PeekSchedulerTests：计划创建、同种子复现、有效运行时间累计、暂停不累计、候选到达+概率判定、50% 分布、同日不重复、打断结束、延迟到空闲、暂停不触发、日期切换、回拨不重抽、次日可再触发、存档恢复不重抽、已触发不重复、不恢复 mid-peek、全天中断不积压、探头持续/完成/手动结束）；App 8 项（PeekIntegrationTests：探头启动+curious 动作、5 秒后完成回 idle、拖动打断+额度消耗、暂停不累计、中断延迟到空闲、同日不重复、概率失败不触发+额度消耗、状态标脏）+ 9 项存档测试（PeekArchiveTests：v3 字段往返、默认值、v2/v1 兼容回退、生产映射恢复+ShouldFire 推导、存档往返不重抽、已触发不重复、v2→v3 升级）。
+- 验证：Core 208/208 + App 126/126 = 334/334 通过（`--no-build`，桌宠进程运行中 DLL 锁定无法重新构建，沿用已有构建产物）。探头动画复用 curious 占位，正式探头美术待后续。未做实机验证。
 
 ## 阶段 2：物理手感
 

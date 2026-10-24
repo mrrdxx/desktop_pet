@@ -786,14 +786,14 @@ public class PauseSemanticsTests
 
             // ── Phase 4: Load from isolated archive and restore ──
             var (loadedState, _, _) = archive.LoadState();
-            Assert.AreEqual(2, loadedState.SchemaVersion, "Loaded schema must be v2.");
+            Assert.AreEqual(3, loadedState.SchemaVersion, "Loaded schema must be v3.");
             Assert.IsTrue(loadedState.IsPaused, "Loaded state must be paused.");
 
             // F-06: MapArchiveToEmotionObjects must shift lastDecayUtc to now
             // when IsPaused=true, freezing the 12h offline gap.
             // Pass the simulated utcNow so the production mapping uses the
             // test's time source instead of real DateTime.UtcNow.
-            var (acc2, expr2, tracker2) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
+            var (acc2, expr2, tracker2, _) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
             Assert.AreEqual(acc1.GrievanceInt, acc2.GrievanceInt,
                 "Restored grievance must match saved int value.");
 
@@ -967,7 +967,7 @@ public class PauseSemanticsTests
             var (loadedState, _, _) = archive.LoadState();
             Assert.IsFalse(loadedState.IsPaused, "Loaded state must NOT be paused.");
 
-            var (acc2, expr2, tracker2) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
+            var (acc2, expr2, tracker2, _) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
 
             // F-06: When NOT paused, LastDecayUtc must be the saved value
             // (NOT shifted to now). The 12h offline interval is normal decay.
@@ -1060,7 +1060,7 @@ public class PauseSemanticsTests
         // ── Restore: clock rolled back 12h → restoreUtcNow = 00:00 ──
         var restoreUtcNow = savedBaseUtc.AddHours(-12); // 2026-10-24T00:00:00Z
 
-        var (acc, expr, tracker) = App.MapArchiveToEmotionObjects(savedState, restoreUtcNow);
+        var (acc, expr, tracker, _) = App.MapArchiveToEmotionObjects(savedState, restoreUtcNow);
 
         // F-06 R7: The reference must NOT be shifted backward to restoreUtcNow.
         // It must remain at the saved base (12:00) — F-02 protection preserved.

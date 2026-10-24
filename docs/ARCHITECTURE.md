@@ -107,7 +107,7 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 仅在需要时引入小接口，不提前建立完整服务框架：
 
 - 时间源：单调运行时间与 UTC 墙钟分离；测试可推进时间。
-- 随机源：测试能固定种子；生产随机结果必要时持久化，重启不重新抽奖。
+- 随机源：测试能固定种子；生产随机结果必要时持久化，重启不重新抽奖。P1-004 探头事件的候选分钟数和触发概率判定均持久化，重启不重新抽取或判定。
 - 桌面快照：鼠标、显示器、空闲、后期的窗口信息；Core 不直接调用 Win32。
 - 存档仓库：App 负责 IO；Core 仅产出可保存状态。
 
@@ -121,8 +121,8 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - `settings.json` 保存设置；`state.json` 保存宠物、情绪、事件与位置；未来习惯数据单独存储。
 - 每份文件带整数 `schemaVersion`。阶段 0 为 v1，实际结构如下：
 
-  **state.json v2**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
-  - `schemaVersion` (int, 默认 2)：模式版本号。v1 文件读取时情绪字段回退默认值。
+  **state.json v3**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
+  - `schemaVersion` (int, 默认 3)：模式版本号。v1 文件读取时情绪字段回退默认值；v2 文件读取时探头字段回退默认值。
   - `windowLeft` (double, 默认 100)：窗口左上角 X，WPF DIP 坐标。
   - `windowTop` (double, 默认 100)：窗口左上角 Y，WPF DIP 坐标。
   - `savedDeviceName` (string|null)：上次保存时宠物所在显示器设备名，用于恢复时检测显示器是否仍存在。
@@ -133,6 +133,11 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
   - `lastDecayUtc` (string|null)：上次衰减计算基准时间（UTC ISO 8601）。v1 回退为 `lastSavedUtc`。
   - `pendingGrievanceExpression` (bool, 默认 false)：是否有待执行的委屈表达。v1 回退 false。
   - `grievanceExpressionDate` (string|null)：标记待表达的本地日期（yyyy-MM-dd）。v1 回退 null。
+  - `peekEventDate` (string|null)：当前探头计划所属的本地日期（yyyy-MM-dd）。v1/v2 回退 null。
+  - `peekCandidateMinutes` (int, 默认 0)：候选触发点（有效运行分钟数，20-120 范围）。v1/v2 回退 0（表示未计划）。
+  - `peekHasAttempted` (bool, 默认 false)：是否已到达候选点并完成概率判定。v1/v2 回退 false。
+  - `peekHasTriggered` (bool, 默认 false)：是否已触发探头。v1/v2 回退 false。
+  - `peekEffectiveRunMs` (double, 默认 0)：当日累计有效运行毫秒数。v1/v2 回退 0。
 
   **settings.json v1**（`PetSettingsArchive`，同文件）：
   - `schemaVersion` (int, 默认 1)：模式版本号。

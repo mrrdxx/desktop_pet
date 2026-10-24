@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using DesktopPet.App.Platform;
 using DesktopPet.Core.Animation;
 using DesktopPet.Core.Emotion;
+using DesktopPet.Core.Events;
 using DesktopPet.Core.Input;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
@@ -101,6 +102,17 @@ public partial class MainWindow : System.Windows.Window
     internal EmotionDecayAccumulator? TestEmotionAccumulator;
     internal CornerTracker? TestCornerTracking;
     internal GrievanceExpressionState? TestGrievanceExpression;
+
+    // P1-004: Test injection point for peek scheduler (R-03).
+    // When non-null, OnUpdateTick uses this instead of App.Current.
+    internal PeekScheduler? TestPeekScheduler;
+
+    // P1-004: Peek event state (R-03).
+    // Peek animation lasts ~5 seconds, then returns to idle.
+    // Drag/petting/menu/pause interrupts peek; interrupted peek counts as triggered.
+    private bool _isPeeking;
+    private double _peekStartMs;
+    private double _lastPeekTickMs;
 
     // Win32 constants for no-activate window (F-01) and native popup menu.
     private const int GWL_EXSTYLE = -20;
@@ -730,6 +742,61 @@ public partial class MainWindow : System.Windows.Window
             }
         }
 
+        // P1-004: Peek event scheduling (R-03).
+        // Runs after emotion processing, before rendering. The scheduler tracks
+        // effective run time (non-paused), checks daily plan, and manages the
+        // peek animation lifecycle. Peek is suppressed during drag, petting,
+        // menu, pause, and grievance expression (high-priority interrupts).
+        // Test injection: TestPeekScheduler bypasses App.Current for unit tests.
+        PeekScheduler? peekScheduler = TestPeekScheduler;
+        if (peekScheduler is null && System.Windows.Application.Current is App peekApp)
+            peekScheduler = peekApp.PeekScheduler;
+
+        if (peekScheduler is not null)
+        {
+            // Calculate delta since last tick for effective run time accumulation.
+            // Use the same monotonic clock as the rest of OnUpdateTick.
+            var peekDeltaMs = nowMs - _lastPeekTickMs;
+            if (_lastPeekTickMs > 0 && peekDeltaMs > 0 && peekDeltaMs < 60_000)
+            {
+                // Normal tick: use actual delta (clamped to 60s to avoid huge jumps).
+            }
+            else
+            {
+                // First tick or abnormal delta: use a small default.
+                peekDeltaMs = 33; // ~30 FPS
+            }
+            _lastPeekTickMs = nowMs;
+
+            // Determine if a high-priority interrupt is active.
+            bool isInterrupted = _isDragging || _isPettingCandidate || _isContextMenuOpen
+                || _isExpressingGrievance;
+
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+            var peekResult = peekScheduler.Tick(today, peekDeltaMs, _isAppPaused, isInterrupted, nowMs);
+
+            switch (peekResult)
+            {
+                case PeekTickResult.PeekStarted:
+                    _isPeeking = true;
+                    _peekStartMs = nowMs;
+                    _animPlayer.PlayAction("curious"); // Reuse curious as peek placeholder.
+                    break;
+
+                case PeekTickResult.PeekInProgress:
+                    // Continue playing peek animation.
+                    break;
+
+                case PeekTickResult.PeekCompleted:
+                case PeekTickResult.PeekInterrupted:
+                    _isPeeking = false;
+                    _animPlayer.PlayAction("idle");
+                    if (System.Windows.Application.Current is App peekApp2)
+                        peekApp2.MarkStateDirty();
+                    break;
+            }
+        }
+
         UpdateFrame();
     }
 
@@ -820,6 +887,21 @@ public partial class MainWindow : System.Windows.Window
         if (_isExpressingGrievance)
         {
             InterruptGrievanceExpression();
+        }
+
+        // P1-004: Drag/petting also interrupts peek event (R-03).
+        // The PeekScheduler will detect the interrupt on the next tick and
+        // mark the peek as interrupted (quota consumed). We also stop the
+        // local peek flag immediately so the animation switches back.
+        if (_isPeeking)
+        {
+            _isPeeking = false;
+            var peekScheduler = TestPeekScheduler;
+            if (peekScheduler is null && System.Windows.Application.Current is App peekApp)
+                peekScheduler = peekApp.PeekScheduler;
+            peekScheduler?.EndPeek();
+            if (System.Windows.Application.Current is App appPeek)
+                appPeek.MarkStateDirty();
         }
 
         // P1-003: Determine if press is on head zone (petting) or body (drag).
@@ -1343,6 +1425,13 @@ public partial class MainWindow : System.Windows.Window
                     _grievanceExpressionStartMs += pauseDurationMs;
                 }
 
+                // P1-004: Compensate peek start time so the peek animation
+                // doesn't instantly complete after a long pause.
+                if (_isPeeking)
+                {
+                    _peekStartMs += pauseDurationMs;
+                }
+
                 // Compensate petting cooldown so it doesn't expire during pause.
                 _pettingCooldownUntilMs += pauseDurationMs;
 
@@ -1372,6 +1461,9 @@ public partial class MainWindow : System.Windows.Window
         _isAppPaused = false;
         _animPlayer.Resume();
         _updateTimer.Start();
+
+        // P1-004: Reset peek tick tracker so resume doesn't produce a huge delta.
+        _lastPeekTickMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
 
         // P1-002: Clear sampler on resume to start fresh sampling.
         _mouseSampler.Clear();
@@ -1448,6 +1540,12 @@ public partial class MainWindow : System.Windows.Window
     /// True while the pet is expressing grievance (10-second duration, R-02).
     /// </summary>
     public bool IsExpressingGrievance => _isExpressingGrievance;
+
+    /// <summary>
+    /// P1-004: Public accessor for the peek event state (for testing/diagnostics).
+    /// True while the pet is performing the peek animation (R-03).
+    /// </summary>
+    public bool IsPeeking => _isPeeking;
 
     /// <summary>
     /// P1-002: Public accessor for the context menu open state (for testing/diagnostics).
