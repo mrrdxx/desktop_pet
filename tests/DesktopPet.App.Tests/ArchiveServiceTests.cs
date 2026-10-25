@@ -293,7 +293,7 @@ public class ArchiveServiceTests
         var (loaded, _, unknown) = archive.LoadState();
 
         Assert.IsFalse(unknown);
-        Assert.AreEqual(3, loaded.SchemaVersion);
+        Assert.AreEqual(2, loaded.SchemaVersion);
         Assert.AreEqual(75, loaded.Affinity);
         Assert.AreEqual(85, loaded.Grievance);
         Assert.AreEqual("2026-10-22T12:00:00.0000000Z", loaded.LastDecayUtc);

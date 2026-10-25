@@ -9,7 +9,6 @@ using System.Windows.Threading;
 using DesktopPet.App.Platform;
 using DesktopPet.Core.Animation;
 using DesktopPet.Core.Emotion;
-using DesktopPet.Core.Events;
 using DesktopPet.Core.Input;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
@@ -29,6 +28,8 @@ public partial class MainWindow : System.Windows.Window
     // P1-001: Animation player and shared update timer.
     private readonly DispatcherTimer _updateTimer;
     private readonly AnimationPlayer _animPlayer;
+    private readonly IdleBlinkScheduler? _idleBlink;
+    private readonly CuriosityReaction _curiosity = new();
     private readonly PetCharacterDef _character;
     private readonly Dictionary<string, BitmapImage> _imageCache = [];
     private readonly string _assetDir;
@@ -37,11 +38,13 @@ public partial class MainWindow : System.Windows.Window
 
     private bool _isDragging;
     private System.Windows.Point _dragOffset;
+    private Point _pointerPressScreenDip;
 
     // P1-003: Petting detection state (R-02).
     // Head zone = upper 1/3 of the pet image (resource-driven zones deferred).
     // Petting: head press + small movement accumulated >= 1s → +5 affinity, 2s cooldown.
-    // Drag: body press → existing drag logic.
+    // Every visible part can drag. Head micro-moves remain petting only within
+    // the press-origin slop; conversion retains capture and the initial anchor.
     private bool _isPettingCandidate;
     private double _pettingStartMs;
     private double _pettingAccumulatedMs;
@@ -50,6 +53,7 @@ public partial class MainWindow : System.Windows.Window
     private const double PettingRequiredMs = 1000.0;
     private const double PettingCooldownMs = 2000.0;
     private const double PettingMaxMovePerFramePx = 8.0; // small movement threshold in DIP
+    private const double HeadDragSlopDip = 8.0;
     private const double PettingMinMovePx = 0.5; // F-03: below this is zero-displacement (stationary)
     private const double PettingMaxInterEventMs = 500.0; // F-03: gap larger than this is a long pause, not continuous petting
     private const double HeadZoneRatio = 1.0 / 3.0; // upper 1/3 is head
@@ -66,28 +70,14 @@ public partial class MainWindow : System.Windows.Window
     // the animation player; the player stays paused until the user resumes.
     private bool _isAppPaused;
 
-    // P1-002: Mouse sampler for speed/distance tracking (R-01).
-    // Fed by GetCursorPos at ~30 Hz in OnUpdateTick.
-    // Cleared on drag start, menu open, pause, and capture loss to avoid
-    // consuming stale samples after an interruption.
-    private readonly MouseSampler _mouseSampler = new();
-
-    // P1-002: Last known DPI scale of the pet window's monitor.
-    // Updated each tick via MonitorInterop.GetWindowDpiScale.
-    // When it changes (e.g. window moved to a different-DPI monitor),
-    // the sampler is cleared to avoid mixing samples from different DPI contexts.
-    private double _lastDpiScale = 1.0;
-
-    // P1-002: Hover and swipe detectors (Core pure logic).
+    // R-01: Only dwell/alpha-aware hover remains; fast-mouse reactions were removed.
     private readonly HoverDetector _hoverDetector = new();
-    private readonly SwipeDetector _swipeDetector = new();
 
-    // F-04: Test injection points for controlled mouse position, clock, and DPI.
+    // Test injection points for controlled mouse position and clock.
     // When non-null, OnUpdateTick uses these instead of the Win32 defaults.
     // Production code leaves these null — no behavior change.
     internal Func<(int x, int y)>? TestGetCursorPos;
     internal Func<double>? TestGetElapsedMs;
-    internal Func<double>? TestGetDpiScale;
 
     // G-03 R4: Test injection point for controlled UTC time source.
     // When non-null, OnUpdateTick uses this instead of DateTime.UtcNow
@@ -102,17 +92,6 @@ public partial class MainWindow : System.Windows.Window
     internal EmotionDecayAccumulator? TestEmotionAccumulator;
     internal CornerTracker? TestCornerTracking;
     internal GrievanceExpressionState? TestGrievanceExpression;
-
-    // P1-004: Test injection point for peek scheduler (R-03).
-    // When non-null, OnUpdateTick uses this instead of App.Current.
-    internal PeekScheduler? TestPeekScheduler;
-
-    // P1-004: Peek event state (R-03).
-    // Peek animation lasts ~5 seconds, then returns to idle.
-    // Drag/petting/menu/pause interrupts peek; interrupted peek counts as triggered.
-    private bool _isPeeking;
-    private double _peekStartMs;
-    private double _lastPeekTickMs;
 
     // Win32 constants for no-activate window (F-01) and native popup menu.
     private const int GWL_EXSTYLE = -20;
@@ -185,6 +164,8 @@ public partial class MainWindow : System.Windows.Window
         _assetDir = FindAssetDirectory();
         var character = LoadCharacter(_assetDir);
         _character = character;
+        if (character.Actions.TryGetValue("blink", out var blink))
+            _idleBlink = new IdleBlinkScheduler(blink);
         _animPlayer = new AnimationPlayer(character, GetElapsedMs);
         _animPlayer.OnActionMissing += OnActionMissing;
         _animPlayer.ActionCompleted += OnActionCompleted;
@@ -224,10 +205,13 @@ public partial class MainWindow : System.Windows.Window
 
     private static string FindAssetDirectory()
     {
-        // Look for assets/pets/default relative to the executable.
+        // Prefer the approved bear; retain the original prototype as fallback.
         var exeDir = AppDomain.CurrentDomain.BaseDirectory;
         var candidates = new[]
         {
+            Path.Combine(exeDir, "assets", "pets", "bear"),
+            Path.Combine(exeDir, "..", "..", "..", "..", "..", "assets", "pets", "bear"),
+            Path.Combine(exeDir, "..", "..", "..", "..", "assets", "pets", "bear"),
             Path.Combine(exeDir, "assets", "pets", "default"),
             Path.Combine(exeDir, "..", "..", "..", "..", "..", "assets", "pets", "default"),
             Path.Combine(exeDir, "..", "..", "..", "..", "assets", "pets", "default")
@@ -382,7 +366,7 @@ public partial class MainWindow : System.Windows.Window
 
     private void OnActionCompleted(string actionId)
     {
-        // When a Once action (e.g. dodge) completes, return to idle.
+        // When a registered Once expression completes, return to idle.
         if (actionId != "idle" && !_isDragging)
         {
             Dispatcher.BeginInvoke(new Action(() =>
@@ -484,8 +468,8 @@ public partial class MainWindow : System.Windows.Window
         _isContextMenuOpen = true;
         EndDrag();
 
-        // P1-002: Clear sampler while menu is open.
-        _mouseSampler.Clear();
+        // Reset hover when opening the menu.
+        _hoverDetector.Reset();
 
         try
         {
@@ -530,9 +514,8 @@ public partial class MainWindow : System.Windows.Window
             _isContextMenuOpen = false;
             DestroyMenu(menu);
 
-            // P1-002: Clear sampler after menu closes so resume doesn't
-            // consume stale samples from before the menu.
-            _mouseSampler.Clear();
+            // Start a fresh hover dwell after the menu closes.
+            _hoverDetector.Reset();
 
             // Complete the native popup lifecycle, including repeated invocations.
             PostMessage(_hwnd, WM_NULL, IntPtr.Zero, IntPtr.Zero);
@@ -553,84 +536,46 @@ public partial class MainWindow : System.Windows.Window
     /// <summary>
     /// P1-001: Shared update tick — the single animation update entry point.
     /// Called by the DispatcherTimer at ~30 FPS.
-    /// P1-002: Also samples mouse position via GetCursorPos and feeds the
-    /// MouseSampler. Sampling is skipped during drag, menu, and pause to
-    /// avoid consuming stale or irrelevant positions.
-    /// DPI is read from the window's monitor each tick; when it changes,
-    /// the sampler is cleared to avoid mixing samples across DPI contexts.
-    /// Hover and swipe detectors are fed after sampling; triggers are
-    /// suppressed during drag, menu, and pause.
+    /// Reads the current cursor position for alpha-aware hover. Drag, petting,
+    /// menu, pause and grievance expression suppress and reset hover.
     /// </summary>
     private void OnUpdateTick(object? sender, EventArgs e)
     {
         var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
 
-        // P1-002: Update DPI scale from the window's actual monitor.
-        // F-04: TestGetDpiScale injects a controlled DPI value for testing;
-        // production reads from MonitorInterop. The change detection, config
-        // update, and sampler clear are shared — only the DPI *source* differs.
-        double currentDpi;
-        if (TestGetDpiScale is not null)
-            currentDpi = TestGetDpiScale.Invoke();
-        else if (_hwnd != IntPtr.Zero)
-            currentDpi = MonitorInterop.GetWindowDpiScale(_hwnd).ScaleX;
-        else
-            currentDpi = _lastDpiScale;
+        if (_animPlayer.CurrentActionId != "curious")
+            _curiosity.Cancel();
 
-        if (Math.Abs(currentDpi - _lastDpiScale) > 0.001)
-        {
-            _lastDpiScale = currentDpi;
-            _mouseSampler.Config.DpiScale = currentDpi;
-            _swipeDetector.Config.DpiScale = currentDpi;
-            _mouseSampler.Clear();
-        }
-
-        // P1-002: Sample mouse position for speed/distance tracking.
-        // F-04: TestGetCursorPos injects a controlled position for testing.
-        // P1-003: Also skip during petting candidate state.
-        MouseSampleResult sampleResult = MouseSampleResult.Invalid;
-        if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused)
-        {
-            if (TestGetCursorPos is not null)
-            {
-                var (cx, cy) = TestGetCursorPos.Invoke();
-                sampleResult = _mouseSampler.Sample(new MouseSample(cx, cy, nowMs));
-            }
-            else if (GetCursorPos(out var pt))
-            {
-                sampleResult = _mouseSampler.Sample(new MouseSample(pt.X, pt.Y, nowMs));
-            }
-        }
-
-        // P1-002: Feed hover and swipe detectors when not in an interrupt state.
-        // P1-003: Also suppress during petting candidate.
-        // F-04 R4: Suppress hover/swipe during grievance expression so that
-        // a quick swipe near the pet doesn't replace the expression action
-        // while the expression lifecycle timer continues running.
+        // Position alone drives hover. No speed history, proximity fright,
+        // cooldown, or automatic dodge action remains (D-009).
         if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused
-            && !_isExpressingGrievance && sampleResult.IsValid)
+            && !_isExpressingGrievance && TryGetMousePosition(out var mouseX, out var mouseY))
         {
-            // Compute pet entity rectangle in physical pixels for distance checks.
             var petRectPx = GetPetRectPhysicalPx();
-
-            // Hover detection.
-            var hoverResult = _hoverDetector.Update(
-                sampleResult.Latest.X, sampleResult.Latest.Y,
-                petRectPx, nowMs, IsOverVisiblePet(sampleResult.Latest.X, sampleResult.Latest.Y));
-            if (hoverResult == HoverTrigger.Triggered)
+            bool isOverPet = IsOverVisiblePet(mouseX, mouseY);
+            var hoverResult = _hoverDetector.Update(mouseX, mouseY, petRectPx, nowMs, isOverPet);
+            if (hoverResult == HoverTrigger.Triggered && _animPlayer.CurrentActionId != "curious")
+            {
                 _animPlayer.PlayAction("curious");
-
-            // Swipe detection.
-            var swipeResult = _swipeDetector.Update(
-                sampleResult, petRectPx, nowMs);
-            if (swipeResult == SwipeTrigger.Triggered)
-                _animPlayer.PlayAction("dodge");
+                _curiosity.Start(nowMs);
+            }
+            if (_animPlayer.CurrentActionId == "curious")
+            {
+                // Adopt a curious frame left by an interruption/diagnostic too;
+                // action ownership still prevents replacing another expression.
+                if (!_curiosity.IsActive) _curiosity.Start(nowMs);
+                if (_curiosity.ShouldEnd(nowMs, isOverPet))
+                {
+                    _animPlayer.PlayAction("idle");
+                    _curiosity.Cancel();
+                }
+            }
         }
         else
         {
             // Reset detectors during interrupts to avoid stale state.
             _hoverDetector.Reset();
-            _swipeDetector.Reset();
+            if (!_isAppPaused) _curiosity.Cancel();
         }
 
         // P1-003: Advance emotion decay every tick (G-01: use float accumulator).
@@ -732,68 +677,13 @@ public partial class MainWindow : System.Windows.Window
 
                     if (mouseInRange)
                     {
-                        // Start expression: play "turn away" action (reuse curious for now).
+                        // Static aggrieved bear expression; turning-away motion is deferred.
                         // Expression will last 10 seconds, then resets grievance.
                         _isExpressingGrievance = true;
                         _grievanceExpressionStartMs = nowMs;
-                        _animPlayer.PlayAction("curious");
+                        _animPlayer.PlayAction("grievance");
                     }
                 }
-            }
-        }
-
-        // P1-004: Peek event scheduling (R-03).
-        // Runs after emotion processing, before rendering. The scheduler tracks
-        // effective run time (non-paused), checks daily plan, and manages the
-        // peek animation lifecycle. Peek is suppressed during drag, petting,
-        // menu, pause, and grievance expression (high-priority interrupts).
-        // Test injection: TestPeekScheduler bypasses App.Current for unit tests.
-        PeekScheduler? peekScheduler = TestPeekScheduler;
-        if (peekScheduler is null && System.Windows.Application.Current is App peekApp)
-            peekScheduler = peekApp.PeekScheduler;
-
-        if (peekScheduler is not null)
-        {
-            // Calculate delta since last tick for effective run time accumulation.
-            // Use the same monotonic clock as the rest of OnUpdateTick.
-            var peekDeltaMs = nowMs - _lastPeekTickMs;
-            if (_lastPeekTickMs > 0 && peekDeltaMs > 0 && peekDeltaMs < 60_000)
-            {
-                // Normal tick: use actual delta (clamped to 60s to avoid huge jumps).
-            }
-            else
-            {
-                // First tick or abnormal delta: use a small default.
-                peekDeltaMs = 33; // ~30 FPS
-            }
-            _lastPeekTickMs = nowMs;
-
-            // Determine if a high-priority interrupt is active.
-            bool isInterrupted = _isDragging || _isPettingCandidate || _isContextMenuOpen
-                || _isExpressingGrievance;
-
-            var today = DateTime.Now.ToString("yyyy-MM-dd");
-            var peekResult = peekScheduler.Tick(today, peekDeltaMs, _isAppPaused, isInterrupted, nowMs);
-
-            switch (peekResult)
-            {
-                case PeekTickResult.PeekStarted:
-                    _isPeeking = true;
-                    _peekStartMs = nowMs;
-                    _animPlayer.PlayAction("curious"); // Reuse curious as peek placeholder.
-                    break;
-
-                case PeekTickResult.PeekInProgress:
-                    // Continue playing peek animation.
-                    break;
-
-                case PeekTickResult.PeekCompleted:
-                case PeekTickResult.PeekInterrupted:
-                    _isPeeking = false;
-                    _animPlayer.PlayAction("idle");
-                    if (System.Windows.Application.Current is App peekApp2)
-                        peekApp2.MarkStateDirty();
-                    break;
             }
         }
 
@@ -802,7 +692,7 @@ public partial class MainWindow : System.Windows.Window
 
     /// <summary>
     /// P1-002: Get the pet entity rectangle in physical screen pixels.
-    /// Used by hover/swipe detectors for distance-to-edge calculations.
+    /// Used by hover and emotion interaction-range checks.
     /// </summary>
     private PetRectPx GetPetRectPhysicalPx()
     {
@@ -814,6 +704,23 @@ public partial class MainWindow : System.Windows.Window
         var first = Screen(bounds.TopLeft);
         var last = Screen(bounds.BottomRight);
         return new PetRectPx(first.X, first.Y, last.X - first.X, last.Y - first.Y);
+    }
+
+    private bool TryGetMousePosition(out int x, out int y)
+    {
+        if (TestGetCursorPos is not null)
+        {
+            (x, y) = TestGetCursorPos.Invoke();
+            return true;
+        }
+        if (GetCursorPos(out var point))
+        {
+            x = point.X;
+            y = point.Y;
+            return true;
+        }
+        x = y = 0;
+        return false;
     }
 
     private bool IsOverVisiblePet(double screenX, double screenY)
@@ -833,11 +740,18 @@ public partial class MainWindow : System.Windows.Window
     {
         var (_, frame) = _animPlayer.GetCurrentFrame();
 
+        // Only replace idle's eye pixels; action identity remains idle, so
+        // blinking cannot acquire movement/input ownership or restart hover.
+        var blinkFrame = _idleBlink?.Update(TestGetElapsedMs?.Invoke() ?? GetElapsedMs(),
+            _animPlayer.CurrentActionId == "idle" && !_isDragging && !_isPettingCandidate
+            && !_isContextMenuOpen && !_isExpressingGrievance);
+        if (blinkFrame is not null) frame = blinkFrame;
+
         // F-04: Apply frame offset to the Image render transform so that
         // non-zero OffsetX/Y in the frame definition compensate for content
         // shifts and keep the visual foot at a stable world position.
         // GetFootOffset returns (OffsetX, OffsetY) directly as the Transform.
-        var (offsetX, offsetY) = _animPlayer.GetFootOffset();
+        var (offsetX, offsetY) = (frame.OffsetX, frame.OffsetY);
         FrameOffsetTransform.X = offsetX;
         FrameOffsetTransform.Y = offsetY;
 
@@ -876,10 +790,31 @@ public partial class MainWindow : System.Windows.Window
         if (_isDragging || _isPettingCandidate)
             return;
 
+        var localPos = e.GetPosition(PetImage);
+        if (!PetImageGeometry.Contains(PetImage, localPos))
+            return;
+
         // F-03: Capture first, only enter interaction state if capture succeeds.
         PetCanvas.CaptureMouse();
         if (!PetCanvas.IsMouseCaptured)
             return;
+
+        if (!BeginCapturedPointerInteraction(localPos, PointerScreenDip(e.GetPosition(this))))
+            PetCanvas.ReleaseMouseCapture();
+        e.Handled = true;
+    }
+
+    // Shared production gesture entry: called only after the event wrapper
+    // successfully captures the mouse. Coordinates are supplied once at the UI
+    // boundary so tests can exercise the same head/body/anchor logic.
+    internal bool BeginCapturedPointerInteraction(Point imagePoint, Point screenDip)
+    {
+        if (_isDragging || _isPettingCandidate || !PetImageGeometry.Contains(PetImage, imagePoint))
+            return false;
+
+        bool isHeadPress = IsInHeadZone(imagePoint);
+        _pointerPressScreenDip = screenDip;
+        _dragOffset = new Point(screenDip.X - Left, screenDip.Y - Top);
 
         // F-04: Drag/petting start immediately interrupts grievance expression.
         // Per R-02, expression is interrupted when the user starts dragging;
@@ -889,124 +824,93 @@ public partial class MainWindow : System.Windows.Window
             InterruptGrievanceExpression();
         }
 
-        // P1-004: Drag/petting also interrupts peek event (R-03).
-        // The PeekScheduler will detect the interrupt on the next tick and
-        // mark the peek as interrupted (quota consumed). We also stop the
-        // local peek flag immediately so the animation switches back.
-        if (_isPeeking)
-        {
-            _isPeeking = false;
-            var peekScheduler = TestPeekScheduler;
-            if (peekScheduler is null && System.Windows.Application.Current is App peekApp)
-                peekScheduler = peekApp.PeekScheduler;
-            peekScheduler?.EndPeek();
-            if (System.Windows.Application.Current is App appPeek)
-                appPeek.MarkStateDirty();
-        }
-
-        // P1-003: Determine if press is on head zone (petting) or body (drag).
-        var localPos = e.GetPosition(PetImage);
-        var isHeadPress = IsInHeadZone(localPos);
-
         if (isHeadPress)
         {
             // Start petting candidate — may convert to drag if movement exceeds threshold.
             _isPettingCandidate = true;
             _pettingStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
             _pettingAccumulatedMs = 0;
-            _pettingLastPos = localPos;
-            _mouseSampler.Clear();
-            e.Handled = true;
-            return;
+            _pettingLastPos = imagePoint;
+            _hoverDetector.Reset();
+            return true;
         }
 
-        // F-02: PointToScreen returns physical pixels; Window.Left/Top are DIP.
-        // Convert screen pixel offset to DIP using the device transform.
-        var screenPosPx = PointToScreen(e.GetPosition(this));
-        var source = PresentationSource.FromVisual(this);
-        var transform = source?.CompositionTarget?.TransformFromDevice
-                        ?? Matrix.Identity;
-        var screenPosDip = transform.Transform(screenPosPx);
+        StartDragging();
+        return true;
+    }
 
+    private Point PointerScreenDip(Point windowPoint)
+    {
+        var screenPx = PointToScreen(windowPoint);
+        var transform = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformFromDevice
+            ?? Matrix.Identity;
+        return transform.Transform(screenPx);
+    }
+
+    private void StartDragging()
+    {
         _isDragging = true;
-        _dragOffset = new System.Windows.Point(screenPosDip.X - Left, screenPosDip.Y - Top);
-
-        // P1-002: Clear mouse sampler during drag to avoid stale samples.
-        _mouseSampler.Clear();
-
-        // P1-001: Switch to drag action when dragging starts.
+        _hoverDetector.Reset();
         _animPlayer.PlayAction("drag");
         UpdateFrame();
-
-        e.Handled = true;
     }
 
     private void PetCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
+        if (!_isPettingCandidate && !_isDragging)
+            return;
+        ProcessCapturedPointerMove(e.GetPosition(PetImage), PointerScreenDip(e.GetPosition(this)),
+            e.LeftButton == MouseButtonState.Pressed, TestGetElapsedMs?.Invoke() ?? GetElapsedMs());
+        e.Handled = true;
+    }
+
+    internal void ProcessCapturedPointerMove(Point imagePoint, Point screenDip, bool leftPressed, double nowMs)
+    {
+        if (!leftPressed)
+        {
+            EndCapturedPointerInteraction();
+            return;
+        }
         if (_isPettingCandidate)
         {
-            if (e.LeftButton != MouseButtonState.Pressed)
+            // Compare against the ORIGINAL press, not just the previous event:
+            // a series of 2-DIP movements must eventually become a drag too.
+            if ((screenDip - _pointerPressScreenDip).Length > HeadDragSlopDip
+                || (imagePoint - _pettingLastPos).Length > PettingMaxMovePerFramePx
+                || !IsInHeadZone(imagePoint))
             {
-                EndPetting();
+                ConvertPettingToDrag();
+            }
+            else
+            {
+                ProcessPettingMove(imagePoint, nowMs);
                 return;
             }
-
-            var localPos = e.GetPosition(PetImage);
-            var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
-
-            if (ProcessPettingMove(localPos, nowMs))
-            {
-                e.Handled = true;
-                return;
-            }
-
-            // ProcessPettingMove returned false — check if it was a large movement
-            // that needs drag conversion.
-            var dx = localPos.X - _pettingLastPos.X;
-            var dy = localPos.Y - _pettingLastPos.Y;
-            var moveDist = Math.Sqrt(dx * dx + dy * dy);
-            if (moveDist > PettingMaxMovePerFramePx && !_isPettingCandidate && !_isDragging)
-            {
-                // Large movement — convert to drag.
-                ConvertPettingToDrag(e);
-            }
-
-            e.Handled = true;
-            return;
         }
-
-        if (!_isDragging || e.LeftButton != MouseButtonState.Pressed)
+        if (_isDragging)
         {
-            // F-03: If left button is no longer pressed but we're still dragging,
-            // clean up via the unified end-drag path.
-            if (_isDragging)
-                EndDrag();
-            return;
+            // Preserve the anchor captured on mouse-down, including the first
+            // conversion movement; do not require a second move to catch up.
+            Left = screenDip.X - _dragOffset.X;
+            Top = screenDip.Y - _dragOffset.Y;
         }
-
-        // F-02: Convert screen pixels to DIP before assigning to Left/Top.
-        var screenPosPx = PointToScreen(e.GetPosition(this));
-        var source = PresentationSource.FromVisual(this);
-        var transform = source?.CompositionTarget?.TransformFromDevice
-                        ?? Matrix.Identity;
-        var screenPosDip = transform.Transform(screenPosPx);
-
-        Left = screenPosDip.X - _dragOffset.X;
-        Top = screenPosDip.Y - _dragOffset.Y;
-        e.Handled = true;
     }
 
     private void PetCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        EndCapturedPointerInteraction();
+        e.Handled = true;
+    }
+
+    internal void EndCapturedPointerInteraction()
+    {
         if (_isPettingCandidate)
         {
             EndPetting();
-            e.Handled = true;
         }
         else if (_isDragging)
         {
             EndDrag();
-            e.Handled = true;
         }
     }
 
@@ -1085,9 +989,8 @@ public partial class MainWindow : System.Windows.Window
         _animPlayer.PlayAction("idle");
         UpdateFrame();
 
-        // P1-002: Clear sampler after drag ends so resume doesn't consume
-        // stale samples from before the drag.
-        _mouseSampler.Clear();
+        // Start a fresh hover dwell after dragging.
+        _hoverDetector.Reset();
     }
 
     /// <summary>
@@ -1119,27 +1022,18 @@ public partial class MainWindow : System.Windows.Window
             }
         }
 
-        _mouseSampler.Clear();
+        _hoverDetector.Reset();
     }
 
     /// <summary>
     /// P1-003: Convert petting candidate to drag when movement exceeds threshold.
-    /// Sets up drag offset from current mouse position.
+    /// Retains the original mouse capture and down-position anchor.
     /// </summary>
-    private void ConvertPettingToDrag(System.Windows.Input.MouseEventArgs e)
+    private void ConvertPettingToDrag()
     {
         _isPettingCandidate = false;
-
-        var screenPosPx = PointToScreen(e.GetPosition(this));
-        var source = PresentationSource.FromVisual(this);
-        var transform = source?.CompositionTarget?.TransformFromDevice
-                        ?? Matrix.Identity;
-        var screenPosDip = transform.Transform(screenPosPx);
-
-        _isDragging = true;
-        _dragOffset = new System.Windows.Point(screenPosDip.X - Left, screenPosDip.Y - Top);
-        _animPlayer.PlayAction("drag");
-        UpdateFrame();
+        _pettingAccumulatedMs = 0;
+        StartDragging();
     }
 
     /// <summary>
@@ -1176,10 +1070,10 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
-    /// F-03: Internal entry point for petting move processing, used by tests
-    /// to drive the real gesture chain without constructing MouseEventArgs.
-    /// This is the same logic called by PetCanvas_MouseMove when _isPettingCandidate
-    /// is true. Returns false if petting was ended (left head zone or converted to drag).
+    /// Micro-stroke counting shared by the production gesture pipeline and tests.
+    /// ProcessCapturedPointerMove first handles cumulative drag intent and capture
+    /// continuity; this helper alone does not prove a head-to-drag transition.
+    /// Returns false if the petting candidate was ended.
     /// </summary>
     internal bool ProcessPettingMove(Point localPos, double nowMs)
     {
@@ -1204,7 +1098,7 @@ public partial class MainWindow : System.Windows.Window
             _isPettingCandidate = false;
             if (PetCanvas.IsMouseCaptured)
                 PetCanvas.ReleaseMouseCapture();
-            _mouseSampler.Clear();
+            _hoverDetector.Reset();
             return false;
         }
 
@@ -1396,9 +1290,11 @@ public partial class MainWindow : System.Windows.Window
         // G-03: Record pause start for compensation on resume.
         _pauseStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
         _hasPauseStartMs = true;
+        _idleBlink?.Pause(_pauseStartMs);
+        _curiosity.Pause(_pauseStartMs);
 
-        // P1-002: Clear sampler on pause to avoid stale samples on resume.
-        _mouseSampler.Clear();
+        // Discard hover dwell at the pause boundary.
+        _hoverDetector.Reset();
     }
 
     /// <summary>
@@ -1410,6 +1306,9 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     public void ResumeAnimation()
     {
+        var expressionResumeMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        _idleBlink?.Resume(expressionResumeMs);
+        _curiosity.Resume(expressionResumeMs);
         // G-03: Calculate pause duration and compensate timers.
         if (_hasPauseStartMs)
         {
@@ -1423,13 +1322,6 @@ public partial class MainWindow : System.Windows.Window
                 if (_isExpressingGrievance)
                 {
                     _grievanceExpressionStartMs += pauseDurationMs;
-                }
-
-                // P1-004: Compensate peek start time so the peek animation
-                // doesn't instantly complete after a long pause.
-                if (_isPeeking)
-                {
-                    _peekStartMs += pauseDurationMs;
                 }
 
                 // Compensate petting cooldown so it doesn't expire during pause.
@@ -1462,11 +1354,8 @@ public partial class MainWindow : System.Windows.Window
         _animPlayer.Resume();
         _updateTimer.Start();
 
-        // P1-004: Reset peek tick tracker so resume doesn't produce a huge delta.
-        _lastPeekTickMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
-
-        // P1-002: Clear sampler on resume to start fresh sampling.
-        _mouseSampler.Clear();
+        // Resume starts a fresh hover dwell.
+        _hoverDetector.Reset();
     }
 
     /// <summary>
@@ -1507,25 +1396,13 @@ public partial class MainWindow : System.Windows.Window
     public bool HasVisibleImage => PetImage.Source is not null;
 
     /// <summary>
-    /// P1-002: Public accessor for the mouse sampler (for testing/diagnostics).
-    /// The sampler is fed at ~30 Hz during normal operation and cleared on
-    /// drag, menu, pause, and capture loss.
-    /// </summary>
-    public MouseSampler MouseSampler => _mouseSampler;
-
-    /// <summary>
     /// P1-002: Public accessor for the hover detector (for testing/diagnostics).
     /// </summary>
     public HoverDetector HoverDetector => _hoverDetector;
 
     /// <summary>
-    /// P1-002: Public accessor for the swipe detector (for testing/diagnostics).
-    /// </summary>
-    public SwipeDetector SwipeDetector => _swipeDetector;
-
-    /// <summary>
     /// P1-002: Public accessor for the drag state (for testing/diagnostics).
-    /// True while the pet is being dragged; sampling and detection are skipped.
+    /// True while the pet is being dragged; hover detection is skipped.
     /// </summary>
     public bool IsDragging => _isDragging;
 
@@ -1542,22 +1419,10 @@ public partial class MainWindow : System.Windows.Window
     public bool IsExpressingGrievance => _isExpressingGrievance;
 
     /// <summary>
-    /// P1-004: Public accessor for the peek event state (for testing/diagnostics).
-    /// True while the pet is performing the peek animation (R-03).
-    /// </summary>
-    public bool IsPeeking => _isPeeking;
-
-    /// <summary>
     /// P1-002: Public accessor for the context menu open state (for testing/diagnostics).
-    /// True while the native context menu is open; sampling and detection are skipped.
+    /// True while the native context menu is open; hover detection is skipped.
     /// </summary>
     public bool IsContextMenuOpen => _isContextMenuOpen;
-
-    /// <summary>
-    /// P1-002: Public accessor for the last DPI scale applied to the sampler
-    /// and swipe detector (for testing/diagnostics).
-    /// </summary>
-    public double LastDpiScale => _lastDpiScale;
 
     protected override void OnClosed(EventArgs e)
     {

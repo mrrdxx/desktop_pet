@@ -56,13 +56,14 @@ artifacts/                 # 构建/验证产物，已加入 .gitignore
 - 透明区穿透与实体可拖动必须分别实测。仅设置透明背景不等于完成了输入命中设计。
 - 不把整个窗口永久设为穿透，也不假定 `HTTRANSPARENT` 能解决所有跨进程情况。
 - 第一原型优先验证 WPF/layered window 的透明像素行为；如需原生命中或分区，先验证跨进程效果再采用。
-- 阶段 1 鼠标位置由一个共享采样器读取 `GetCursorPos`，建议 30 Hz；实体点击/拖动通过窗口消息与鼠标捕获处理。
-- 鼠标速度/距离采样器已实现于 `DesktopPet.Core.Input.MouseSampler`：滑动窗口（默认 10 样本）、过滤采样中断（间隔超限清窗）和瞬移（等效位移超限清窗）、输出两种速度信号——净位移速度（移动趋势，方向反转会抵消）和近期分段速度（最近 N 段最大单段速率，不抵消、不被旧静止样本稀释，供甩动检测使用）。跨屏 DPI 等效换算。纯 Core 逻辑，参数可配置（`MouseSamplerConfig`），DPI 缩放运行时可调。已接入 App 层：`MainWindow.OnUpdateTick` 在 ~30Hz 调用 `GetCursorPos` 喂给采样器，拖动/菜单/暂停时 Clear。DPI 已接入窗口实际显示器（`MonitorInterop.GetWindowDpiScale`），DPI 变化时清空采样器。
+- 阶段1在共享 `MainWindow.OnUpdateTick` 中约30Hz通过 `TryGetMousePosition` 读取当前 `GetCursorPos`，直接驱动悬停；实体点击/拖动通过窗口消息与鼠标捕获处理。无速度历史窗口，也无需速度归一化/DPI缓存。
+- 按 [D-009](DECISIONS.md#d-009取消快速移鼠受惊功能) 已删除MouseSampler/SwipeDetector、甩动阈值/冷却及自动dodge接线；窗口DPI感知、坐标适配和阶段2拖动抛掷需求保留，不以此恢复鼠标速度触发表情。
 - 悬停检测器已实现于 `DesktopPet.Core.Input.HoverDetector`：驻留 1.2 秒触发一次，离开 0.5 秒重新允许。App 通过可选 isOverEntity 提供当前帧 Alpha 命中，完全透明点不计驻留；纯 Core 未传该输入时保留矩形/边距逻辑。App 的 PetImageGeometry 按 Stretch=None 自然尺寸缓存 Alpha，含帧 Transform，通过 Image.PointFromScreen/PointToScreen 映射实际坐标；距离检测使用不透明区域外接矩形，不用透明窗口全框。触发 curious，拖动/菜单/暂停时 Reset。实现方实机记录见 [P1-002 验证](history/P1-002-live-validation.md)。
-- 甩动检测器已实现于 `DesktopPet.Core.Input.SwipeDetector`：消费近期最大分段速度及其 PeakSegmentEnd 终点的边缘距离，冷却参数为 3 秒，已接入 App `OnUpdateTick` 和 dodge 动作。参数由 SwipeDetectorConfig 配置，拖动/菜单/暂停时 Reset；不将最新慢段位置错误匹配给旧峰值。
-- 悬停离开时间使用 `_leaveStartMs` 仅记录离开段首个样本，连续 outside 不覆盖。[复核 R1](reviews/P1-002-review.md) 已关闭原悬停重置与峰值位置组合的 F-02/F-03；完整 App 交互和真实手感尚未验收。
-- 头部抚摸与身体拖动的命中区由资源提供；在手势识别完成前不能同时启动两种操作。
-- 不为悬停/速度检测安装全局键盘钩子。托盘及菜单可暂时正常激活，宠物本体交互不得打断用户键入。
+- 悬停离开时间使用 `_leaveStartMs` 仅记录离开段首个样本，连续 outside 不覆盖。连续离开0.5秒由检测器发出一次 `HoverTrigger.Left` 并结束旧驻留；这是重触发门槛。低频采样下返回时若已超过期限，仍结束旧驻留并从返回时重新计时。
+- D-011将好奇显示生命周期独立为Core `CuriosityReaction`：主动保持2000ms、提前离开300ms结束；App仅在当前动作curious且未被中断时消费结束请求并回idle。到时退出不Reset悬停检测器，因此持续驻留不会重播。两类时间各有职责，不用重触发的500ms代替表情退出的300ms。
+- 拖动、抚摸、菜单、暂停和委屈表达期间清理悬停；恢复后需重新完整驻留。CuriosityReaction在暂停中冻结剩余寿命、恢复重算离开时段；其他中断取消旧生命周期，残留curious在恢复后重新接管退出，不覆盖其他动作。仍为curious时新驻留事件不重启其寿命。见 [ART-002交接](handoffs/ART-002-natural-expressions.md)；[INPUT-003](handoffs/INPUT-003-curiosity-exit-fix.md)保留原版本依据。
+- 点击起点统一要求命中当前帧Alpha；抚摸与拖动共享已捕获的输入，不能同时启动。按D-010，头部不是拖动排除区；具体手势契约见§8。
+- 不为悬停检测安装全局键盘钩子。托盘及菜单可暂时正常激活，宠物本体交互不得打断用户键入。
 - 当前临时退出入口统一使用 Win32 原生弹出菜单：打开时明确设置所属窗口为前台，关闭时恢复原非激活位；不得只删除 NOACTIVATE 样式就假定外部点击会关闭。实现与回归见 [菜单修复交接](handoffs/P0-002-menu-fix.md)。
 - 拖动捕获丢失、窗口销毁、暂停、会话锁定都必须释放输入状态。
 - 单实例属于阶段 0 生命周期工作，重复启动应恢复既有实例或给明确反馈，不启动两套存档写入者。
@@ -107,7 +108,7 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 仅在需要时引入小接口，不提前建立完整服务框架：
 
 - 时间源：单调运行时间与 UTC 墙钟分离；测试可推进时间。
-- 随机源：测试能固定种子；生产随机结果必要时持久化，重启不重新抽奖。P1-004 探头事件的候选分钟数和触发概率判定均持久化，重启不重新抽取或判定。
+- 随机源：测试能固定种子；生产随机结果必要时持久化，重启不重新抽奖。
 - 桌面快照：鼠标、显示器、空闲、后期的窗口信息；Core 不直接调用 Win32。
 - 存档仓库：App 负责 IO；Core 仅产出可保存状态。
 
@@ -121,8 +122,8 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - `settings.json` 保存设置；`state.json` 保存宠物、情绪、事件与位置；未来习惯数据单独存储。
 - 每份文件带整数 `schemaVersion`。阶段 0 为 v1，实际结构如下：
 
-  **state.json v3**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
-  - `schemaVersion` (int, 默认 3)：模式版本号。v1 文件读取时情绪字段回退默认值；v2 文件读取时探头字段回退默认值。
+  **state.json v2**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
+  - `schemaVersion` (int, 默认 2)：模式版本号。v1 文件读取时情绪字段回退默认值。
   - `windowLeft` (double, 默认 100)：窗口左上角 X，WPF DIP 坐标。
   - `windowTop` (double, 默认 100)：窗口左上角 Y，WPF DIP 坐标。
   - `savedDeviceName` (string|null)：上次保存时宠物所在显示器设备名，用于恢复时检测显示器是否仍存在。
@@ -133,11 +134,6 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
   - `lastDecayUtc` (string|null)：上次衰减计算基准时间（UTC ISO 8601）。v1 回退为 `lastSavedUtc`。
   - `pendingGrievanceExpression` (bool, 默认 false)：是否有待执行的委屈表达。v1 回退 false。
   - `grievanceExpressionDate` (string|null)：标记待表达的本地日期（yyyy-MM-dd）。v1 回退 null。
-  - `peekEventDate` (string|null)：当前探头计划所属的本地日期（yyyy-MM-dd）。v1/v2 回退 null。
-  - `peekCandidateMinutes` (int, 默认 0)：候选触发点（有效运行分钟数，20-120 范围）。v1/v2 回退 0（表示未计划）。
-  - `peekHasAttempted` (bool, 默认 false)：是否已到达候选点并完成概率判定。v1/v2 回退 false。
-  - `peekHasTriggered` (bool, 默认 false)：是否已触发探头。v1/v2 回退 false。
-  - `peekEffectiveRunMs` (double, 默认 0)：当日累计有效运行毫秒数。v1/v2 回退 0。
 
   **settings.json v1**（`PetSettingsArchive`，同文件）：
   - `schemaVersion` (int, 默认 1)：模式版本号。
@@ -163,10 +159,15 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 
 ## 8. 资源起步约定
 
+2026-10-24 小熊接入：默认运行目录为 assets/pets/bear/，角色ID bear-v1，旧 assets/pets/default/ 保留为原型回退。原P1-001占位图及其测量记录为历史基线，不是当前美术。九张静态PNG为120×120、96DPI，帧脚点(60,110)；curious PNG底部101加offsetY9，其余底部110。表情母版/导出约束见 assets/art/bear-v1/README.md，运行映射见 assets/pets/bear/README.md。
+
+2026-10-25 ART-002：额外两张blink_half/closed保持原idle底图RGBA（仅两处眼部RGB变化，Alpha完全不变）。JSON增加blink Once序列，idle仅保留中性睁眼图。Core `IdleBlinkScheduler`消费该序列并调度；App只在idle且无输入/情绪占用时以返回帧覆盖渲染，不调用PlayAction或改变CurrentAction/世界位置。暂停冻结帧与剩余间隔，恢复移除暂停时段；未更新超过500ms则弃掉旧计划、重排安静间隔。退出其他表情后也重新等待；无idle以外的眨眼、跨图片透明叠加或新资源字段。原default未注册blink时不启用调度，原型加载/回退保留。
+MainWindow既有委屈生命周期改为播放独立 grievance 静态脸；时长/冷却/优先级不变。其他新增表情仅注册供后续使用，不新增自动状态。身体动作暂缓，原基本切帧继续保留。不能把图像候选板当作运行图集，也不能声称已实现背对动作。
+
 阶段 0 不要求资源加载器；程序绘制形状必须有明显身体/头部，便于命中测试。
 阶段 1 加入角色 JSON：角色 ID、帧尺寸、脚点、交互区域、动作 ID、帧路径、每帧时长和循环方式。
 坐标均为未缩放素材像素；用脚点固定切换动作时的位置，禁止动作变化导致角色脚底跳动。
-最小动作集：idle、curious、dodge、drag；后续按任务增加。缺失动作回退 idle 并记录一次诊断，不崩溃。
+当前基础动作集：idle、curious、drag；情绪接入grievance，静态储备表情按bear资源说明注册。dodge已按D-009从bear和default的JSON注册移除。缺失动作回退idle并记录一次诊断，不崩溃；通用Once播放器能力保留。
 路径仅允许包内相对路径，加载时校验帧尺寸与时长，PNG 解码后缓存，不每帧重新读盘。
 实际 JSON 样例与字段结构在对应任务建立，未建立前不宣称已有可用资源格式。
 
@@ -183,7 +184,9 @@ P1-001 已实现：
 P1-003 交互区域约定：
 - 头部区域（抚摸命中）：图像矩形内上 1/3，即 X ∈ [0, frameWidth] 且 Y ∈ [0, frameHeight/3]。坐标超出图像边界（负值或超出宽高）不算头部。
 - 头部区域还需命中当前帧的不透明像素（Alpha > 0）：头部矩形内的透明空白不算头部，防止在空白处继续累计抚摸时间。
-- 身体区域（拖动命中）：图像矩形内 Y > frameHeight/3 的部分。
+- 拖动起点：当前帧所有不透明像素，包含头顶/耳朵/眼睛上方。身体按下立即拖动；头部按下先进入抚摸候选，不能把该候选误当成不能拖动。
+- `BeginCapturedPointerInteraction`在鼠标捕获成功后保存最初的screen DIP位置与抓取偏移；`ProcessCapturedPointerMove`用相对按下点的累计距离区分手势。超过8DIP、单次位移超过8DIP或移出抚摸区时先转拖动，不先调用会释放捕获的EndPetting，也不以转换时位置重算抓取点；同一事件立即应用完整位移。
+- 头部转拖动清空抚摸累计值，保留原捕获；抬起经`EndCapturedPointerInteraction`统一结束，捕获丢失/窗口关闭沿用原清理路径。真实窗口事件和测试使用同一坐标处理入口，DIP换算仍在WPF边界完成。
 - 当前区域比例硬编码为上 1/3（`HeadZoneRatio`），来源为 frameHeight；角色 JSON 中的 per-character 交互区域字段待后续阶段加入。
 
 ## 9. 后期 Windows 能力边界

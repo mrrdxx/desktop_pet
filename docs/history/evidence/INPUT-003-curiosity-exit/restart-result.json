@@ -1,0 +1,13 @@
+{
+  "time": "2026-10-25T05:46:50.3084610+08:00",
+  "closedPids": [
+    181968
+  ],
+  "newPid": 181684,
+  "executable": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\curiosity-exit-fix\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.exe",
+  "visibleWindowCount": 1,
+  "hwnd": 660328,
+  "dpi": 144,
+  "shutdownMethod": "WM_CLOSE; WaitForExit",
+  "notes": "Normal production restart only; real input probe is separately logged."
+}

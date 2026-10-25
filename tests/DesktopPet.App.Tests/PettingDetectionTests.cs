@@ -7,7 +7,7 @@ namespace DesktopPet.App.Tests;
 
 /// <summary>
 /// P1-003: Tests for petting detection and drag gesture distinction (R-02).
-/// Verifies head zone detection, petting candidate state interrupts sampling,
+/// Verifies head zone detection, petting candidate state interrupts hover,
 /// petting increment triggers on accumulated time, cooldown prevents repeat,
 /// and large movement converts petting to drag.
 ///
@@ -121,10 +121,10 @@ public class PettingDetectionTests
         }
     }
 
-    // ── Petting candidate interrupts sampling ──────────────────────────
+    // ── Petting candidate interrupts hover ──────────────────────────
 
     [STATestMethod]
-    public void Petting_CandidateState_SkipsSampling()
+    public void Petting_CandidateState_ResetsHover()
     {
         var window = CreateMainWindowOrFail();
         try
@@ -132,24 +132,20 @@ public class PettingDetectionTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
-            // First tick to get a sample.
+            // Build active hover before entering the petting gesture.
             InvokeTick(window);
             clockMs += 33;
-            Assert.IsTrue(window.MouseSampler.WindowCount >= 1,
-                "Sampler should have samples before petting candidate.");
+            Assert.IsTrue(window.HoverDetector.IsHovering,
+                "Hover should be active before petting candidate.");
 
             // Enter petting candidate state (simulating head press).
             SetField(window, "_isPettingCandidate", true);
-            window.MouseSampler.Clear();
 
-            // Tick during petting — should skip sampling.
+            // Tick during petting — should reset hover.
             InvokeTick(window);
             clockMs += 33;
 
-            Assert.AreEqual(0, window.MouseSampler.WindowCount,
-                "Sampler must be empty during petting candidate state.");
             Assert.IsFalse(window.HoverDetector.IsHovering,
                 "HoverDetector must be reset during petting candidate.");
         }
@@ -273,21 +269,19 @@ public class PettingDetectionTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             // Enter petting candidate.
             SetField(window, "_isPettingCandidate", true);
-            window.MouseSampler.Clear();
 
             // End petting.
             InvokeMethod(window, "EndPetting");
 
-            // Tick after petting ends — sampling should resume.
+            // Tick after petting ends — hover should resume.
             InvokeTick(window);
             clockMs += 33;
 
-            Assert.IsTrue(window.MouseSampler.WindowCount >= 1,
-                "Sampler must accept new samples after petting ends.");
+            Assert.IsTrue(window.HoverDetector.IsHovering,
+                "Hover dwell must restart after petting ends.");
         }
         finally
         {

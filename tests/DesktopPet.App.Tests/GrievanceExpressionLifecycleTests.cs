@@ -72,7 +72,6 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             // Mouse far from pet (pet at 100,100 size 120; mouse at 900,900).
             window.TestGetCursorPos = () => (900, 900);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -105,8 +104,8 @@ public class GrievanceExpressionLifecycleTests
 
             Assert.IsTrue(window.IsExpressingGrievance,
                 "Expression must start when mouse enters interaction range.");
-            Assert.AreEqual("curious", window.CurrentAction,
-                $"Expression must play 'curious'. Got: {window.CurrentAction}");
+            Assert.AreEqual("grievance", window.CurrentAction,
+                $"Expression must play 'grievance'. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -129,7 +128,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -145,7 +143,7 @@ public class GrievanceExpressionLifecycleTests
             clockMs += 33;
 
             Assert.IsTrue(window.IsExpressingGrievance, "Expression should be in progress.");
-            Assert.AreEqual("curious", window.CurrentAction, "Should be playing curious.");
+            Assert.AreEqual("grievance", window.CurrentAction, "Should be playing grievance.");
 
             // Tick past 10 seconds.
             for (int i = 0; i < 310; i++)
@@ -183,7 +181,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -235,7 +232,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -268,7 +264,7 @@ public class GrievanceExpressionLifecycleTests
 
             Assert.IsFalse(window.IsExpressingGrievance,
                 "Expression must NOT restart after completion.");
-            // After expression completes, hover/swipe input resumes normally.
+            // After expression completes, hover input resumes normally.
             // The action may be "idle" or "curious" (hover-triggered) — both are valid.
             // The key assertion is that expression does NOT restart.
             Assert.IsTrue(window.CurrentAction == "idle" || window.CurrentAction == "curious",
@@ -295,7 +291,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -334,15 +329,15 @@ public class GrievanceExpressionLifecycleTests
         }
     }
 
-    // ── F-04 R4: Expression priority over hover/swipe ──────────────────
+    // ── F-04 R4: Expression priority over hover ──────────────────
 
     /// <summary>
-    /// F-04 R4: While grievance expression is in progress, a quick swipe
+    /// F-04 R4: While grievance expression is in progress, cursor movement
     /// near the pet must NOT replace the expression action. The expression
     /// lifecycle (timer + flag) must stay consistent with the displayed action.
     /// </summary>
     [STATestMethod]
-    public void F04_R4_SwipeDuringExpression_DoesNotOverrideAction()
+    public void CursorMotionDuringExpression_DoesNotOverrideAction()
     {
         var window = CreateMainWindowOrFail();
         try
@@ -350,7 +345,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -365,27 +359,24 @@ public class GrievanceExpressionLifecycleTests
             InvokeTick(window);
             clockMs += 33;
             Assert.IsTrue(window.IsExpressingGrievance, "Expression should be in progress.");
-            Assert.AreEqual("curious", window.CurrentAction,
-                "Expression should be playing 'curious'.");
+            Assert.AreEqual("grievance", window.CurrentAction,
+                "Expression should be playing 'grievance'.");
 
-            // Simulate a fast swipe near the pet: move mouse quickly across
-            // multiple positions in subsequent ticks to trigger swipe detector.
-            // The swipe detector needs samples with high speed.
-            var swipePositions = new[] { (100, 100), (220, 100), (100, 220), (220, 220) };
+            // Cursor motion must not replace the active emotion expression.
+            var positions = new[] { (100, 100), (220, 100), (100, 220), (220, 220) };
             for (int i = 0; i < 30; i++)
             {
-                var (sx, sy) = swipePositions[i % swipePositions.Length];
+                var (sx, sy) = positions[i % positions.Length];
                 window.TestGetCursorPos = () => (sx, sy);
                 InvokeTick(window);
                 clockMs += 33;
             }
 
-            // Expression must still be in progress and action must still be
-            // "curious" — swipe must NOT have switched to "dodge".
+            // Emotion lifecycle and its visible expression must remain aligned.
             Assert.IsTrue(window.IsExpressingGrievance,
-                "Expression must still be in progress — swipe must not cancel expression lifecycle.");
-            Assert.AreEqual("curious", window.CurrentAction,
-                $"Action must stay 'curious' during expression — swipe must not override. Got: {window.CurrentAction}");
+                "Mouse movement must not cancel the expression lifecycle.");
+            Assert.AreEqual("grievance", window.CurrentAction,
+                $"Action must stay 'grievance' during expression. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -394,7 +385,7 @@ public class GrievanceExpressionLifecycleTests
     }
 
     /// <summary>
-    /// F-04 R4: After expression completes (10s), hover/swipe input must
+    /// F-04 R4: After expression completes (10s), hover input must
     /// resume working normally. The expression suppression must not persist
     /// after the expression ends.
     /// </summary>
@@ -407,7 +398,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -469,7 +459,6 @@ public class GrievanceExpressionLifecycleTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();

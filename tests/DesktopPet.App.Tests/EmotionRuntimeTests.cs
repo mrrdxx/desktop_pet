@@ -98,7 +98,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             // Use a fixed start time in the past so decay has already elapsed.
             var startUtc = DateTime.UtcNow - TimeSpan.FromHours(6);
@@ -192,7 +191,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             // Start with grievance at 80, decay base = now (no pre-elapsed decay).
             var accumulator = new EmotionDecayAccumulator(50, 80, DateTime.UtcNow);
@@ -271,7 +269,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
             var cornerTracker = new CornerTracker();
@@ -332,7 +329,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var cornerTracker = new CornerTracker();
             window.TestCornerTracking = cornerTracker;
@@ -442,7 +438,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var cornerTracker = new CornerTracker();
             var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
@@ -507,7 +502,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -551,7 +545,6 @@ public class EmotionRuntimeTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 60, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -587,7 +580,6 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -609,8 +601,8 @@ public class EmotionRuntimeTests
 
             Assert.IsTrue(window.IsExpressingGrievance,
                 "Expression must be in progress after tick with pending + next day + mouse in range.");
-            Assert.AreEqual("curious", window.CurrentAction,
-                $"Expression must play 'curious' action. Got: {window.CurrentAction}");
+            Assert.AreEqual("grievance", window.CurrentAction,
+                $"Expression must play 'grievance' action. Got: {window.CurrentAction}");
             // Pending is NOT cleared yet — only cleared after 10s or interrupt.
             Assert.IsTrue(grievanceExpr.IsPending,
                 "Pending must remain true during expression — only cleared after 10s or interrupt.");
@@ -657,7 +649,6 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -693,8 +684,8 @@ public class EmotionRuntimeTests
 
             Assert.IsTrue(window.IsExpressingGrievance,
                 "Expression must start after petting ends.");
-            Assert.AreEqual("curious", window.CurrentAction,
-                $"Expression must play 'curious'. Got: {window.CurrentAction}");
+            Assert.AreEqual("grievance", window.CurrentAction,
+                $"Expression must play 'grievance'. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -715,7 +706,6 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -751,8 +741,8 @@ public class EmotionRuntimeTests
 
             Assert.IsTrue(window.IsExpressingGrievance,
                 "Expression must start after menu closes.");
-            Assert.AreEqual("curious", window.CurrentAction,
-                $"Expression must play 'curious'. Got: {window.CurrentAction}");
+            Assert.AreEqual("grievance", window.CurrentAction,
+                $"Expression must play 'grievance'. Got: {window.CurrentAction}");
         }
         finally
         {
@@ -779,7 +769,6 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();

@@ -78,7 +78,6 @@ public class PauseSemanticsTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             // Use a fixed base time = now, so initial tick has ~0 elapsed.
             var baseUtc = DateTime.UtcNow;
@@ -168,7 +167,6 @@ public class PauseSemanticsTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -252,7 +250,6 @@ public class PauseSemanticsTests
             var clockMs = 0.0;
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
             window.TestEmotionAccumulator = accumulator;
@@ -437,7 +434,6 @@ public class PauseSemanticsTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetUtcNow = () => utcNow;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             // Test accumulator: will be paused for 5 seconds of unified time.
             var testAcc = new EmotionDecayAccumulator(50, 90, utcNow);
@@ -521,7 +517,6 @@ public class PauseSemanticsTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetUtcNow = () => utcNow;
             window.TestGetCursorPos = () => (500, 500);
-            window.TestGetDpiScale = () => 1.0;
 
             var testAcc = new EmotionDecayAccumulator(50, 90, utcNow);
             window.TestEmotionAccumulator = testAcc;
@@ -622,7 +617,6 @@ public class PauseSemanticsTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetUtcNow = () => utcNow;
             window.TestGetCursorPos = () => (160, 160);
-            window.TestGetDpiScale = () => 1.0;
 
             var accumulator = new EmotionDecayAccumulator(50, 85, utcNow);
             var grievanceExpr = new GrievanceExpressionState();
@@ -741,7 +735,6 @@ public class PauseSemanticsTests
                 window1.TestGetElapsedMs = () => clockMs1;
                 window1.TestGetUtcNow = () => utcNow;
                 window1.TestGetCursorPos = () => (500, 500);
-                window1.TestGetDpiScale = () => 1.0;
 
                 acc1 = new EmotionDecayAccumulator(50, 90, utcNow);
                 window1.TestEmotionAccumulator = acc1;
@@ -786,14 +779,14 @@ public class PauseSemanticsTests
 
             // ── Phase 4: Load from isolated archive and restore ──
             var (loadedState, _, _) = archive.LoadState();
-            Assert.AreEqual(3, loadedState.SchemaVersion, "Loaded schema must be v3.");
+            Assert.AreEqual(2, loadedState.SchemaVersion, "Loaded schema must be v2.");
             Assert.IsTrue(loadedState.IsPaused, "Loaded state must be paused.");
 
             // F-06: MapArchiveToEmotionObjects must shift lastDecayUtc to now
             // when IsPaused=true, freezing the 12h offline gap.
             // Pass the simulated utcNow so the production mapping uses the
             // test's time source instead of real DateTime.UtcNow.
-            var (acc2, expr2, tracker2, _) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
+            var (acc2, expr2, tracker2) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
             Assert.AreEqual(acc1.GrievanceInt, acc2.GrievanceInt,
                 "Restored grievance must match saved int value.");
 
@@ -818,7 +811,6 @@ public class PauseSemanticsTests
                 window2.TestGetElapsedMs = () => clockMs2;
                 window2.TestGetUtcNow = () => utcNow;
                 window2.TestGetCursorPos = () => (500, 500);
-                window2.TestGetDpiScale = () => 1.0;
 
                 window2.TestEmotionAccumulator = acc2;
                 window2.TestCornerTracking = tracker2;
@@ -921,7 +913,6 @@ public class PauseSemanticsTests
                 window1.TestGetElapsedMs = () => clockMs1;
                 window1.TestGetUtcNow = () => utcNow;
                 window1.TestGetCursorPos = () => (500, 500);
-                window1.TestGetDpiScale = () => 1.0;
 
                 acc1 = new EmotionDecayAccumulator(50, 90, utcNow);
                 window1.TestEmotionAccumulator = acc1;
@@ -967,7 +958,7 @@ public class PauseSemanticsTests
             var (loadedState, _, _) = archive.LoadState();
             Assert.IsFalse(loadedState.IsPaused, "Loaded state must NOT be paused.");
 
-            var (acc2, expr2, tracker2, _) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
+            var (acc2, expr2, tracker2) = App.MapArchiveToEmotionObjects(loadedState, utcNow);
 
             // F-06: When NOT paused, LastDecayUtc must be the saved value
             // (NOT shifted to now). The 12h offline interval is normal decay.
@@ -985,7 +976,6 @@ public class PauseSemanticsTests
                 window2.TestGetElapsedMs = () => clockMs2;
                 window2.TestGetUtcNow = () => utcNow;
                 window2.TestGetCursorPos = () => (500, 500);
-                window2.TestGetDpiScale = () => 1.0;
 
                 window2.TestEmotionAccumulator = acc2;
                 window2.TestCornerTracking = tracker2;
@@ -1060,7 +1050,7 @@ public class PauseSemanticsTests
         // ── Restore: clock rolled back 12h → restoreUtcNow = 00:00 ──
         var restoreUtcNow = savedBaseUtc.AddHours(-12); // 2026-10-24T00:00:00Z
 
-        var (acc, expr, tracker, _) = App.MapArchiveToEmotionObjects(savedState, restoreUtcNow);
+        var (acc, expr, tracker) = App.MapArchiveToEmotionObjects(savedState, restoreUtcNow);
 
         // F-06 R7: The reference must NOT be shifted backward to restoreUtcNow.
         // It must remain at the saved base (12:00) — F-02 protection preserved.

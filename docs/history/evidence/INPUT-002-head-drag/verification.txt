@@ -1,0 +1,16 @@
+2026-10-25 Asia/Shanghai. Implementer self-validation, not independent sign-off.
+Baseline HEAD a2412f7 plus existing worktree and INPUT-002 gesture fix.
+
+Solution build: 0 warnings, 0 errors, exit 0.
+Full MSTest: App144 passed (11s), Core174 passed (260ms), total318, failed0/skipped0, exit0.
+New cases:16. Initial targeted run of the first14 cases passed; final full run includes two added real-capture/body tests.
+Actual WPF capture test shows its own window and verifies Canvas capture before and after head->drag, then releases it. No system mouse injection in that unit test.
+
+InteractionProbe and BearAnimationReview builds: 0 warnings/errors, exit0.
+InteractionProbe live run: actual mouse/windows/time, HWND DPI144, PASS26, failures0, exit0.
+See head-drag-live-result.txt for original tool-produced log.
+Normal production restart result and per-file/binary SHA256 are retained alongside this file.
+Desktop repository launcher --check resolves artifacts/head-drag-fix/build and exits0.
+
+No artwork, dependencies, archive schema, commits or pushes changed in this fix.
+No 100%/mixed-DPI/multi-monitor live result was added.

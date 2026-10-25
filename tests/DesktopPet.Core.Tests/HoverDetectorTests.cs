@@ -19,6 +19,60 @@ public class HoverDetectorTests
     // Pet at (100,100) size 120x120 → covers [100,220] x [100,220]
     private static readonly PetRectPx _petRect = Rect(100, 100, 120, 120);
 
+    [TestMethod]
+    public void Leave_AtHalfSecond_EmitsOnceAndEndsSession()
+    {
+        var det = new HoverDetector();
+        det.Update(150, 150, _petRect, 0);
+        Assert.AreEqual(HoverTrigger.Triggered, det.Update(150, 150, _petRect, 1200));
+        Assert.AreEqual(HoverTrigger.None, det.Update(500, 500, _petRect, 1300));
+        Assert.AreEqual(HoverTrigger.None, det.Update(500, 500, _petRect, 1799));
+        Assert.AreEqual(HoverTrigger.Left, det.Update(500, 500, _petRect, 1800));
+        Assert.IsFalse(det.IsHovering);
+        Assert.IsFalse(det.HasTriggered);
+        Assert.AreEqual(HoverTrigger.None, det.Update(500, 500, _petRect, 5000));
+    }
+
+    [TestMethod]
+    public void BriefLeaveThenReenter_CancelsOldLeaveDeadline()
+    {
+        var det = new HoverDetector();
+        det.Update(150, 150, _petRect, 0);
+        det.Update(150, 150, _petRect, 1200);
+        det.Update(500, 500, _petRect, 1300);
+        Assert.AreEqual(HoverTrigger.None, det.Update(150, 150, _petRect, 1700));
+        Assert.IsTrue(det.HasTriggered);
+        det.Update(500, 500, _petRect, 2000);
+        Assert.AreEqual(HoverTrigger.None, det.Update(500, 500, _petRect, 2499));
+        Assert.AreEqual(HoverTrigger.Left, det.Update(500, 500, _petRect, 2500));
+    }
+
+    [TestMethod]
+    public void ResetDuringLeave_RequiresFreshOutsideInterval_AndStillReportsLeft()
+    {
+        var det = new HoverDetector();
+        det.Update(150, 150, _petRect, 0);
+        det.Update(150, 150, _petRect, 1200);
+        det.Update(500, 500, _petRect, 1300);
+        det.Reset();
+        det.Update(500, 500, _petRect, 2000);
+        Assert.AreEqual(HoverTrigger.None, det.Update(500, 500, _petRect, 2499));
+        Assert.AreEqual(HoverTrigger.Left, det.Update(500, 500, _petRect, 2500),
+            "Leave must be reported even after an interruption cleared the old triggered flag.");
+    }
+
+    [TestMethod]
+    public void TransparentPointInsideBounds_CountsAsLeave()
+    {
+        var det = new HoverDetector();
+        det.Update(150, 150, _petRect, 0, true);
+        det.Update(150, 150, _petRect, 1200, true);
+        det.Update(150, 150, _petRect, 1300, false);
+        Assert.AreEqual(HoverTrigger.Left, det.Update(150, 150, _petRect, 1800, false));
+        Assert.AreEqual(HoverTrigger.None, det.Update(150, 150, _petRect, 1900, true));
+        Assert.AreEqual(HoverTrigger.Triggered, det.Update(150, 150, _petRect, 3100, true));
+    }
+
     // ── Basic dwell trigger ──
 
     [TestMethod]
@@ -72,7 +126,7 @@ public class HoverDetectorTests
         // Return at t=1900 — 600ms since last inside (1300), exceeds 500ms reset.
         // Should start a fresh dwell.
         var r2 = det.Update(150, 150, _petRect, 1900);
-        Assert.AreEqual(HoverTrigger.None, r2);
+        Assert.AreEqual(HoverTrigger.Left, r2, "Report the completed leave if no tick observed its timeout outside.");
 
         // Dwell again for 1200ms → trigger.
         var r3 = det.Update(150, 150, _petRect, 3100);

@@ -1,0 +1,5 @@
+System.InvalidOperationException: 此 Visual 未连接到 PresentationSource。
+   at System.Windows.Media.Visual.PointToScreen(Point point)
+   at BearAnimationReview.State() in C:\Users\mrrdxx\Desktop\pet\artifacts\bear-animation-review\BearAnimationReview.cs:line 106
+   at BearAnimationReview.RecordState() in C:\Users\mrrdxx\Desktop\pet\artifacts\bear-animation-review\BearAnimationReview.cs:line 122
+   at BearAnimationReview.<>c.<Main>b__6_1(Object _, EventArgs _) in C:\Users\mrrdxx\Desktop\pet\artifacts\bear-animation-review\BearAnimationReview.cs:line 43

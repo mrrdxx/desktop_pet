@@ -1,0 +1,28 @@
+2026-10-25 Asia/Shanghai — INPUT-001 implementer self-validation
+
+HEAD a2412f7 + existing uncommitted rollback/art changes + D-009 removal.
+No commit or push was performed.
+
+Executed:
+dotnet build DesktopPet.slnx -c Debug --artifacts-path artifacts/mouse-reaction-removal/build -m:1 --ignore-failed-sources --nologo -v minimal
+First attempt: NU1900 because sandbox could not access NuGet vulnerability metadata.
+Same command in normal environment: exit code 0, 0 warnings, 0 errors; all four projects built.
+
+Executed:
+dotnet test DesktopPet.slnx -c Debug --artifacts-path artifacts/mouse-reaction-removal/build --no-build --no-restore -m:1 --nologo -v minimal
+Tool result: exit code 0.
+App: passed 128, failed 0, skipped 0; duration 9s.
+Core: passed 174, failed 0, skipped 0; duration 168ms.
+Total 302. Previous 336 minus 34 dedicated speed/swipe tests.
+Includes three fast cursor sequences (1/33/100ms), dwell thresholds, leave/reenter, four interruption states, existing alpha/foot/emotion/archive regressions.
+
+Also built:
+dotnet build tests/DesktopPet.InteractionProbe/DesktopPet.InteractionProbe.csproj -c Debug --artifacts-path artifacts/mouse-reaction-removal/probe-build -m:1 --ignore-failed-sources --nologo -v minimal
+tests/Integration/Build-BearAnimationReview.ps1
+Both exit 0 with 0 warnings/errors. No real input suite was rerun this turn.
+
+tools/Start-DesktopPet.cmd --check: exit 0; resolves new mouse-reaction-removal build.
+Desktop wrapper remains pointed to that repository-maintained script.
+Normal restart and visible HWND/DPI result: restart-result.json.
+Current source and binary SHA256: versions.json.
+src/current executable tests contain no MouseSampler/SwipeDetector/peak-speed/DPI-test-seam or automatic PlayAction(dodge) references. Historical records and stored fixture snapshots are intentionally retained.

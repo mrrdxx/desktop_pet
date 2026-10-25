@@ -21,10 +21,10 @@ public class CharacterLoaderTests
             { "imagePath": "idle_1.png", "durationMs": 200, "offsetX": 0, "offsetY": 0 }
           ]
         },
-        "dodge": {
+        "sample_once": {
           "loop": "once",
           "frames": [
-            { "imagePath": "dodge_0.png", "durationMs": 600, "offsetX": 0, "offsetY": 0 }
+            { "imagePath": "sample_once_0.png", "durationMs": 600, "offsetX": 0, "offsetY": 0 }
           ]
         }
       }
@@ -50,7 +50,7 @@ public class CharacterLoaderTests
         var def = CharacterLoader.Load(SampleJson);
 
         Assert.IsTrue(def.Actions.ContainsKey("idle"));
-        Assert.IsTrue(def.Actions.ContainsKey("dodge"));
+        Assert.IsTrue(def.Actions.ContainsKey("sample_once"));
 
         var idle = def.Actions["idle"];
         Assert.AreEqual(2, idle.Frames.Count);
@@ -58,9 +58,9 @@ public class CharacterLoaderTests
         Assert.AreEqual("idle_0.png", idle.Frames[0].ImagePath);
         Assert.AreEqual(800, idle.Frames[0].DurationMs);
 
-        var dodge = def.Actions["dodge"];
-        Assert.AreEqual(1, dodge.Frames.Count);
-        Assert.AreEqual(LoopMode.Once, dodge.Loop);
+        var sample_once = def.Actions["sample_once"];
+        Assert.AreEqual(1, sample_once.Frames.Count);
+        Assert.AreEqual(LoopMode.Once, sample_once.Loop);
     }
 
     [TestMethod]

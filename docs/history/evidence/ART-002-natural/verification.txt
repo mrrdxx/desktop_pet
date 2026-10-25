@@ -1,0 +1,32 @@
+ART-002 natural-expression implementation self-verification
+Date: 2026-10-25 Asia/Shanghai
+Baseline: a2412f7 plus pre-existing uncommitted rollback/art/input changes.
+This summary transcribes actual tool results; raw TRX and live logs are alongside.
+
+Product build: exit 0, zero warnings/errors.
+Initial full tests: Core 191 PASS, App 157 PASS/2 FAIL, no skipped.
+Failures: blink non-eye RGBA rounding at translucent outline; curiosity lifetime restarted on resumed hover.
+Both repaired; no test deletion or tolerance relaxation.
+Final full tests: Core 191/191, App 159/159; total 350/350, no failed/skipped, exit 0.
+
+Image source: built-in imagegen; no CLI/API fallback.
+Blink compositing: original RGBA copied per pixel; only eye regions are modified.
+Pixel test: all Alpha identical, all non-eye RGB identical, half != closed; mouth/body/feet preserved.
+Assets: 120x120, 96DPI; world foot and opaque-corner checks pass.
+
+Probe first build: Image alias ambiguity, corrected with explicit WPF alias.
+Final probe build and animation review host build: zero warnings/errors, exit 0.
+Real cursor/window probe: HWND DPI144, 37 PASS, no FAIL/ERROR, failures=0, exit 0.
+26-second idle observation: original open, half, closed, half, open; content smile absent.
+Measured blink-start gaps: 4132.6, 6557.2, 4898.8 ms, including prior cycle and timer rounding.
+Curiosity ends under continuous hover; repeated stationary hover does not re-trigger.
+Actual head/ear/body drag, release, menu/Esc, Pause/Resume and D-009 regression pass.
+
+Production restart: old version normal WM_CLOSE/WaitForExit; new version eventually one visible HWND at DPI144.
+Initial fixed 2-second visibility probe was not ready; follow-up confirms visible; no force kill/relaunch.
+Current launcher --check: exit 0, artifacts/bear-natural/build path exists.
+
+Limits: author self-test, not independent ART-001 approval or user subjective visual acceptance.
+Real-input probe uses ordinary Application without production archives/tray; no Shell icon claim.
+Current 100%/mixed-DPI/multi-monitor/full new-art petting-score live set not performed.
+No commit, push, P1-004 work, new dependency or archive format change.

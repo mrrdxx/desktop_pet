@@ -1,0 +1,57 @@
+2026-10-25T06:07:23.1613246+08:00 WINDOW hwnd=3483938; dpi=144; visible=True; build=C:\Users\mrrdxx\Desktop\pet\artifacts\bear-natural\probe-build\bin\DesktopPet.InteractionProbe\debug\DesktopPet.dll
+2026-10-25T06:07:23.4717781+08:00 IDLE_FRAME ms=0; image=idle_0.png
+2026-10-25T06:07:29.2022474+08:00 IDLE_FRAME ms=5730; image=blink_half.png
+2026-10-25T06:07:29.2502717+08:00 IDLE_FRAME ms=5778; image=blink_closed.png
+2026-10-25T06:07:29.3578749+08:00 IDLE_FRAME ms=5886; image=blink_half.png
+2026-10-25T06:07:29.3883988+08:00 IDLE_FRAME ms=5916; image=idle_0.png
+2026-10-25T06:07:33.3348194+08:00 IDLE_FRAME ms=9863; image=blink_half.png
+2026-10-25T06:07:33.3820871+08:00 IDLE_FRAME ms=9910; image=blink_closed.png
+2026-10-25T06:07:33.4601071+08:00 IDLE_FRAME ms=9988; image=blink_half.png
+2026-10-25T06:07:33.5376666+08:00 IDLE_FRAME ms=10066; image=idle_0.png
+2026-10-25T06:07:39.8919776+08:00 IDLE_FRAME ms=16420; image=blink_half.png
+2026-10-25T06:07:39.9530535+08:00 IDLE_FRAME ms=16481; image=blink_closed.png
+2026-10-25T06:07:40.0168270+08:00 IDLE_FRAME ms=16545; image=blink_half.png
+2026-10-25T06:07:40.0783852+08:00 IDLE_FRAME ms=16606; image=idle_0.png
+2026-10-25T06:07:44.7907728+08:00 IDLE_FRAME ms=21319; image=blink_half.png
+2026-10-25T06:07:44.8379483+08:00 IDLE_FRAME ms=21366; image=blink_closed.png
+2026-10-25T06:07:44.9304301+08:00 IDLE_FRAME ms=21458; image=blink_half.png
+2026-10-25T06:07:45.0082471+08:00 IDLE_FRAME ms=21536; image=idle_0.png
+2026-10-25T06:07:49.4836598+08:00 PASS real idle rendering uses neutral eye-only blink frames, not content smile
+2026-10-25T06:07:49.4836840+08:00 PASS real idle observation contains at least three blink cycles
+2026-10-25T06:07:49.4851845+08:00 BLINK_START_GAPS_MS 4132.6,6557.2,4898.8
+2026-10-25T06:07:49.4851990+08:00 PASS real blink starts respect quiet 3-7 second intervals plus cycle length/timer tolerance
+2026-10-25T06:07:49.4853119+08:00 PASS blink keeps idle action identity and world-foot offset
+2026-10-25T06:07:51.4025507+08:00 PASS transparent corner does not trigger curiosity
+2026-10-25T06:07:54.4546536+08:00 PASS real cursor dwell triggers curious
+2026-10-25T06:07:54.8619623+08:00 PASS continuous dwell does not replay action
+2026-10-25T06:07:54.9712574+08:00 PASS brief mouse leave keeps curiosity during grace period
+2026-10-25T06:07:55.2297929+08:00 PASS quick return does not flicker or replay curiosity
+2026-10-25T06:07:55.8847650+08:00 PASS leaving mouse alone restores idle and clears curious offset without click
+2026-10-25T06:07:58.6392372+08:00 PASS leave then re-enter generates a new curious action
+2026-10-25T06:08:01.1442324+08:00 PASS continuous hover naturally ends curiosity after two active seconds
+2026-10-25T06:08:02.6460956+08:00 PASS stationary pointer does not repeat curiosity after natural end
+2026-10-25T06:08:06.7180270+08:00 PASS paused curiosity remains frozen after mouse leave
+2026-10-25T06:08:07.4295633+08:00 PASS resuming with mouse outside ends curiosity without any click
+2026-10-25T06:08:10.3435637+08:00 PASS slow approach without full dwell keeps idle
+2026-10-25T06:08:10.9616907+08:00 PASS fast cursor movement alone keeps idle (D-009)
+2026-10-25T06:08:11.2725120+08:00 PASS repeated rapid movement does not change expression
+2026-10-25T06:08:14.1210856+08:00 PASS fast motion followed by slow approach only allows normal hover feedback
+2026-10-25T06:08:14.5549495+08:00 PASS actual left button captures and selects drag
+2026-10-25T06:08:16.5207096+08:00 PASS held drag suppresses curiosity
+2026-10-25T06:08:16.8337378+08:00 PASS button up stops capture and cursor following
+2026-10-25T06:08:17.5526469+08:00 PASS head press at 34,18 is received
+2026-10-25T06:08:17.9242714+08:00 PASS head drag at 34,18 preserves capture and original anchor
+2026-10-25T06:08:18.0330394+08:00 PASS head release at 34,18 finishes interaction
+2026-10-25T06:08:18.7475612+08:00 PASS head press at 85,18 is received
+2026-10-25T06:08:19.1207347+08:00 PASS head drag at 85,18 preserves capture and original anchor
+2026-10-25T06:08:19.2303306+08:00 PASS head release at 85,18 finishes interaction
+2026-10-25T06:08:19.9396003+08:00 PASS head press at 60,25 is received
+2026-10-25T06:08:20.3121478+08:00 PASS head drag at 60,25 preserves capture and original anchor
+2026-10-25T06:08:20.4204736+08:00 PASS head release at 60,25 finishes interaction
+2026-10-25T06:08:21.0559965+08:00 PASS actual right click opens native menu
+2026-10-25T06:08:22.5628889+08:00 PASS native menu suppresses mouse actions
+2026-10-25T06:08:22.7801185+08:00 PASS Esc dismisses real native menu
+2026-10-25T06:08:25.0127972+08:00 PASS Pause API blocks real cursor interactions
+2026-10-25T06:08:25.2771127+08:00 PASS Resume does not replay paused input immediately
+2026-10-25T06:08:26.7814617+08:00 PASS fresh dwell after Resume triggers normally
+2026-10-25T06:08:26.7978814+08:00 RESULT failures=0; real cursor + visible HWND; no archives; operator subjective feel not measured

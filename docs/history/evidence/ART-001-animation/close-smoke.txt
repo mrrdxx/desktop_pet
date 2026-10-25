@@ -1,0 +1,5 @@
+Final diagnostic host build: 0 warnings, 0 errors
+Run: 
+review-20261025-020327
+Initial state recorded; close command acknowledged; no errors.txt.
+No mouse input in this smoke run.

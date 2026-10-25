@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-10-25T06:13:27.6362676+08:00",
+  "newPid": 183036,
+  "executable": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\bear-natural\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.exe",
+  "visibleWindowCount": 1,
+  "hwnd": 37558538,
+  "dpi": 144,
+  "oldVersionShutdown": "WM_CLOSE and WaitForExit completed before new process launch",
+  "readinessNote": "Initial 2-second visibility check was not ready. Follow-up enumeration confirms visible HWND; no forced kill or repeated start."
+}

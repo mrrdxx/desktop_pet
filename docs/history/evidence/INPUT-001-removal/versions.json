@@ -1,0 +1,34 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "3DB2C7A645E6BA720592B435874DCD0CACB045F5559E47F63739618D940DEDD5"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Input\\HoverDetector.cs",
+    "Hash": "A4DB2B74C3C659FC2B7815486C16A9EA5218C105949B138CFABA819111FF0535"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\character.json",
+    "Hash": "B351182C0B72E764B5F2BEEA78F4CA62D052D403A00D1AACC04C7E02D05A3D3F"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\default\\character.json",
+    "Hash": "2EF9EBF26458D3D9F1930BC87E6E2A8D1A4F2EE64DCF7C481F2F488D2014E3B1"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.App.Tests\\HoverInteractionIntegrationTests.cs",
+    "Hash": "0034B0448C5666B719C3FF58713F599B45ADB5E3622DA2F0E4B14D22C0E8D153"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tools\\Start-DesktopPet.cmd",
+    "Hash": "1261349F017237714227859813E6682FAED3F1B562A172592271D17F219E491B"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\mouse-reaction-removal\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.dll",
+    "Hash": "5FC71E9A7572B9B27F113307D00AEC36BECAB82D084290FD3A88894341506E3C"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\mouse-reaction-removal\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.Core.dll",
+    "Hash": "5848E2FB30D570FCDAC1E4321670C45EAA9F0C0A6E0A14513EEA88FB10172E3B"
+  }
+]

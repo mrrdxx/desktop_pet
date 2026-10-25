@@ -1,0 +1,82 @@
+[
+  {
+    "frame": "annoyed.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6554
+  },
+  {
+    "frame": "bashful.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6557
+  },
+  {
+    "frame": "content.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6565
+  },
+  {
+    "frame": "curious.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6541
+  },
+  {
+    "frame": "dodge.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6545
+  },
+  {
+    "frame": "drag.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6545
+  },
+  {
+    "frame": "grievance.png",
+    "left": 22,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6494
+  },
+  {
+    "frame": "happy.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6552
+  },
+  {
+    "frame": "idle.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6553
+  },
+  {
+    "frame": "sleepy.png",
+    "left": 21,
+    "top": 9,
+    "right": 99,
+    "bottom": 111,
+    "visiblePixels": 6548
+  }
+]

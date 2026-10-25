@@ -1,0 +1,23 @@
+INPUT-003 implementation verification, 2026-10-25 Asia/Shanghai
+Baseline: a2412f7 plus pre-existing uncommitted changes and INPUT-003 changes.
+This is an excerpt/transcription of actual command results, not a raw build transcript.
+
+Before the fix:
+LeavingCuriosity_ReturnsIdleWithoutClick_AfterHalfSecond(false): FAILED; expected idle, actual curious.
+LeavingCuriosity_ReturnsIdleWithoutClick_AfterHalfSecond(true): FAILED; expected idle, actual curious.
+The two cases move outside or onto a transparent point; neither clicks the pet.
+
+After the fix:
+dotnet build DesktopPet.slnx -c Debug --artifacts-path artifacts/curiosity-exit-fix/build -m:1 --no-restore --nologo -v minimal
+Exit 0; 0 warnings, 0 errors.
+dotnet test DesktopPet.slnx -c Debug --artifacts-path artifacts/curiosity-exit-fix/build --no-build --no-restore -m:1 --nologo -v minimal
+Exit 0; Core 178/178, App 154/154; total 332/332; failed 0, skipped 0.
+
+InteractionProbe and BearAnimationReview separately rebuilt: exit 0; 0 warnings, 0 errors.
+Real mouse probe: exit 0; 31 PASS lines, no FAIL/ERROR, RESULT failures=0.
+Actual test HWND DPI 144 (150%); normal production startup has one visible HWND at DPI 144.
+See curiosity-exit-live-result.txt and restart-result.json for raw results; versions.json identifies code/binaries.
+
+Boundary: probe uses production MainWindow with real cursor and clock; no production archive/tray startup.
+This is author self-verification, not independent ART-001 sign-off or subjective visual approval.
+No current 100%/mixed-DPI or multi-monitor run is claimed.

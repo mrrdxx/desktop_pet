@@ -1,0 +1,92 @@
+[
+  {
+    "file": "annoyed_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6389
+  },
+  {
+    "file": "bashful_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6380
+  },
+  {
+    "file": "content_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6395
+  },
+  {
+    "file": "curious_0.png",
+    "left": 21,
+    "top": 0,
+    "right": 98,
+    "bottom": 101,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6362
+  },
+  {
+    "file": "grievance_0.png",
+    "left": 22,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 77,
+    "height": 102,
+    "opaquePixels": 6312
+  },
+  {
+    "file": "happy_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6382
+  },
+  {
+    "file": "idle_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6374
+  },
+  {
+    "file": "sleepy_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6365
+  },
+  {
+    "file": "startled_0.png",
+    "left": 21,
+    "top": 9,
+    "right": 98,
+    "bottom": 110,
+    "width": 78,
+    "height": 102,
+    "opaquePixels": 6363
+  }
+]

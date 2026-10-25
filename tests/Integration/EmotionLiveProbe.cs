@@ -39,6 +39,14 @@ public partial class App
         LiveLog($"Actual tray ToolStripMenuItem.PerformClick({name}); not an Explorer icon click");
         icon.ContextMenuStrip!.Items.OfType<ToolStripMenuItem>().Single(i => i.Text == name).PerformClick();
     }
+    private static void LivePressOwned()
+    {
+        LiveInput.GetCursorPos(out var pointer);
+        LiveInput.GetWindowThreadProcessId(LiveInput.WindowFromPoint(pointer), out var pid);
+        if (pid != Environment.ProcessId)
+            throw new InvalidOperationException("Pointer does not hit the owned test window; no mouse-down was sent.");
+        LiveInput.Button(0x0002);
+    }
     private async Task LiveIdle()
     {
         await LiveMove(LivePoint(-160, 65));
@@ -48,7 +56,12 @@ public partial class App
     private async Task LiveStroke(int count, int intervalMs)
     {
         await LiveMove(LivePoint(60, 20), 160);
-        LiveInput.Button(0x0002);
+        LiveInput.GetCursorPos(out var pointer);
+        var hit = LiveInput.WindowFromPoint(pointer);
+        LiveInput.GetWindowThreadProcessId(hit, out var hitPid);
+        LiveLog($"Before stroke pointer=({pointer.X},{pointer.Y}), target={LivePoint(60,20)}, hit={hit}, hitPid={hitPid}, ownPid={Environment.ProcessId}, action={_mainWindow!.CurrentAction}");
+        if (hitPid != Environment.ProcessId) throw new InvalidOperationException("Real pointer is not over the owned test window; refusing to click another application.");
+        LivePressOwned();
         await Task.Delay(60);
         LiveCheck(_mainWindow!.IsPettingCandidate && !_mainWindow.IsDragging, "real head press starts petting, not dragging");
         for (int i = 0; i < count; i++)
@@ -70,6 +83,7 @@ public partial class App
             MarkStateDirty();
             var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
             LiveLog($"HWND={hwnd}; DPI={LiveInput.GetDpiForWindow(hwnd)}; visible={LiveInput.IsWindowVisible(hwnd)}; affinity={EmotionAccumulator!.AffinityInt}; real cursor/time; production App startup/save; isolated archive");
+            LiveLog($"Loaded character directory={LiveField<string>(_mainWindow, "_assetDir")}");
             LiveCheck(typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(f => f.Name.StartsWith("Test", StringComparison.Ordinal)).All(f => f.GetValue(_mainWindow) is null), "all Test input/time/emotion injection fields remain null");
             await LiveIdle();
@@ -77,7 +91,7 @@ public partial class App
 
             int startAffinity = EmotionAccumulator.AffinityInt;
             await LiveMove(LivePoint(60,20),160);
-            LiveInput.Button(0x0002); await Task.Delay(1500); LiveInput.Button(0x0004); await Task.Delay(100);
+            LivePressOwned(); await Task.Delay(1500); LiveInput.Button(0x0004); await Task.Delay(100);
             LiveCheck(EmotionAccumulator.AffinityInt == startAffinity, "stationary head hold does not award affection");
 
             await LiveIdle();
@@ -91,7 +105,7 @@ public partial class App
                 LiveCheck(json.RootElement.GetProperty("affinity").GetInt32() == startAffinity + 5, "actual default five-second debounced state.json persists affinity +5");
 
             await LiveIdle();
-            await LiveMove(LivePoint(60,20),160); LiveInput.Button(0x0002); await Task.Delay(60);
+            await LiveMove(LivePoint(60,20),160); LivePressOwned(); await Task.Delay(60);
             // Exit toward transparent pixels slowly: no large drag-conversion jump.
             await LiveMove(LivePoint(60,5),400);
             LiveCheck(!_mainWindow.IsPettingCandidate, "real move into transparent head region ends petting");
@@ -101,7 +115,7 @@ public partial class App
             await LiveIdle();
             await LiveMove(LivePoint(60,70),160);
             var before = _mainWindow.PointToScreen(new Point(0,0));
-            LiveInput.Button(0x0002); await Task.Delay(80);
+            LivePressOwned(); await Task.Delay(80);
             LiveCheck(_mainWindow.IsDragging && !_mainWindow.IsPettingCandidate && _mainWindow.CurrentAction == "drag", "real body press selects drag, not petting");
             await LiveMove(LivePoint(140,110),320);
             var after = _mainWindow.PointToScreen(new Point(0,0));
@@ -151,6 +165,8 @@ public partial class App
         [StructLayout(LayoutKind.Sequential)] private struct MOUSE { public int X,Y; public uint MouseData,Flags,Time; public UIntPtr Extra; }
         [StructLayout(LayoutKind.Sequential)] private struct KEY { public ushort Vk,Scan; public uint Flags,Time; public UIntPtr Extra; }
         [DllImport("user32.dll")] internal static extern bool GetCursorPos(out POINT p);
+        [DllImport("user32.dll")] internal static extern IntPtr WindowFromPoint(POINT p);
+        [DllImport("user32.dll")] internal static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
         [DllImport("user32.dll")] internal static extern uint GetDpiForWindow(IntPtr h);
         [DllImport("user32.dll")] internal static extern bool IsWindowVisible(IntPtr h);
         [DllImport("user32.dll")] private static extern int GetSystemMetrics(int n);

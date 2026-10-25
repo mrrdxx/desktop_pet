@@ -7,7 +7,7 @@ namespace DesktopPet.Core.Persistence;
 /// </summary>
 public sealed class PetStateArchive
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 2;
 
     /// <summary>Schema version for forward/backward compatibility.</summary>
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
@@ -44,23 +44,6 @@ public sealed class PetStateArchive
 
     /// <summary>Local date (yyyy-MM-dd) when pending expression was marked. v1 fallback: null.</summary>
     public string? GrievanceExpressionDate { get; set; }
-
-    // --- v3 peek event fields (R-03) ---
-
-    /// <summary>Local date (yyyy-MM-dd) for the current peek event plan. v1/v2 fallback: null.</summary>
-    public string? PeekEventDate { get; set; }
-
-    /// <summary>Candidate trigger point in effective-run minutes (20-120). v1/v2 fallback: 0 (no plan).</summary>
-    public int PeekCandidateMinutes { get; set; }
-
-    /// <summary>Whether the candidate point has been reached and probability check was made. v1/v2 fallback: false.</summary>
-    public bool PeekHasAttempted { get; set; }
-
-    /// <summary>Whether the peek has been triggered (quota consumed). v1/v2 fallback: false.</summary>
-    public bool PeekHasTriggered { get; set; }
-
-    /// <summary>Accumulated effective (non-paused) run time in ms for the current day. v1/v2 fallback: 0.</summary>
-    public double PeekEffectiveRunMs { get; set; }
 }
 
 /// <summary>

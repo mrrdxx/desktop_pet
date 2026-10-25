@@ -1,0 +1,42 @@
+{
+  "id": "bear-v1",
+  "frameWidth": 120,
+  "frameHeight": 120,
+  "footAnchorX": 60,
+  "footAnchorY": 110,
+  "actions": {
+    "idle": { "loop": "loop", "frames": [
+      { "imagePath": "idle_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "blink": { "loop": "once", "frames": [
+      { "imagePath": "blink_half.png", "durationMs": 40, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "blink_closed.png", "durationMs": 70, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "blink_half.png", "durationMs": 70, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "idle_0.png", "durationMs": 40, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "curious": { "loop": "loop", "frames": [
+      { "imagePath": "curious_0.png", "durationMs": 500, "offsetX": 0, "offsetY": 9 }
+    ] },
+    "drag": { "loop": "loop", "frames": [
+      { "imagePath": "startled_0.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "grievance": { "loop": "loop", "frames": [
+      { "imagePath": "grievance_0.png", "durationMs": 500, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "happy": { "loop": "once", "frames": [
+      { "imagePath": "happy_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "annoyed": { "loop": "once", "frames": [
+      { "imagePath": "annoyed_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "sleepy": { "loop": "once", "frames": [
+      { "imagePath": "sleepy_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "content": { "loop": "once", "frames": [
+      { "imagePath": "content_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "bashful": { "loop": "once", "frames": [
+      { "imagePath": "bashful_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] }
+  }
+}

@@ -1,0 +1,23 @@
+2026-10-24T23:49:59.8972031+08:00 HWND=4198148; DPI=144; visible=True; affinity=50; real cursor/time; production App startup/save; isolated archive
+2026-10-24T23:49:59.8992517+08:00 Loaded character directory=C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-a20eb54c\isolated-app\bin\Debug\net10.0-windows\assets\pets\bear
+2026-10-24T23:49:59.9004891+08:00 PASS all Test input/time/emotion injection fields remain null
+2026-10-24T23:50:00.0180177+08:00 PASS actual image has opaque head and transparent control point
+2026-10-24T23:50:01.8895431+08:00 PASS stationary head hold does not award affection
+2026-10-24T23:50:02.3123878+08:00 FAIL real head press starts petting, not dragging
+2026-10-24T23:50:04.2764044+08:00 Real stroke accumulatedMs=0
+2026-10-24T23:50:04.3539602+08:00 FAIL real micro-movement and release awards exactly +5 affinity
+2026-10-24T23:50:04.6673318+08:00 FAIL real head press starts petting, not dragging
+2026-10-24T23:50:06.0439506+08:00 Real stroke accumulatedMs=0
+2026-10-24T23:50:06.1060216+08:00 FAIL second real gesture inside two-second cooldown does not award twice
+2026-10-24T23:50:11.7367842+08:00 ERROR System.IO.FileNotFoundException: Could not find file 'C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-a20eb54c\data\state.json'.
+File name: 'C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-a20eb54c\data\state.json'
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.StreamReader.ValidateArgsAndOpenPath(String path, Int32 bufferSize)
+   at System.IO.File.ReadAllText(String path, Encoding encoding)
+   at DesktopPet.App.App.RunEmotionLiveAsync() in C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-a20eb54c\isolated-app\EmotionLiveProbe.cs:line 91
+2026-10-24T23:50:11.7375020+08:00 Cursor restored; normal tray Exit follows
+2026-10-24T23:50:11.7383016+08:00 Actual tray ToolStripMenuItem.PerformClick(Exit); not an Explorer icon click
+2026-10-24T23:50:11.7589849+08:00 RESULT failures=5; real input, no Test providers; tray event handlers not Shell clicks

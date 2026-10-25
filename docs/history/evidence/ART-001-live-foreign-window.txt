@@ -1,0 +1,12 @@
+2026-10-24T23:53:51.0458888+08:00 HWND=4854462; DPI=144; visible=True; affinity=50; real cursor/time; production App startup/save; isolated archive
+2026-10-24T23:53:51.0480591+08:00 Loaded character directory=C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-de04b814\isolated-app\bin\Debug\net10.0-windows\assets\pets\bear
+2026-10-24T23:53:51.0496643+08:00 PASS all Test input/time/emotion injection fields remain null
+2026-10-24T23:53:51.1657198+08:00 PASS actual image has opaque head and transparent control point
+2026-10-24T23:53:53.0359405+08:00 PASS stationary head hold does not award affection
+2026-10-24T23:53:53.3961406+08:00 Before stroke pointer=(756,588), target=615,480, hit=22611740, hitPid=169312, ownPid=172948, action=idle
+2026-10-24T23:53:53.4103437+08:00 ERROR System.InvalidOperationException: Real pointer is not over the owned test window; refusing to click another application.
+   at DesktopPet.App.App.LiveStroke(Int32 count, Int32 intervalMs) in C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-de04b814\isolated-app\EmotionLiveProbe.cs:line 55
+   at DesktopPet.App.App.RunEmotionLiveAsync() in C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-de04b814\isolated-app\EmotionLiveProbe.cs:line 90
+2026-10-24T23:53:53.4107080+08:00 Cursor restored; normal tray Exit follows
+2026-10-24T23:53:53.4113909+08:00 Actual tray ToolStripMenuItem.PerformClick(Exit); not an Explorer icon click
+2026-10-24T23:53:53.4401138+08:00 RESULT failures=1; real input, no Test providers; tray event handlers not Shell clicks

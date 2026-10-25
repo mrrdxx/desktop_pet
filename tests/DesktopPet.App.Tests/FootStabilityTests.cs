@@ -54,16 +54,16 @@ public class FootStabilityTests
 
     /// <summary>
     /// Resolves the real asset directory containing character.json and PNGs.
-    /// Walks up from the test output directory to find assets/pets/default.
+    /// Walks up from the test output directory to find assets/pets/bear.
     /// </summary>
     private static string? GetAssetDir()
     {
         var exeDir = AppDomain.CurrentDomain.BaseDirectory;
         var candidates = new[]
         {
-            Path.Combine(exeDir, "assets", "pets", "default"),
-            Path.Combine(exeDir, "..", "..", "..", "..", "..", "assets", "pets", "default"),
-            Path.Combine(exeDir, "..", "..", "..", "..", "assets", "pets", "default")
+            Path.Combine(exeDir, "assets", "pets", "bear"),
+            Path.Combine(exeDir, "..", "..", "..", "..", "..", "assets", "pets", "bear"),
+            Path.Combine(exeDir, "..", "..", "..", "..", "assets", "pets", "bear")
         };
         foreach (var c in candidates)
         {

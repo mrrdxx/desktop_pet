@@ -1,0 +1,38 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "1C625812CB276A664FDECE546AE346AE7EF4C519379ED8BBA690EE0DC66D60DA"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\PetImageGeometry.cs",
+    "Hash": "D1313B4F20A6429C1A4C2FB900350C03400C143CC191B34B9D7DF6248C023EEA"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml",
+    "Hash": "FD73149C6D8948406F24367A56AF99C979AB3EAD894F4EB3DBF7B3D60F3094C5"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.App.Tests\\HeadDragInteractionTests.cs",
+    "Hash": "F7269897F6EA5B470AFA0D562427752FAB6819FAF8B199A6769055855F4131DF"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.InteractionProbe\\Program.cs",
+    "Hash": "AAE81A53DA504E70540493B52CFC403EF6578DBC8A7980AA9846486F094DFF49"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tools\\Start-DesktopPet.cmd",
+    "Hash": "A46F3FA811D62B405E53308B9BA369095DAF1B9E4C5E9C693721012F2007EE8F"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\head-drag-fix\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.dll",
+    "Hash": "636394255BD557D238316A948416A39132569121CC8BC0D9C9EB707FCAC79726"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\head-drag-fix\\probe-build\\bin\\DesktopPet.InteractionProbe\\debug\\DesktopPet.dll",
+    "Hash": "CC19D03EE9988FC2B97CE662AB7FCB55B52D6BFBE74B3EFAC67F790290590A83"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\character.json",
+    "Hash": "B351182C0B72E764B5F2BEEA78F4CA62D052D403A00D1AACC04C7E02D05A3D3F"
+  }
+]

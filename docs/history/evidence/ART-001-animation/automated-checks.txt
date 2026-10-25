@@ -1,0 +1,16 @@
+2026-10-25 Asia/Shanghai
+工具执行结果摘录（非另行执行的日志）：
+
+宿主构建：tests/Integration/Build-BearAnimationReview.ps1
+最终结果：生成成功，0个警告，0个错误。
+首次编译的Point命名空间歧义已在诊断源中添加WPF别名修正，未改产品。
+
+相关回归命令：
+dotnet test tests/DesktopPet.App.Tests/DesktopPet.App.Tests.csproj -c Debug --artifacts-path artifacts/bear-integration/build --no-build --no-restore --nologo -v minimal --filter 'FullyQualifiedName~BearResourceTests|FullyQualifiedName~FootStabilityTests|FullyQualifiedName~PauseActionSwitchTests|FullyQualifiedName~GrievanceExpressionLifecycleTests'
+
+第一次：受限环境testhost连接90秒超时，测试运行中止，不算通过。
+同一命令正常环境重试：退出码0。
+已通过! - 失败: 0，通过: 17，已跳过: 0，总计: 17，持续时间: 776 ms - DesktopPet.App.Tests.dll (net10.0)
+
+图像测量脚本首次将PowerShell PathInfo直接传给Bitmap构造函数失败，产生无效零值/NaN临时结果；已改传.Path并开启Stop，在覆盖该临时输出后得到有效统计。
+最终idle-blink-difference.json：轮廓差81，身体轮廓差33，共同身体像素2330，平均RGB绝对差4.969384835479245。

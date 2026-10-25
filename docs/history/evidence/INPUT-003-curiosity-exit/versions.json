@@ -1,0 +1,63 @@
+{
+  "recordedAt": "2026-10-25T05:50:35.3958308+08:00",
+  "gitHead": "a2412f76b7e7b0a9af8e197baa29057178b851e8",
+  "workingTree": "uncommitted pre-existing changes plus INPUT-003; hashes identify current files, not a standalone commit",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Input/HoverDetector.cs",
+      "sha256": "851993946F324D418C3B482BC4672BC5F42FEAA60E3ACCDE2D533472F86A4E8C"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "CADBC13773137A489049F663A8F5BB28499383E3A7C4E177EDD3EB29F6C79D18"
+    },
+    {
+      "path": "tests/DesktopPet.Core.Tests/HoverDetectorTests.cs",
+      "sha256": "32D7A84081A19E9CA67197D06D847970C81A83424CDF74730B81325D3F832F0F"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/HoverInteractionIntegrationTests.cs",
+      "sha256": "F56B37F0B4F681875D5A6279F5C413725B906113B707AC0585FE0C8E4534879F"
+    },
+    {
+      "path": "tests/DesktopPet.InteractionProbe/Program.cs",
+      "sha256": "476EBCD089022DCF8F996074A513B2C7135A8ECF03D4DE359760A2870F0D1F88"
+    },
+    {
+      "path": "tools/Start-DesktopPet.cmd",
+      "sha256": "01282D8839B72035DB2CFB5FC6E7D9C33AC33E502C453B90B0F460907929CE68"
+    },
+    {
+      "path": "tests/Integration/Build-BearAnimationReview.ps1",
+      "sha256": "B6D4A3BE3C04D73316B20F94264CAE339A0DF0AE4C30316E622F4DEBF4FB2A62"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "B351182C0B72E764B5F2BEEA78F4CA62D052D403A00D1AACC04C7E02D05A3D3F"
+    },
+    {
+      "path": "artifacts/curiosity-exit-fix/build/bin/DesktopPet.App/debug/DesktopPet.exe",
+      "sha256": "B3E6BF4481811084391FC83F1E13064871F1F1A2920B61DE4B8B9C5A7BE8ED7D"
+    },
+    {
+      "path": "artifacts/curiosity-exit-fix/build/bin/DesktopPet.App/debug/DesktopPet.dll",
+      "sha256": "3A35BBD267EAD188C623E85557E1FC983856B2C5859D045BE38A7E90C9784AB4"
+    },
+    {
+      "path": "artifacts/curiosity-exit-fix/build/bin/DesktopPet.App/debug/DesktopPet.Core.dll",
+      "sha256": "5BD4A1BD14781CA583C17A865BC9F311E8687C3B9669E77EEC56574312E7EA6F"
+    },
+    {
+      "path": "artifacts/curiosity-exit-fix/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.InteractionProbe.dll",
+      "sha256": "A118E18F314D53FD4654F333C55FB83BA0687B204EDEDDEABAABFB4A156E152F"
+    },
+    {
+      "path": "artifacts/curiosity-exit-fix/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.dll",
+      "sha256": "EFC952F478B43A474E06EE9A5A2D375DF318BF4F22566878CB6E1744C915E3DA"
+    },
+    {
+      "path": "artifacts/curiosity-exit-fix/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.Core.dll",
+      "sha256": "B880F2205B057ABFC0D466E1FE3CE9DF6A599C5FED82AA4898BA637E9C62A62E"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "ms": 151680,
+  "action": "sleepy",
+  "frame": "sleepy_0.png",
+  "offsetX": 0,
+  "offsetY": 0,
+  "left": 430,
+  "top": 302.6666666666667,
+  "screenX": 645,
+  "screenY": 454,
+  "dpi": 1.5,
+  "paused": true,
+  "playerPaused": true,
+  "dragging": false,
+  "menu": false,
+  "expressing": false,
+  "width": 120,
+  "height": 120,
+  "assets": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\bear-animation-review\\bin\\debug\\net10.0-windows\\assets\\pets\\bear"
+}

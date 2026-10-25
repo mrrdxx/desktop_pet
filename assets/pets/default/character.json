@@ -18,12 +18,6 @@
         { "imagePath": "curious_0.png", "durationMs": 500, "offsetX": 0, "offsetY": 9 }
       ]
     },
-    "dodge": {
-      "loop": "once",
-      "frames": [
-        { "imagePath": "dodge_0.png", "durationMs": 600, "offsetX": 0, "offsetY": 0 }
-      ]
-    },
     "drag": {
       "loop": "loop",
       "frames": [

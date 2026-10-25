@@ -26,13 +26,13 @@ public class AnimationPlayerTests
                         new FrameDef { ImagePath = "idle_1.png", DurationMs = 500 }
                     ]
                 },
-                ["dodge"] = new ActionDef
+                ["sample_once"] = new ActionDef
                 {
-                    Id = "dodge",
+                    Id = "sample_once",
                     Loop = LoopMode.Once,
                     Frames = [
-                        new FrameDef { ImagePath = "dodge_0.png", DurationMs = 300 },
-                        new FrameDef { ImagePath = "dodge_1.png", DurationMs = 300 }
+                        new FrameDef { ImagePath = "sample_once_0.png", DurationMs = 300 },
+                        new FrameDef { ImagePath = "sample_once_1.png", DurationMs = 300 }
                     ]
                 },
                 ["curious"] = new ActionDef
@@ -123,20 +123,20 @@ public class AnimationPlayerTests
         double time = 0;
         var player = new AnimationPlayer(CreateTestCharacter(), () => time);
 
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
 
         // At 0ms: first frame
-        Assert.AreEqual("dodge_0.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_0.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsFalse(player.IsCompleted);
 
         // At 300ms: second frame
         time = 300;
-        Assert.AreEqual("dodge_1.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_1.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsFalse(player.IsCompleted);
 
         // At 600ms: completed, holds last frame
         time = 600;
-        Assert.AreEqual("dodge_1.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_1.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsTrue(player.IsCompleted);
     }
 
@@ -149,7 +149,7 @@ public class AnimationPlayerTests
         string? completedAction = null;
         player.ActionCompleted += id => completedAction = id;
 
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
 
         // Not completed yet
         player.GetCurrentFrame();
@@ -158,7 +158,7 @@ public class AnimationPlayerTests
         // Advance past total duration (600ms)
         time = 600;
         player.GetCurrentFrame();
-        Assert.AreEqual("dodge", completedAction);
+        Assert.AreEqual("sample_once", completedAction);
     }
 
     [TestMethod]
@@ -167,7 +167,7 @@ public class AnimationPlayerTests
         double time = 0;
         var player = new AnimationPlayer(CreateTestCharacter(), () => time);
 
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
         time = 600;
         player.GetCurrentFrame();
         Assert.IsTrue(player.IsCompleted);
@@ -369,7 +369,7 @@ public class AnimationPlayerTests
     {
         double time = 0;
         var player = new AnimationPlayer(CreateTestCharacter(), () => time);
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
 
         var newCharacter = new PetCharacterDef
         {
@@ -421,31 +421,31 @@ public class AnimationPlayerTests
                     Loop = LoopMode.Loop,
                     Frames = [new FrameDef { ImagePath = "idle_0.png", DurationMs = 100 }]
                 },
-                ["dodge"] = new ActionDef
+                ["sample_once"] = new ActionDef
                 {
-                    Id = "dodge",
+                    Id = "sample_once",
                     Loop = LoopMode.Once,
-                    Frames = [new FrameDef { ImagePath = "dodge_0.png", DurationMs = 600 }]
+                    Frames = [new FrameDef { ImagePath = "sample_once_0.png", DurationMs = 600 }]
                 }
             }
         };
 
         var player = new AnimationPlayer(character, () => time);
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
 
         // Before threshold: not completed
         time = 599;
-        Assert.AreEqual("dodge_0.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_0.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsFalse(player.IsCompleted);
 
         // At threshold: completed
         time = 600;
-        Assert.AreEqual("dodge_0.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_0.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsTrue(player.IsCompleted);
 
         // After threshold: still completed, holds frame
         time = 1000;
-        Assert.AreEqual("dodge_0.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_0.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsTrue(player.IsCompleted);
     }
 
@@ -468,11 +468,11 @@ public class AnimationPlayerTests
                     Loop = LoopMode.Loop,
                     Frames = [new FrameDef { ImagePath = "idle_0.png", DurationMs = 100 }]
                 },
-                ["dodge"] = new ActionDef
+                ["sample_once"] = new ActionDef
                 {
-                    Id = "dodge",
+                    Id = "sample_once",
                     Loop = LoopMode.Once,
-                    Frames = [new FrameDef { ImagePath = "dodge_0.png", DurationMs = 600 }]
+                    Frames = [new FrameDef { ImagePath = "sample_once_0.png", DurationMs = 600 }]
                 }
             }
         };
@@ -480,7 +480,7 @@ public class AnimationPlayerTests
         int completionCount = 0;
         var player = new AnimationPlayer(character, () => time);
         player.ActionCompleted += _ => completionCount++;
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
 
         time = 600;
         player.GetCurrentFrame();
@@ -511,23 +511,23 @@ public class AnimationPlayerTests
                     Loop = LoopMode.Loop,
                     Frames = [new FrameDef { ImagePath = "idle_0.png", DurationMs = 100 }]
                 },
-                ["dodge"] = new ActionDef
+                ["sample_once"] = new ActionDef
                 {
-                    Id = "dodge",
+                    Id = "sample_once",
                     Loop = LoopMode.Once,
-                    Frames = [new FrameDef { ImagePath = "dodge_0.png", DurationMs = 600 }]
+                    Frames = [new FrameDef { ImagePath = "sample_once_0.png", DurationMs = 600 }]
                 }
             }
         };
 
         var player = new AnimationPlayer(character, () => time);
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
         time = 600;
         player.GetCurrentFrame();
         Assert.IsTrue(player.IsCompleted);
 
         // Replay: reset completion
-        player.PlayAction("dodge");
+        player.PlayAction("sample_once");
         Assert.IsFalse(player.IsCompleted);
         time = 601;
         Assert.IsFalse(player.IsCompleted);
@@ -569,10 +569,10 @@ public class AnimationPlayerTests
     {
         double time = 0;
         var player = new AnimationPlayer(CreateTestCharacter(), () => time);
-        player.PlayAction("dodge"); // 600ms total (300+300)
+        player.PlayAction("sample_once"); // 600ms total (300+300)
 
         time = 300; // frame 1
-        Assert.AreEqual("dodge_1.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_1.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsFalse(player.IsCompleted);
 
         // Pause for a long wall-clock time
@@ -588,7 +588,7 @@ public class AnimationPlayerTests
 
         // Now advance to 300 + 300 = 600ms active → completes
         time = 5300;
-        Assert.AreEqual("dodge_1.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_1.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsTrue(player.IsCompleted);
     }
 
@@ -736,24 +736,24 @@ public class AnimationPlayerTests
         player.Pause();
         Assert.IsTrue(player.IsPaused);
 
-        // Switch to dodge (Once, 600ms) while paused.
-        player.PlayAction("dodge");
+        // Switch to sample_once (Once, 600ms) while paused.
+        player.PlayAction("sample_once");
         Assert.IsTrue(player.IsPaused);
 
         // Wall clock far exceeds 600ms — must not complete.
         time = 10000;
         Assert.IsFalse(player.IsCompleted);
-        Assert.AreEqual("dodge_0.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_0.png", player.GetCurrentFrame().frame.ImagePath);
 
         // Resume — only 300ms active → not completed yet.
         player.Resume();
         time = 10300;
         Assert.IsFalse(player.IsCompleted);
-        Assert.AreEqual("dodge_1.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_1.png", player.GetCurrentFrame().frame.ImagePath);
 
         // 600ms active → completed.
         time = 10600;
-        Assert.AreEqual("dodge_1.png", player.GetCurrentFrame().frame.ImagePath);
+        Assert.AreEqual("sample_once_1.png", player.GetCurrentFrame().frame.ImagePath);
         Assert.IsTrue(player.IsCompleted);
     }
 

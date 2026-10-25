@@ -33,7 +33,6 @@ public class VisiblePetInteractionTests
         {
             double now = 0;
             window.TestGetElapsedMs = () => now;
-            window.TestGetDpiScale = () => 1;
             window.TestGetCursorPos = () => (104, 104);
             var tick = typeof(DesktopPet.App.MainWindow).GetMethod("OnUpdateTick", BindingFlags.Instance | BindingFlags.NonPublic)!;
             for (int i = 0; i < 55; i++) { tick.Invoke(window, [null, EventArgs.Empty]); now += 33; }
@@ -47,7 +46,7 @@ public class VisiblePetInteractionTests
     }
 
     [STATestMethod]
-    public void SwipeBounds_UseOpaqueBody_NotWholeTransparentWindow()
+    public void InteractionBounds_UseOpaqueBody_NotWholeTransparentWindow()
     {
         var window = new DesktopPet.App.MainWindow();
         try

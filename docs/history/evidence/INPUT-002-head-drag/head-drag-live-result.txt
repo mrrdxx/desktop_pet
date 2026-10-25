@@ -1,0 +1,28 @@
+2026-10-25T04:56:21.6533652+08:00 WINDOW hwnd=33885654; dpi=144; visible=True; build=C:\Users\mrrdxx\Desktop\pet\artifacts\head-drag-fix\probe-build\bin\DesktopPet.InteractionProbe\debug\DesktopPet.dll
+2026-10-25T04:56:23.5911661+08:00 PASS transparent corner does not trigger curiosity
+2026-10-25T04:56:26.6741128+08:00 PASS real cursor dwell triggers curious
+2026-10-25T04:56:28.2772649+08:00 PASS continuous dwell does not replay action
+2026-10-25T04:56:31.6836507+08:00 PASS leave then re-enter generates a new curious action
+2026-10-25T04:56:34.5917948+08:00 PASS slow approach without full dwell keeps idle
+2026-10-25T04:56:35.2146528+08:00 PASS fast cursor movement alone keeps idle (D-009)
+2026-10-25T04:56:35.5242259+08:00 PASS repeated rapid movement does not change expression
+2026-10-25T04:56:38.3826291+08:00 PASS fast motion followed by slow approach only allows normal hover feedback
+2026-10-25T04:56:38.8173392+08:00 PASS actual left button captures and selects drag
+2026-10-25T04:56:40.7923689+08:00 PASS held drag suppresses curiosity
+2026-10-25T04:56:41.1034114+08:00 PASS button up stops capture and cursor following
+2026-10-25T04:56:41.8212982+08:00 PASS head press at 34,18 is received
+2026-10-25T04:56:42.1936986+08:00 PASS head drag at 34,18 preserves capture and original anchor
+2026-10-25T04:56:42.3028047+08:00 PASS head release at 34,18 finishes interaction
+2026-10-25T04:56:43.0189412+08:00 PASS head press at 85,18 is received
+2026-10-25T04:56:43.3911206+08:00 PASS head drag at 85,18 preserves capture and original anchor
+2026-10-25T04:56:43.4988334+08:00 PASS head release at 85,18 finishes interaction
+2026-10-25T04:56:44.2281969+08:00 PASS head press at 60,25 is received
+2026-10-25T04:56:44.6026901+08:00 PASS head drag at 60,25 preserves capture and original anchor
+2026-10-25T04:56:44.7104477+08:00 PASS head release at 60,25 finishes interaction
+2026-10-25T04:56:45.3461434+08:00 PASS actual right click opens native menu
+2026-10-25T04:56:46.8538146+08:00 PASS native menu suppresses mouse actions
+2026-10-25T04:56:47.0716636+08:00 PASS Esc dismisses real native menu
+2026-10-25T04:56:49.3265817+08:00 PASS Pause API blocks real cursor interactions
+2026-10-25T04:56:49.5899678+08:00 PASS Resume does not replay paused input immediately
+2026-10-25T04:56:51.0963313+08:00 PASS fresh dwell after Resume triggers normally
+2026-10-25T04:56:51.1143925+08:00 RESULT failures=0; real cursor + visible HWND; no archives; operator subjective feel not measured

@@ -1,0 +1,91 @@
+{
+  "recordedAt": "2026-10-25T06:18:30.8176119+08:00",
+  "gitHead": "a2412f76b7e7b0a9af8e197baa29057178b851e8",
+  "workingTree": "uncommitted pre-existing changes plus ART-002; this is not a clean commit",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Animation/IdleBlinkScheduler.cs",
+      "sha256": "7DE33EC7CF0F63FEFAB627AA9EA79D89863E18FCA338901E69EA9435C433FCF0"
+    },
+    {
+      "path": "src/DesktopPet.Core/Animation/CuriosityReaction.cs",
+      "sha256": "70C067D87231732C2223DE6CFD97CEDFFEE9262117AF31C88A901748224AE3C0"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "E833C165B8CB266A4D3E5D04BF81F8A387A1537D863E45B63C835B7CE905A9B5"
+    },
+    {
+      "path": "tests/DesktopPet.Core.Tests/QuietExpressionTests.cs",
+      "sha256": "970A872CDE3DA6D2C5B1CA09BA701E0E80E8D619F528C0D6438DE12EBDB7C3CB"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/QuietExpressionIntegrationTests.cs",
+      "sha256": "F7D994F65ECF8F40ACC697BE831A1BE2D194090DE3F4D604F3297A9859C9BF45"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/BearResourceTests.cs",
+      "sha256": "831B7910CC858C1A347DB6DA0A99ACCAEBD281E216AB134D8E77BDD6C0E071D4"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/HoverInteractionIntegrationTests.cs",
+      "sha256": "281B3D90C2F4ED176C4C9EBEF880D619CCA417F0479B9277FBCCB37F415D27A1"
+    },
+    {
+      "path": "tests/DesktopPet.InteractionProbe/Program.cs",
+      "sha256": "306BD0A57AC1E8E7B47FAB5939AC884884560F3E78632709242BC06900D39255"
+    },
+    {
+      "path": "tools/Export-BearBlinkAssets.ps1",
+      "sha256": "085BEBD47A08431EA6BB47F2BDCF999C81608C31AF0A1CE4D26EF6AF13441F71"
+    },
+    {
+      "path": "tools/Start-DesktopPet.cmd",
+      "sha256": "6C880C028EA6E9D0F161BB3B635F5CA9E65F29A2774A0FD02DA1F03122A8FDE3"
+    },
+    {
+      "path": "assets/art/bear-v1/blink-source.png",
+      "sha256": "D0D1988EB9CB98FF947B1E3184592F01A92FC5905F88621A4AB7428AE5CF90C7"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "9FFD48CE5A38D8383AE0895C75DFE2B3940EFE7F07722C5EB70D2E78582BB468"
+    },
+    {
+      "path": "assets/pets/bear/idle_0.png",
+      "sha256": "EC70AE47CF44EB6CCFBBB4A43F58696E4FA37FC59E43CA4887E8EBA0DD403901"
+    },
+    {
+      "path": "assets/pets/bear/blink_half.png",
+      "sha256": "F618935C2447AD016156D42873767342D731BA88B3A9272CD04506305E705480"
+    },
+    {
+      "path": "assets/pets/bear/blink_closed.png",
+      "sha256": "563FC2DD39525633FBA9C26C4CF1133FE24E33D356A20B8DDFCD908788050E4C"
+    },
+    {
+      "path": "artifacts/bear-natural/build/bin/DesktopPet.App/debug/DesktopPet.exe",
+      "sha256": "B3E6BF4481811084391FC83F1E13064871F1F1A2920B61DE4B8B9C5A7BE8ED7D"
+    },
+    {
+      "path": "artifacts/bear-natural/build/bin/DesktopPet.App/debug/DesktopPet.dll",
+      "sha256": "950C18DA6851FD43DAF74F019F342CE17ECB68FE5C580E4994D48BCFEB13EA7D"
+    },
+    {
+      "path": "artifacts/bear-natural/build/bin/DesktopPet.App/debug/DesktopPet.Core.dll",
+      "sha256": "150EADC1996D09CAED8B470AD34240CF3939B51C5940A1D716D8AC1C4491C3A3"
+    },
+    {
+      "path": "artifacts/bear-natural/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.InteractionProbe.dll",
+      "sha256": "2BB2256DC0881FB87B4DACD068AD7DFFFE0EBC75ED28E248A3F7A42B925158D9"
+    },
+    {
+      "path": "artifacts/bear-natural/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.dll",
+      "sha256": "62837FC6752535096221CE1529F2C696B834F50289122078B43A636BAD5019ED"
+    },
+    {
+      "path": "artifacts/bear-natural/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.Core.dll",
+      "sha256": "97A192268DCC69B11EA992AED46DFC42C26B9967F9C84DA3C8AFAF7DAE77FC82"
+    }
+  ]
+}

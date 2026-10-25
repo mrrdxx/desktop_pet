@@ -2,7 +2,7 @@ namespace DesktopPet.Core.Input;
 
 /// <summary>
 /// Rectangle of the pet entity in physical screen pixels.
-/// Used by hover/swipe detectors for distance-to-edge calculations.
+/// Used by hover and emotion interaction-range checks.
 /// </summary>
 public readonly record struct PetRectPx(double Left, double Top, double Width, double Height)
 {
@@ -24,7 +24,9 @@ public enum HoverTrigger
     /// <summary>
     /// Hover dwell threshold reached — fire once.
     /// </summary>
-    Triggered
+    Triggered,
+    /// <summary>Cursor stayed outside for LeaveResetMs; emitted once per leave.</summary>
+    Left
 }
 
 /// <summary>
@@ -72,6 +74,7 @@ public sealed class HoverDetector
     private double _lastInsideMs = -1;
     private double _leaveStartMs = -1;
     private bool _hasTriggered;
+    private bool _leaveReported;
 
     public HoverDetector(HoverDetectorConfig? config = null)
     {
@@ -100,6 +103,7 @@ public sealed class HoverDetector
         _lastInsideMs = -1;
         _leaveStartMs = -1;
         _hasTriggered = false;
+        _leaveReported = false;
     }
 
     /// <summary>
@@ -110,7 +114,7 @@ public sealed class HoverDetector
     /// <param name="petRect">Pet entity rectangle in physical pixels.</param>
     /// <param name="timeMs">Monotonic timestamp in milliseconds.</param>
     /// <param name="isOverEntity">Optional renderer-provided opaque hit result; null uses the rectangle and margin.</param>
-    /// <returns>Triggered if the dwell threshold was reached this tick.</returns>
+    /// <returns>Triggered on dwell, Left once after a completed leave, otherwise None.</returns>
     public HoverTrigger Update(double mouseX, double mouseY, PetRectPx petRect, double timeMs, bool? isOverEntity = null)
     {
         // The App can provide an alpha-aware hit; non-rendering callers retain
@@ -119,6 +123,7 @@ public sealed class HoverDetector
 
         if (inside)
         {
+            bool reportLeave = false;
             // If the cursor was outside long enough (>= LeaveResetMs since
             // the *first* outside sample), start a fresh dwell session.
             // CRITICAL: _leaveStartMs records the moment the cursor first
@@ -127,12 +132,14 @@ public sealed class HoverDetector
             // and blocking re-trigger after a genuine leave period.
             if (_leaveStartMs >= 0 && (timeMs - _leaveStartMs) >= _config.LeaveResetMs)
             {
+                reportLeave = !_leaveReported;
                 _dwellStartMs = -1;
                 _hasTriggered = false;
             }
 
             _lastInsideMs = timeMs;
             _leaveStartMs = -1;
+            _leaveReported = false;
 
             if (_dwellStartMs < 0)
             {
@@ -145,6 +152,8 @@ public sealed class HoverDetector
                 _hasTriggered = true;
                 return HoverTrigger.Triggered;
             }
+            if (reportLeave)
+                return HoverTrigger.Left;
         }
         else
         {
@@ -154,6 +163,14 @@ public sealed class HoverDetector
             // the actual departure, not the most recent outside tick.
             if (_leaveStartMs < 0)
                 _leaveStartMs = timeMs;
+            if (!_leaveReported && timeMs - _leaveStartMs >= _config.LeaveResetMs)
+            {
+                _leaveReported = true;
+                _dwellStartMs = -1;
+                _lastInsideMs = -1;
+                _hasTriggered = false;
+                return HoverTrigger.Left;
+            }
         }
 
         return HoverTrigger.None;

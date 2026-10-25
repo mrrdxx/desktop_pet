@@ -1,0 +1,66 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\bear-integration\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.dll",
+    "Hash": "1988F2DB16D893D5A3676B3F7F5ADB7A83A06EB0ED1F955335A9547D057ACA0E"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\bear-integration\\build\\bin\\DesktopPet.App\\debug\\DesktopPet.Core.dll",
+    "Hash": "279264FF209AF32E053F0CD2D6EAD0F2C0CE0E81DBBA2F72F54D7A8E3F204B64"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\bear-animation-review\\bin\\Debug\\net10.0-windows\\BearAnimationReview.dll",
+    "Hash": "2BBC9972878388F2A0335461A86D5544346FF9CB350A5ED844EA413129610927"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\Integration\\BearAnimationReview.cs",
+    "Hash": "3F57EA763FDCF8D5E4F2309BCE4A0BB0A950D02743469CF2208440BC0CAB0F7E"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\Integration\\Build-BearAnimationReview.ps1",
+    "Hash": "98C9E71CB52F15759487B5791FF9FFA39E37BEFDB4FE7F20CF23438A511F5ED2"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\annoyed_0.png",
+    "Hash": "2EEBDDFC9C52A8CF6E64B1A5D19B780743518CD98695C03C9A414D83318353D6"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\bashful_0.png",
+    "Hash": "DC0FA88E84D4B269663459DBB476322823E8A51C2451EBDE6D828BE341C3F602"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\character.json",
+    "Hash": "CEFB7E438AC9D5670221081F5D2E043A5356EDD3570A7E1BB5F11D837D879222"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\content_0.png",
+    "Hash": "62691EE66F08B2F17EFE4E64B4B8FB79CEE88DB3B27A68AA09422D45D76B855F"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\curious_0.png",
+    "Hash": "F3AE1BF03862FC38EFCE803950C3CF926DEC457369E41F8B9CD91F8C3B5A5A8B"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\grievance_0.png",
+    "Hash": "11F2461BFFAC46B91571C7A2F93B8DA7223A0E5B0BE22EB559D428B9BB8561B8"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\happy_0.png",
+    "Hash": "A3D551F122A73C37CCBB453F7BCC32F95CA3AF76709F5392D87918C38E2FE9AA"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\idle_0.png",
+    "Hash": "EC70AE47CF44EB6CCFBBB4A43F58696E4FA37FC59E43CA4887E8EBA0DD403901"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\README.md",
+    "Hash": "1674DDDDB0BAC9B09882B18C56C6C896B54BCA47000864921D5E95B8CB9325A8"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\sleepy_0.png",
+    "Hash": "0985385B37AB921E83DA21270B0B33CC555202A50C51A5FCA4B00988CAD7D625"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\assets\\pets\\bear\\startled_0.png",
+    "Hash": "63B1F085EB9274725C26D964ABF294A77A13A4467D4FE8D02245E29CF141BB1E"
+  }
+]

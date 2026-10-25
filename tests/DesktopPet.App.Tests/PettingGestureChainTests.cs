@@ -731,68 +731,44 @@ public class PettingGestureChainTests
         var window = CreateMainWindowOrFail();
         try
         {
-            var clockMs = 0.0;
+            double clockMs = 0;
             window.TestGetElapsedMs = () => clockMs;
-
-            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
-            window.TestEmotionAccumulator = accumulator;
-
-            // Start petting at an opaque head pixel (60, 20).
-            StartPetting(window, 60, 20, 0.0);
-
-            // A few valid micro-moves on opaque head pixels to accumulate time.
+            window.TestEmotionAccumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var image = (System.Windows.Controls.Image)window.FindName("PetImage");
+            var bitmap = (System.Windows.Media.Imaging.BitmapSource)image.Source;
+            var bgra = new System.Windows.Media.Imaging.FormatConvertedBitmap(bitmap, System.Windows.Media.PixelFormats.Bgra32, null, 0);
+            int width = bgra.PixelWidth;
+            var pixels = new byte[width * bgra.PixelHeight * 4];
+            bgra.CopyPixels(pixels, width * 4, 0);
+            // Derive a real adjacent opaque/transparent pair from the current
+            // PNG, independently of production hit testing. A hard-coded point
+            // from the former prototype can become opaque in a new character.
+            int bx = -1, by = -1;
+            for (int y = 1; y < bgra.PixelHeight / 3 && bx < 0; y++)
+            for (int x = 20; x < width - 21; x++)
+            {
+                if (pixels[(y * width + x) * 4 + 3] > 0
+                    && pixels[(y * width + x + 1) * 4 + 3] > 0
+                    && pixels[((y - 1) * width + x) * 4 + 3] == 0)
+                { bx = x; by = y; break; }
+            }
+            Assert.IsTrue(bx >= 0, "A real opaque head boundary must exist.");
+            StartPetting(window, bx + 0.5, by + 0.5, 0);
             for (int i = 1; i <= 5; i++)
             {
-                clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + i * 2, 20), clockMs);
+                clockMs = i * 50;
+                window.ProcessPettingMove(new System.Windows.Point(bx + (i % 2) + 0.5, by + 0.5), clockMs);
             }
-
-            Assert.IsTrue(window.IsPettingCandidate,
-                "Should still be in petting candidate on opaque head pixels.");
-
-            var accumulatedBefore = GetField<double>(window, "_pettingAccumulatedMs");
-            Assert.IsTrue(accumulatedBefore > 0,
-                $"Should have accumulated time from valid head moves. Got {accumulatedBefore}ms.");
-
-            // Move to a transparent point within the head rectangle.
-            // (60, 5) is Y=5 < 40 (head rect) but alpha=0 (transparent).
-            // The move from (70, 20) to (60, 5) is ~15.8 DIP, which exceeds
-            // PettingMaxMovePerFramePx (8). To isolate the Alpha check from
-            // the large-move check, we use a small move to a nearby transparent
-            // pixel. (66, 10) is ~10.8 DIP from (70, 20) — still too large.
-            // Instead, move to (68, 10): dist = sqrt(4 + 100) ≈ 10.2 — still large.
-            // We need a transparent pixel close to the last position.
-            // Last position is (70, 20). (70, 10) is 10 DIP away — still > 8.
-            // Use (69, 12): dist = sqrt(1 + 64) ≈ 8.06 — just over threshold.
-            // Use (69, 13): dist = sqrt(1 + 49) ≈ 7.07 — under threshold.
-            // (69, 13) is opaque (alpha=180 at y=14 per PNG analysis, y=13 is
-            // the first opaque row at x=52-69). Let's check: y=13 has opaque
-            // pixels starting at x=52. So (69, 13) might be opaque.
-            // Instead, use a transparent point that is a small move from the
-            // last opaque position. Move to (70, 12): dist = sqrt(0 + 64) = 8.0,
-            // which equals PettingMaxMovePerFramePx. The check is >, so 8.0
-            // does NOT trigger large-move. (70, 12) — is it transparent?
-            // Opaque at y=14 starts at x=52-69. y=12 should be transparent.
-            // But x=70 at y=14 is NOT opaque (range is 52-69). So (70, 12)
-            // is transparent.
-            clockMs = 300.0;
-            var result = window.ProcessPettingMove(new System.Windows.Point(70, 12), clockMs);
-
-            // IsInHeadZone should return false (transparent pixel) → EndPetting.
-            Assert.IsFalse(result,
-                "ProcessPettingMove should return false when cursor is on a transparent pixel within head rectangle.");
-            Assert.IsFalse(window.IsPettingCandidate,
-                "Petting candidate must be cleared when cursor moves to transparent area within head rectangle.");
-
-            // Accumulated time must NOT have increased.
-            var accumulatedAfter = GetField<double>(window, "_pettingAccumulatedMs");
-            Assert.AreEqual(accumulatedBefore, accumulatedAfter, 0.01,
-                $"Accumulated time must NOT increase when moving to transparent area within head rect. " +
-                $"Before: {accumulatedBefore}ms, After: {accumulatedAfter}ms.");
+            Assert.IsTrue(window.IsPettingCandidate);
+            double before = GetField<double>(window, "_pettingAccumulatedMs");
+            Assert.IsTrue(before > 0);
+            clockMs = 300;
+            var result = window.ProcessPettingMove(new System.Windows.Point(bx + 0.5, by - 0.5), clockMs);
+            Assert.IsFalse(result, "A sub-2px move onto a transparent head pixel must end the gesture.");
+            Assert.IsFalse(window.IsPettingCandidate);
+            Assert.AreEqual(before, GetField<double>(window, "_pettingAccumulatedMs"), 0.001);
+            Assert.AreEqual(50, window.TestEmotionAccumulator.AffinityInt, "An incomplete gesture must not award affection.");
         }
-        finally
-        {
-            window.Close();
-        }
+        finally { window.Close(); }
     }
 }
