@@ -92,7 +92,7 @@ internal static class BearAnimationReview
                 var pending = new GrievanceExpressionState();
                 pending.Restore(true, DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd"));
                 SetField("TestGrievanceExpression", pending);
-                SetField("TestEmotionAccumulator", new EmotionDecayAccumulator(50, 85, DateTime.UtcNow));
+                SetField("TestEmotionAccumulator", new EmotionDecayAccumulator(85, DateTime.UtcNow));
                 var near = Pet.PointToScreen(new Point(60, 80));
                 SetField("TestGetCursorPos", (Func<(int, int)>)(() => ((int)near.X, (int)near.Y)));
                 Pet.ResumeAnimation();

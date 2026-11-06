@@ -9,7 +9,8 @@ $dataDirectory = Join-Path $suiteRoot 'data'
 New-Item -ItemType Directory -Path $fixtureApp,$fixtureCore,$dataDirectory -Force | Out-Null
 $coreSource = Join-Path $repositoryRoot 'src/DesktopPet.Core'
 Get-ChildItem -LiteralPath $coreSource -Recurse -File | Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } | ForEach-Object {
-    $target = Join-Path $fixtureCore ([IO.Path]::GetRelativePath($coreSource,$_.FullName))
+    # Files come from this root; Substring also works in Windows PowerShell 5.1.
+    $target = Join-Path $fixtureCore ($_.FullName.Substring($coreSource.TrimEnd('\').Length + 1))
     New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
     Copy-Item -LiteralPath $_.FullName -Destination $target
 }
@@ -58,8 +59,8 @@ try {
     if ($before -ne (Archive-Snapshot)) { throw 'Real archive changed; investigate before claiming isolation.' }
     'PASS original user archive snapshot unchanged'
     $saved = Get-Content -LiteralPath (Join-Path $dataDirectory 'state.json') -Raw | ConvertFrom-Json
-    if ($saved.affinity -ne 55 -or $saved.isPaused) { throw 'Final production archive does not contain expected affinity/resume state.' }
-    'PASS normal production tray exit persisted affinity=55, isPaused=false'
+    if ($saved.PSObject.Properties.Name -contains 'affinity' -or $saved.grievance -ne 50 -or $saved.isPaused) { throw 'Final archive retains a removed field or changed grievance/resume state.' }
+    'PASS normal production tray exit omits removed field, grievance=50, isPaused=false'
     if ($process.ExitCode -ne 0 -or @(Select-String -LiteralPath $log -Pattern ' FAIL | ERROR ').Count -gt 0) { throw 'Live validation failed; retain all evidence.' }
     "ALL EMOTION LIVE CHECKS PASS; $suiteRoot"
 } finally {

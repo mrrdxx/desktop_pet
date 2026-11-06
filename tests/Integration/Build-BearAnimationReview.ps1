@@ -2,7 +2,7 @@ param()
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $buildRoot = Join-Path $repositoryRoot 'artifacts/bear-animation-review'
-$production = Join-Path $repositoryRoot 'artifacts/bear-natural/build/bin/DesktopPet.App/debug'
+$production = Join-Path $repositoryRoot 'artifacts/affinity-removal/build/bin/DesktopPet.App/debug'
 if (-not (Test-Path -LiteralPath (Join-Path $production 'DesktopPet.dll'))) { throw 'Build the current bear application first (see STATUS).' }
 New-Item -ItemType Directory -Path $buildRoot -Force | Out-Null
 $escapedProduction = [System.Security.SecurityElement]::Escape($production)

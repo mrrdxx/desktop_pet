@@ -69,7 +69,7 @@ public partial class App
             await LiveMove(LivePoint(i % 2 == 0 ? 62 : 60, 20));
             await Task.Delay(intervalMs);
         }
-        LiveLog($"Real stroke accumulatedMs={LiveField<double>(_mainWindow, "_pettingAccumulatedMs")}");
+        LiveCheck(_mainWindow.IsPettingCandidate && !_mainWindow.IsDragging, "head micro-movement remains a non-scoring gesture");
         LiveInput.Button(0x0004);
         await Task.Delay(60);
     }
@@ -82,35 +82,29 @@ public partial class App
             _mainWindow!.Left = 350; _mainWindow.Top = 300;
             MarkStateDirty();
             var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
-            LiveLog($"HWND={hwnd}; DPI={LiveInput.GetDpiForWindow(hwnd)}; visible={LiveInput.IsWindowVisible(hwnd)}; affinity={EmotionAccumulator!.AffinityInt}; real cursor/time; production App startup/save; isolated archive");
+            LiveLog($"HWND={hwnd}; DPI={LiveInput.GetDpiForWindow(hwnd)}; visible={LiveInput.IsWindowVisible(hwnd)}; grievance={EmotionAccumulator!.GrievanceInt}; real cursor/time; production App startup/save; isolated archive");
             LiveLog($"Loaded character directory={LiveField<string>(_mainWindow, "_assetDir")}");
             LiveCheck(typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(f => f.Name.StartsWith("Test", StringComparison.Ordinal)).All(f => f.GetValue(_mainWindow) is null), "all Test input/time/emotion injection fields remain null");
             await LiveIdle();
             LiveCheck(_mainWindow.IsInHeadZone(new Point(60,20)) && !_mainWindow.IsInHeadZone(new Point(60,5)), "actual image has opaque head and transparent control point");
 
-            int startAffinity = EmotionAccumulator.AffinityInt;
+            double startGrievance = EmotionAccumulator!.GrievanceFloat;
             await LiveMove(LivePoint(60,20),160);
             LivePressOwned(); await Task.Delay(1500); LiveInput.Button(0x0004); await Task.Delay(100);
-            LiveCheck(EmotionAccumulator.AffinityInt == startAffinity, "stationary head hold does not award affection");
-
+            LiveCheck(! _mainWindow.IsPettingCandidate && !_mainWindow.IsDragging,
+                "stationary head hold releases interaction cleanly");
             await LiveIdle();
             await LiveStroke(30,60);
-            LiveCheck(EmotionAccumulator.AffinityInt == startAffinity + 5, "real micro-movement and release awards exactly +5 affinity");
             await LiveStroke(22,50);
-            LiveCheck(EmotionAccumulator.AffinityInt == startAffinity + 5, "second real gesture inside two-second cooldown does not award twice");
+            LiveCheck(EmotionAccumulator.GrievanceFloat == startGrievance,
+                "head gestures do not change neutral grievance");
             await LiveMove(LivePoint(-160,65));
             await Task.Delay(5600);
             using (var json = JsonDocument.Parse(File.ReadAllText(_archive!.StateFilePath)))
-                LiveCheck(json.RootElement.GetProperty("affinity").GetInt32() == startAffinity + 5, "actual default five-second debounced state.json persists affinity +5");
-
-            await LiveIdle();
-            await LiveMove(LivePoint(60,20),160); LivePressOwned(); await Task.Delay(60);
-            // Exit toward transparent pixels slowly: no large drag-conversion jump.
-            await LiveMove(LivePoint(60,5),400);
-            LiveCheck(!_mainWindow.IsPettingCandidate, "real move into transparent head region ends petting");
-            LiveInput.Button(0x0004); await Task.Delay(80);
-            LiveCheck(EmotionAccumulator.AffinityInt == startAffinity + 5, "incomplete transparent-exit gesture awards no affection");
+                LiveCheck(!json.RootElement.TryGetProperty("affinity", out _)
+                    && json.RootElement.GetProperty("grievance").GetInt32() == 50,
+                    "production archive omits removed field and preserves neutral grievance");
 
             await LiveIdle();
             await LiveMove(LivePoint(60,70),160);
@@ -127,7 +121,7 @@ public partial class App
             await LiveMove(LivePoint(-160,65)); await Task.Delay(200);
             var settled = _mainWindow.PointToScreen(new Point(0,0));
             LiveCheck(!_mainWindow.IsDragging && released == settled, "real mouse release stops following");
-            LiveCheck(EmotionAccumulator.AffinityInt == startAffinity + 5, "body dragging does not award petting affinity");
+            LiveCheck(EmotionAccumulator.GrievanceFloat == startGrievance, "ordinary body dragging does not change grievance");
 
             await LiveIdle();
             var timer = LiveField<System.Windows.Threading.DispatcherTimer>(_mainWindow, "_updateTimer");
@@ -144,7 +138,7 @@ public partial class App
             await LiveMove(LivePoint(60,65),500); await Task.Delay(1500);
             LiveCheck(_mainWindow.CurrentAction == "curious", "fresh real cursor dwell works after Resume");
             await LiveMove(LivePoint(-160,65));
-            LiveLog($"FINAL affinity={EmotionAccumulator.AffinityInt}; checksFailures={_liveFailures}");
+            LiveLog($"FINAL grievance={EmotionAccumulator.GrievanceInt}; checksFailures={_liveFailures}");
         }
         catch (Exception ex) { _liveFailures++; LiveLog("ERROR " + ex); }
         finally

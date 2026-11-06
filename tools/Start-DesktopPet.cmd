@@ -1,7 +1,7 @@
 @echo off
 setlocal
 set "PET_ROOT=%~dp0.."
-set "PET_EXE=%PET_ROOT%\artifacts\bear-natural\build\bin\DesktopPet.App\debug\DesktopPet.exe"
+set "PET_EXE=%PET_ROOT%\artifacts\affinity-removal\build\bin\DesktopPet.App\debug\DesktopPet.exe"
 if not exist "%PET_EXE%" goto missing
 if /i "%~1"=="--check" (
   echo Ready: "%PET_EXE%"

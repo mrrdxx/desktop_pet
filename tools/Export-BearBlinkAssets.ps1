@@ -1,7 +1,10 @@
 param(
     [string]$BaseImage = (Join-Path $PSScriptRoot '../assets/pets/bear/idle_0.png'),
     [string]$BlinkSheet = (Join-Path $PSScriptRoot '../assets/art/bear-v1/blink-source.png'),
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot '../assets/pets/bear')
+    [string]$OutputDirectory = (Join-Path $PSScriptRoot '../assets/pets/bear'),
+    [switch]$IncludeBrows,
+    [string]$FirstName = 'blink_half',
+    [string]$SecondName = 'blink_closed'
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -12,7 +15,7 @@ using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 using System.IO;
 
-// AI supplies the eyelids; deterministic eye-only compositing locks the original
+// AI supplies eye/brow patches; deterministic compositing locks the original
 // mouth, outline, feet and every other pixel. Never redraw the whole sprite.
 public static class BearBlinkExport {
     public static readonly Rectangle[] EyeRegions = {
@@ -28,7 +31,7 @@ public static class BearBlinkExport {
         if(right<left) throw new InvalidDataException("Empty source cell");
         return Rectangle.FromLTRB(left,top,right+1,bottom+1);
     }
-    public static void Export(string basePath,string sheetPath,string outputDir) {
+    public static void Export(string basePath,string sheetPath,string outputDir,bool includeBrows,string firstName,string secondName) {
         using(var original=new Bitmap(basePath))
         using(var sheet=new Bitmap(sheetPath)) {
             if(original.Width!=120 || original.Height!=120 || sheet.Width%2!=0)
@@ -51,7 +54,8 @@ public static class BearBlinkExport {
                         g.PixelOffsetMode=PixelOffsetMode.HighQuality;
                         g.DrawImage(sheet,target,source,GraphicsUnit.Pixel);
                     }
-                    foreach(var region in EyeRegions)
+                    var regions=includeBrows ? new[]{new Rectangle(37,30,15,27),new Rectangle(68,30,15,27)} : EyeRegions;
+                    foreach(var region in regions)
                     for(int y=region.Top;y<region.Bottom;y++)
                     for(int x=region.Left;x<region.Right;x++) {
                         var a=original.GetPixel(x,y); var b=normalized.GetPixel(x,y);
@@ -64,9 +68,9 @@ public static class BearBlinkExport {
                             (int)Math.Round(a.G+(b.G-a.G)*weight),
                             (int)Math.Round(a.B+(b.B-a.B)*weight)));
                     }
-                    string name=state==0 ? "blink_half.png" : "blink_closed.png";
+                    string name=(state==0 ? firstName : secondName)+".png";
                     result.Save(Path.Combine(outputDir,name),ImageFormat.Png);
-                    Console.WriteLine(name+": 120x120, 96 DPI, original alpha and non-eye pixels preserved");
+                    Console.WriteLine(name+": 120x120, 96 DPI, original alpha and non-patch pixels preserved");
                 }
             }
         }
@@ -74,4 +78,4 @@ public static class BearBlinkExport {
 }
 '@
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
-[BearBlinkExport]::Export([IO.Path]::GetFullPath($BaseImage), [IO.Path]::GetFullPath($BlinkSheet), [IO.Path]::GetFullPath($OutputDirectory))
+[BearBlinkExport]::Export([IO.Path]::GetFullPath($BaseImage), [IO.Path]::GetFullPath($BlinkSheet), [IO.Path]::GetFullPath($OutputDirectory), [bool]$IncludeBrows, $FirstName, $SecondName)

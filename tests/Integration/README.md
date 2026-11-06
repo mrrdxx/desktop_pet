@@ -10,14 +10,15 @@
 
 结束发送 `{"id":999,"command":"close"}` 正常关闭宿主，避免留下诊断实例。结果及完整边界见 [动画检查](../../docs/history/ART-001-animation-review.md)。该工具不是独立监理签字入口。
 
-## P1-003 真实抚摸与拖动输入验证
+## 头部非计分手势与拖动输入验证（D-013后）
 
 ```powershell
-./tests/Integration/Run-EmotionLive.ps1
+./tests/Integration/Run-EmotionLive.ps1 -BuildOnly
 ```
 
-此命令需要用户授权占用系统鼠标和已解锁桌面。约二十秒内不要同时操作鼠标。它构建隔离 App/Core 副本，使用独立存档/互斥锁，在生产 Show 后插入 EmotionLiveProbe；实际 App、鼠标事件、时钟、计分及保存路径不替换，不设置 Test 注入字段。真实微移检查 +5、静止不计分、冷却、透明区退出、身体拖动和松手。托盘 Pause/Resume/Exit 通过实际菜单 PerformClick 验证事件，不冒称 Explorer 图标点击。测试结束恢复指针并正常退出自建实例，比较真实存档前后摘要；不强杀其他进程、不调整系统设置。
-只检查构建可用 `-BuildOnly`，不占用鼠标。日志/隔离存档位于 artifacts/emotion-live/run-*/data/，latest-run.txt 指向最近一轮；保留失败材料，任一检查失败不得宣称通过。2026-10-24 验收及可随 Git 保存的证据见 [实机结果](../../docs/history/P1-003-live-validation.md)。
+`-BuildOnly`仅构建隔离副本，不占用鼠标。移除该参数才运行真实输入，需要用户授权及稳定、解锁的桌面；鼠标被其他程序影响时停止。夹具使用独立存档/互斥锁，实际App、鼠标事件、时钟及保存路径不替换，不设置Test注入字段。当前检查头部按住/反复微移不改变中性委屈、身体拖动和松手、暂停恢复，以及保存不含已移除字段。已经删除原+5、计分冷却及累计时长断言。
+
+托盘PerformClick只验证菜单事件，不冒称Explorer图标点击。日志与隔离存档位于artifacts/emotion-live/run-*/data/，latest-run.txt指向最近一轮；保留失败材料。2026-10-24的[P1-003实机结果](../../docs/history/P1-003-live-validation.md)仅代表旧版本，不能作为当前移除版实机通过依据。本轮实际运行边界见[移除交接](../../docs/handoffs/EMOTION-001-remove-affinity.md)。
 
 ## 生命周期隔离验证
 
@@ -52,6 +53,8 @@ INPUT-002新增头顶、左右耳朵的实际按下→拖动→松手检查，�
 INPUT-003增加真实鼠标移开后不点击自动恢复idle、清除好奇偏移、短暂移出返回不重播，以及好奇暂停→鼠标移开→恢复后的自动退出检查。构建和当前执行入口见 [INPUT-003交接](../../docs/handoffs/INPUT-003-curiosity-exit-fix.md)；不将普通Application探针结果当作Shell托盘点击或真实存档验证。
 
 ART-002在此基础上增加26秒真实idle观察，记录Image.Source变化、眨眼周期起点及间隔，确认半闭/闭合帧而非content笑脸；好奇按D-011增加持续悬停自动结束且不重播检查。当前构建/运行路径以 [ART-002交接](../../docs/handoffs/ART-002-natural-expressions.md) 为准，整轮约一分钟，旧INPUT-003时长仅作历史说明。
+
+ART-003扩展松手时的实际Source变化观察（温和→放松→待机）、松手立即停止输入/位移及过渡中重新抓取；当前入口见 [ART-003交接](../../docs/handoffs/ART-003-drag-feedback.md)。每次Move后等待系统队列处理并核对真实指针，按钮按下前仍核对PID。指针偏离/目标不符立即中止；只释放自己确实按下的左键，检测到干扰时不强行复位用户指针。测试未完整结束就不得报告通过。本轮环境发生中止，旧ART-002的37项通过不能当作ART-003实机验收。
 要求 SendInput 可用，不支持锁屏/无交互桌面。任一断言失败退出码为 1。它使用生产 GetCursorPos、实际时钟、当前窗口 DPI 和 DispatcherTimer，未使用 TestGet 注入；输出是实机自动输入证据，不是人类主观观感评价。当前 150% 单屏结果见 [验证记录](../../docs/history/P1-002-live-validation.md)。
 
 任一断言失败、进程异常或退出位置不一致，驱动退出码为 1；成功为 0。所有自己启动的实例通过正常菜单/WM_CLOSE 退出，不强杀未知进程。`latest-run.txt` 指向最新测试目录。原始 `probe.log`、stderr、存档及预期位置均保留，不自动递归清理。

@@ -1,4 +1,5 @@
 using System.IO;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -35,8 +36,8 @@ internal static class Program
             catch (Exception ex) { failures++; Log("ERROR " + ex); }
             finally
             {
-                Native.Button(0x0004); // Release only our potential left drag.
-                Native.Move(original.X, original.Y);
+                if (Native.HasLeftDown) Native.Button(0x0004);
+                if (!Native.InterferenceDetected) Native.Move(original.X, original.Y);
                 pet.Close();
                 Log($"RESULT failures={failures}; real cursor + visible HWND; no archives; operator subjective feel not measured");
                 File.WriteAllLines(output, lines);
@@ -58,6 +59,15 @@ internal static class Program
         {
             Native.Move(start.X + (target.X - start.X) * i / steps, start.Y + (target.Y - start.Y) * i / steps);
             if (ms > 0) await Task.Delay(ms / steps);
+        }
+        // SendInput queues system input; allow the message loop to process it
+        // before diagnosing a different pointer position as interference.
+        await Task.Delay(40);
+        Native.GetCursorPos(out var actual);
+        if (Math.Abs(actual.X-target.X)>3 || Math.Abs(actual.Y-target.Y)>3)
+        {
+            Native.InterferenceDetected=true;
+            throw new InvalidOperationException($"Pointer did not remain at the requested test position: target={target}; actual={actual.X},{actual.Y}. Input run stopped.");
         }
     }
     private static async Task Reset()
@@ -118,13 +128,37 @@ internal static class Program
 
         await Reset(); await Move(Point(60, 65));
         Native.Button(0x0002); await Task.Delay(100);
-        Check(pet.IsDragging && pet.CurrentAction == "drag", "actual left button captures and selects drag");
+        Check(pet.IsDragging && pet.CurrentAction == "drag" && ImageName == "drag_gentle.png",
+            "actual left button captures and selects gentle drag face");
         await Move(Point(110, 95), 300); await Task.Delay(1500);
         Check(pet.IsDragging && pet.CurrentAction == "drag", "held drag suppresses curiosity");
-        Native.Button(0x0004); await Task.Delay(150);
-        double releaseLeft = pet.Left, releaseTop = pet.Top;
-        await Move(Point(-180, 65)); await Task.Delay(150);
-        Check(!pet.IsDragging && pet.Left == releaseLeft && pet.Top == releaseTop, "button up stops capture and cursor following");
+        var control=(Image)pet.FindName("PetImage");
+        var descriptor=DependencyPropertyDescriptor.FromProperty(Image.SourceProperty,typeof(Image));
+        var releaseFrames=new List<string>{ImageName};
+        EventHandler releaseChanged=(_,_)=>{releaseFrames.Add(ImageName);Log($"RELEASE_FRAME image={ImageName}; action={pet.CurrentAction}; dragging={pet.IsDragging}");};
+        descriptor.AddValueChanged(control,releaseChanged);
+        try
+        {
+            Native.Button(0x0004); await Task.Delay(40);
+            double releaseLeft=pet.Left, releaseTop=pet.Top;
+            Check(!pet.IsDragging && System.Windows.Input.Mouse.Captured!=pet.FindName("PetCanvas") && pet.CurrentAction=="idle",
+                "button up releases input immediately while settling only the face");
+            await Move(Point(-180,65)); await Task.Delay(300);
+            Check(releaseFrames.Contains("drag_gentle.png") && releaseFrames.Contains("release_settle.png")
+                && releaseFrames.Contains("idle_0.png") && ImageName=="idle_0.png" && !ReleaseFeedback.IsActive,
+                "actual rendered release changes gentle to settle to neutral without replay");
+            Check(!pet.IsDragging && pet.Left==releaseLeft && pet.Top==releaseTop,
+                "button up stops capture and cursor following");
+        }
+        finally {descriptor.RemoveValueChanged(control,releaseChanged);}
+
+        await Move(Point(60,65)); Native.Button(0x0002); await Task.Delay(80);
+        Native.Button(0x0004); await Task.Delay(100);
+        Check(ReleaseFeedback.IsActive,"real release feedback is active before immediate re-grab");
+        Native.Button(0x0002); await Task.Delay(50);
+        Check(pet.IsDragging && !ReleaseFeedback.IsActive && ImageName=="drag_gentle.png",
+            "real re-grab cancels settling immediately and keeps drag responsive");
+        Native.Button(0x0004); await Task.Delay(300);
 
         foreach (var head in new[] { new Point(34, 18), new Point(85, 18), new Point(60, 25) })
         {
@@ -195,8 +229,12 @@ internal static class Program
         Check(valid,"real blink starts respect quiet 3-7 second intervals plus cycle length/timer tolerance");
         Check(pet.CurrentAction=="idle" && pet.CurrentFrameOffset.y==0,"blink keeps idle action identity and world-foot offset");
     }
+    private static string ImageName => Path.GetFileName(((BitmapImage)((Image)pet.FindName("PetImage")).Source).UriSource.LocalPath);
+    private static DragReleaseFeedback ReleaseFeedback => (DragReleaseFeedback)typeof(MainWindow).GetField("_dragRelease",Private)!.GetValue(pet)!;
     private static class Native
     {
+        internal static bool HasLeftDown;
+        internal static bool InterferenceDetected;
         [StructLayout(LayoutKind.Sequential)] internal struct POINT { public int X, Y; }
         [StructLayout(LayoutKind.Sequential)] private struct INPUT { public uint Type; public Union Data; }
         [StructLayout(LayoutKind.Explicit)] private struct Union
@@ -229,9 +267,14 @@ internal static class Program
                 GetCursorPos(out var pointer);
                 GetWindowThreadProcessId(WindowFromPoint(pointer), out var pid);
                 if (pid != Environment.ProcessId)
-                    throw new InvalidOperationException("Pointer does not hit the owned test window; no button-down sent.");
+                {
+                    InterferenceDetected=true;
+                    throw new InvalidOperationException($"Pointer does not hit the owned test window; no button-down sent. Pointer={pointer.X},{pointer.Y}; ownerPid={pid}; expectedPid={Environment.ProcessId}.");
+                }
             }
             Send(new INPUT { Data = new Union { Mouse = new MOUSE { Flags = flags } } });
+            if ((flags & 0x0002) != 0) HasLeftDown=true;
+            if ((flags & 0x0004) != 0) HasLeftDown=false;
         }
         internal static void Escape()
         {
