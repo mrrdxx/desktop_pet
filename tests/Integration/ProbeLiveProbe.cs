@@ -1,0 +1,333 @@
+using System.IO;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Windows.Controls;
+using DesktopPet.App.Platform;
+using DesktopPet.Core.Animation;
+using DesktopPet.Core.Events;
+using DesktopPet.Core.Geometry;
+using Point = System.Windows.Point;
+using Image = System.Windows.Controls.Image;
+
+namespace DesktopPet.App;
+
+// F-11 corrected fixture: included only in an isolated copy of the production App.
+// Real DispatcherTimer, real monitor enumeration, real DPI, real archive save/exit.
+//
+// Key F-11 fixes:
+//   1. Baseline captured BEFORE the first tick (no 500ms delay that lets the probe
+//      fire first). The probe sets Left/Top in StartProbe; we must record the
+//      pre-probe position as baseline, then only observe — never overwrite Left/Top
+//      after the probe has started.
+//   2. Records actual HWND DPI (GetDpiForWindow), all monitor full/work rects,
+//      and window rect at each phase (baseline / probe-active / restored).
+//   3. Records start/end timestamps for the probe phase.
+//   4. Distinguishes exit modes: auto (tray PerformClick), timeout (external kill),
+//      and interactive (window stays open for manual testing).
+//   5. Finally always attempts archive snapshot comparison, even on timeout/exception.
+//   6. Does NOT auto-verify subjective "half-body visible" — logs edge distance
+//      for human review, marks as INFO not PASS.
+public partial class App
+{
+    private int _probeLiveFailures;
+    private string ProbeLiveDir => Environment.GetEnvironmentVariable("DESKTOPPET_VALIDATION_DIR")!;
+    private void ProbeLiveLog(string message) =>
+        File.AppendAllText(Path.Combine(ProbeLiveDir, "live.log"), $"{DateTimeOffset.Now:O} {message}\n");
+    private void ProbeLiveCheck(bool ok, string message)
+    { if (!ok) _probeLiveFailures++; ProbeLiveLog($"{(ok ? "PASS" : "FAIL")} {message}"); }
+    private static T ProbeField<T>(object instance, string name) =>
+        (T)instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(instance)!;
+    private Image ProbeLiveImage => (Image)_mainWindow!.FindName("PetImage");
+
+    // F-11: Probe mode — "auto" (tray exit after checks) or "interactive" (window stays open).
+    private static string ProbeMode => Environment.GetEnvironmentVariable("DESKTOPPET_PROBE_MODE") ?? "auto";
+
+    private void ProbeLogState(string tag)
+    {
+        var w = _mainWindow!;
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(w).Handle;
+        uint dpi = hwnd != IntPtr.Zero ? LiveInput.GetDpiForWindow(hwnd) : 0;
+        double dpiScale = dpi / 96.0;
+        // WPF Left/Top are in DIP; convert to physical px for comparison with monitor rects.
+        double physLeft = w.Left * dpiScale;
+        double physTop = w.Top * dpiScale;
+        double physWidth = w.Width * dpiScale;
+        double physHeight = w.Height * dpiScale;
+        ProbeLiveLog(
+            $"STATE[{tag}] hwnd={hwnd} dpi={dpi} dpiScale={dpiScale:F4} " +
+            $"windowDIP=({w.Left:F2},{w.Top:F2}) windowPhys=({physLeft:F2},{physTop:F2}) " +
+            $"windowSizePhys=({physWidth:F2},{physHeight:F2}) " +
+            $"action={w.CurrentAction} isProbing={w.IsProbing}");
+    }
+
+    private void ProbeLogMonitor()
+    {
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow!).Handle;
+        var (scaleX, scaleY) = MonitorInterop.GetWindowDpiScale(hwnd);
+        ProbeLiveLog($"HWND_DPI scale=({scaleX:F4},{scaleY:F4})");
+
+        foreach (var m in MonitorInterop.EnumerateMonitors())
+        {
+            var f = m.FullBounds;
+            var wa = m.WorkArea.Bounds;
+            ProbeLiveLog(
+                $"MONITOR device={m.DeviceName} dpiScale={m.DpiScale:F4} " +
+                $"full=({f.Left},{f.Top},{f.Right},{f.Bottom},{f.Width}x{f.Height}) " +
+                $"work=({wa.Left},{wa.Top},{wa.Right},{wa.Bottom},{wa.Width}x{wa.Height})");
+        }
+    }
+
+    private string ProbeArchiveSnapshot()
+    {
+        try
+        {
+            string dir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string archiveDir = Path.Combine(dir, "DesktopPet");
+            if (!Directory.Exists(archiveDir))
+                return "ABSENT";
+            var files = Directory.GetFiles(archiveDir, "*", SearchOption.TopDirectoryOnly)
+                .OrderBy(f => Path.GetFileName(f)).ToList();
+            if (files.Count == 0)
+                return "EMPTY";
+            using var sha = SHA256.Create();
+            var parts = new List<string>();
+            foreach (var f in files)
+            {
+                byte[] hash = sha.ComputeHash(File.ReadAllBytes(f));
+                parts.Add($"{Path.GetFileName(f)}:{BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant()}");
+            }
+            return string.Join("|", parts);
+        }
+        catch (Exception ex)
+        {
+            return $"SNAPSHOT_ERROR:{ex.Message}";
+        }
+    }
+
+    private void ProbeTrayExit()
+    {
+        try
+        {
+            var icon = ProbeField<System.Windows.Forms.NotifyIcon>(_tray!, "_notifyIcon");
+            icon.ContextMenuStrip!.Items.OfType<System.Windows.Forms.ToolStripMenuItem>()
+                .Single(i => i.Text == "Exit").PerformClick();
+            ProbeLiveLog("EXIT_MODE=auto (tray PerformClick)");
+        }
+        catch (Exception ex)
+        {
+            // F-11 R13: Tray exit failure must be counted as a failure and use
+            // the FAIL keyword so the driver's FAIL/ERROR regex catches it.
+            _probeLiveFailures++;
+            ProbeLiveLog($"FAIL auto tray exit failed: {ex.Message}");
+            ProbeLiveLog($"EXIT_MODE=auto_failed");
+        }
+    }
+
+    private async Task RunProbeLiveAsync()
+    {
+      try
+      {
+        // F-11: Capture baseline BEFORE the first OnUpdateTick fires.
+        // The pre-seeded plan (accumulated=150, delay=20, roll=0.0, consumed=false)
+        // should cause ShouldFire on the very first tick. We must record the
+        // pre-probe window position now, then only observe.
+        //
+        // We do NOT set Left/Top here — the window is wherever the production
+        // startup placed it (default or restored from isolated state.json).
+        // The probe's StartProbe will record _probeOriginalLeft/Top from this
+        // position and restore to it.
+
+        var w = _mainWindow!;
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(w).Handle;
+
+        // Record baseline state and all monitor geometry before any tick.
+        ProbeLiveLog("=== PROBE_LIVE_START ===");
+        ProbeLiveLog($"PROBE_MODE={ProbeMode}");
+        ProbeLogMonitor();
+        ProbeLogState("BASELINE");
+        var baselineStart = DateTimeOffset.Now;
+        ProbeLiveLog($"BASELINE_TIME={baselineStart:O}");
+
+        double baselineLeft = w.Left;
+        double baselineTop = w.Top;
+
+        // Verify all Test injection fields are null (production path, no test bypass).
+        ProbeLiveCheck(typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+            .Where(f => f.Name.StartsWith("Test", StringComparison.Ordinal))
+            .All(f => f.GetValue(w) is null),
+            "all Test injection fields remain null — production path, no test bypass");
+
+        // ── Phase 1: Wait for probe to start ──
+        // The first OnUpdateTick should fire within ~1s and trigger StartProbe.
+        bool probeStarted = w.IsProbing;
+        for (int i = 0; i < 15 && !probeStarted; i++)
+        {
+            await Task.Delay(200);
+            probeStarted = w.IsProbing;
+        }
+
+        var probeStartDetected = DateTimeOffset.Now;
+        ProbeLiveLog($"PROBE_START_DETECTED={probeStartDetected:O} IsProbing={w.IsProbing}");
+
+        ProbeLiveCheck(probeStarted,
+            $"probe started within ~3s — IsProbing={w.IsProbing}");
+
+        if (probeStarted)
+        {
+            // F-11: Record probe-active state. Do NOT modify Left/Top.
+            ProbeLogState("PROBE_ACTIVE");
+
+            ProbeLiveCheck(w.CurrentAction == "curious",
+                $"probe action is 'curious' (got '{w.CurrentAction}')");
+
+            // F-11: Log edge distance for human review — do NOT auto-verify
+            // subjective "half-body visible" as PASS.
+            var hwndActive = new System.Windows.Interop.WindowInteropHelper(w).Handle;
+            uint dpiActive = hwndActive != IntPtr.Zero ? LiveInput.GetDpiForWindow(hwndActive) : 96;
+            double scaleActive = dpiActive / 96.0;
+            double physLeftA = w.Left * scaleActive;
+            double physTopA = w.Top * scaleActive;
+            double physWidthA = w.Width * scaleActive;
+            double physHeightA = w.Height * scaleActive;
+            // Find which monitor the window center is on.
+            double centerX = physLeftA + physWidthA / 2.0;
+            double centerY = physTopA + physHeightA / 2.0;
+            MonitorInfo? containingMonitor = null;
+            foreach (var m in MonitorInterop.EnumerateMonitors())
+            {
+                if (m.FullBounds.Contains((int)centerX, (int)centerY))
+                {
+                    containingMonitor = m;
+                    break;
+                }
+            }
+            if (containingMonitor is MonitorInfo cm)
+            {
+                var wa = cm.WorkArea.Bounds;
+                double distLeft = physLeftA - wa.Left;
+                double distRight = wa.Right - (physLeftA + physWidthA);
+                double distTop = physTopA - wa.Top;
+                double distBottom = wa.Bottom - (physTopA + physHeightA);
+                ProbeLiveLog(
+                    $"EDGE_DISTANCE (phys px) left={distLeft:F1} right={distRight:F1} " +
+                    $"top={distTop:F1} bottom={distBottom:F1} " +
+                    $"windowPhys=({physLeftA:F1},{physTopA:F1},{physWidthA:F1}x{physHeightA:F1}) " +
+                    $"workArea=({wa.Left},{wa.Top},{wa.Right},{wa.Bottom})");
+                // Determine nearest edge.
+                double minDist = Math.Min(Math.Min(distLeft, distRight), Math.Min(distTop, distBottom));
+                string nearestEdge = minDist == distLeft ? "left" : minDist == distRight ? "right" :
+                    minDist == distTop ? "top" : "bottom";
+                ProbeLiveLog($"NEAREST_EDGE={nearestEdge} distance={minDist:F1}px " +
+                    $"(half-window={physWidthA / 2.0:F1}px) — INFO: half-body visibility is subjective, requires human review");
+            }
+            else
+            {
+                ProbeLiveLog("EDGE_DISTANCE: could not find containing monitor — INFO for human review");
+            }
+
+            // F-11: Window moved from baseline (objective check — did StartProbe move it?).
+            bool windowMovedFromBaseline =
+                Math.Abs(w.Left - baselineLeft) > 0.5 || Math.Abs(w.Top - baselineTop) > 0.5;
+            ProbeLiveCheck(windowMovedFromBaseline,
+                $"window moved from baseline by probe " +
+                $"({w.Left:F2},{w.Top:F2}) vs baseline ({baselineLeft:F2},{baselineTop:F2})");
+
+            // ── Phase 2: Wait for probe to end (~3s duration + margin) ──
+            bool probeEnded = !w.IsProbing;
+            for (int i = 0; i < 25 && !probeEnded; i++)
+            {
+                await Task.Delay(200);
+                probeEnded = !w.IsProbing;
+            }
+
+            var probeEndDetected = DateTimeOffset.Now;
+            ProbeLiveLog($"PROBE_END_DETECTED={probeEndDetected:O} IsProbing={w.IsProbing}");
+
+            ProbeLiveCheck(probeEnded,
+                $"probe ended within ~5s — IsProbing={w.IsProbing}");
+
+            if (probeEnded)
+            {
+                // F-11: Record restored state. Do NOT modify Left/Top.
+                ProbeLogState("PROBE_ENDED");
+
+                // Window should be restored to baseline (StartProbe records
+                // _probeOriginalLeft/Top from the pre-probe position and restores).
+                ProbeLiveCheck(
+                    Math.Abs(w.Left - baselineLeft) < 1.0 &&
+                    Math.Abs(w.Top - baselineTop) < 1.0,
+                    $"window restored to baseline ({w.Left:F2},{w.Top:F2}) vs ({baselineLeft:F2},{baselineTop:F2})");
+
+                // Action should be idle after probe (no grievance active in auto mode).
+                ProbeLiveCheck(w.CurrentAction == "idle",
+                    $"action returned to 'idle' after probe (got '{w.CurrentAction}')");
+
+                // Record probe duration for diagnostics.
+                double probeDurationSec = (probeEndDetected - probeStartDetected).TotalSeconds;
+                ProbeLiveLog($"PROBE_DURATION={probeDurationSec:F2}s (expected ~3s)");
+            }
+        }
+
+        // ── Phase 3: Wait for debounce save and check archive ──
+        await Task.Delay(6000); // Wait for debounce save (5s).
+        string statePath = _archive!.StateFilePath;
+        if (File.Exists(statePath))
+        {
+            using var json = JsonDocument.Parse(File.ReadAllText(statePath));
+            if (json.RootElement.TryGetProperty("rareEventPlan", out var plan))
+            {
+                bool consumed = plan.GetProperty("consumed").GetBoolean();
+                ProbeLiveCheck(consumed,
+                    $"archive rareEventPlan.consumed={consumed} (expected true after probe)");
+            }
+            else
+            {
+                ProbeLiveCheck(false, "archive has rareEventPlan element");
+            }
+        }
+        else
+        {
+            ProbeLiveCheck(false, "archive state.json exists after probe");
+        }
+
+        ProbeLiveLog($"FINAL: checksFailures={_probeLiveFailures}");
+    }
+    catch (Exception ex)
+    {
+        _probeLiveFailures++;
+        ProbeLiveLog($"ERROR {ex}");
+        throw; // Re-throw so the driver can detect abnormal exit.
+    }
+    finally
+    {
+        // F-11: Always attempt archive snapshot comparison, even on timeout/exception.
+        string snapshotAfter = ProbeArchiveSnapshot();
+        ProbeLiveLog($"ARCHIVE_SNAPSHOT_AFTER={snapshotAfter}");
+
+        if (ProbeMode == "interactive")
+        {
+            // Interactive mode: keep window open for manual testing.
+            ProbeLiveLog("EXIT_MODE=interactive (window stays open; close manually when done)");
+            Environment.ExitCode = _probeLiveFailures == 0 ? 0 : 1;
+        }
+        else
+        {
+            // Auto mode: trigger tray Exit for clean shutdown.
+            ProbeLiveLog("EXIT_MODE=auto — attempting tray Exit");
+            ProbeTrayExit();
+            ProbeLiveLog($"RESULT failures={_probeLiveFailures}; pre-seeded archive, real timer/DPI/monitors, no Test injection");
+            Environment.ExitCode = _probeLiveFailures == 0 ? 0 : 1;
+        }
+    }
+    }
+
+    private static class LiveInput
+    {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        internal static extern bool IsWindowVisible(IntPtr h);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        internal static extern uint GetDpiForWindow(IntPtr hwnd);
+    }
+}

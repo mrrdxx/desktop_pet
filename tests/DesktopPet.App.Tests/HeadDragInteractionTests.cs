@@ -118,14 +118,14 @@ public class HeadDragInteractionTests
     }
 
     [STATestMethod]
-    public void HeadMicroStrokes_StillAwardPetting_WithoutDragging()
+    public void HeadMicroStrokes_DoNotDragOrChangeGrievance()
     {
         var window = new MainWindow();
         try
         {
             double now = 0;
             window.TestGetElapsedMs = () => now;
-            var emotion = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var emotion = new EmotionDecayAccumulator(50, DateTime.UtcNow);
             window.TestEmotionAccumulator = emotion;
             var local = new Point(60, 25);
             var press = PressScreen(window, local);
@@ -140,7 +140,7 @@ public class HeadDragInteractionTests
             Assert.IsTrue(window.IsPettingCandidate);
             Assert.IsFalse(window.IsDragging);
             window.EndCapturedPointerInteraction();
-            Assert.AreEqual(55, emotion.AffinityInt);
+            Assert.AreEqual(50, emotion.GrievanceInt);
             Assert.AreEqual(left, window.Left);
             Assert.AreEqual(top, window.Top);
         }
@@ -148,14 +148,14 @@ public class HeadDragInteractionTests
     }
 
     [STATestMethod]
-    public void PettingConvertedToDrag_DoesNotAwardAccumulatedPetting()
+    public void HeadGestureConvertedToDrag_PreservesGrievance()
     {
         var window = new MainWindow();
         try
         {
             double now = 0;
             window.TestGetElapsedMs = () => now;
-            var emotion = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var emotion = new EmotionDecayAccumulator(50, DateTime.UtcNow);
             window.TestEmotionAccumulator = emotion;
             var local = new Point(60, 25);
             var press = PressScreen(window, local);
@@ -168,8 +168,11 @@ public class HeadDragInteractionTests
             }
             now = 1300;
             window.ProcessCapturedPointerMove(new Point(80, 25), press + new System.Windows.Vector(20, 0), true, now);
+            Assert.IsTrue(window.IsDragging);
+            Assert.IsFalse(window.IsPettingCandidate);
+            Assert.AreEqual(50, emotion.GrievanceInt);
             window.EndCapturedPointerInteraction();
-            Assert.AreEqual(50, emotion.AffinityInt, "A drag must not finish/score the earlier petting candidate.");
+            Assert.IsFalse(window.IsDragging);
         }
         finally { window.Close(); }
     }
@@ -195,14 +198,13 @@ public class HeadDragInteractionTests
         var window = new MainWindow();
         try
         {
-            var emotion = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var emotion = new EmotionDecayAccumulator(50, DateTime.UtcNow);
             window.TestEmotionAccumulator = emotion;
             var local = new Point(60, 25);
             double left = window.Left, top = window.Top;
             Assert.IsTrue(window.BeginCapturedPointerInteraction(local, PressScreen(window, local)));
             window.EndCapturedPointerInteraction();
             Assert.IsFalse(window.IsPettingCandidate);
-            Assert.AreEqual(50, emotion.AffinityInt);
             Assert.AreEqual(left, window.Left);
             Assert.AreEqual(top, window.Top);
         }

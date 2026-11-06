@@ -12,6 +12,44 @@ namespace DesktopPet.App.Tests;
 public class BearResourceTests
 {
     [STATestMethod]
+    public void DragFeedbackAssets_PreserveAllPixelsOutsideEyesAndBrows()
+    {
+        var window=new MainWindow();
+        try
+        {
+            var path=(string)typeof(MainWindow).GetField("_assetDir",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(window)!;
+            byte[] Read(string name)
+            {
+                var image=BitmapFrame.Create(new Uri(Path.Combine(path,name)),BitmapCreateOptions.PreservePixelFormat,BitmapCacheOption.OnLoad);
+                var converted=new FormatConvertedBitmap(image,PixelFormats.Bgra32,null,0);
+                var data=new byte[120*120*4]; converted.CopyPixels(data,120*4,0); return data;
+            }
+            var original=Read("idle_0.png");
+            foreach(var name in new[]{"drag_gentle.png","release_settle.png"})
+            {
+                var other=Read(name); int changed=0;
+                for(int y=0;y<120;y++) for(int x=0;x<120;x++)
+                {
+                    int index=(y*120+x)*4;
+                    Assert.AreEqual(original[index+3],other[index+3],name+" alpha");
+                    bool face=y>=30&&y<57&&((x>=37&&x<52)||(x>=68&&x<83));
+                    for(int c=0;c<3;c++)
+                    {
+                        if(!face) Assert.AreEqual(original[index+c],other[index+c],$"{name} altered body/mouth ({x},{y})");
+                        if(original[index+c]!=other[index+c]) changed++;
+                    }
+                }
+                Assert.IsTrue(changed>0,name+" must differ from idle");
+            }
+            var character=CharacterLoader.Load(File.ReadAllText(Path.Combine(path,"character.json")));
+            Assert.AreEqual("drag_gentle.png",character.Actions["drag"].Frames[0].ImagePath);
+            Assert.AreEqual(250,character.Actions["release"].Frames.Sum(f=>f.DurationMs));
+            Assert.IsFalse(Read("drag_gentle.png").SequenceEqual(Read("release_settle.png")));
+        }
+        finally {window.Close();}
+    }
+
+    [STATestMethod]
     public void BlinkFrames_ChangeOnlyEyes_PreserveAlphaMouthAndBody()
     {
         var window = new MainWindow();

@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using DesktopPet.App.Platform;
 using DesktopPet.Core.Animation;
 using DesktopPet.Core.Emotion;
+using DesktopPet.Core.Events;
 using DesktopPet.Core.Input;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
@@ -29,6 +30,7 @@ public partial class MainWindow : System.Windows.Window
     private readonly DispatcherTimer _updateTimer;
     private readonly AnimationPlayer _animPlayer;
     private readonly IdleBlinkScheduler? _idleBlink;
+    private readonly DragReleaseFeedback? _dragRelease;
     private readonly CuriosityReaction _curiosity = new();
     private readonly PetCharacterDef _character;
     private readonly Dictionary<string, BitmapImage> _imageCache = [];
@@ -40,22 +42,16 @@ public partial class MainWindow : System.Windows.Window
     private System.Windows.Point _dragOffset;
     private Point _pointerPressScreenDip;
 
-    // P1-003: Petting detection state (R-02).
+    // P1-003: Petting detection state (R-02, D-013).
     // Head zone = upper 1/3 of the pet image (resource-driven zones deferred).
-    // Petting: head press + small movement accumulated >= 1s → +5 affinity, 2s cooldown.
-    // Every visible part can drag. Head micro-moves remain petting only within
-    // the press-origin slop; conversion retains capture and the initial anchor.
+    // Head micro-moves remain a non-scoring gesture; no affinity or score is
+    // accumulated. Every visible part can drag. Head micro-moves remain
+    // petting only within the press-origin slop; conversion retains capture
+    // and the initial anchor.
     private bool _isPettingCandidate;
-    private double _pettingStartMs;
-    private double _pettingAccumulatedMs;
-    private double _pettingCooldownUntilMs;
     private System.Windows.Point _pettingLastPos;
-    private const double PettingRequiredMs = 1000.0;
-    private const double PettingCooldownMs = 2000.0;
     private const double PettingMaxMovePerFramePx = 8.0; // small movement threshold in DIP
     private const double HeadDragSlopDip = 8.0;
-    private const double PettingMinMovePx = 0.5; // F-03: below this is zero-displacement (stationary)
-    private const double PettingMaxInterEventMs = 500.0; // F-03: gap larger than this is a long pause, not continuous petting
     private const double HeadZoneRatio = 1.0 / 3.0; // upper 1/3 is head
 
     // P1-003: Grievance expression state (R-02).
@@ -92,6 +88,30 @@ public partial class MainWindow : System.Windows.Window
     internal EmotionDecayAccumulator? TestEmotionAccumulator;
     internal CornerTracker? TestCornerTracking;
     internal GrievanceExpressionState? TestGrievanceExpression;
+
+    // P1-004: Test injection points for rare-event objects.
+    // When non-null, OnUpdateTick uses these instead of App.Current.
+    internal EffectiveRuntimeTracker? TestRuntimeTracker;
+    internal RareEventScheduler? TestRareEventScheduler;
+
+    // F-08: Track the last-known rare-event plan state so we only call
+    // MarkStateDirty when the plan actually changes (new plan created,
+    // date changed, or Consumed flag flipped). This avoids marking dirty
+    // every tick, which would prevent the 5-second debounce from ever
+    // completing.
+    private string? _lastRareEventPlanDate;
+    private bool? _lastRareEventPlanConsumed;
+
+    // P1-004: Probe (peek) visual state for rare-event ShouldFire.
+    // When active, the pet window moves to the nearest screen edge and
+    // plays the curious expression. After the duration elapses, the
+    // window returns to its original position. Drag interrupts probe
+    // without restoring the original position (drag takes over position).
+    private bool _isProbing;
+    private double _probeStartMs;
+    private const double ProbeDurationMs = 3000.0;
+    private double _probeOriginalLeft;
+    private double _probeOriginalTop;
 
     // Win32 constants for no-activate window (F-01) and native popup menu.
     private const int GWL_EXSTYLE = -20;
@@ -166,6 +186,8 @@ public partial class MainWindow : System.Windows.Window
         _character = character;
         if (character.Actions.TryGetValue("blink", out var blink))
             _idleBlink = new IdleBlinkScheduler(blink);
+        if (character.Actions.TryGetValue("release", out var release))
+            _dragRelease = new DragReleaseFeedback(release);
         _animPlayer = new AnimationPlayer(character, GetElapsedMs);
         _animPlayer.OnActionMissing += OnActionMissing;
         _animPlayer.ActionCompleted += OnActionCompleted;
@@ -202,6 +224,13 @@ public partial class MainWindow : System.Windows.Window
             _startTimeMs = Environment.TickCount64;
         return Environment.TickCount64 - _startTimeMs;
     }
+
+    /// <summary>
+    /// P1-004: Public accessor for the monotonic elapsed-milliseconds value.
+    /// Used by App.OnPauseToggled to convert to monotonic minutes for
+    /// EffectiveRuntimeTracker Start/EndActivePeriod calls.
+    /// </summary>
+    public static double GetElapsedMsPublic() => GetElapsedMs();
 
     private static string FindAssetDirectory()
     {
@@ -548,8 +577,13 @@ public partial class MainWindow : System.Windows.Window
 
         // Position alone drives hover. No speed history, proximity fright,
         // cooldown, or automatic dodge action remains (D-009).
+        // F-09: Probe owns its action (curious) for the full probe lifetime.
+        // Low-priority hover/curiosity branches must not override or
+        // prematurely end the probe expression. Grievance expression is
+        // a higher-priority state that pre-empts both.
         if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused
-            && !_isExpressingGrievance && TryGetMousePosition(out var mouseX, out var mouseY))
+            && !_isExpressingGrievance && !_isProbing
+            && TryGetMousePosition(out var mouseX, out var mouseY))
         {
             var petRectPx = GetPetRectPhysicalPx();
             bool isOverPet = IsOverVisiblePet(mouseX, mouseY);
@@ -574,8 +608,10 @@ public partial class MainWindow : System.Windows.Window
         else
         {
             // Reset detectors during interrupts to avoid stale state.
+            // F-09: Probe owns its curious expression for the full lifetime;
+            // do not cancel curiosity while probing.
             _hoverDetector.Reset();
-            if (!_isAppPaused) _curiosity.Cancel();
+            if (!_isAppPaused && !_isProbing) _curiosity.Cancel();
         }
 
         // P1-003: Advance emotion decay every tick (G-01: use float accumulator).
@@ -677,13 +713,139 @@ public partial class MainWindow : System.Windows.Window
 
                     if (mouseInRange)
                     {
-                        // Static aggrieved bear expression; turning-away motion is deferred.
-                        // Expression will last 10 seconds, then resets grievance.
+                        // F-09: Grievance is higher priority than probe.
+                        // Set the grievance flag first so that EndProbe
+                        // restores the original position WITHOUT switching
+                        // to idle (grievance owns the action now).
                         _isExpressingGrievance = true;
                         _grievanceExpressionStartMs = nowMs;
+
+                        // If a probe is active, safely end it — restore the
+                        // original position (grievance should play at the
+                        // pet's normal spot, not at the screen edge).
+                        // EndProbe sees _isExpressingGrievance=true and
+                        // skips the idle switch.
+                        if (_isProbing)
+                        {
+                            EndProbe(restoreOriginal: true, nowMs);
+                        }
+
+                        // Static aggrieved bear expression; turning-away motion is deferred.
+                        // Expression will last 10 seconds, then resets grievance.
                         _animPlayer.PlayAction("grievance");
                     }
                 }
+            }
+        }
+
+        // P1-004: Advance effective runtime tracker and evaluate rare-event
+        // scheduler every tick. Only runs when not paused (same gate as emotion).
+        // Test injection: TestRuntimeTracker/TestRareEventScheduler bypass
+        // App.Current for unit tests.
+        EffectiveRuntimeTracker? runtimeTracker = TestRuntimeTracker;
+        RareEventScheduler? rareScheduler = TestRareEventScheduler;
+        if (runtimeTracker is null && System.Windows.Application.Current is App rareApp)
+        {
+            runtimeTracker = rareApp.RuntimeTracker;
+            rareScheduler = rareApp.RareEventScheduler;
+        }
+
+        if (!_isAppPaused && runtimeTracker is not null && rareScheduler is not null)
+        {
+            var monotonicMinutes = nowMs / 60000.0;
+            runtimeTracker.UpdateTo(monotonicMinutes);
+
+            // Ensure a plan exists for today (local date).
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+            var currentAccumulated = runtimeTracker.AccumulatedMinutes;
+            bool planCreated = rareScheduler.EnsurePlanForDate(
+                today, new Random(), currentAccumulatedMinutes: currentAccumulated);
+
+            // F-09 R10: Delay Evaluate while grievance is being expressed.
+            // Evaluate has a consumption side effect (marks the plan consumed
+            // internally on delay-reached, regardless of ShouldFire vs
+            // RollFailed). If we evaluate during grievance, the plan is
+            // consumed without the probe ever being shown — that is a premature
+            // skip, not the R-03 "delay to idle, skip only if no opportunity
+            // all day" rule. Instead, skip Evaluate entirely while grievance
+            // is active; the plan retains its original date, roll, delay,
+            // baseline, and unconsumed state. After grievance ends, the next
+            // tick evaluates the same plan normally.
+            //
+            // Note: a probe that already started and was interrupted by
+            // grievance was already consumed by its own Evaluate call (before
+            // grievance began). That consumption stands — no replay.
+            RareEventScheduler.TriggerResult? result = null;
+            if (!_isExpressingGrievance)
+            {
+                // Evaluate trigger conditions. Social and rest-reminder are not
+                // implemented yet — pass false per PRODUCT R-03.
+                result = rareScheduler.Evaluate(
+                    currentAccumulated, today,
+                    isPaused: false,
+                    isDragging: _isDragging,
+                    isSocialActive: false,
+                    isRestReminderActive: false);
+            }
+
+            // F-08: Notify the save queue when the plan state actually changes,
+            // not only when ShouldFire is true. Three cases require persistence:
+            //   1. A new plan was created (EnsurePlanForDate returned true).
+            //   2. The plan's Consumed flag changed (ShouldFire OR RollFailed).
+            //   3. The plan's date changed (cross-day new plan).
+            // Without this, a newly created plan or a roll-failed consumption
+            // would not enter the 5-second debounce save and could be lost on
+            // an abnormal exit before the next unrelated MarkStateDirty call.
+            //
+            // We compare against the last-known plan date + consumed state to
+            // avoid calling MarkStateDirty every tick (which would reset the
+            // debounce timer indefinitely and prevent saving).
+            var currentPlan = rareScheduler.CurrentPlan;
+            var currentDate = currentPlan?.LocalDate;
+            var currentConsumed = currentPlan?.Consumed;
+
+            bool stateChanged = planCreated
+                || currentDate != _lastRareEventPlanDate
+                || currentConsumed != _lastRareEventPlanConsumed;
+
+            if (result is not null && result.Value.ShouldFire)
+            {
+                rareScheduler.MarkConsumed();
+                // ShouldFire always changes Consumed from false to true.
+                stateChanged = true;
+
+                // P1-004: Start probe (peek) visual if not already active and
+                // not dragging. The pet moves to the nearest screen edge,
+                // plays curious, and returns to original position after
+                // ProbeDurationMs. Drag will interrupt probe.
+                // F-09: Grievance expression is higher priority than probe.
+                // If grievance is currently being expressed, do not start
+                // the probe. Per R-03, probe does not start during non-idle
+                // states. (Evaluate is skipped during grievance per R10, so
+                // ShouldFire should not reach here while grievance is active,
+                // but the guard is retained as a secondary safety check.)
+                if (!_isProbing && !_isDragging && !_isExpressingGrievance)
+                {
+                    StartProbe(nowMs);
+                }
+            }
+
+            // P1-004: Check if an active probe has finished.
+            if (_isProbing && !_isDragging)
+            {
+                double elapsed = nowMs - _probeStartMs;
+                if (elapsed >= ProbeDurationMs)
+                {
+                    EndProbe(restoreOriginal: true, nowMs);
+                }
+            }
+
+            if (stateChanged)
+            {
+                _lastRareEventPlanDate = currentDate;
+                _lastRareEventPlanConsumed = currentPlan?.Consumed;
+                if (System.Windows.Application.Current is App dirtyApp)
+                    dirtyApp.MarkStateDirty();
             }
         }
 
@@ -742,10 +904,12 @@ public partial class MainWindow : System.Windows.Window
 
         // Only replace idle's eye pixels; action identity remains idle, so
         // blinking cannot acquire movement/input ownership or restart hover.
-        var blinkFrame = _idleBlink?.Update(TestGetElapsedMs?.Invoke() ?? GetElapsedMs(),
-            _animPlayer.CurrentActionId == "idle" && !_isDragging && !_isPettingCandidate
-            && !_isContextMenuOpen && !_isExpressingGrievance);
-        if (blinkFrame is not null) frame = blinkFrame;
+        double expressionNowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        bool idleAvailable = _animPlayer.CurrentActionId == "idle" && !_isDragging && !_isPettingCandidate
+            && !_isContextMenuOpen && !_isExpressingGrievance;
+        var releaseFrame = _dragRelease?.Update(expressionNowMs, idleAvailable);
+        var blinkFrame = _idleBlink?.Update(expressionNowMs, idleAvailable && releaseFrame is null);
+        frame = releaseFrame ?? blinkFrame ?? frame;
 
         // F-04: Apply frame offset to the Image render transform so that
         // non-zero OffsetX/Y in the frame definition compensate for content
@@ -809,10 +973,18 @@ public partial class MainWindow : System.Windows.Window
     // boundary so tests can exercise the same head/body/anchor logic.
     internal bool BeginCapturedPointerInteraction(Point imagePoint, Point screenDip)
     {
+        // F-10: Only a real drag takeover cancels the probe (no position
+        // restore).  Transparent/invalid presses and head short-presses that
+        // never convert to drag must NOT break the probe or abandon
+        // restore-to-original.  Therefore the CancelProbeForDrag call is
+        // deferred to StartDragging/ConvertPettingToDrag below — it is NOT
+        // done unconditionally here.
+
         if (_isDragging || _isPettingCandidate || !PetImageGeometry.Contains(PetImage, imagePoint))
             return false;
 
         bool isHeadPress = IsInHeadZone(imagePoint);
+        _dragRelease?.Cancel();
         _pointerPressScreenDip = screenDip;
         _dragOffset = new Point(screenDip.X - Left, screenDip.Y - Top);
 
@@ -827,14 +999,19 @@ public partial class MainWindow : System.Windows.Window
         if (isHeadPress)
         {
             // Start petting candidate — may convert to drag if movement exceeds threshold.
+            // F-10: A head short-press does NOT cancel the probe.  Only when
+            // the head press converts to an actual drag (ConvertPettingToDrag)
+            // does CancelProbeForDrag fire.  If the user releases without
+            // exceeding the slop, EndPetting runs and the probe continues
+            // its remaining lifetime, eventually restoring the original position.
             _isPettingCandidate = true;
-            _pettingStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
-            _pettingAccumulatedMs = 0;
             _pettingLastPos = imagePoint;
             _hoverDetector.Reset();
+            UpdateFrame();
             return true;
         }
 
+        // Body press → immediate drag → cancel probe now.
         StartDragging();
         return true;
     }
@@ -849,6 +1026,10 @@ public partial class MainWindow : System.Windows.Window
 
     private void StartDragging()
     {
+        // F-10: Only a real drag takeover cancels the probe without restore.
+        // This covers body-press-immediate-drag and head-press-convert-to-drag.
+        CancelProbeForDrag();
+        _dragRelease?.Cancel();
         _isDragging = true;
         _hoverDetector.Reset();
         _animPlayer.PlayAction("drag");
@@ -883,7 +1064,9 @@ public partial class MainWindow : System.Windows.Window
             }
             else
             {
-                ProcessPettingMove(imagePoint, nowMs);
+                // D-013: Non-scoring gesture — only update last position for
+                // drag-conversion slop checks. No score or cooldown accumulated.
+                _pettingLastPos = imagePoint;
                 return;
             }
         }
@@ -944,6 +1127,158 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
+    /// P1-004: Start the probe (peek) visual. Records the current window
+    /// position, moves the pet to the nearest screen work-area edge with
+    /// ~half the window visible, and plays the curious expression.
+    /// Called from OnUpdateTick when ShouldFire is true.
+    /// </summary>
+    internal void StartProbe(double nowMs)
+    {
+        _isProbing = true;
+        _probeStartMs = nowMs;
+        _probeOriginalLeft = Left;
+        _probeOriginalTop = Top;
+
+        // Calculate nearest edge probe position.
+        var (probeLeft, probeTop) = CalculateProbePosition();
+        Left = probeLeft;
+        Top = probeTop;
+
+        // Play curious expression for the probe.
+        _hoverDetector.Reset();
+        _animPlayer.PlayAction("curious");
+        UpdateFrame();
+    }
+
+    /// <summary>
+    /// P1-004: End the probe. If restoreOriginal is true, restore the
+    /// window to the position recorded at StartProbe. Called when the
+    /// probe duration elapses (restoreOriginal=true) or when drag
+    /// interrupts the probe (restoreOriginal=false — drag takes over
+    /// position). Notifies save queue on restore.
+    /// </summary>
+    internal void EndProbe(bool restoreOriginal, double nowMs)
+    {
+        if (!_isProbing)
+            return;
+
+        _isProbing = false;
+
+        if (restoreOriginal)
+        {
+            Left = _probeOriginalLeft;
+            Top = _probeOriginalTop;
+            if (System.Windows.Application.Current is App app)
+                app.MarkStateDirty();
+        }
+
+        // Return to idle unless dragging has already taken over.
+        // F-09: If grievance expression is in progress (higher priority),
+        // do NOT switch to idle — the grievance expression owns the action
+        // and must continue until its 10-second duration completes.
+        if (!_isDragging && !_isExpressingGrievance)
+        {
+            _animPlayer.PlayAction("idle");
+            UpdateFrame();
+        }
+    }
+
+    /// <summary>
+    /// P1-004: Cancel an active probe for drag takeover. Does NOT restore
+    /// the original position — the drag anchor is calculated from the
+    /// current (probe) position. F-10: Called only from StartDragging
+    /// (body-immediate-drag and head-convert-to-drag), NOT from
+    /// BeginCapturedPointerInteraction entry. Head short-press, micro-move
+    /// within slop, and invalid/transparent presses do NOT call this.
+    /// </summary>
+    internal void CancelProbeForDrag()
+    {
+        if (_isProbing)
+        {
+            _isProbing = false;
+            // Do NOT restore original position; drag owns position now.
+        }
+    }
+
+    /// <summary>
+    /// P1-004: Calculate the nearest screen edge position for the probe.
+    /// Moves the window so that approximately half of it is visible at
+    /// the nearest work-area edge (top/bottom/left/right of the current
+    /// monitor's work area). Falls back to current position if monitor
+    /// info is unavailable.
+    /// </summary>
+    private (double left, double top) CalculateProbePosition()
+    {
+        var monitors = MonitorInterop.EnumerateMonitors();
+        if (monitors.Count == 0)
+            return (Left, Top);
+
+        // Find the monitor the pet is currently on (by center point in DIP).
+        var centerDip = new Point(Left + Width / 2, Top + Height / 2);
+        var source = PresentationSource.FromVisual(this);
+        var transform = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
+        var centerPx = transform.Transform(centerDip);
+        var cx = (int)centerPx.X;
+        var cy = (int)centerPx.Y;
+
+        var monitor = monitors.FirstOrDefault(m => m.FullBounds.Contains(cx, cy));
+        if (monitor.DeviceName is null)
+            monitor = monitors.FirstOrDefault(m => m.WorkArea.Bounds.Contains(cx, cy));
+        if (monitor.DeviceName is null)
+            return (Left, Top);
+
+        // Work area bounds in physical pixels — convert to DIP for window positioning.
+        var wa = monitor.WorkArea.Bounds;
+        var dpiScale = transform.M11 > 0 ? transform.M11 : 1.0; // DIP per pixel = 1 / (pixels per DIP)
+        // transformToDevice gives pixels-per-DIP, so DIP = px / scale.
+        // But wa is in physical pixels; we need DIP for Left/Top.
+        // Actually WPF Left/Top are in DIP, and the transform from device
+        // gives us the conversion. Use TransformFromDevice for px→DIP.
+        var fromDevice = source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+        var waLeftDip = fromDevice.Transform(new Point(wa.Left, 0)).X;
+        var waTopDip = fromDevice.Transform(new Point(0, wa.Top)).Y;
+        var waRightDip = fromDevice.Transform(new Point(wa.Right, 0)).X;
+        var waBottomDip = fromDevice.Transform(new Point(0, wa.Bottom)).Y;
+
+        double halfH = Height / 2;
+        double halfW = Width / 2;
+
+        // Current center in DIP.
+        double curCenterX = Left + Width / 2;
+        double curCenterY = Top + Height / 2;
+
+        // Distances to each edge (DIP). Choose the nearest.
+        double distTop = System.Math.Abs(curCenterY - waTopDip);
+        double distBottom = System.Math.Abs(curCenterY - waBottomDip);
+        double distLeft = System.Math.Abs(curCenterX - waLeftDip);
+        double distRight = System.Math.Abs(curCenterX - waRightDip);
+
+        double minDist = System.Math.Min(System.Math.Min(distTop, distBottom),
+                                          System.Math.Min(distLeft, distRight));
+
+        if (minDist == distTop)
+        {
+            // Probe from top edge: window center at waTopDip, half above the edge.
+            return (Left, waTopDip - halfH);
+        }
+        else if (minDist == distBottom)
+        {
+            // Probe from bottom edge: window center at waBottomDip, half below.
+            return (Left, waBottomDip - halfH);
+        }
+        else if (minDist == distLeft)
+        {
+            // Probe from left edge: window center at waLeftDip, half left of edge.
+            return (waLeftDip - halfW, Top);
+        }
+        else
+        {
+            // Probe from right edge: window center at waRightDip, half right of edge.
+            return (waRightDip - halfW, Top);
+        }
+    }
+
+    /// <summary>
     /// F-03: Unified drag cleanup entry. Called on mouse up, capture loss,
     /// and detected stale drag state. Releases capture and resets flag.
     /// F-02: After drag ends, clamp the window to a visible work area.
@@ -952,6 +1287,7 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     private void EndDrag()
     {
+        bool wasDragging = _isDragging;
         _isDragging = false;
         if (PetCanvas.IsMouseCaptured)
             PetCanvas.ReleaseMouseCapture();
@@ -985,8 +1321,10 @@ public partial class MainWindow : System.Windows.Window
         if (System.Windows.Application.Current is App app2)
             app2.MarkStateDirty();
 
-        // P1-001: Return to idle after drag ends.
+        // Input and position stop immediately. Only the face settles briefly.
         _animPlayer.PlayAction("idle");
+        if (wasDragging && !_isContextMenuOpen)
+            _dragRelease?.Start(TestGetElapsedMs?.Invoke() ?? GetElapsedMs());
         UpdateFrame();
 
         // Start a fresh hover dwell after dragging.
@@ -994,33 +1332,15 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
-    /// P1-003: End petting candidate state. If accumulated time >= 1s and
-    /// cooldown has elapsed, trigger a pet increment (+5 affinity).
+    /// P1-003: End petting candidate state. Per D-013, petting is a non-scoring
+    /// gesture — no affinity increment, no cooldown. Only cleans up capture and
+    /// resets hover.
     /// </summary>
     private void EndPetting()
     {
         _isPettingCandidate = false;
         if (PetCanvas.IsMouseCaptured)
             PetCanvas.ReleaseMouseCapture();
-
-        var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
-
-        // Check if petting threshold was met and cooldown has elapsed.
-        if (_pettingAccumulatedMs >= PettingRequiredMs && nowMs >= _pettingCooldownUntilMs)
-        {
-            // F-05: Support test injection via TestEmotionAccumulator.
-            EmotionDecayAccumulator? emotionAcc = TestEmotionAccumulator;
-            if (emotionAcc is null && System.Windows.Application.Current is App app)
-                emotionAcc = app.EmotionAccumulator;
-
-            if (emotionAcc is not null)
-            {
-                emotionAcc.AddAffinity(5);
-                _pettingCooldownUntilMs = nowMs + PettingCooldownMs;
-                if (System.Windows.Application.Current is App appDirty)
-                    appDirty.MarkStateDirty();
-            }
-        }
 
         _hoverDetector.Reset();
     }
@@ -1032,7 +1352,6 @@ public partial class MainWindow : System.Windows.Window
     private void ConvertPettingToDrag()
     {
         _isPettingCandidate = false;
-        _pettingAccumulatedMs = 0;
         StartDragging();
     }
 
@@ -1067,55 +1386,6 @@ public partial class MainWindow : System.Windows.Window
         // pixel of the current frame. This prevents petting accumulation when
         // the cursor is on empty space within the head rectangle.
         return PetImageGeometry.Contains(PetImage, localPoint);
-    }
-
-    /// <summary>
-    /// Micro-stroke counting shared by the production gesture pipeline and tests.
-    /// ProcessCapturedPointerMove first handles cumulative drag intent and capture
-    /// continuity; this helper alone does not prove a head-to-drag transition.
-    /// Returns false if the petting candidate was ended.
-    /// </summary>
-    internal bool ProcessPettingMove(Point localPos, double nowMs)
-    {
-        if (!_isPettingCandidate)
-            return false;
-
-        // F-03: If the cursor has left the head zone, end petting candidate.
-        if (!IsInHeadZone(localPos))
-        {
-            EndPetting();
-            return false;
-        }
-
-        var dx = localPos.X - _pettingLastPos.X;
-        var dy = localPos.Y - _pettingLastPos.Y;
-        var moveDist = Math.Sqrt(dx * dx + dy * dy);
-
-        if (moveDist > PettingMaxMovePerFramePx)
-        {
-            // Large movement — would convert to drag in real handler.
-            // In test mode we just end petting candidate without drag setup.
-            _isPettingCandidate = false;
-            if (PetCanvas.IsMouseCaptured)
-                PetCanvas.ReleaseMouseCapture();
-            _hoverDetector.Reset();
-            return false;
-        }
-
-        // F-03: Only accumulate for effective small movements.
-        if (moveDist >= PettingMinMovePx)
-        {
-            var interEventMs = nowMs - _pettingStartMs;
-
-            if (interEventMs <= PettingMaxInterEventMs)
-            {
-                _pettingAccumulatedMs += interEventMs;
-            }
-            _pettingStartMs = nowMs;
-        }
-
-        _pettingLastPos = localPos;
-        return true;
     }
 
     /// <summary>
@@ -1291,10 +1561,18 @@ public partial class MainWindow : System.Windows.Window
         _pauseStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
         _hasPauseStartMs = true;
         _idleBlink?.Pause(_pauseStartMs);
+        _dragRelease?.Pause(_pauseStartMs);
         _curiosity.Pause(_pauseStartMs);
 
         // Discard hover dwell at the pause boundary.
         _hoverDetector.Reset();
+
+        // P1-004: End the active period so paused time is not counted as
+        // effective runtime for rare-event scheduling.
+        EffectiveRuntimeTracker? rtPause = TestRuntimeTracker;
+        if (rtPause is null && System.Windows.Application.Current is App appPause)
+            rtPause = appPause.RuntimeTracker;
+        rtPause?.EndActivePeriod(_pauseStartMs / 60000.0);
     }
 
     /// <summary>
@@ -1308,6 +1586,7 @@ public partial class MainWindow : System.Windows.Window
     {
         var expressionResumeMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
         _idleBlink?.Resume(expressionResumeMs);
+        _dragRelease?.Resume(expressionResumeMs);
         _curiosity.Resume(expressionResumeMs);
         // G-03: Calculate pause duration and compensate timers.
         if (_hasPauseStartMs)
@@ -1324,8 +1603,12 @@ public partial class MainWindow : System.Windows.Window
                     _grievanceExpressionStartMs += pauseDurationMs;
                 }
 
-                // Compensate petting cooldown so it doesn't expire during pause.
-                _pettingCooldownUntilMs += pauseDurationMs;
+                // P1-004: Compensate probe start time so the probe doesn't
+                // instantly complete after a long pause.
+                if (_isProbing)
+                {
+                    _probeStartMs += pauseDurationMs;
+                }
 
                 // Compensate emotion decay: advance the accumulator's reference
                 // time forward by the pause duration so that the next AdvanceTo
@@ -1354,6 +1637,13 @@ public partial class MainWindow : System.Windows.Window
         _animPlayer.Resume();
         _updateTimer.Start();
 
+        // P1-004: Start a fresh active period on resume.
+        var resumeMonotonicMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        EffectiveRuntimeTracker? rtResume = TestRuntimeTracker;
+        if (rtResume is null && System.Windows.Application.Current is App appResume)
+            rtResume = appResume.RuntimeTracker;
+        rtResume?.StartActivePeriod(resumeMonotonicMs / 60000.0);
+
         // Resume starts a fresh hover dwell.
         _hoverDetector.Reset();
     }
@@ -1362,6 +1652,26 @@ public partial class MainWindow : System.Windows.Window
     /// P1-001: Public accessor for the current action (for testing/diagnostics).
     /// </summary>
     public string CurrentAction => _animPlayer.CurrentActionId;
+
+    /// <summary>
+    /// P1-004: Public accessor for the probe (peek) active state (for testing).
+    /// </summary>
+    public bool IsProbing => _isProbing;
+
+    /// <summary>
+    /// P1-004: Restore the original position if a probe is active, so that
+    /// the saved state reflects the pre-probe position. Called by
+    /// App.FlushFinalState before the final save. Does NOT end the probe
+    /// animation — just restores the window position for save capture.
+    /// </summary>
+    public void RestoreProbePositionForExit()
+    {
+        if (_isProbing)
+        {
+            Left = _probeOriginalLeft;
+            Top = _probeOriginalTop;
+        }
+    }
 
     /// <summary>
     /// P1-001 F-02: Public accessor for the app-level pause state (for testing/diagnostics).

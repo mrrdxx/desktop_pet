@@ -2,6 +2,7 @@ using System.Windows;
 using DesktopPet.App.Platform;
 using DesktopPet.App.Persistence;
 using DesktopPet.Core.Emotion;
+using DesktopPet.Core.Events;
 using DesktopPet.Core.Persistence;
 
 namespace DesktopPet.App;
@@ -28,6 +29,53 @@ public partial class App : System.Windows.Application
     internal EmotionDecayAccumulator? EmotionAccumulator { get; private set; }
     internal GrievanceExpressionState? GrievanceExpression { get; private set; }
     internal CornerTracker? CornerTracking { get; private set; }
+
+    // P1-004: Rare-event objects held at App level for the same reason.
+    // RuntimeTracker accumulates effective (non-paused) monotonic minutes.
+    // RareEventScheduler manages the daily plan and trigger evaluation.
+    internal EffectiveRuntimeTracker? RuntimeTracker { get; private set; }
+    internal RareEventScheduler? RareEventScheduler { get; private set; }
+
+    /// <summary>
+    /// F-08: Test-only setup method that configures the App with isolated
+    /// archive/save infrastructure and runtime objects, bypassing the full
+    /// OnStartup (single-instance guard, tray, window). This allows tests to
+    /// verify the real MarkStateDirty → SaveCoordinator → file path without
+    /// manually calling Map/Save.
+    /// </summary>
+    internal void TestSetupIsolatedSave(
+        string isolatedDir,
+        PetStateArchive? initialState = null,
+        EffectiveRuntimeTracker? tracker = null,
+        RareEventScheduler? scheduler = null)
+    {
+        _archive = new ArchiveService(isolatedDir);
+        _saveCoordinator = new SaveCoordinator(_archive);
+        _state = initialState ?? new PetStateArchive();
+        _settings = new PetSettingsArchive();
+        _isPaused = false;
+        _isShuttingDown = false;
+        RuntimeTracker = tracker ?? new EffectiveRuntimeTracker();
+        RareEventScheduler = scheduler ?? new RareEventScheduler();
+        EmotionAccumulator ??= new EmotionDecayAccumulator(50, DateTime.UtcNow);
+        GrievanceExpression ??= new GrievanceExpressionState();
+        CornerTracking ??= new CornerTracker();
+    }
+
+    /// <summary>
+    /// F-08: Test-only cleanup — disposes SaveCoordinator and clears
+    /// singleton state so subsequent tests can create a fresh App.
+    /// </summary>
+    internal void TestCleanup()
+    {
+        _saveCoordinator?.Dispose();
+        _saveCoordinator = null;
+        _archive = null;
+        _tray?.Dispose();
+        _tray = null;
+        _instanceGuard?.Dispose();
+        _instanceGuard = null;
+    }
 
     /// <summary>
     /// F-05: Production mapping from PetStateArchive to emotion objects.
@@ -60,7 +108,7 @@ public partial class App : System.Windows.Application
             lastDecayUtc = utcNow;
         }
 
-        var acc = new EmotionDecayAccumulator(state.Affinity, state.Grievance, lastDecayUtc);
+        var acc = new EmotionDecayAccumulator(state.Grievance, lastDecayUtc);
         var expr = new GrievanceExpressionState();
         expr.Restore(state.PendingGrievanceExpression, state.GrievanceExpressionDate);
         var tracker = new CornerTracker();
@@ -76,11 +124,60 @@ public partial class App : System.Windows.Application
     internal static void MapEmotionObjectsToArchive(
         PetStateArchive state, EmotionDecayAccumulator acc, GrievanceExpressionState expr)
     {
-        state.Affinity = acc.AffinityInt;
         state.Grievance = acc.GrievanceInt;
         state.LastDecayUtc = acc.LastDecayUtc.ToString("o");
         state.PendingGrievanceExpression = expr.IsPending;
         state.GrievanceExpressionDate = expr.MarkedDate;
+    }
+
+    /// <summary>
+    /// F-06: Production mapping from PetStateArchive to rare-event objects.
+    /// Restores EffectiveRuntimeTracker accumulated minutes and RareEventScheduler
+    /// plan from the same archive used by the real load path. Tests verify this
+    /// is the single production conversion — no parallel test-only mapping.
+    /// </summary>
+    internal static (EffectiveRuntimeTracker tracker, RareEventScheduler scheduler)
+        MapArchiveToRareEventObjects(PetStateArchive state)
+    {
+        var tracker = new EffectiveRuntimeTracker();
+        tracker.Restore(state.AccumulatedRuntimeMinutes);
+
+        var scheduler = new RareEventScheduler();
+        if (state.RareEventPlan is not null)
+        {
+            var plan = new RareEventPlan
+            {
+                LocalDate = state.RareEventPlan.LocalDate ?? string.Empty,
+                TriggerDelayMinutes = state.RareEventPlan.TriggerDelayMinutes,
+                TriggerRoll = state.RareEventPlan.TriggerRoll,
+                Consumed = state.RareEventPlan.Consumed,
+                AccumulatedBaselineMinutes = state.RareEventPlan.AccumulatedBaselineMinutes
+            };
+            scheduler.RestorePlan(plan);
+        }
+
+        return (tracker, scheduler);
+    }
+
+    /// <summary>
+    /// F-06: Production mapping from rare-event objects to PetStateArchive.
+    /// Saves EffectiveRuntimeTracker accumulated minutes and RareEventScheduler
+    /// plan snapshot into the same archive used by the real save path.
+    /// </summary>
+    internal static void MapRareEventObjectsToArchive(
+        PetStateArchive state, EffectiveRuntimeTracker tracker, RareEventScheduler scheduler)
+    {
+        state.AccumulatedRuntimeMinutes = tracker.AccumulatedMinutes;
+        state.RareEventPlan = scheduler.GetSnapshot() is { } plan
+            ? new RareEventPlanSnapshot
+            {
+                LocalDate = plan.LocalDate,
+                TriggerDelayMinutes = plan.TriggerDelayMinutes,
+                TriggerRoll = plan.TriggerRoll,
+                Consumed = plan.Consumed,
+                AccumulatedBaselineMinutes = plan.AccumulatedBaselineMinutes
+            }
+            : null;
     }
 
     protected override void OnStartup(StartupEventArgs e)
@@ -114,6 +211,12 @@ public partial class App : System.Windows.Application
         GrievanceExpression = grievanceExpr;
         CornerTracking = cornerTrack;
 
+        // P1-004: Initialize rare-event objects from archived state via the
+        // shared production mapping (F-06: same path used by tests).
+        var (runtimeTracker, rareScheduler) = MapArchiveToRareEventObjects(_state);
+        RuntimeTracker = runtimeTracker;
+        RareEventScheduler = rareScheduler;
+
         if (stateFromBackup)
             System.Diagnostics.Trace.TraceInformation("State restored from backup.");
         if (stateUnknown)
@@ -124,6 +227,15 @@ public partial class App : System.Windows.Application
             System.Diagnostics.Trace.TraceWarning("Settings archive has unknown higher schemaVersion; will not overwrite.");
 
         _isPaused = _state.IsPaused;
+
+        // P1-004: Start the effective runtime active period on startup when
+        // not paused. When paused at exit, the tracker was ended at pause
+        // time and will be resumed by OnPauseToggled(false) or ResumeAnimation.
+        if (!_isPaused && RuntimeTracker is not null)
+        {
+            var nowMs = DesktopPet.App.MainWindow.GetElapsedMsPublic();
+            RuntimeTracker.StartActivePeriod(nowMs / 60000.0);
+        }
 
         // Apply the paused behavior before the window can start rendering.
         _mainWindow = new MainWindow();
@@ -176,10 +288,23 @@ public partial class App : System.Windows.Application
         {
             // Stop active behavior (animation timer).
             _mainWindow?.PauseAnimation();
+            // P1-004: End the active period so paused time is not counted
+            // as effective runtime for rare-event scheduling.
+            if (RuntimeTracker is not null)
+            {
+                var nowMs = DesktopPet.App.MainWindow.GetElapsedMsPublic();
+                RuntimeTracker.EndActivePeriod(nowMs / 60000.0);
+            }
         }
         else
         {
             _mainWindow?.ResumeAnimation();
+            // P1-004: Start a fresh active period on resume.
+            if (RuntimeTracker is not null)
+            {
+                var nowMs = DesktopPet.App.MainWindow.GetElapsedMsPublic();
+                RuntimeTracker.StartActivePeriod(nowMs / 60000.0);
+            }
         }
 
         MarkStateDirty();
@@ -238,14 +363,23 @@ public partial class App : System.Windows.Application
             {
                 MapEmotionObjectsToArchive(_state, EmotionAccumulator, GrievanceExpression);
             }
+            // P1-004: Sync rare-event state to archive via the shared production
+            // mapping (F-06: same path used by tests).
+            if (RuntimeTracker is not null && RareEventScheduler is not null)
+            {
+                MapRareEventObjectsToArchive(_state, RuntimeTracker, RareEventScheduler);
+            }
             _saveCoordinator.MarkStateDirty(_state);
         }
     }
 
-    private void FlushFinalState()
+    internal void FlushFinalState()
     {
         if (_saveCoordinator is null)
             return;
+        // P1-004: If a probe is active, restore the original position so
+        // the saved state reflects the pre-probe location, not the edge.
+        _mainWindow?.RestoreProbePositionForExit();
         // Capture and mark the final snapshot even if the previous debounce has
         // already completed. File-level protection still prevents downgrades.
         MarkStateDirty();
