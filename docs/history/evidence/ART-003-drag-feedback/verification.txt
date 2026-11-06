@@ -1,0 +1,29 @@
+ART-003 implementation self-verification, 2026-10-25 Asia/Shanghai
+Baseline: 4b2568188369e451ee0d9be7f8665e71d54a758c, already pushed and remotely verified.
+Current ART-003 changes are uncommitted and unpushed.
+
+Build: exit 0, 0 warnings/errors, artifacts/bear-drag-feedback/build.
+Final automated tests: Core 197/197, App 167/167, total 364/364, no skipped/failed, exit 0.
+Raw TRX files are preserved alongside; final run follows clarification of the App test's coverage.
+App shared-entry tests establish an actual drag flag before checking release, position and rendered image.
+They do not claim system mouse injection or capture from an unshown, never-captured window.
+Existing full-suite HeadDragInteractionTests cover actual WPF capture; separate native-input run remains incomplete.
+
+Pixel checks: original Alpha unchanged over entire sprite; outside eye/brow regions RGBA equal to idle.
+Mouth, nose, body, ears, feet and shadow preserved; world foot tests pass.
+Default blink exporter regenerated both old blink PNGs in isolation, matching existing files byte-for-byte by SHA256.
+Built-in imagegen: initial network error; same built-in tool retry succeeded; no CLI/API fallback.
+Review host and native-input probe build: exit 0, 0 warnings/errors.
+
+Native-input runs: NOT PASSED / INCOMPLETE, not accepted as successful live verification.
+First: idle observation passes, then hover failures and target-PID mismatch; failures=6; no button-down sent to other app.
+Second: immediate pointer read after SendInput may precede input queue processing; target 180,548 versus actual 905,860; failures=1.
+Third: after adding 40ms queue wait, target 180,548 versus actual 1133,849; guarded stop, failures=1.
+Actual cause of pointer position mismatch not established; do not label product fixed/failed solely from these runs.
+No further automatic input, no unrelated app interaction, no forced mouse restoration when interference detected.
+
+Current production still uses old bear-natural output, PID180840 observed this turn (must recheck future PID).
+New production output is built but not started; launcher updated and path --check passes.
+User can exit old pet through tray Exit and start the existing desktop script to see the new version.
+Live release/rapid-regrab/capture feel and user visual acceptance remain pending; no 100%/mixed-DPI claim.
+No archive format/dependency change, P1-004 work, review-report change or new feature push.

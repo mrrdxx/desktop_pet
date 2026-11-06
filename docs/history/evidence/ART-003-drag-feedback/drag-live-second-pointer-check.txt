@@ -1,0 +1,8 @@
+2026-10-25T15:42:31.1982774+08:00 WINDOW hwnd=5185186; dpi=144; visible=True; build=C:\Users\mrrdxx\Desktop\pet\artifacts\bear-drag-feedback\probe-build\bin\DesktopPet.InteractionProbe\debug\DesktopPet.dll
+2026-10-25T15:42:31.2121876+08:00 ERROR System.InvalidOperationException: Pointer did not remain at the requested test position: target=180,548; actual=905,860. Input run stopped.
+   at DesktopPet.InteractionProbe.Program.Move(Point target, Int32 ms) in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 67
+   at DesktopPet.InteractionProbe.Program.Reset() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 73
+   at DesktopPet.InteractionProbe.Program.ObserveNaturalIdle() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 199
+   at DesktopPet.InteractionProbe.Program.Verify() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 85
+   at DesktopPet.InteractionProbe.Program.<>c__DisplayClass6_0.<<Main>b__0>d.MoveNext() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 35
+2026-10-25T15:42:31.2214890+08:00 RESULT failures=1; real cursor + visible HWND; no archives; operator subjective feel not measured

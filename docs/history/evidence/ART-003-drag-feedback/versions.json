@@ -1,0 +1,83 @@
+{
+  "recordedAt": "2026-10-25T15:57:40.0694580+08:00",
+  "gitHead": "4b2568188369e451ee0d9be7f8665e71d54a758c",
+  "workingTree": "ART-003 uncommitted; current probe includes queue wait/pointer guards. Earlier failed probe logs describe earlier stages and are not tagged as passing evidence for these hashes.",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Animation/DragReleaseFeedback.cs",
+      "sha256": "74A17D8B2C5DBDB15675146613D1A4B1B7D93E42B129A635F2DC188C5796A904"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "048823B4972CCB2D20928D9336840D4B0F7D53C538AA2A366A6E81B9386F9CBF"
+    },
+    {
+      "path": "tests/DesktopPet.Core.Tests/DragReleaseFeedbackTests.cs",
+      "sha256": "899930F149AFEEABE7CB5009AD80CF2A8AE890A5E3A28EFA2153FEAFEC7A28C7"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/DragFeedbackIntegrationTests.cs",
+      "sha256": "4DBF041A05A5B496BC2A4FF9D29A8B7CFB222A7A89DE4996C6B51BA593FA779C"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/BearResourceTests.cs",
+      "sha256": "20A3D99984A05905A7A21A186F230E40D86ADA7849CE890B6E47BF9BE80E47AB"
+    },
+    {
+      "path": "tests/DesktopPet.InteractionProbe/Program.cs",
+      "sha256": "91440EB9458BBCF6B11C539E0F6DEE58EF0907BBCCF73160F831B5A00897ADD9"
+    },
+    {
+      "path": "tools/Export-BearBlinkAssets.ps1",
+      "sha256": "6D62B13960A23BB61D2AEFF4CD6BAA7543621A93705004E036299D9A9B672A8F"
+    },
+    {
+      "path": "tools/Start-DesktopPet.cmd",
+      "sha256": "306D035EDF714D0D4ECE0C3F3CB9C394FD16FCE7E6C7FCE1F50FFF7C8EAEA2FF"
+    },
+    {
+      "path": "assets/art/bear-v1/drag-source.png",
+      "sha256": "4A03A9B4CE40331CE6766913DA81B78B4E05F6189B2C60922E0BA2D5630D1B08"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "E50D807E8192F42AD4DAD230E5E82D46A994CB7796AC0385B47EEA47918F08A7"
+    },
+    {
+      "path": "assets/pets/bear/idle_0.png",
+      "sha256": "EC70AE47CF44EB6CCFBBB4A43F58696E4FA37FC59E43CA4887E8EBA0DD403901"
+    },
+    {
+      "path": "assets/pets/bear/drag_gentle.png",
+      "sha256": "5B84B2836C2827FBC6C7DE196149BFB8F2FBC39B80E930B814845F4ED294083C"
+    },
+    {
+      "path": "assets/pets/bear/release_settle.png",
+      "sha256": "6154217D48A6B4272BBE7459FB4A27900D912DA3F73E86CCDBE987F8C1B197BD"
+    },
+    {
+      "path": "artifacts/bear-drag-feedback/build/bin/DesktopPet.App/debug/DesktopPet.exe",
+      "sha256": "C96532AC2F3D39EF8BFA199A70CE1D6524D79C411D08F9A8FF4F12425EEA7A8C"
+    },
+    {
+      "path": "artifacts/bear-drag-feedback/build/bin/DesktopPet.App/debug/DesktopPet.dll",
+      "sha256": "FE197B085EF18776EEDAC9AC5D441F281A7B1EA288AEA5B37959DF6EE4D64FC7"
+    },
+    {
+      "path": "artifacts/bear-drag-feedback/build/bin/DesktopPet.App/debug/DesktopPet.Core.dll",
+      "sha256": "F2DA9DEE0C5D7F9CC0CBBDBFAC60BBBF7E253B3C35A44EC19F1805D9BC39EE2D"
+    },
+    {
+      "path": "artifacts/bear-drag-feedback/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.InteractionProbe.dll",
+      "sha256": "191613DBB10092B8C91532FAEDE6CE9F9EC868143D33E9F30A3573D0461FBFBE"
+    },
+    {
+      "path": "artifacts/bear-drag-feedback/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.dll",
+      "sha256": "079547B9C0F664DD82150A5DCB1DC5B1D5C1EF4FCBA88CB1D0A0F0A340A5A9EC"
+    },
+    {
+      "path": "artifacts/bear-drag-feedback/probe-build/bin/DesktopPet.InteractionProbe/debug/DesktopPet.Core.dll",
+      "sha256": "C9A876AE2C49EEDAC136D8633F97ACD79EEB4EC556DBB5D1FB5C3F6F9A03DF16"
+    }
+  ]
+}

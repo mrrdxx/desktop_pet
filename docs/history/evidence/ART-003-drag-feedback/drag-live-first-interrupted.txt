@@ -1,0 +1,47 @@
+2026-10-25T15:37:36.3479752+08:00 WINDOW hwnd=20912530; dpi=144; visible=True; build=C:\Users\mrrdxx\Desktop\pet\artifacts\bear-drag-feedback\probe-build\bin\DesktopPet.InteractionProbe\debug\DesktopPet.dll
+2026-10-25T15:37:36.6596191+08:00 IDLE_FRAME ms=0; image=idle_0.png
+2026-10-25T15:37:41.4628752+08:00 IDLE_FRAME ms=4803; image=blink_half.png
+2026-10-25T15:37:41.4937748+08:00 IDLE_FRAME ms=4834; image=blink_closed.png
+2026-10-25T15:37:41.6006660+08:00 IDLE_FRAME ms=4941; image=blink_half.png
+2026-10-25T15:37:41.6468255+08:00 IDLE_FRAME ms=4987; image=idle_0.png
+2026-10-25T15:37:41.8310118+08:00 IDLE_FRAME ms=5171; image=blink_half.png
+2026-10-25T15:37:41.9093223+08:00 IDLE_FRAME ms=5249; image=blink_closed.png
+2026-10-25T15:37:41.9406637+08:00 IDLE_FRAME ms=5281; image=blink_half.png
+2026-10-25T15:37:42.0486431+08:00 IDLE_FRAME ms=5389; image=idle_0.png
+2026-10-25T15:37:48.7721003+08:00 IDLE_FRAME ms=12112; image=blink_half.png
+2026-10-25T15:37:48.8343990+08:00 IDLE_FRAME ms=12175; image=blink_closed.png
+2026-10-25T15:37:48.9416043+08:00 IDLE_FRAME ms=12282; image=blink_half.png
+2026-10-25T15:37:48.9885993+08:00 IDLE_FRAME ms=12329; image=idle_0.png
+2026-10-25T15:37:53.7272027+08:00 IDLE_FRAME ms=17067; image=blink_half.png
+2026-10-25T15:37:53.7879631+08:00 IDLE_FRAME ms=17128; image=blink_closed.png
+2026-10-25T15:37:53.8802798+08:00 IDLE_FRAME ms=17220; image=blink_half.png
+2026-10-25T15:37:53.9272851+08:00 IDLE_FRAME ms=17267; image=idle_0.png
+2026-10-25T15:37:59.5575014+08:00 IDLE_FRAME ms=22898; image=blink_half.png
+2026-10-25T15:37:59.6043250+08:00 IDLE_FRAME ms=22944; image=blink_closed.png
+2026-10-25T15:37:59.6829549+08:00 IDLE_FRAME ms=23023; image=blink_half.png
+2026-10-25T15:37:59.7307210+08:00 IDLE_FRAME ms=23071; image=idle_0.png
+2026-10-25T15:38:02.6734486+08:00 PASS real idle rendering uses neutral eye-only blink frames, not content smile
+2026-10-25T15:38:02.6734906+08:00 PASS real idle observation contains at least three blink cycles
+2026-10-25T15:38:02.6749172+08:00 BLINK_START_GAPS_MS 7309.2,4955.1,5830.3
+2026-10-25T15:38:02.6749374+08:00 PASS real blink starts respect quiet 3-7 second intervals plus cycle length/timer tolerance
+2026-10-25T15:38:02.6750402+08:00 PASS blink keeps idle action identity and world-foot offset
+2026-10-25T15:38:04.5847690+08:00 PASS transparent corner does not trigger curiosity
+2026-10-25T15:38:07.6531529+08:00 FAIL real cursor dwell triggers curious
+2026-10-25T15:38:08.0539849+08:00 PASS continuous dwell does not replay action
+2026-10-25T15:38:08.1613912+08:00 FAIL brief mouse leave keeps curiosity during grace period
+2026-10-25T15:38:08.4280143+08:00 FAIL quick return does not flicker or replay curiosity
+2026-10-25T15:38:09.0817360+08:00 PASS leaving mouse alone restores idle and clears curious offset without click
+2026-10-25T15:38:11.8316804+08:00 FAIL leave then re-enter generates a new curious action
+2026-10-25T15:38:14.3336494+08:00 PASS continuous hover naturally ends curiosity after two active seconds
+2026-10-25T15:38:15.8344255+08:00 PASS stationary pointer does not repeat curiosity after natural end
+2026-10-25T15:38:19.8910815+08:00 FAIL paused curiosity remains frozen after mouse leave
+2026-10-25T15:38:20.5969057+08:00 PASS resuming with mouse outside ends curiosity without any click
+2026-10-25T15:38:23.4652767+08:00 PASS slow approach without full dwell keeps idle
+2026-10-25T15:38:24.0968731+08:00 PASS fast cursor movement alone keeps idle (D-009)
+2026-10-25T15:38:24.4170233+08:00 PASS repeated rapid movement does not change expression
+2026-10-25T15:38:27.2544398+08:00 PASS fast motion followed by slow approach only allows normal hover feedback
+2026-10-25T15:38:27.5758935+08:00 ERROR System.InvalidOperationException: Pointer does not hit the owned test window; no button-down sent.
+   at DesktopPet.InteractionProbe.Program.Native.Button(UInt32 flags) in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 259
+   at DesktopPet.InteractionProbe.Program.Verify() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 121
+   at DesktopPet.InteractionProbe.Program.<>c__DisplayClass6_0.<<Main>b__0>d.MoveNext() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.InteractionProbe\Program.cs:line 35
+2026-10-25T15:38:27.5963447+08:00 RESULT failures=6; real cursor + visible HWND; no archives; operator subjective feel not measured
