@@ -2,6 +2,8 @@
 
 2026-10-25 ART-002增加了独立 [中性眨眼母版与导出说明](blink-source.md)。原九格表情母版保留，新增half/closed以原idle为固定底图，不能从content笑脸重新裁切。完整重复导出先运行下文基础导出，再运行tools/Export-BearBlinkAssets.ps1，二者都不覆盖JSON。
 
+ART-003另增加 [温和拖动与松手素材](drag-source.md)，同一工具通过IncludeBrows和独立源图导出两张眼/眉帧；默认眨眼导出保持不变。完整资源重建最后执行该说明中的命令，不能把原startled重新注册回drag。
+
 用户于2026-10-24确认本项目 [小熊设定图](../../../docs/design/images/bear-character-v1.png)，并要求写入现有项目。expression-atlas.png 使用内置 image_gen 编辑工具参照该图生成，原始输出1254×1254、真实透明背景、3×3全身静态表情；不是旧评审板的裁切。原生成输出保留在 Codex generated_images，本目录保存项目副本。
 
 行优先顺序：待机、开心、好奇、受惊、委屈、小生气、困倦、舒服、害羞。九格均正面站立，暂未制作身体动作。

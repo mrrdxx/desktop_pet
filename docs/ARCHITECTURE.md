@@ -122,18 +122,19 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - `settings.json` 保存设置；`state.json` 保存宠物、情绪、事件与位置；未来习惯数据单独存储。
 - 每份文件带整数 `schemaVersion`。阶段 0 为 v1，实际结构如下：
 
-  **state.json v2**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
-  - `schemaVersion` (int, 默认 2)：模式版本号。v1 文件读取时情绪字段回退默认值。
+  **state.json v3**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
+  - `schemaVersion` (int, 默认 3)：模式版本号。v1 文件读取时情绪字段回退默认值；v1/v2 文件读取时稀有事件字段回退默认值。
   - `windowLeft` (double, 默认 100)：窗口左上角 X，WPF DIP 坐标。
   - `windowTop` (double, 默认 100)：窗口左上角 Y，WPF DIP 坐标。
   - `savedDeviceName` (string|null)：上次保存时宠物所在显示器设备名，用于恢复时检测显示器是否仍存在。
   - `lastSavedUtc` (string|null)：上次保存的 UTC 时间戳（ISO 8601 round-trip 格式）。
   - `isPaused` (bool, 默认 false)：是否处于暂停状态（主动行为停止）。
-  - `affinity` (int, 默认 50)：亲近度（0-100，中性 50）。v1 回退 50。
   - `grievance` (int, 默认 50)：委屈值（0-100，中性 50）。v1 回退 50。
   - `lastDecayUtc` (string|null)：上次衰减计算基准时间（UTC ISO 8601）。v1 回退为 `lastSavedUtc`。
   - `pendingGrievanceExpression` (bool, 默认 false)：是否有待执行的委屈表达。v1 回退 false。
   - `grievanceExpressionDate` (string|null)：标记待表达的本地日期（yyyy-MM-dd）。v1 回退 null。
+  - `accumulatedRuntimeMinutes` (double, 默认 0)：有效运行时间累计（会话级，单调时间源）。v1/v2 回退 0。
+  - `rareEventPlan` (object|null)：每日稀有事件计划快照（`RareEventPlanSnapshot`）。v1/v2 回退 null。子字段：`localDate` (string|null)、`triggerDelayMinutes` (int)、`triggerRoll` (double)、`consumed` (bool)、`accumulatedBaselineMinutes` (double)。
 
   **settings.json v1**（`PetSettingsArchive`，同文件）：
   - `schemaVersion` (int, 默认 1)：模式版本号。
@@ -144,6 +145,9 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
   - 文件不存在时回退默认值，不报错。
   - JSON 解析失败视为损坏：原文件重命名为 `*.corrupted` 保留，优先尝试 `*.bak` 备份恢复，无备份则回退默认值。
   - `schemaVersion` 高于当前版本时建立该文件独立的只读保护；兼容字段尽力读取，类型不兼容则以默认运行数据继续，原未来版本文件不能归类为损坏。state/settings 的保护互不影响；正常自动保存会检查标记、DTO 和磁盘版本，避免替换对象或新建服务后降级。启动时发出托盘只读提示。
+  - v1 → v2 升级：情绪字段（`grievance`、`lastDecayUtc`、`pendingGrievanceExpression`、`grievanceExpressionDate`）回退默认值；`lastDecayUtc` 回退为 `lastSavedUtc`。
+  - v1/v2 → v3 升级：稀有事件字段（`accumulatedRuntimeMinutes`、`rareEventPlan`）回退默认值（0/null），不影响已有情绪字段。
+  - F-06 稀有事件恢复约定：恢复时 `EffectiveRuntimeTracker.Restore` 仅恢复累计总量，不恢复活跃引用；调用方须调 `StartActivePeriod` 建立新单调基准，离线间隔不计有效运行时间。`RareEventScheduler.RestorePlan` 仅接受 `IsValid` 通过的快照，非法计划被拒绝且不影响已有计划。基准大于累计等不一致数据不崩溃，Evaluate 用差值评估自然得到 DelayNotReached。
   - 安全写入：先写 `*.tmp` → 旧文件移为 `*.bak` → `*.tmp` 移为正式文件。不先删正式文件。
 - 先写同目录临时文件，完成序列化与关闭后再替换正式文件，保留上次有效备份；不能先删正式文件再写。
 - 单一写入队列，脏状态按 5 秒防抖保存并在正常退出时落盘，不逐帧写磁盘。
@@ -162,6 +166,8 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 2026-10-24 小熊接入：默认运行目录为 assets/pets/bear/，角色ID bear-v1，旧 assets/pets/default/ 保留为原型回退。原P1-001占位图及其测量记录为历史基线，不是当前美术。九张静态PNG为120×120、96DPI，帧脚点(60,110)；curious PNG底部101加offsetY9，其余底部110。表情母版/导出约束见 assets/art/bear-v1/README.md，运行映射见 assets/pets/bear/README.md。
 
 2026-10-25 ART-002：额外两张blink_half/closed保持原idle底图RGBA（仅两处眼部RGB变化，Alpha完全不变）。JSON增加blink Once序列，idle仅保留中性睁眼图。Core `IdleBlinkScheduler`消费该序列并调度；App只在idle且无输入/情绪占用时以返回帧覆盖渲染，不调用PlayAction或改变CurrentAction/世界位置。暂停冻结帧与剩余间隔，恢复移除暂停时段；未更新超过500ms则弃掉旧计划、重排安静间隔。退出其他表情后也重新等待；无idle以外的眨眼、跨图片透明叠加或新资源字段。原default未注册blink时不启用调度，原型加载/回退保留。
+
+ART-003：drag映射drag_gentle，新release Once序列供Core `DragReleaseFeedback`消费，仅作idle渲染覆盖。实际EndDrag先停止抓取/移动并恢复idle身份，再且仅在确有拖动结束时启动面部过渡；菜单未拖动时不能制造过渡。渲染优先当前高优先级动作→合法idle的release覆盖→idle blink→原idle，所有帧偏移来自最终选中帧，不写世界坐标。BeginCapturedPointerInteraction/StartDragging取消旧release；暂停/恢复补偿计时，在暂停中松手的新过渡从自身起点冻结；其他动作/菜单清理后不复活旧过渡。无release注册的default仍按原路径立即回idle。
 MainWindow既有委屈生命周期改为播放独立 grievance 静态脸；时长/冷却/优先级不变。其他新增表情仅注册供后续使用，不新增自动状态。身体动作暂缓，原基本切帧继续保留。不能把图像候选板当作运行图集，也不能声称已实现背对动作。
 
 阶段 0 不要求资源加载器；程序绘制形状必须有明显身体/头部，便于命中测试。
@@ -181,12 +187,30 @@ P1-001 已实现：
 - 暂停/恢复：AnimationPlayer.Pause/Resume 冻结动画时间，暂停期间 elapsed 不推进，恢复后从有效时间继续。PlayAction 在暂停中切换动作时保持暂停状态，新动作从起点冻结，不隐式解除暂停。App PauseAnimation/ResumeAnimation 调用播放器 Pause/Resume 并维护 _isAppPaused 标志，确保 App 暂停状态、timer 和播放器三者一致。
 - 资源校验：CharacterLoader 拒绝路径遍历（../）、负/零尺寸、脚点越界；路径比较确保目录分隔边界，兄弟目录前缀路径被拒绝。PreloadImages 包裹 try/catch，坏 PNG 不崩溃；PNG 解码后比较 PixelWidth/PixelHeight 与 JSON 声明尺寸，不匹配则跳过；缺帧回退 idle 首帧；缺动作诊断去重。全资源不可用时生成程序绘制的可见回退位图，不留透明空窗。
 
-P1-003 交互区域约定：
-- 头部区域（抚摸命中）：图像矩形内上 1/3，即 X ∈ [0, frameWidth] 且 Y ∈ [0, frameHeight/3]。坐标超出图像边界（负值或超出宽高）不算头部。
-- 头部区域还需命中当前帧的不透明像素（Alpha > 0）：头部矩形内的透明空白不算头部，防止在空白处继续累计抚摸时间。
-- 拖动起点：当前帧所有不透明像素，包含头顶/耳朵/眼睛上方。身体按下立即拖动；头部按下先进入抚摸候选，不能把该候选误当成不能拖动。
-- `BeginCapturedPointerInteraction`在鼠标捕获成功后保存最初的screen DIP位置与抓取偏移；`ProcessCapturedPointerMove`用相对按下点的累计距离区分手势。超过8DIP、单次位移超过8DIP或移出抚摸区时先转拖动，不先调用会释放捕获的EndPetting，也不以转换时位置重算抓取点；同一事件立即应用完整位移。
-- 头部转拖动清空抚摸累计值，保留原捕获；抬起经`EndCapturedPointerInteraction`统一结束，捕获丢失/窗口关闭沿用原清理路径。真实窗口事件和测试使用同一坐标处理入口，DIP换算仍在WPF边界完成。
+2026-11-04 P1-004 稀有事件 Core 调度：`src/DesktopPet.Core/Events/` 下三文件。
+- `RareEventPlan`：每日计划快照 DTO。字段：`LocalDate`(yyyy-MM-dd)/`TriggerDelayMinutes`(20–120)/`TriggerRoll`(0–1 预滚动)/`Consumed`/`AccumulatedBaselineMinutes`(F-05: 计划创建时的会话累计基准，当日有效时间 = 当前累计 - 基准)。`CreateNew` 用可控 Random 同时抽取延迟和滚动值，接受 `accumulatedBaselineMinutes` 参数；`ShouldTrigger(0.5)` 判断 `TriggerRoll < probability`；`AsConsumed` 返回已消耗副本（保留基准）。`IsValid` 校验日期可解析、延迟在 [0, MaxTriggerDelayMinutes]、Roll 为有限 [0,1)、Baseline 为有限非负。全字段可序列化用于快照保存/恢复。
+- `RareEventScheduler`：调度器。`EnsurePlanForDate(localDate, random, minDelay, maxDelay, currentAccumulatedMinutes)` 按本地日期前进创建新计划（同日不重抽，回拨不创建新计划），F-05 将 `currentAccumulatedMinutes` 写入计划基准；`Evaluate(effectiveRuntimeMinutes, currentLocalDate, isPaused, isDragging, isSocialActive, isRestReminderActive)` 返回 `TriggerResult(ShouldFire, DenyReason, UpdatedPlan)`——F-01 日期一致性检查：`currentLocalDate` 必须与计划日期匹配，回拨返回 `DateRollback`、前进返回 `DateAdvanced`，均不消耗计划；F-03 拒绝 NaN/Infinity/负运行时间和无效计划；F-05 当日有效时间 = `effectiveRuntimeMinutes - plan.AccumulatedBaselineMinutes`，与 `TriggerDelayMinutes` 比较决定延迟是否到达；不合适时拒绝且不消耗计划，延迟到达时消耗计划（无论触发与否，每日仅一次尝试）；`MarkConsumed` 手动标记跳过；`RestorePlan` 仅接受 `IsValid` 通过的快照，拒绝无效快照且保留现有有效计划；`GetSnapshot` 支持重启恢复。共享每日额度通过 `Consumed` 标志实现。
+- `EffectiveRuntimeTracker`：有效运行时间累计器。F-02 单调时间契约：输入为单调时间源（如 `Stopwatch.GetTimestamp()` 转换的 double 分钟值），不是 UTC 墙钟；UTC 仅用于日期判定，不用于活跃计时。`StartActivePeriod(double)`/`EndActivePeriod(double)` 管理活跃区间，暂停期间不累计；F-03 Start/End 拒绝 NaN/Infinity/负值，不修改已有有效状态；`UpdateTo(double)` 仅正 elapsed 累加，单调时钟不回退，拒绝 NaN/Infinity；`Restore(double)` 仅恢复累计总量，不恢复活跃引用——G-01 离线契约：调用方必须在 `Restore` 后调用 `StartActivePeriod` 建立新活跃基准，离线时间不计有效运行时间。累计分钟为会话级，跨日不重设；F-05 每日计划用差值（当前累计 - 基准）评估当日延迟。
+
+2026-11-05 P1-004 App 运行时接线（`App.xaml.cs` + `MainWindow.xaml.cs` OnUpdateTick）：
+- App 持有 `RuntimeTracker`/`RareEventScheduler` 字段，`OnStartup` 经 `MapArchiveToRareEventObjects` 从存档恢复并 `StartActivePeriod`（未暂停时）；`MarkStateDirty` 经 `MapRareEventObjectsToArchive` 同步到存档；`FlushFinalState` 退出时经既有 `SaveCoordinator` 落盘。
+- OnUpdateTick 每 tick（未暂停时）调用 `UpdateTo` → `EnsurePlanForDate` → `Evaluate`。
+- F-08 保存通知：计划创建、日期更新或 Consumed 状态变化时统一通知既有保存队列（`MarkStateDirty`），不只在 `ShouldFire` 时通知。通过比较上次计划日期 + Consumed 状态避免每 tick 标脏，保证 5 秒防抖能正常完成。RollFailed 也会消耗计划并触发保存。
+
+2026-11-05 P1-004 探头视觉表现（`MainWindow.xaml.cs` OnUpdateTick）：
+- ShouldFire 返回 true 时启动探头状态：记录当前 `Left`/`Top` 为原始位置，计算最近工作区边缘的探头位置，设置窗口位置到探头位置，播放 `curious` 动作。
+- 探头持续约 3000ms，OnUpdateTick 中用 `_probeStartMs` + `_probeDurationMs` 跟踪剩余时间。到时后恢复原始 `Left`/`Top`，通知保存队列，回 idle 动作。
+- 位置单一写入：探头通过 OnUpdateTick 设置 `Left`/`Top`，与拖动共享同一写入路径。F-10：仅真正取得拖动所有权时（`StartDragging`，含身体立即拖动和头部转拖动）才调用 `CancelProbeForDrag`（不恢复原始位置），之后由拖动接管位置。头部短按/微移未转拖动及透明/无效按下不取消探头。拖动优先，探头不与拖动并发。
+- 暂停冻结：`PauseAnimation` 时若探头活跃，冻结剩余时间（不推进 `nowMs` 判定）；`ResumeAnimation` 后继续剩余时长。
+- 退出恢复：`FlushFinalState` 前检查探头活跃状态，若活跃则先恢复原始位置再标脏和 Flush，确保存档记录原始位置。
+- F-09 探头动作所有权：探头活跃期间（`_isProbing`），OnUpdateTick 的普通 hover/curiosity 分支被跳过（条件含 `!_isProbing`），低优先级分支不得接管或覆盖探头 curious 表情。else 分支中也不取消 curiosity（`!_isProbing` 守卫）。高优先级委屈表达与探头双向协调：委屈表达已开始时（`_isExpressingGrievance`），`Evaluate` 调用被延迟（`result = null`，不评估不消费），保留原计划日期、roll、delay、baseline 和未消费状态，委屈结束后下一 tick 正常评估同一计划（符合 R-03"不合适时延迟至空闲行为期间"）；`StartProbe` 调用条件含 `!_isExpressingGrievance` 作为二级守卫；探头进行中委屈需要启动时，委屈分支先设 `_isExpressingGrievance = true`，再检查 `_isProbing` 调 `EndProbe(restoreOriginal: true, nowMs)` 安全结束探头（恢复原始位置），然后播放 grievance；`EndProbe` 回 idle 条件含 `!_isExpressingGrievance`，委屈进行中不回 idle。已经实际开始过的探头被委屈打断，维持已消费且不重播（`Evaluate` 在委屈前已消费计划，延迟只影响未评估的计划）。探头正常结束或被拖动打断时统一释放。
+
+P1-003 交互区域约定（D-013 已取消好感度/抚摸计分，头部手势不计分，保留拖动分流规则）：
+- 头部区域（手势命中区）：图像矩形内上 1/3，即 X ∈ [0, frameWidth] 且 Y ∈ [0, frameHeight/3]。坐标超出图像边界（负值或超出宽高）不算头部。
+- 头部区域还需命中当前帧的不透明像素（Alpha > 0）：头部矩形内的透明空白不算头部，防止在空白处误判手势。
+- 拖动起点：当前帧所有不透明像素，包含头顶/耳朵/眼睛上方。身体按下立即拖动；头部按下先进入手势候选，不能把该候选误当成不能拖动。
+- `BeginCapturedPointerInteraction`在鼠标捕获成功后保存最初的screen DIP位置与抓取偏移；`ProcessCapturedPointerMove`用相对按下点的累计距离区分手势。超过8DIP、单次位移超过8DIP或移出头部区时先转拖动，不先调用会释放捕获的EndPetting，也不以转换时位置重算抓取点；同一事件立即应用完整位移。
+- 头部转拖动清空手势候选状态，保留原捕获；抬起经`EndCapturedPointerInteraction`统一结束，捕获丢失/窗口关闭沿用原清理路径。真实窗口事件和测试使用同一坐标处理入口，DIP换算仍在WPF边界完成。
 - 当前区域比例硬编码为上 1/3（`HeadZoneRatio`），来源为 frameHeight；角色 JSON 中的 per-character 交互区域字段待后续阶段加入。
 
 ## 9. 后期 Windows 能力边界

@@ -1,0 +1,24 @@
+{
+  "checkedFiles": [
+    "AGENTS.md",
+    "README.md",
+    "assets/art/bear-v1/README.md",
+    "assets/art/bear-v1/drag-source.md",
+    "assets/pets/bear/README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/CONTEXT_HANDOFF.md",
+    "docs/DECISIONS.md",
+    "docs/PRODUCT.md",
+    "docs/STATUS.md",
+    "docs/TASKS.md",
+    "docs/TESTING.md",
+    "docs/design/BEAR_CHARACTER.md",
+    "docs/handoffs/ART-002-natural-expressions.md",
+    "docs/handoffs/ART-003-drag-feedback.md",
+    "docs/handoffs/EMOTION-001-remove-affinity.md",
+    "docs/handoffs/INPUT-001-remove-mouse-fright.md",
+    "docs/handoffs/INPUT-002-head-drag-fix.md",
+    "tests/Integration/README.md"
+  ],
+  "missing": []
+}

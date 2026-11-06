@@ -1,0 +1,100 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\DesktopPet.Core.csproj (用时 63 毫秒)。
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-dc454330\isolated-app\DesktopPet.App.csproj (用时 70 毫秒)。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-dc454330\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:01.98
+Isolated run: C:\Users\mrrdxx\Desktop\pet\artifacts\p0-004-fix\run-dc454330\data
+CASE: normal; PID=202816; exited=True; exitCode=0
+READY: scenario=normal
+HWND=0x8E03D8; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True; currentAction=idle
+PASS: character PNG frames loaded into image cache
+PASS: idle_0.png present in image cache (real character loaded)
+Image cache count=12; keys=annoyed_0.png,bashful_0.png,blink_closed.png,blink_half.png,content_0.png,curious_0.png,drag_gentle.png,grievance_0.png,happy_0.png,idle_0.png,release_settle.png,sleepy_0.png
+Invoking actual ToolStripMenuItem.PerformClick: Pause
+PASS: Pause stops animation timer
+PASS: Pause freezes animation player time
+PASS: animation player remains paused during wall-clock delay
+PASS: animation action stays unchanged while paused
+Invoking actual ToolStripMenuItem.PerformClick: Recover
+Native window rect=(1190,584,1370,764); size=180x180 physical px
+PrimaryScreen working area=(0,0,2560,1528); bounds=(0,0,2560,1600)
+PASS: Recover remains usable while paused
+Invoking actual ToolStripMenuItem.PerformClick: Resume
+PASS: Resume restarts animation timer
+PASS: Resume unfreezes animation player time
+PASS: animation player not paused after resume with active timer
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: paused-start; PID=199964; exited=True; exitCode=0
+READY: scenario=paused-start
+HWND=0x4B12C4; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=True; timerEnabled=False; currentAction=idle
+PASS: character PNG frames loaded into image cache
+PASS: idle_0.png present in image cache (real character loaded)
+Image cache count=12; keys=annoyed_0.png,bashful_0.png,blink_closed.png,blink_half.png,content_0.png,curious_0.png,drag_gentle.png,grievance_0.png,happy_0.png,idle_0.png,release_settle.png,sleepy_0.png
+PASS: restart restores pause behavior as well as stored flag
+PASS: saved paused state freezes animation player on startup
+PASS: saved paused state keeps animation action unchanged
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: archive-cases; PID=179804; exited=True; exitCode=0
+READY: scenario=archive-cases
+HWND=0x880D94; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True; currentAction=idle
+PASS: character PNG frames loaded into image cache
+PASS: idle_0.png present in image cache (real character loaded)
+Image cache count=12; keys=annoyed_0.png,bashful_0.png,blink_closed.png,blink_half.png,content_0.png,curious_0.png,drag_gentle.png,grievance_0.png,happy_0.png,idle_0.png,release_settle.png,sleepy_0.png
+PASS: isolated state service roundtrip
+PASS: isolated settings service roundtrip
+PASS: corrupt primary preserved byte-for-byte and valid backup selected
+PASS: corrupt file without backup falls back to defaults
+PASS: higher version state remains read-only; incompatibleFields=False
+PASS: higher version state remains read-only; incompatibleFields=True
+PASS: higher version incompatible settings remain read-only
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+Tray Exit handler returned
+CASE: readonly-state; PID=196692; exited=True; exitCode=0
+READY: scenario=readonly-state
+HWND=0xFA18B0; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True; currentAction=idle
+PASS: character PNG frames loaded into image cache
+PASS: idle_0.png present in image cache (real character loaded)
+Image cache count=12; keys=annoyed_0.png,bashful_0.png,blink_closed.png,blink_half.png,content_0.png,curious_0.png,drag_gentle.png,grievance_0.png,happy_0.png,idle_0.png,release_settle.png,sleepy_0.png
+PASS: startup recognizes newer archive with incompatible field types
+PASS: future archive was not renamed as corrupted
+PASS: tray read-only notification text configured (OS display not asserted)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+PASS: normal tray exit preserves future archive bytes despite final state changes
+Tray Exit handler returned
+CASE: readonly-settings; PID=197048; exited=True; exitCode=0
+READY: scenario=readonly-settings
+HWND=0xB21906; GetDpiForWindow=144; GetDpiForSystem=144; scale=150%
+PASS: tray object visible with three actionable menu items (not a Shell click test)
+Loaded position=(100,100); paused=False; timerEnabled=True; currentAction=idle
+PASS: character PNG frames loaded into image cache
+PASS: idle_0.png present in image cache (real character loaded)
+Image cache count=12; keys=annoyed_0.png,bashful_0.png,blink_closed.png,blink_half.png,content_0.png,curious_0.png,drag_gentle.png,grievance_0.png,happy_0.png,idle_0.png,release_settle.png,sleepy_0.png
+PASS: startup recognizes newer archive with incompatible field types
+PASS: future archive was not renamed as corrupted
+PASS: tray read-only notification text configured (OS display not asserted)
+Exiting using actual tray Exit handler
+Invoking actual ToolStripMenuItem.PerformClick: Exit
+PASS: normal tray exit preserves future archive bytes despite final state changes
+Tray Exit handler returned
+PASS: original LocalApplicationData/DesktopPet archive snapshot unchanged
+ALL ISOLATED LIFECYCLE SCENARIOS PASS

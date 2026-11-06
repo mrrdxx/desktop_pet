@@ -1,0 +1,12 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-5399459c\isolated-core\DesktopPet.Core.csproj (用时 68 毫秒)。
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-5399459c\isolated-app\DesktopPet.App.csproj (用时 75 毫秒)。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-5399459c\isolated-core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-5399459c\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:01.95
+BUILD_ONLY_COMPLETE=C:\Users\mrrdxx\Desktop\pet\artifacts\emotion-live\run-5399459c

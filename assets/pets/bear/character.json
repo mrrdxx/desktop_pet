@@ -18,7 +18,12 @@
       { "imagePath": "curious_0.png", "durationMs": 500, "offsetX": 0, "offsetY": 9 }
     ] },
     "drag": { "loop": "loop", "frames": [
-      { "imagePath": "startled_0.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 }
+      { "imagePath": "drag_gentle.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "release": { "loop": "once", "frames": [
+      { "imagePath": "drag_gentle.png", "durationMs": 90, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "release_settle.png", "durationMs": 90, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "idle_0.png", "durationMs": 70, "offsetX": 0, "offsetY": 0 }
     ] },
     "grievance": { "loop": "loop", "frames": [
       { "imagePath": "grievance_0.png", "durationMs": 500, "offsetX": 0, "offsetY": 0 }

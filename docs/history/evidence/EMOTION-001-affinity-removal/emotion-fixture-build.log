@@ -1,0 +1,7 @@
+ForEach-Object : Method invocation failed because [System.IO.Path] does not contain a method named 'GetRelativePath'.
+At C:\Users\mrrdxx\Desktop\pet\tests\Integration\Run-EmotionLive.ps1:11 char:114
++ ... e-Object { $_.FullName -notmatch '\\(bin|obj)\\' } | ForEach-Object {
++                                                          ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [ForEach-Object], RuntimeException
+    + FullyQualifiedErrorId : MethodNotFound,Microsoft.PowerShell.Commands.ForEachObjectCommand
+ 

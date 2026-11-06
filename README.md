@@ -50,13 +50,15 @@ dotnet publish src/DesktopPet.App/DesktopPet.App.csproj -c Release -r win-x64 --
 
 ## 小熊形象与表情
 
-本机桌面的 `启动小熊桌宠.cmd` 可双击启动当前已构建的小熊版，入口脚本维护在 [tools/Start-DesktopPet.cmd](tools/Start-DesktopPet.cmd)。该入口使用 `artifacts/bear-natural/build` 中的程序，不自动构建；重复启动由应用已有的单实例保护处理。若清理了构建产物，需先按 STATUS 所述重新构建。
+本机桌面的 `启动小熊桌宠.cmd` 可双击启动当前已构建的小熊版，入口脚本维护在 [tools/Start-DesktopPet.cmd](tools/Start-DesktopPet.cmd)。该入口使用 `artifacts/affinity-removal/build` 中的程序，不自动构建；旧版仍运行时先从其托盘Exit退出，再双击入口。重复启动仍由单实例保护处理，不强制结束其他进程。若清理了构建产物，需先按STATUS所述重新构建。
 
 当前默认角色为已确认的小熊，资源在 [assets/pets/bear](assets/pets/bear/README.md)，旧占位原型保留。已有待机/好奇/受惊/委屈的对应图片，其他静态表情已预备；身体动作暂缓，不等于所有表情都有自动触发行为。
 
 自然观感首版使用固定底图的眼部眨眼帧，间隔约3～7秒；好奇约2秒自动回待机，提前移开约0.3秒恢复。当前实现与验证入口见 [ART-002交接](docs/handoffs/ART-002-natural-expressions.md)。
 
-快速移鼠受惊已按用户决定 [D-009](docs/DECISIONS.md#d-009取消快速移鼠受惊功能) 完全移除，悬停好奇等互动保留；受惊图片目前只用作拖动表情。
+好感度系统已按[D-013](docs/DECISIONS.md#d-013完全移除好感度系统)完全移除；头部微移不计分，独立委屈记忆保留。旧存档兼容与本轮验证见[移除交接](docs/handoffs/EMOTION-001-remove-affinity.md)。
+
+快速移鼠受惊已按用户决定 [D-009](docs/DECISIONS.md#d-009取消快速移鼠受惊功能) 完全移除，悬停好奇等互动保留。拖动采用温和意外脸；松手只让脸部短暂放松，位置立即停住，见 [ART-003交接](docs/handoffs/ART-003-drag-feedback.md)。
 
 ![小熊实际120像素静态表情预览](docs/design/images/bear-runtime-preview.png)
 

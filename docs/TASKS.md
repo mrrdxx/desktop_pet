@@ -11,9 +11,10 @@
 
 ### ART-003 温和拖动表情与松手恢复
 
-- 状态：`todo`。用户2026-10-25认可当前观感并同意下一步，依据D-012；先保存现有小熊基线，再执行本项。
+- 状态：`awaiting-verification`。依据D-012；小熊基线4b25681已普通推送并核对远端，本项实现/自动验证已完成，实机指针偏离导致输入链尚未完成，用户新表情观感也待确认。
 - 范围：同底图的轻微意外表情，松手后约250ms局部脸部过渡回待机；不改变位置、抓取点或松手即停，不接入抛掷/抚摸成功新表情。
 - 验收：头/耳/身体拖动及时响应；松手立即结束捕获与移动、表情自行恢复；新抓取/菜单/其他表情可打断，暂停冻结不积压；身体/Alpha/世界脚点稳定，相关自动及真实输入检查通过。
+- 已有依据：构建0警告/错误，Core197+App167=364/364通过，默认眨眼导出与原文件SHA256一致；原生探针三次未完整通过，不借ART-002的旧37项结果替代。当前启动入口已更新但正式旧进程未替换。见 [ART-003交接](handoffs/ART-003-drag-feedback.md)。
 
 ### ART-002 安静自然的眨眼与短暂好奇
 
@@ -133,19 +134,37 @@
 - 范围调整：用户于 2026-10-24 明确将高亲近主动靠近延后到阶段 2，本轮先验收情绪记忆，见 [D-008](DECISIONS.md#d-008高亲近主动靠近延后到阶段-2)。不等于人工体验已通过。
 - 验收：PRODUCT R-02；普通拖动不误判；离线、回拨与跨天测试通过；情绪动画不妨碍操作。
 - 最终完成依据：2026-10-24 [监理 R9](reviews/P1-003-review.md) 验收通过。用户授权监理鼠标验证后，生产 App/Core 隔离副本真实输入18项全部通过，实际抚摸50→55并防抖落盘、身体拖动与暂停恢复通过，真实存档未变；详见 [实机记录](history/P1-003-live-validation.md)。结合既有 R8/自动时间与存档证据，按 D-008 调整范围收尾；占位美术及未验证显示环境保留。不代表已开始 P1-004。
-- 收尾：F-01～F-06 已关闭，G-01/G-02/G-03 接入验证接受；原待验收的三项客观操作由用户授权监理实机执行并通过，不再等待用户重复。原有 Core 208/App 126 结果按版本沿用，本轮未重跑。占位 curious 委屈动作与非最终美术限制保留，主动靠近按 D-008 安排阶段2。开发方在 [整改记录](remediation/P1-003-response.md) 追加 R9 依据，不改写监理报告。
+- 收尾：F-01～F-06 已关闭，G-01/G-02/G-03 接入验证接受；原待验收的三项客观操作由用户授权监理实机执行并通过，不再等待用户重复。原有 Core 208/App 126 结果按版本沿用，本轮未重跑。占位 curious 委屈动作与非最终美术限制保留，原D-008主动靠近安排已被D-013取消，不进入阶段2。开发方在 [整改记录](remediation/P1-003-response.md) 追加 R9 依据，不改写监理报告。
 
 ### P1-004 第一个稀有事件
 
-- 状态：`todo`。依赖：P1-003。关联：R-03。
+- 状态：`done`。依赖：P1-003。关联：R-03。
+- 最新验收（监理R16，2026-11-06）：F-01～F-11关闭，463项与auto已接受；单屏150%实机身体/头部拖动、头部轻点、菜单暂停恢复/退出及同目录重启通过，真实存档不变。见[审查R16](reviews/P1-004-review.md)与[实机记录](history/P1-004-live-validation.md)。夹具定位/冻结限制及其他DPI/多屏/Explorer入口未验证明确保留，不扩大为ART验收。不自动推进阶段2/提交/推送；下方旧轮次内容为历史。
 - 范围：探头动作、每日计划与共享额度、持久化和时钟异常；测试入口与正式概率分开。
 - 验收：PRODUCT R-03；固定种子可复现；重启不重抽；不合适时延迟或跳过。
+- 进度：
+  - Core 稀有事件调度逻辑完成：`RareEventPlan`（每日计划快照，含 F-05 `AccumulatedBaselineMinutes` 当日基准）、`RareEventScheduler`（每日计划/触发概率/共享额度/跨日/时钟回拨/暂停与不合适时拒绝/计划快照恢复/F-05 当日有效时间差值评估）、`EffectiveRuntimeTracker`（有效运行时间累计/暂停排除/单调时间契约/F-03 Start/End 有限值校验）。
+  - 监理审查 `docs/reviews/P1-004-review.md` R1 关闭 F-01/F-02；F-03/F-04 部分通过，新增 F-05。R1 整改：F-03 `StartActivePeriod`/`EndActivePeriod` 拒绝 NaN/Infinity/负值，不污染已有有效状态；F-04 STATUS/TASKS 文档修正为实际状态并磁盘重读验证；F-05 `RareEventPlan` 新增 `AccumulatedBaselineMinutes`，`EnsurePlanForDate` 新增 `currentAccumulatedMinutes` 参数，`Evaluate` 用当日差值评估，补组合测试含快照恢复。
+  - 监理 R2 关闭 F-01～F-05 全部 Core 问题，解除对后续存档/App 接入步骤的阻断。
+  - 存档 v3 扩展完成：`PetStateArchive.CurrentSchemaVersion=3`，新增 `AccumulatedRuntimeMinutes` 和 `RareEventPlanSnapshot` DTO；`ArchiveService.LoadState` v1/v2 → v3 兼容回退（稀有事件字段默认 0/null）。补 7 项存档测试：v3 计划保存/加载、消耗计划持久化、null 计划、v1/v2 回退、重启恢复链（计划功能验证）、消耗计划不重复触发、null 计划新建。
+  - 修复 D-013 遗留编译错误：`PauseSemanticsTests.cs`/`ArchiveServiceTests.cs`/`IsolatedArchiveChainTests.cs` 移除已删除的 `Affinity` 字段和 3 参数构造函数引用；移除已取消的抚摸 +5 affinity 测试（F05_R4）。
+  - 监理 R3 提出 F-06/F-07，F-01～F-05 保持关闭。R3 整改：F-06 `App.xaml.cs` 新增 `MapArchiveToRareEventObjects`/`MapRareEventObjectsToArchive` 生产映射入口，测试通过真实 scheduler/tracker 运行→隔离文件保存→新对象恢复验证同日不重抽/剩余等待不变/离线不计/已消耗不重触发（6 项 `RareEventPersistenceTests`）；F-07 ARCHITECTURE §7/PRODUCT R-02/PetStateArchive 注释同步 v3 并清除 affinity 字段，磁盘重读确认。
+  - 监理 R4 关闭 F-06，F-07 部分通过。R4 整改：清理 PRODUCT R-02 主体段落和细化参数段落中 D-013 已取消的亲近度计分/衰减/主动靠近规格，消除与"affinity 已按 D-013 取消"的矛盾。
+  - 监理 R5 关闭 F-07，F-01～F-07 全部关闭，Core 与可靠存档小步接受。PRODUCT 当前将好感度/计分/衰减/主动靠近明确取消，委屈与非计分手势保留，存档说明 v3。
+  - 测试通过：Core 253 + App 184 = 437/437，0 失败/跳过。构建 0 警告/错误。整改记录见 `docs/remediation/P1-004-response.md`。
+  - App 生命周期接入与隔离存档生产链验证已完成：OnStartup 恢复稀有事件对象并 StartActivePeriod；OnUpdateTick 推进 tracker + EnsurePlanForDate + Evaluate + ShouldFire 时 MarkConsumed；PauseAnimation/ResumeAnimation 管理 active period；MarkStateDirty 同步稀有事件到存档；FlushFinalState 退出时保存。16 项生产链测试覆盖保存/重载/离线不计/消耗不重触发/暂停恢复/拖动拒绝/跨天新计划。
+  - 未完成：探头视觉表现已实现（ShouldFire→边缘探头→curious→3秒恢复原位置），含 F-09 探头动作所有权排他和 F-10 仅真正拖动取消探头。17 项专项测试通过（含 9 项 F-09/F-10 测试），全量 459/459 通过。待监理 R8 复核与端到端验收。不修改监理报告。不标 P1-004 done。
+  - 监理 R8/R9/R10 逐步关闭 F-10 和 F-09 各部分：R8 关闭 F-10，F-09 低优先级排他通过；R9 接受视觉优先级但指出提前消费；R10 要求延迟 Evaluate。R10 整改：委屈进行时延迟 Evaluate（`result=null`），保留原计划未消费；委屈结束后再评估同一计划。已展示后被委屈打断的探头维持已消费不重播。纠正 PRODUCT/ARCHITECTURE 中"委屈中仍消费"的错误解释。修改 2 项 + 新增 2 项连续 tick 测试。全量 463/463 通过。
+  - 监理 R11（`docs/reviews/P1-004-review.md` R11 段落）关闭 F-09：有消费副作用的 Evaluate 在委屈活跃时不调用；连续 tick 输出委屈中 `Consumed=false`，表达结束后 `consumed=True; probing=True; action=curious`，同一原计划延迟而非跳过。**F-01～F-10 全部关闭，P1-004 代码与自动验证部分接受，进入实机验收**。状态改 `awaiting-verification`，不标 done。剩余为真实窗口显示最近边缘/半身可见、3秒归位、身体/头部拖动打断且抓取点稳定、头部轻点仍归位、暂停剩余时间/退出保存恢复。实机夹具见 `tests/Integration/Run-ProbeLive.ps1` + `ProbeLiveProbe.cs`（隔离存档 + 预置可触发计划，不改正式概率，不污染真实存档，不要求等20分钟）。ART-001/003 既有未验证项保留。开发方追加关闭依据，不重复已关闭整改。不提交/推送。
+  - 监理 R12 审查实机夹具发现 F-11（探针在探头开始后改写窗口位置导致基线/边缘断言失真、未记录实际 HWND DPI/显示器矩形/起止时间、未区分退出模式、超时路径未执行 finally 存档比较）。R12 整改：探针全文重写——基线在首 tick 前捕获、之后只观察不改 Left/Top、记录 DPI/工作区/窗口矩形/起止时间、区分 auto/interactive/timeout 三种退出模式、finally 始终执行存档快照比较、半身可见记为 INFO 不自动标 PASS。驱动修改——超时分支改为记录+kill 不直接 throw、finally 始终执行存档比较、新增 `-Interactive` 参数。
+  - 监理 R13 确认 F-11 位置/时序修复通过，但发现最终判定漏洞（超时/非零退出/tray exit 失败可被吞掉仍 PASS）。R13 整改：`ProbeTrayExit` catch 增加 `_probeLiveFailures++` + FAIL 关键词；驱动 auto 最终 PASS 须同时满足 5 条件（未超时 + exit 0 + 零 FAIL/ERROR + 6 标记 + `RESULT failures=0`）；新增 `Run-NegativeControls.ps1` 负对照测试（5 负例 + 1 正例全部正确）。
+  - 监理 R14（`docs/reviews/P1-004-review.md` R14 段落）独立执行 auto 运行 exit 0、RESULT failures=0、真实存档不变；另提取驱动实际判定代码对 5 负例 + 1 正例独立执行全部正确。**F-11 通过并关闭，F-01～F-11 全部关闭，代码/自动验证及隔离自动场景接受**。P1-004 继续 `awaiting-verification`，只剩真实观感/输入交互：半身可见、身体/头部真正拖动打断和抓取点、头部轻点归位、暂停剩余时间与退出恢复。使用既有隔离 Interactive 入口逐项实际验证，保持真实存档不受污染、正式概率不变。不新增产品代码、不重做旧整改或重跑无关全套；不提交/推送。
 
 ## 阶段 2：物理手感
 
 - `P2-PLAN`：`todo`，依赖 P1-004。
 - 在开始时将 R-04 拆成：轨迹测速/抛掷 → 固定步长碰撞 → 稳定落地/滑落表现 → 手感验收。
-- 同时拆分并实现 PRODUCT R-02 的高亲近主动靠近行为，与移动和物理手感统一协调；这是用户明确延后的需求，尚未开始，不因 P1-003 收尾而丢弃。
+- D-013已永久取消好感度与高亲近主动靠近，阶段2不恢复该功能；仅按PRODUCT R-04拆分物理手感。
 - 先用 Core 测试覆盖极端 dt、边界和停止条件，再做真实鼠标体验；不引入完整刚体引擎作为默认前提。
 
 ## 阶段 3：双宠社交

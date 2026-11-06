@@ -1,0 +1,16 @@
+{
+  "productionRemovedFeatureMatches": [],
+  "remainingTestAndToolReferences": [
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:14:public class AffinityRemovalTests",
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:37:\"schemaVersion\": 2, \"affinity\": {{legacyValue}},",
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:59:Assert.IsFalse(saved.RootElement.TryGetProperty(\"affinity\", out _));",
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:76:const string json = \"{\\\"schemaVersion\\\":99,\\\"affinity\\\":{\\\"future\\\":true},\\\"grievance\\\":{\\\"future\\\":true}}\";",
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:94:\"{\\\"schemaVersion\\\":2,\\\"affinity\\\":88,\\\"grievance\\\":74,\\\"windowLeft\\\":212}\");",
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:103:Assert.IsFalse(saved.RootElement.TryGetProperty(\"affinity\", out _));",
+    "tests\\DesktopPet.App.Tests\\AffinityRemovalTests.cs:117:Assert.IsFalse(members.Any(member => member.Name.Contains(\"Affinity\", StringComparison.OrdinalIgnoreCase)",
+    "tests\\Integration\\Build-BearAnimationReview.ps1:5:$production = Join-Path $repositoryRoot 'artifacts/affinity-removal/build/bin/DesktopPet.App/debug'",
+    "tests\\Integration\\EmotionLiveProbe.cs:105:LiveCheck(!json.RootElement.TryGetProperty(\"affinity\", out _)",
+    "tests\\Integration\\Run-EmotionLive.ps1:62:if ($saved.PSObject.Properties.Name -contains 'affinity' -or $saved.grievance -ne 50 -or $saved.isPaused) { throw 'Final archive retains a removed field or changed grievance/resume state.' }"
+  ],
+  "note": "Remaining names are explicit legacy JSON/removal assertions and the current build directory, not product APIs."
+}
