@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using DesktopPet.App.Persistence;
+using DesktopPet.Core.Events;
 using DesktopPet.Core.Persistence;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -263,7 +264,6 @@ public class ArchiveServiceTests
         Assert.IsFalse(unknown);
 
         // Emotion fields fall back to defaults.
-        Assert.AreEqual(50, loaded.Affinity);
         Assert.AreEqual(50, loaded.Grievance);
         Assert.IsFalse(loaded.PendingGrievanceExpression);
         Assert.IsNull(loaded.GrievanceExpressionDate);
@@ -282,7 +282,6 @@ public class ArchiveServiceTests
         {
             WindowLeft = 100,
             WindowTop = 200,
-            Affinity = 75,
             Grievance = 85,
             LastDecayUtc = "2026-10-22T12:00:00.0000000Z",
             PendingGrievanceExpression = true,
@@ -293,8 +292,7 @@ public class ArchiveServiceTests
         var (loaded, _, unknown) = archive.LoadState();
 
         Assert.IsFalse(unknown);
-        Assert.AreEqual(2, loaded.SchemaVersion);
-        Assert.AreEqual(75, loaded.Affinity);
+        Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, loaded.SchemaVersion);
         Assert.AreEqual(85, loaded.Grievance);
         Assert.AreEqual("2026-10-22T12:00:00.0000000Z", loaded.LastDecayUtc);
         Assert.IsTrue(loaded.PendingGrievanceExpression);
@@ -322,5 +320,280 @@ public class ArchiveServiceTests
         Assert.IsTrue(loaded.PendingGrievanceExpression);
         Assert.AreEqual("2026-10-22", loaded.GrievanceExpressionDate);
         Assert.AreEqual(82, loaded.Grievance);
+    }
+
+    // ── P1-004 v3 rare-event archive tests ──
+
+    /// <summary>v3 archive with rare-event plan saves and reloads all fields.</summary>
+    [TestMethod]
+    public void SaveAndLoad_V3RareEventPlan_AllFieldsPreserved()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            SchemaVersion = 3,
+            Grievance = 60,
+            LastDecayUtc = "2026-11-04T10:00:00.0000000Z",
+            AccumulatedRuntimeMinutes = 130.5,
+            RareEventPlan = new RareEventPlanSnapshot
+            {
+                LocalDate = "2026-11-04",
+                TriggerDelayMinutes = 45,
+                TriggerRoll = 0.3,
+                Consumed = false,
+                AccumulatedBaselineMinutes = 100.0
+            }
+        };
+
+        archive.SaveState(state);
+        Assert.IsTrue(File.Exists(archive.StateFilePath));
+
+        var (loaded, fromBackup, unknown) = archive.LoadState();
+
+        Assert.IsFalse(unknown);
+        Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, loaded.SchemaVersion);
+        Assert.AreEqual(130.5, loaded.AccumulatedRuntimeMinutes, 0.001);
+
+        Assert.IsNotNull(loaded.RareEventPlan);
+        Assert.AreEqual("2026-11-04", loaded.RareEventPlan!.LocalDate);
+        Assert.AreEqual(45, loaded.RareEventPlan.TriggerDelayMinutes);
+        Assert.AreEqual(0.3, loaded.RareEventPlan.TriggerRoll, 0.0001);
+        Assert.IsFalse(loaded.RareEventPlan.Consumed);
+        Assert.AreEqual(100.0, loaded.RareEventPlan.AccumulatedBaselineMinutes, 0.001);
+    }
+
+    /// <summary>v3 archive with consumed plan preserves consumed flag across restart.</summary>
+    [TestMethod]
+    public void SaveAndLoad_V3ConsumedPlan_ConsumedFlagPreserved()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            AccumulatedRuntimeMinutes = 200.0,
+            RareEventPlan = new RareEventPlanSnapshot
+            {
+                LocalDate = "2026-11-04",
+                TriggerDelayMinutes = 30,
+                TriggerRoll = 0.7,
+                Consumed = true,
+                AccumulatedBaselineMinutes = 150.0
+            }
+        };
+
+        archive.SaveState(state);
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.IsNotNull(loaded.RareEventPlan);
+        Assert.IsTrue(loaded.RareEventPlan!.Consumed);
+        Assert.AreEqual(200.0, loaded.AccumulatedRuntimeMinutes, 0.001);
+    }
+
+    /// <summary>v3 archive with null plan saves and loads correctly.</summary>
+    [TestMethod]
+    public void SaveAndLoad_V3NullPlan_LoadsAsNull()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            AccumulatedRuntimeMinutes = 50.0,
+            RareEventPlan = null
+        };
+
+        archive.SaveState(state);
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.IsNull(loaded.RareEventPlan);
+        Assert.AreEqual(50.0, loaded.AccumulatedRuntimeMinutes, 0.001);
+    }
+
+    /// <summary>v1 file loads with rare-event fields at defaults (no plan, zero accumulated).</summary>
+    [TestMethod]
+    public void LoadState_V1File_RareEventFieldsFallbackToDefaults()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var v1Json = """
+            {
+              "schemaVersion": 1,
+              "windowLeft": 150,
+              "windowTop": 250,
+              "savedDeviceName": null,
+              "lastSavedUtc": "2026-10-20T08:00:00.0000000Z",
+              "isPaused": false
+            }
+            """;
+        File.WriteAllText(archive.StateFilePath, v1Json);
+
+        var (loaded, _, unknown) = archive.LoadState();
+
+        Assert.IsFalse(unknown);
+        Assert.AreEqual(0.0, loaded.AccumulatedRuntimeMinutes, 0.001);
+        Assert.IsNull(loaded.RareEventPlan);
+    }
+
+    /// <summary>v2 file loads with rare-event fields at defaults (no plan, zero accumulated).</summary>
+    [TestMethod]
+    public void LoadState_V2File_RareEventFieldsFallbackToDefaults()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var v2Json = """
+            {
+              "schemaVersion": 2,
+              "windowLeft": 100,
+              "windowTop": 200,
+              "grievance": 75,
+              "lastDecayUtc": "2026-10-22T12:00:00.0000000Z",
+              "pendingGrievanceExpression": false,
+              "grievanceExpressionDate": null,
+              "isPaused": false
+            }
+            """;
+        File.WriteAllText(archive.StateFilePath, v2Json);
+
+        var (loaded, _, unknown) = archive.LoadState();
+
+        Assert.IsFalse(unknown);
+        Assert.AreEqual(75, loaded.Grievance);
+        Assert.AreEqual(0.0, loaded.AccumulatedRuntimeMinutes, 0.001);
+        Assert.IsNull(loaded.RareEventPlan);
+    }
+
+    /// <summary>
+    /// Full restart recovery chain: save plan snapshot → reload → restore into
+    /// RareEventScheduler → verify plan is functional (same date, delay, roll).
+    /// </summary>
+    [TestMethod]
+    public void RestartRecovery_SavePlanSnapshot_RestoreIntoScheduler_PlanFunctional()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        // Create and save state with a plan snapshot.
+        var state = new PetStateArchive
+        {
+            AccumulatedRuntimeMinutes = 130.0,
+            RareEventPlan = new RareEventPlanSnapshot
+            {
+                LocalDate = "2026-11-04",
+                TriggerDelayMinutes = 25,
+                TriggerRoll = 0.2,
+                Consumed = false,
+                AccumulatedBaselineMinutes = 110.0
+            }
+        };
+        archive.SaveState(state);
+
+        // Simulate restart: load archive.
+        var (loaded, _, _) = archive.LoadState();
+
+        // Restore plan into scheduler via snapshot → RareEventPlan mapping.
+        var scheduler = new RareEventScheduler(0.5);
+        RareEventPlan? restoredPlan = null;
+        if (loaded.RareEventPlan is not null)
+        {
+            restoredPlan = new RareEventPlan
+            {
+                LocalDate = loaded.RareEventPlan.LocalDate!,
+                TriggerDelayMinutes = loaded.RareEventPlan.TriggerDelayMinutes,
+                TriggerRoll = loaded.RareEventPlan.TriggerRoll,
+                Consumed = loaded.RareEventPlan.Consumed,
+                AccumulatedBaselineMinutes = loaded.RareEventPlan.AccumulatedBaselineMinutes
+            };
+        }
+        bool accepted = scheduler.RestorePlan(restoredPlan);
+
+        Assert.IsTrue(accepted, "Valid plan snapshot must be accepted by RestorePlan.");
+        Assert.IsNotNull(scheduler.CurrentPlan);
+        Assert.AreEqual("2026-11-04", scheduler.CurrentPlan!.LocalDate);
+        Assert.AreEqual(25, scheduler.CurrentPlan.TriggerDelayMinutes);
+        Assert.AreEqual(0.2, scheduler.CurrentPlan.TriggerRoll, 0.0001);
+        Assert.IsFalse(scheduler.CurrentPlan.Consumed);
+        Assert.AreEqual(110.0, scheduler.CurrentPlan.AccumulatedBaselineMinutes, 0.001);
+
+        // Verify the restored plan is functional: evaluate with enough runtime.
+        // Daily effective = 130 - 110 = 20, delay = 25, so 20 < 25 → DelayNotReached.
+        var result = scheduler.Evaluate(130.0, "2026-11-04");
+        Assert.IsFalse(result.ShouldFire);
+        Assert.AreEqual(RareEventScheduler.DenyReason.DelayNotReached, result.Reason);
+
+        // At 136 (daily effective = 26 ≥ 25), plan should be consumed and fire (roll 0.2 < 0.5).
+        var result2 = scheduler.Evaluate(136.0, "2026-11-04");
+        Assert.IsTrue(result2.ShouldFire);
+    }
+
+    /// <summary>
+    /// Restart recovery with consumed plan: restored plan should not re-fire.
+    /// </summary>
+    [TestMethod]
+    public void RestartRecovery_ConsumedPlan_DoesNotRefire()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            AccumulatedRuntimeMinutes = 200.0,
+            RareEventPlan = new RareEventPlanSnapshot
+            {
+                LocalDate = "2026-11-04",
+                TriggerDelayMinutes = 20,
+                TriggerRoll = 0.1,
+                Consumed = true,
+                AccumulatedBaselineMinutes = 100.0
+            }
+        };
+        archive.SaveState(state);
+
+        var (loaded, _, _) = archive.LoadState();
+
+        var scheduler = new RareEventScheduler(0.5);
+        var restoredPlan = new RareEventPlan
+        {
+            LocalDate = loaded.RareEventPlan!.LocalDate!,
+            TriggerDelayMinutes = loaded.RareEventPlan.TriggerDelayMinutes,
+            TriggerRoll = loaded.RareEventPlan.TriggerRoll,
+            Consumed = loaded.RareEventPlan.Consumed,
+            AccumulatedBaselineMinutes = loaded.RareEventPlan.AccumulatedBaselineMinutes
+        };
+        scheduler.RestorePlan(restoredPlan);
+
+        // Even with enough runtime, consumed plan should not fire.
+        var result = scheduler.Evaluate(200.0, "2026-11-04");
+        Assert.IsFalse(result.ShouldFire);
+        Assert.AreEqual(RareEventScheduler.DenyReason.PlanConsumed, result.Reason);
+    }
+
+    /// <summary>
+    /// Restart recovery with null plan: scheduler starts fresh, new plan created on next day.
+    /// </summary>
+    [TestMethod]
+    public void RestartRecovery_NullPlan_SchedulerStartsFresh()
+    {
+        var archive = new ArchiveService(_tempDir);
+
+        var state = new PetStateArchive
+        {
+            AccumulatedRuntimeMinutes = 50.0,
+            RareEventPlan = null
+        };
+        archive.SaveState(state);
+
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.IsNull(loaded.RareEventPlan);
+
+        var scheduler = new RareEventScheduler(0.5);
+        scheduler.RestorePlan(null);
+
+        Assert.IsNull(scheduler.CurrentPlan);
+
+        // Creating a new plan should work.
+        var rng = new Random(42);
+        bool created = scheduler.EnsurePlanForDate("2026-11-05", rng, currentAccumulatedMinutes: 50.0);
+        Assert.IsTrue(created);
+        Assert.IsNotNull(scheduler.CurrentPlan);
+        Assert.AreEqual("2026-11-05", scheduler.CurrentPlan!.LocalDate);
     }
 }

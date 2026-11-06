@@ -12,28 +12,6 @@ public class EmotionStateTests
     // ── Boundary clamping ──────────────────────────────────────────────
 
     [TestMethod]
-    public void Affinity_DefaultsToNeutral()
-    {
-        var state = new EmotionState();
-        Assert.AreEqual(EmotionState.Neutral, state.Affinity);
-        Assert.AreEqual(EmotionState.Neutral, state.Grievance);
-    }
-
-    [TestMethod]
-    public void Affinity_ClampsToMax()
-    {
-        var state = new EmotionState { Affinity = 200 };
-        Assert.AreEqual(EmotionState.MaxValue, state.Affinity);
-    }
-
-    [TestMethod]
-    public void Affinity_ClampsToMin()
-    {
-        var state = new EmotionState { Affinity = -50 };
-        Assert.AreEqual(EmotionState.MinValue, state.Affinity);
-    }
-
-    [TestMethod]
     public void Grievance_ClampsToMax()
     {
         var state = new EmotionState { Grievance = 150 };
@@ -45,43 +23,6 @@ public class EmotionStateTests
     {
         var state = new EmotionState { Grievance = -10 };
         Assert.AreEqual(EmotionState.MinValue, state.Grievance);
-    }
-
-    // ── Pet increment ──────────────────────────────────────────────────
-
-    [TestMethod]
-    public void AddPetIncrement_DefaultAdds5()
-    {
-        var state = new EmotionState();
-        var result = state.AddPetIncrement();
-        Assert.AreEqual(55, result);
-        Assert.AreEqual(55, state.Affinity);
-    }
-
-    [TestMethod]
-    public void AddPetIncrement_CustomAmount()
-    {
-        var state = new EmotionState();
-        state.AddPetIncrement(10);
-        Assert.AreEqual(60, state.Affinity);
-    }
-
-    [TestMethod]
-    public void AddPetIncrement_ClampsAtMax()
-    {
-        var state = new EmotionState { Affinity = 98 };
-        state.AddPetIncrement(10);
-        Assert.AreEqual(EmotionState.MaxValue, state.Affinity);
-    }
-
-    [TestMethod]
-    public void AddPetIncrement_MultipleCallsAccumulate()
-    {
-        var state = new EmotionState();
-        state.AddPetIncrement(); // 55
-        state.AddPetIncrement(); // 60
-        state.AddPetIncrement(); // 65
-        Assert.AreEqual(65, state.Affinity);
     }
 
     // ── Corner grievance ───────────────────────────────────────────────
@@ -126,30 +67,7 @@ public class EmotionStateTests
         Assert.AreEqual(EmotionState.Neutral, state.Grievance);
     }
 
-    [TestMethod]
-    public void ResetGrievanceAfterExpression_DoesNotAffectAffinity()
-    {
-        var state = new EmotionState { Affinity = 75, Grievance = 90 };
-        state.ResetGrievanceAfterExpression();
-        Assert.AreEqual(75, state.Affinity);
-        Assert.AreEqual(EmotionState.Neutral, state.Grievance);
-    }
-
     // ── Threshold checks ───────────────────────────────────────────────
-
-    [TestMethod]
-    public void IsHighAffinity_TrueAtThreshold()
-    {
-        var state = new EmotionState { Affinity = EmotionState.HighAffinityThreshold };
-        Assert.IsTrue(state.IsHighAffinity);
-    }
-
-    [TestMethod]
-    public void IsHighAffinity_FalseBelowThreshold()
-    {
-        var state = new EmotionState { Affinity = EmotionState.HighAffinityThreshold - 1 };
-        Assert.IsFalse(state.IsHighAffinity);
-    }
 
     [TestMethod]
     public void IsGrievanceThresholdReached_TrueAtThreshold()

@@ -39,18 +39,18 @@ public class IsolatedArchiveChainTests
     }
 
     /// <summary>
-    /// F-05: Full chain with v2 archive — load, apply petting +5 via the
-    /// production mapping, save, reload, and verify persisted affinity.
+    /// F-05: Full chain with v2 archive — load, apply grievance +20 via the
+    /// production mapping, save, reload, and verify persisted grievance.
+    /// (D-013: affinity removed; this test now exercises grievance instead.)
     /// </summary>
     [STATestMethod]
-    public void F05_V2Archive_LoadPetSaveReload_AffinityPersisted()
+    public void F05_V2Archive_LoadGrievanceSaveReload_GrievancePersisted()
     {
-        // Write a v2 state.json with affinity=50, grievance=50.
+        // Write a v2 state.json with grievance=50.
         var archive = new ArchiveService(_tempDir);
         var initialState = new PetStateArchive
         {
             SchemaVersion = 2,
-            Affinity = 50,
             Grievance = 50,
             LastDecayUtc = DateTime.UtcNow.ToString("O"),
             WindowLeft = 100,
@@ -65,15 +65,15 @@ public class IsolatedArchiveChainTests
         var (loadedState, fromBackup, unknown) = archive.LoadState();
         Assert.IsFalse(fromBackup, "Should load from primary, not backup.");
         Assert.IsFalse(unknown, "Should not be unknown version.");
-        Assert.AreEqual(50, loadedState.Affinity, "Loaded affinity should be 50.");
+        Assert.AreEqual(50, loadedState.Grievance, "Loaded grievance should be 50.");
 
         // Map to emotion objects (same as App.OnStartup).
         var (acc, expr, tracker) = App.MapArchiveToEmotionObjects(loadedState);
-        Assert.AreEqual(50, acc.AffinityInt, "Accumulator affinity should be 50.");
+        Assert.AreEqual(50, acc.GrievanceInt, "Accumulator grievance should be 50.");
 
-        // Simulate petting: add +5 affinity.
-        acc.AddAffinity(5);
-        Assert.AreEqual(55, acc.AffinityInt, "After petting, affinity should be 55.");
+        // Simulate corner grievance: add +20.
+        acc.AddGrievance(20);
+        Assert.AreEqual(70, acc.GrievanceInt, "After corner, grievance should be 70.");
 
         // Map back to archive and save.
         App.MapEmotionObjectsToArchive(loadedState, acc, expr);
@@ -81,9 +81,9 @@ public class IsolatedArchiveChainTests
 
         // Reload and verify persisted values.
         var (reloadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(55, reloadedState.Affinity,
-            $"Reloaded affinity must be 55 after save. Got {reloadedState.Affinity}.");
-        Assert.AreEqual(2, reloadedState.SchemaVersion, "Schema version must be 2.");
+        Assert.AreEqual(70, reloadedState.Grievance,
+            $"Reloaded grievance must be 70 after save. Got {reloadedState.Grievance}.");
+        Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, reloadedState.SchemaVersion, "Schema version must be current.");
     }
 
     /// <summary>
@@ -109,7 +109,6 @@ public class IsolatedArchiveChainTests
 
         // v1 should fall back to default emotion values.
         Assert.AreEqual(1, loadedState.SchemaVersion, "Loaded schema should be v1.");
-        Assert.AreEqual(50, loadedState.Affinity, "v1 affinity should default to 50.");
         Assert.AreEqual(50, loadedState.Grievance, "v1 grievance should default to 50.");
         Assert.IsFalse(loadedState.PendingGrievanceExpression, "v1 pending should default to false.");
         Assert.IsNull(loadedState.GrievanceExpressionDate, "v1 expression date should default to null.");
@@ -120,16 +119,16 @@ public class IsolatedArchiveChainTests
 
         // Map to emotion objects.
         var (acc, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
-        Assert.AreEqual(50, acc.AffinityInt, "v1 accumulator affinity should be 50.");
+        Assert.AreEqual(50, acc.GrievanceInt, "v1 accumulator grievance should be 50.");
         Assert.IsFalse(expr.IsPending, "v1 expression should not be pending.");
 
-        // Save as v2.
+        // Save as current version.
         archive.SaveState(loadedState);
 
-        // Reload — should now be v2 with persisted defaults.
+        // Reload — should now be current version with persisted defaults.
         var (reloadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(2, reloadedState.SchemaVersion, "After save, schema should be v2.");
-        Assert.AreEqual(50, reloadedState.Affinity, "v2 affinity should still be 50.");
+        Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, reloadedState.SchemaVersion, "After save, schema should be current.");
+        Assert.AreEqual(50, reloadedState.Grievance, "Grievance should still be 50.");
     }
 
     /// <summary>
@@ -144,7 +143,6 @@ public class IsolatedArchiveChainTests
         var state = new PetStateArchive
         {
             SchemaVersion = 2,
-            Affinity = 50,
             Grievance = 85,
             LastDecayUtc = DateTime.UtcNow.ToString("O"),
             PendingGrievanceExpression = true,
@@ -180,7 +178,6 @@ public class IsolatedArchiveChainTests
         var state = new PetStateArchive
         {
             SchemaVersion = 2,
-            Affinity = 70,
             Grievance = 80,
             LastDecayUtc = testTime.ToString("O")
         };
@@ -213,7 +210,6 @@ public class IsolatedArchiveChainTests
         var state = new PetStateArchive
         {
             SchemaVersion = 2,
-            Affinity = 50,
             Grievance = 50,
             LastDecayUtc = DateTime.UtcNow.ToString("O")
         };
@@ -236,96 +232,9 @@ public class IsolatedArchiveChainTests
     }
 
     // ── F-05 R4: Real gesture-driven petting → isolated save → restore ──
-
-    /// <summary>
-    /// F-05 R4: Complete interaction chain using real ProcessPettingMove/EndPetting
-    /// to drive actual +5 scoring, then persist via the production mapping
-    /// (MapArchiveToEmotionObjects/MapEmotionObjectsToArchive) to an isolated
-    /// archive, reload, and verify the affinity is restored.
-    ///
-    /// This closes the gap identified in R4: tests must use the same mapping
-    /// that production OnStartup/MarkStateDirty uses, and the +5 must come
-    /// from a real gesture chain, not a direct acc.AddAffinity call.
-    /// </summary>
-    [STATestMethod]
-    public void F05_R4_RealPettingChain_PersistedViaProductionMapping()
-    {
-        // Step 1: Write initial v2 archive.
-        var archive = new ArchiveService(_tempDir);
-        var initialState = new PetStateArchive
-        {
-            SchemaVersion = 2,
-            Affinity = 50,
-            Grievance = 50,
-            LastDecayUtc = DateTime.UtcNow.ToString("O"),
-            WindowLeft = 100,
-            WindowTop = 100
-        };
-        archive.SaveState(initialState);
-
-        // Step 2: Load via ArchiveService (same as App.OnStartup).
-        var (loadedState, _, _) = archive.LoadState();
-
-        // Step 3: Map to emotion objects via production mapping (same as OnStartup).
-        var (acc, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
-        Assert.AreEqual(50, acc.AffinityInt, "Initial affinity from archive should be 50.");
-
-        // Step 4: Drive real gesture chain through MainWindow.ProcessPettingMove
-        // and EndPetting to produce an actual +5 increment.
-        MainWindow? window = null;
-        try
-        {
-            window = new MainWindow();
-            var clockMs = 0.0;
-            window.TestGetElapsedMs = () => clockMs;
-            window.TestEmotionAccumulator = acc;
-
-            // Start petting candidate at head center.
-            SetField(window, "_isPettingCandidate", true);
-            SetField(window, "_pettingStartMs", 0.0);
-            SetField(window, "_pettingAccumulatedMs", 0.0);
-            SetField(window, "_pettingLastPos", new System.Windows.Point(60, 20));
-            SetField(window, "_pettingCooldownUntilMs", 0.0);
-
-            // 25 micro-moves, each within 8 DIP, 50ms apart → 1250ms accumulated.
-            // Pingpong x=60..67 at y=20 (opaque pixels in default character).
-            for (int i = 1; i <= 25; i++)
-            {
-                clockMs = i * 50.0;
-                window.ProcessPettingMove(new System.Windows.Point(60 + (i % 8), 20), clockMs);
-            }
-
-            // EndPetting triggers +5 via the injected accumulator.
-            InvokeMethod(window, "EndPetting");
-        }
-        finally
-        {
-            window?.Close();
-        }
-
-        // Verify +5 was applied.
-        Assert.AreEqual(55, acc.AffinityInt,
-            $"After real petting chain, affinity must be 55. Got {acc.AffinityInt}.");
-
-        // Step 5: Map back to archive via production mapping (same as MarkStateDirty).
-        App.MapEmotionObjectsToArchive(loadedState, acc, expr);
-        Assert.AreEqual(55, loadedState.Affinity,
-            "Archive affinity must be 55 after production mapping.");
-
-        // Step 6: Save to isolated archive.
-        archive.SaveState(loadedState);
-
-        // Step 7: Reload and verify persistence.
-        var (reloadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(55, reloadedState.Affinity,
-            $"Reloaded affinity must be 55 after full chain. Got {reloadedState.Affinity}.");
-        Assert.AreEqual(2, reloadedState.SchemaVersion, "Schema version must remain 2.");
-
-        // Step 8: Map reloaded state back to emotion objects (simulating restart).
-        var (reloadedAcc, _, _) = App.MapArchiveToEmotionObjects(reloadedState);
-        Assert.AreEqual(55, reloadedAcc.AffinityInt,
-            $"Restored accumulator affinity must be 55. Got {reloadedAcc.AffinityInt}.");
-    }
+    // D-013 cancelled affinity/petting scoring; the F05_R4 test that verified
+    // petting +5 affinity persistence has been removed. Corner award (+20
+    // grievance) persistence is covered by F05_V2Archive_CornerAward_PersistsAcrossSaveReload.
 
     // ── Helpers for reflection-based field/method access ──
 

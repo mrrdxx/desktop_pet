@@ -81,7 +81,7 @@ public class PauseSemanticsTests
 
             // Use a fixed base time = now, so initial tick has ~0 elapsed.
             var baseUtc = DateTime.UtcNow;
-            var accumulator = new EmotionDecayAccumulator(50, 90, baseUtc);
+            var accumulator = new EmotionDecayAccumulator(90, baseUtc);
             window.TestEmotionAccumulator = accumulator;
             window.TestCornerTracking = new CornerTracker();
             window.TestGrievanceExpression = new GrievanceExpressionState();
@@ -168,7 +168,7 @@ public class PauseSemanticsTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -251,7 +251,7 @@ public class PauseSemanticsTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
 
-            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(50, DateTime.UtcNow);
             window.TestEmotionAccumulator = accumulator;
             window.TestCornerTracking = new CornerTracker();
             window.TestGrievanceExpression = new GrievanceExpressionState();
@@ -341,7 +341,7 @@ public class PauseSemanticsTests
     public void G03_AccumulatorSkipInterval_ShiftsReferenceWithoutDecay()
     {
         var baseTime = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
-        var acc = new EmotionDecayAccumulator(50, 90, baseTime);
+        var acc = new EmotionDecayAccumulator(90, baseTime);
 
         // Skip 6 hours forward.
         acc.SkipInterval(TimeSpan.FromHours(6));
@@ -353,12 +353,10 @@ public class PauseSemanticsTests
         // Values must NOT have changed (no decay performed).
         Assert.AreEqual(90.0, acc.GrievanceFloat, 0.0001,
             "SkipInterval must NOT perform decay — grievance unchanged.");
-        Assert.AreEqual(50.0, acc.AffinityFloat, 0.0001,
-            "SkipInterval must NOT perform decay — affinity unchanged.");
 
         // Now AdvanceTo baseTime + 6h should see zero elapsed (no decay).
         var result = acc.AdvanceTo(baseTime + TimeSpan.FromHours(6));
-        Assert.AreEqual(90, result.Grievance,
+        Assert.AreEqual(90, result,
             "AdvanceTo after SkipInterval to same point must produce zero decay.");
     }
 
@@ -436,13 +434,13 @@ public class PauseSemanticsTests
             window.TestGetCursorPos = () => (500, 500);
 
             // Test accumulator: will be paused for 5 seconds of unified time.
-            var testAcc = new EmotionDecayAccumulator(50, 90, utcNow);
+            var testAcc = new EmotionDecayAccumulator(90, utcNow);
             window.TestEmotionAccumulator = testAcc;
             window.TestCornerTracking = new CornerTracker();
             window.TestGrievanceExpression = new GrievanceExpressionState();
 
             // Control accumulator: never paused, same total active time.
-            var controlAcc = new EmotionDecayAccumulator(50, 90, utcNow);
+            var controlAcc = new EmotionDecayAccumulator(90, utcNow);
 
             // Phase 1: 2 seconds of active time (both advance together).
             for (int i = 0; i < 60; i++)
@@ -518,7 +516,7 @@ public class PauseSemanticsTests
             window.TestGetUtcNow = () => utcNow;
             window.TestGetCursorPos = () => (500, 500);
 
-            var testAcc = new EmotionDecayAccumulator(50, 90, utcNow);
+            var testAcc = new EmotionDecayAccumulator(90, utcNow);
             window.TestEmotionAccumulator = testAcc;
             window.TestCornerTracking = new CornerTracker();
             window.TestGrievanceExpression = new GrievanceExpressionState();
@@ -584,7 +582,7 @@ public class PauseSemanticsTests
 
             // Critical: the total decay should be from 4s of active time (2s before + 2s after),
             // NOT 4s + 10s pause. Compare with a control that decayed for 4s total.
-            var controlAcc = new EmotionDecayAccumulator(50, 90,
+            var controlAcc = new EmotionDecayAccumulator(90,
                 new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc));
             controlAcc.AdvanceTo(new DateTime(2026, 10, 23, 12, 0, 4, DateTimeKind.Utc));
 
@@ -618,7 +616,7 @@ public class PauseSemanticsTests
             window.TestGetUtcNow = () => utcNow;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, utcNow);
+            var accumulator = new EmotionDecayAccumulator(85, utcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -736,7 +734,7 @@ public class PauseSemanticsTests
                 window1.TestGetUtcNow = () => utcNow;
                 window1.TestGetCursorPos = () => (500, 500);
 
-                acc1 = new EmotionDecayAccumulator(50, 90, utcNow);
+                acc1 = new EmotionDecayAccumulator(90, utcNow);
                 window1.TestEmotionAccumulator = acc1;
                 window1.TestCornerTracking = new CornerTracker();
                 window1.TestGrievanceExpression = new GrievanceExpressionState();
@@ -761,7 +759,6 @@ public class PauseSemanticsTests
             var savedState = new PetStateArchive
             {
                 SchemaVersion = 2,
-                Affinity = acc1!.AffinityInt,
                 Grievance = acc1.GrievanceInt,
                 LastDecayUtc = acc1.LastDecayUtc.ToString("O"),
                 PendingGrievanceExpression = false,
@@ -779,7 +776,7 @@ public class PauseSemanticsTests
 
             // ── Phase 4: Load from isolated archive and restore ──
             var (loadedState, _, _) = archive.LoadState();
-            Assert.AreEqual(2, loadedState.SchemaVersion, "Loaded schema must be v2.");
+            Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, loadedState.SchemaVersion, "Loaded schema must be current.");
             Assert.IsTrue(loadedState.IsPaused, "Loaded state must be paused.");
 
             // F-06: MapArchiveToEmotionObjects must shift lastDecayUtc to now
@@ -864,7 +861,7 @@ public class PauseSemanticsTests
             // dropping grievance from ~90 to ~70. The control below (2s from
             // the shifted reference) would be ~90, and the assertion would fail
             // with a difference of ~20 — well beyond the 0.001 tolerance.
-            var controlAcc = new EmotionDecayAccumulator(50, acc1.GrievanceInt, utcNow - TimeSpan.FromSeconds(2));
+            var controlAcc = new EmotionDecayAccumulator(acc1.GrievanceInt, utcNow - TimeSpan.FromSeconds(2));
             controlAcc.AdvanceTo(utcNow);
 
             Assert.AreEqual(controlAcc.GrievanceFloat, acc2.GrievanceFloat, 0.001,
@@ -914,7 +911,7 @@ public class PauseSemanticsTests
                 window1.TestGetUtcNow = () => utcNow;
                 window1.TestGetCursorPos = () => (500, 500);
 
-                acc1 = new EmotionDecayAccumulator(50, 90, utcNow);
+                acc1 = new EmotionDecayAccumulator(90, utcNow);
                 window1.TestEmotionAccumulator = acc1;
                 window1.TestCornerTracking = new CornerTracker();
                 window1.TestGrievanceExpression = new GrievanceExpressionState();
@@ -938,7 +935,6 @@ public class PauseSemanticsTests
             var savedState = new PetStateArchive
             {
                 SchemaVersion = 2,
-                Affinity = acc1!.AffinityInt,
                 Grievance = acc1.GrievanceInt,
                 LastDecayUtc = acc1.LastDecayUtc.ToString("O"),
                 PendingGrievanceExpression = false,
@@ -997,7 +993,7 @@ public class PauseSemanticsTests
             // ── Phase 6: Total decay = 12h offline + ~4s active ──
             // Control: accumulator starting at saved grievance, advancing from
             // the saved LastDecayUtc to the final utcNow (12h + 4s total).
-            var controlAcc = new EmotionDecayAccumulator(50, acc1.GrievanceInt, acc1.LastDecayUtc);
+            var controlAcc = new EmotionDecayAccumulator(acc1.GrievanceInt, acc1.LastDecayUtc);
             controlAcc.AdvanceTo(utcNow);
 
             Assert.AreEqual(controlAcc.GrievanceFloat, acc2.GrievanceFloat, 0.01,
@@ -1018,12 +1014,12 @@ public class PauseSemanticsTests
     ///   1. Advancing to the saved reference time → zero elapsed → no decay.
     ///   2. Advancing past the saved reference → only the new interval decays.
     ///
-    /// This is a continuous test covering both grievance and affinity:
+    /// This is a continuous test covering grievance:
     ///   save base = 12:00 → restoreUtcNow = 00:00 (rollback 12h)
     ///   → AdvanceTo(12:00) → no extra decay (back to original moment)
     ///   → AdvanceTo(18:00) → only 6h of new decay (not 18h)
     ///
-    /// A control accumulator (no rollback) is compared for both emotions.
+    /// A control accumulator (no rollback) is compared for grievance.
     /// The 12h-paused and not-paused tests above are retained.
     /// </summary>
     [STATestMethod]
@@ -1031,13 +1027,11 @@ public class PauseSemanticsTests
     {
         // ── Setup: saved archive with LastDecayUtc at 12:00, IsPaused=true ──
         var savedBaseUtc = new DateTime(2026, 10, 24, 12, 0, 0, DateTimeKind.Utc);
-        const int savedAffinity = 80;
         const int savedGrievance = 90;
 
         var savedState = new PetStateArchive
         {
             SchemaVersion = 2,
-            Affinity = savedAffinity,
             Grievance = savedGrievance,
             LastDecayUtc = savedBaseUtc.ToString("O"),
             PendingGrievanceExpression = false,
@@ -1060,18 +1054,14 @@ public class PauseSemanticsTests
             $"Got: {acc.LastDecayUtc}");
 
         // ── Phase 1: Advance back to the original saved moment (12:00) ──
-        // Elapsed = 0 → no decay. Grievance and affinity must be unchanged.
+        // Elapsed = 0 → no decay. Grievance must be unchanged.
         var grievanceBeforeReturn = acc.GrievanceFloat;
-        var affinityBeforeReturn = acc.AffinityFloat;
 
         acc.AdvanceTo(savedBaseUtc);
 
         Assert.AreEqual(grievanceBeforeReturn, acc.GrievanceFloat, 0.0001,
             $"F-06 R7: Returning to original moment must NOT cause extra decay. " +
             $"Before: {grievanceBeforeReturn}, After: {acc.GrievanceFloat}");
-        Assert.AreEqual(affinityBeforeReturn, acc.AffinityFloat, 0.0001,
-            $"F-06 R7: Returning to original moment must NOT cause extra affinity decay. " +
-            $"Before: {affinityBeforeReturn}, After: {acc.AffinityFloat}");
 
         // ── Phase 2: Advance 6h past the original moment (to 18:00) ──
         // Only the 6h new interval should decay — NOT the 12h rollback gap.
@@ -1080,7 +1070,7 @@ public class PauseSemanticsTests
 
         // Control: accumulator with same starting values, advancing directly
         // 6h from the saved base (no rollback involved).
-        var controlAcc = new EmotionDecayAccumulator(savedAffinity, savedGrievance, savedBaseUtc);
+        var controlAcc = new EmotionDecayAccumulator(savedGrievance, savedBaseUtc);
         controlAcc.AdvanceTo(forwardTarget);
 
         Assert.AreEqual(controlAcc.GrievanceFloat, acc.GrievanceFloat, 0.001,
@@ -1088,9 +1078,5 @@ public class PauseSemanticsTests
             $"control that only decayed 6h from the saved base. " +
             $"Test: {acc.GrievanceFloat}, Control(6h): {controlAcc.GrievanceFloat}. " +
             $"Without protection, 18h of decay would apply (12h rollback + 6h forward).");
-        Assert.AreEqual(controlAcc.AffinityFloat, acc.AffinityFloat, 0.001,
-            $"F-06 R7: After rollback→return→forward, affinity must match " +
-            $"control that only decayed 6h from the saved base. " +
-            $"Test: {acc.AffinityFloat}, Control(6h): {controlAcc.AffinityFloat}.");
     }
 }

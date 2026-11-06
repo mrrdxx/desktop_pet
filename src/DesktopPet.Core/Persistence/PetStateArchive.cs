@@ -1,13 +1,14 @@
 namespace DesktopPet.Core.Persistence;
 
 /// <summary>
-/// v2 state archive: pet position, session metadata, and emotion state.
+/// v3 state archive: pet position, session metadata, emotion state, and rare-event plan.
 /// Stored as state.json in %LOCALAPPDATA%\DesktopPet\.
-/// v1 files are read with emotion fields falling back to defaults.
+/// v1 files are read with emotion and rare-event fields falling back to defaults.
+/// v2 files are read with rare-event fields falling back to defaults.
 /// </summary>
 public sealed class PetStateArchive
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     /// <summary>Schema version for forward/backward compatibility.</summary>
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
@@ -30,9 +31,6 @@ public sealed class PetStateArchive
 
     // --- v2 emotion fields ---
 
-    /// <summary>Affinity value (0-100, neutral 50). v1 fallback: 50.</summary>
-    public int Affinity { get; set; } = 50;
-
     /// <summary>Grievance value (0-100, neutral 50). v1 fallback: 50.</summary>
     public int Grievance { get; set; } = 50;
 
@@ -44,6 +42,43 @@ public sealed class PetStateArchive
 
     /// <summary>Local date (yyyy-MM-dd) when pending expression was marked. v1 fallback: null.</summary>
     public string? GrievanceExpressionDate { get; set; }
+
+    // --- v3 rare-event fields ---
+
+    /// <summary>
+    /// F-05/P1-004: Accumulated effective runtime minutes at last save.
+    /// Persisted so that restart restores the session-level total used by
+    /// the daily plan's baseline差值评估. v1/v2 fallback: 0.
+    /// </summary>
+    public double AccumulatedRuntimeMinutes { get; set; }
+
+    /// <summary>
+    /// P1-004: Saved daily rare-event plan snapshot (date, delay, roll, consumed, baseline).
+    /// Null when no plan exists. v1/v2 fallback: null (no plan restored, fresh plan created on next day).
+    /// </summary>
+    public RareEventPlanSnapshot? RareEventPlan { get; set; }
+}
+
+/// <summary>
+/// P1-004: Serializable snapshot of a RareEventPlan for persistence.
+/// Mirrors DesktopPet.Core.Events.RareEventPlan fields.
+/// </summary>
+public sealed class RareEventPlanSnapshot
+{
+    /// <summary>Local date (yyyy-MM-dd) that this plan applies to.</summary>
+    public string? LocalDate { get; set; }
+
+    /// <summary>Effective runtime minutes from day baseline until candidate trigger (20–120).</summary>
+    public int TriggerDelayMinutes { get; set; }
+
+    /// <summary>Pre-rolled random value (0.0–1.0) for deterministic restart behavior.</summary>
+    public double TriggerRoll { get; set; }
+
+    /// <summary>True when the event has already been triggered or skipped for this day.</summary>
+    public bool Consumed { get; set; }
+
+    /// <summary>F-05: Session-level accumulated minutes at plan creation time (daily delay baseline).</summary>
+    public double AccumulatedBaselineMinutes { get; set; }
 }
 
 /// <summary>

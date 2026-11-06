@@ -58,12 +58,16 @@ public sealed class ArchiveService
         // v1 → v2 compatibility: v1 files have no lastDecayUtc field.
         // Per PRODUCT R-02, fall back to lastSavedUtc so decay calculation
         // has a baseline timestamp after upgrade.
-        if (result.SchemaVersion < PetStateArchive.CurrentSchemaVersion
+        if (result.SchemaVersion < 2
             && string.IsNullOrEmpty(result.LastDecayUtc)
             && !string.IsNullOrEmpty(result.LastSavedUtc))
         {
             result.LastDecayUtc = result.LastSavedUtc;
         }
+
+        // v1/v2 → v3 compatibility: v1/v2 files have no rare-event fields.
+        // AccumulatedRuntimeMinutes defaults to 0, RareEventPlan defaults to null.
+        // No explicit fallback needed — JSON deserialization leaves them at default.
 
         return (result, fromBackup, unknownVersion);
     }

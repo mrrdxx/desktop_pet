@@ -1,37 +1,13 @@
 namespace DesktopPet.Core.Emotion;
 
 /// <summary>
-/// Calculates emotion decay toward neutral (50) using half-life formulas.
-/// Affinity: 7-day half-life. Grievance: 12-hour half-life.
+/// Calculates grievance decay toward neutral (50) using half-life formulas.
+/// Grievance has a 12-hour half-life.
 /// </summary>
 public static class EmotionDecay
 {
-    public const double AffinityHalfLifeDays = 7.0;
     public const double GrievanceHalfLifeHours = 12.0;
     public const double MaxDecayDays = 30.0;
-
-    /// <summary>
-    /// Decays affinity toward neutral 50.
-    /// Formula: newValue = 50 + (value - 50) * 0.5^(elapsedDays / 7)
-    /// </summary>
-    /// <param name="currentValue">Current affinity value.</param>
-    /// <param name="elapsedDays">Elapsed time in days (clamped to [0, 30]).</param>
-    /// <returns>Decayed affinity as int, clamped to [0, 100].</returns>
-    public static int DecayAffinity(int currentValue, double elapsedDays)
-    {
-        return (int)System.Math.Round(DecayAffinityFloat(currentValue, elapsedDays));
-    }
-
-    /// <summary>
-    /// Decays affinity toward neutral 50, returning a double to preserve precision.
-    /// Use this when accumulating small time steps to avoid integer rounding loss.
-    /// </summary>
-    public static double DecayAffinityFloat(double currentValue, double elapsedDays)
-    {
-        var clampedDays = ClampElapsed(elapsedDays);
-        var decayed = EmotionState.Neutral + (currentValue - EmotionState.Neutral) * System.Math.Pow(0.5, clampedDays / AffinityHalfLifeDays);
-        return System.Math.Clamp(decayed, EmotionState.MinValue, EmotionState.MaxValue);
-    }
 
     /// <summary>
     /// Decays grievance toward neutral 50.
@@ -73,14 +49,12 @@ public static class EmotionDecay
 /// </summary>
 public sealed class EmotionDecayAccumulator
 {
-    private double _affinityFloat;
     private double _grievanceFloat;
     private DateTime _lastDecayUtc;
 
     /// <summary>Creates an accumulator from current integer values and a decay reference time.</summary>
-    public EmotionDecayAccumulator(int affinity, int grievance, DateTime lastDecayUtc)
+    public EmotionDecayAccumulator(int grievance, DateTime lastDecayUtc)
     {
-        _affinityFloat = affinity;
         _grievanceFloat = grievance;
         _lastDecayUtc = lastDecayUtc;
     }
@@ -94,7 +68,7 @@ public sealed class EmotionDecayAccumulator
     /// only the genuinely new interval is decayed — already-processed
     /// time is not re-decayed.
     /// </summary>
-    public (int Affinity, int Grievance) AdvanceTo(DateTime currentUtc)
+    public int AdvanceTo(DateTime currentUtc)
     {
         var elapsed = currentUtc - _lastDecayUtc;
 
@@ -104,42 +78,25 @@ public sealed class EmotionDecayAccumulator
             // backward. This ensures that when the clock later returns to
             // or past the original reference time, the already-processed
             // interval is not re-decayed.
-            return (AffinityInt, GrievanceInt);
+            return GrievanceInt;
         }
 
-        var elapsedDays = elapsed.TotalDays;
         var elapsedHours = elapsed.TotalHours;
 
-        _affinityFloat = EmotionDecay.DecayAffinityFloat(_affinityFloat, elapsedDays);
         _grievanceFloat = EmotionDecay.DecayGrievanceFloat(_grievanceFloat, elapsedHours);
         _lastDecayUtc = currentUtc;
 
-        return ((int)System.Math.Round(_affinityFloat), (int)System.Math.Round(_grievanceFloat));
+        return GrievanceInt;
     }
-
-    /// <summary>Current affinity as int (rounded from float state).</summary>
-    public int AffinityInt => (int)System.Math.Round(_affinityFloat);
 
     /// <summary>Current grievance as int (rounded from float state).</summary>
     public int GrievanceInt => (int)System.Math.Round(_grievanceFloat);
-
-    /// <summary>Current affinity as double (full precision).</summary>
-    public double AffinityFloat => _affinityFloat;
 
     /// <summary>Current grievance as double (full precision).</summary>
     public double GrievanceFloat => _grievanceFloat;
 
     /// <summary>Last decay reference time in UTC.</summary>
     public DateTime LastDecayUtc => _lastDecayUtc;
-
-    /// <summary>
-    /// Applies an external increment (e.g. petting +5) to the float state.
-    /// Use this instead of modifying EmotionState directly to keep float precision.
-    /// </summary>
-    public void AddAffinity(int amount)
-    {
-        _affinityFloat = System.Math.Clamp(_affinityFloat + amount, EmotionState.MinValue, EmotionState.MaxValue);
-    }
 
     /// <summary>
     /// Applies an external increment (e.g. corner +20) to the float state.

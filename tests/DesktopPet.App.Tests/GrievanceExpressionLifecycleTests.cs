@@ -73,7 +73,7 @@ public class GrievanceExpressionLifecycleTests
             // Mouse far from pet (pet at 100,100 size 120; mouse at 900,900).
             window.TestGetCursorPos = () => (900, 900);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -129,7 +129,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -182,7 +182,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -233,7 +233,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -292,7 +292,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -346,7 +346,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -399,7 +399,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -460,7 +460,7 @@ public class GrievanceExpressionLifecycleTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;

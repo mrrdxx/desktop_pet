@@ -5,14 +5,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DesktopPet.App.Tests;
 
-/// <summary>
-/// P1-003: Tests for petting detection and drag gesture distinction (R-02).
-/// Verifies head zone detection, petting candidate state interrupts hover,
-/// petting increment triggers on accumulated time, cooldown prevents repeat,
-/// and large movement converts petting to drag.
-///
-/// Uses the same reflection-based test harness as MouseInteractionIntegrationTests.
-/// </summary>
 [TestClass]
 public class PettingDetectionTests
 {
@@ -38,15 +30,6 @@ public class PettingDetectionTests
         if (field is null)
             Assert.Fail($"Field '{name}' not found.");
         field!.SetValue(obj, value);
-    }
-
-    private static T GetField<T>(object obj, string name)
-    {
-        var field = typeof(MainWindow).GetField(name,
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        if (field is null)
-            Assert.Fail($"Field '{name}' not found.");
-        return (T)field!.GetValue(obj)!;
     }
 
     private static void InvokeMethod(object obj, string name, params object[] args)
@@ -155,109 +138,6 @@ public class PettingDetectionTests
         }
     }
 
-    // ── Petting increment triggers on accumulated time ─────────────────
-
-    [STATestMethod]
-    public void Petting_AccumulatedTime_TriggersIncrement()
-    {
-        var window = CreateMainWindowOrFail();
-        try
-        {
-            var clockMs = 1000.0;
-            window.TestGetElapsedMs = () => clockMs;
-
-            // F-05: Inject TestEmotionAccumulator so EndPetting can actually
-            // apply the +5 affinity increment without requiring App.Current.
-            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
-            window.TestEmotionAccumulator = accumulator;
-
-            // Simulate petting candidate with enough accumulated time.
-            SetField(window, "_isPettingCandidate", true);
-            SetField(window, "_pettingAccumulatedMs", 1100.0); // > 1000ms required
-            SetField(window, "_pettingCooldownUntilMs", 0.0);  // cooldown elapsed
-
-            Assert.AreEqual(50, accumulator.AffinityInt,
-                "Affinity must start at 50 before petting increment.");
-
-            InvokeMethod(window, "EndPetting");
-
-            Assert.IsFalse(window.IsPettingCandidate,
-                "Petting candidate must be cleared after EndPetting.");
-
-            // F-05: Verify actual +5 affinity increment was applied.
-            Assert.AreEqual(55, accumulator.AffinityInt,
-                $"Affinity must be 55 after petting +5. Got {accumulator.AffinityInt}.");
-
-            // Verify cooldown was set.
-            var cooldown = GetField<double>(window, "_pettingCooldownUntilMs");
-            Assert.AreEqual(1000.0 + 2000.0, cooldown,
-                $"Cooldown must be set to now+2000ms. Got {cooldown}.");
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
-    [STATestMethod]
-    public void Petting_InsufficientTime_DoesNotTriggerIncrement()
-    {
-        var window = CreateMainWindowOrFail();
-        try
-        {
-            var clockMs = 500.0;
-            window.TestGetElapsedMs = () => clockMs;
-
-            // Simulate petting candidate with insufficient accumulated time.
-            SetField(window, "_isPettingCandidate", true);
-            SetField(window, "_pettingAccumulatedMs", 300.0); // < 1000ms required
-            SetField(window, "_pettingCooldownUntilMs", 0.0);
-
-            InvokeMethod(window, "EndPetting");
-
-            Assert.IsFalse(window.IsPettingCandidate,
-                "Petting candidate must be cleared even if threshold not met.");
-
-            // Cooldown should NOT be set since petting didn't trigger.
-            var cooldown = GetField<double>(window, "_pettingCooldownUntilMs");
-            Assert.AreEqual(0.0, cooldown,
-                "Cooldown should not be set when petting threshold not met.");
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
-    // ── Cooldown prevents repeat ───────────────────────────────────────
-
-    [STATestMethod]
-    public void Petting_Cooldown_PreventsRepeatWithinWindow()
-    {
-        var window = CreateMainWindowOrFail();
-        try
-        {
-            var clockMs = 3000.0;
-            window.TestGetElapsedMs = () => clockMs;
-
-            // First petting: set cooldown to 5000ms (future).
-            SetField(window, "_isPettingCandidate", true);
-            SetField(window, "_pettingAccumulatedMs", 1100.0);
-            SetField(window, "_pettingCooldownUntilMs", 5000.0); // cooldown active
-
-            InvokeMethod(window, "EndPetting");
-
-            // Cooldown should remain at 5000 (not updated since petting didn't fire).
-            var cooldown = GetField<double>(window, "_pettingCooldownUntilMs");
-            Assert.AreEqual(5000.0, cooldown,
-                "Cooldown should not change when petting is in cooldown window.");
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
     // ── Petting candidate state recovery ───────────────────────────────
 
     [STATestMethod]
@@ -300,6 +180,6 @@ public class PettingDetectionTests
         // Close should clean up without throwing.
         window.Close();
         // If we reach here, no exception was thrown — pass.
-        Assert.IsTrue(true, "Window closed without exception while in petting candidate state.");
+        Assert.IsFalse(window.IsPettingCandidate, "Close must clear the head gesture.");
     }
 }

@@ -101,7 +101,7 @@ public class EmotionRuntimeTests
 
             // Use a fixed start time in the past so decay has already elapsed.
             var startUtc = DateTime.UtcNow - TimeSpan.FromHours(6);
-            var accumulator = new EmotionDecayAccumulator(50, 90, startUtc);
+            var accumulator = new EmotionDecayAccumulator(90, startUtc);
             window.TestEmotionAccumulator = accumulator;
             window.TestCornerTracking = new CornerTracker();
             window.TestGrievanceExpression = new GrievanceExpressionState();
@@ -151,13 +151,13 @@ public class EmotionRuntimeTests
         var totalElapsed = TimeSpan.FromHours(6);
 
         // Control accumulator: one big AdvanceTo.
-        var control = new EmotionDecayAccumulator(50, 90, baseTime);
+        var control = new EmotionDecayAccumulator(90, baseTime);
         control.AdvanceTo(baseTime + totalElapsed);
 
         // Test accumulator: many small AdvanceTo calls.
         // We can't use OnUpdateTick for this because it calls DateTime.UtcNow,
         // but we can verify the accumulator's float behavior directly.
-        var stepped = new EmotionDecayAccumulator(50, 90, baseTime);
+        var stepped = new EmotionDecayAccumulator(90, baseTime);
         var stepCount = 1000;
         var stepSize = totalElapsed / stepCount;
         for (int i = 1; i <= stepCount; i++)
@@ -169,9 +169,6 @@ public class EmotionRuntimeTests
         Assert.AreEqual(control.GrievanceFloat, stepped.GrievanceFloat, 0.001,
             $"Grievance: 1000 small steps must match 1 big step. " +
             $"Control: {control.GrievanceFloat}, Stepped: {stepped.GrievanceFloat}");
-        Assert.AreEqual(control.AffinityFloat, stepped.AffinityFloat, 0.001,
-            $"Affinity: 1000 small steps must match 1 big step. " +
-            $"Control: {control.AffinityFloat}, Stepped: {stepped.AffinityFloat}");
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -193,7 +190,7 @@ public class EmotionRuntimeTests
             window.TestGetCursorPos = () => (500, 500);
 
             // Start with grievance at 80, decay base = now (no pre-elapsed decay).
-            var accumulator = new EmotionDecayAccumulator(50, 80, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(80, DateTime.UtcNow);
             window.TestEmotionAccumulator = accumulator;
             window.TestCornerTracking = new CornerTracker();
             window.TestGrievanceExpression = new GrievanceExpressionState();
@@ -270,7 +267,7 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
 
-            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(50, DateTime.UtcNow);
             var cornerTracker = new CornerTracker();
             window.TestEmotionAccumulator = accumulator;
             window.TestCornerTracking = cornerTracker;
@@ -440,7 +437,7 @@ public class EmotionRuntimeTests
             window.TestGetCursorPos = () => (500, 500);
 
             var cornerTracker = new CornerTracker();
-            var accumulator = new EmotionDecayAccumulator(50, 50, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(50, DateTime.UtcNow);
             window.TestCornerTracking = cornerTracker;
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = new GrievanceExpressionState();
@@ -503,7 +500,7 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -546,7 +543,7 @@ public class EmotionRuntimeTests
             window.TestGetElapsedMs = () => clockMs;
             window.TestGetCursorPos = () => (500, 500);
 
-            var accumulator = new EmotionDecayAccumulator(50, 60, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(60, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -581,7 +578,7 @@ public class EmotionRuntimeTests
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -650,7 +647,7 @@ public class EmotionRuntimeTests
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -707,7 +704,7 @@ public class EmotionRuntimeTests
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -770,7 +767,7 @@ public class EmotionRuntimeTests
             // F-04: Mouse must be in interaction range for expression to start.
             window.TestGetCursorPos = () => (160, 160);
 
-            var accumulator = new EmotionDecayAccumulator(50, 85, DateTime.UtcNow);
+            var accumulator = new EmotionDecayAccumulator(85, DateTime.UtcNow);
             var grievanceExpr = new GrievanceExpressionState();
             window.TestEmotionAccumulator = accumulator;
             window.TestGrievanceExpression = grievanceExpr;
@@ -835,7 +832,6 @@ public class EmotionRuntimeTests
     /// <summary>
     /// Verify that emotion state can be restored from archive values,
     /// simulating a restart. The accumulator should pick up the archived
-    /// affinity/grievance/lastDecayUtc, and the grievance expression state
     /// should restore pending/markedDate.
     /// NOTE: This test constructs objects from literal values, NOT through
     /// ArchiveService file I/O. For the real file-based load→save→reload
@@ -845,16 +841,12 @@ public class EmotionRuntimeTests
     public void G01_RestartRestore_EmotionStateFromArchive()
     {
         // Simulate archive values from a previous session.
-        var archivedAffinity = 75;
         var archivedGrievance = 65;
         var archivedLastDecay = DateTime.UtcNow - TimeSpan.FromHours(2);
 
         // Restore accumulator from archive (as App.OnStartup does).
-        var accumulator = new EmotionDecayAccumulator(
-            archivedAffinity, archivedGrievance, archivedLastDecay);
+        var accumulator = new EmotionDecayAccumulator(archivedGrievance, archivedLastDecay);
 
-        Assert.AreEqual(archivedAffinity, accumulator.AffinityInt,
-            "Accumulator must restore affinity from archive.");
         Assert.AreEqual(archivedGrievance, accumulator.GrievanceInt,
             "Accumulator must restore grievance from archive.");
         Assert.AreEqual(archivedLastDecay, accumulator.LastDecayUtc,
@@ -886,16 +878,12 @@ public class EmotionRuntimeTests
     public void G01_V1ArchiveFallback_NeutralEmotionAndCurrentTime()
     {
         // Simulate v1 archive: emotion fields are default/missing.
-        // PetStateArchive defaults: Affinity=50, Grievance=50, LastDecayUtc=null/empty.
-        var v1Affinity = 50; // default
         var v1Grievance = 50; // default
         // LastDecayUtc would be null/empty → App.OnStartup uses DateTime.UtcNow.
         var fallbackDecay = DateTime.UtcNow;
 
-        var accumulator = new EmotionDecayAccumulator(v1Affinity, v1Grievance, fallbackDecay);
+        var accumulator = new EmotionDecayAccumulator(v1Grievance, fallbackDecay);
 
-        Assert.AreEqual(50, accumulator.AffinityInt,
-            "V1 archive must fall back to neutral affinity (50).");
         Assert.AreEqual(50, accumulator.GrievanceInt,
             "V1 archive must fall back to neutral grievance (50).");
 
