@@ -26,3 +26,13 @@ artifacts/
 ## OS
 Thumbs.db
 desktop.ini
+
+## User-provided requirement doc (not for version control)
+Windows桌宠项目要求.md
+
+## Local convenience shortcut
+启动小熊桌宠.cmd
+
+## Temporary debug scripts
+check_alpha.py
+check_curious.py
