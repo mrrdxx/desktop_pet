@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-05",
+  "sha256": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": "db397cca5acbc0f139afb16c6476c612d635a22f0eb0ee0fd1ce0d3efb14773e",
+    "tests/DesktopPet.App.Tests/ProbeVisualTests.cs": "75da23d97a2845b80774e8eabf74ab00c39e1bb26d7abd18e39b96b88e9a8c09",
+    "docs/PRODUCT.md": "8afdeb930d86c69bc16c624d53d1356f38ae4df534477ffacd2edd087bdc6e77",
+    "docs/ARCHITECTURE.md": "ff42fd4ac0c3331c3773f4f36194aaf0b206073359c005b3f91ac7382275e94a",
+    "docs/STATUS.md": "5255c1d277d660de7d05c58f8262162b5221da6bbd9e8cae24dd1c8dffd904bc",
+    "docs/TASKS.md": "6dfcbb594965e782b7394e095679695298fc52d713ae896fd7634a42548d440e"
+  }
+}

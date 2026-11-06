@@ -1,0 +1,13 @@
+PASS day1 fires
+PASS actual Ensure creates day2
+PASS actual CreateNew preserves baseline
+PASS day2 zero elapsed does not fire
+PASS day2 19 minutes does not fire
+PASS real JSON snapshot restored
+PASS restored rollback denied
+PASS restored tracker plus plan reaches day2 20, excluding offline
+PASS invalid Start/End preserves valid running state: NaN
+PASS invalid Start/End preserves valid running state: ∞
+PASS invalid Start/End preserves valid running state: -∞
+PASS invalid Start/End preserves valid running state: -1
+ALL 12 CHECKS PASS

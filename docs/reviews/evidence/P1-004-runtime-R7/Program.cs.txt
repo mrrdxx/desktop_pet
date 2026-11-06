@@ -1,0 +1,20 @@
+using System; using System.Reflection; using System.IO; using DesktopPet.App; using DesktopPet.App.Persistence; using DesktopPet.Core.Persistence; using DesktopPet.Core.Events;
+class Program {
+static BindingFlags flags=BindingFlags.NonPublic|BindingFlags.Instance;static int count;
+static void Field(object o,string n,object? v)=>o.GetType().GetField(n,flags)!.SetValue(o,v);
+static void Check(bool ok,string name){if(!ok)throw new Exception(name);Console.WriteLine("PASS "+name);count++;}
+[STAThread] static void Main(){
+var dir=Path.Combine(Path.GetTempPath(),"PetR7_"+Guid.NewGuid().ToString("N"));var service=new ArchiveService(dir);
+var app=new App();var state=new PetStateArchive();var saves=new SaveCoordinator(service,TimeSpan.FromHours(1));
+Field(app,"_state",state);Field(app,"_saveCoordinator",saves);
+var tracker=new EffectiveRuntimeTracker();tracker.StartActivePeriod(0);var sched=new RareEventScheduler();
+Field(app,"<RuntimeTracker>k__BackingField",tracker);Field(app,"<RareEventScheduler>k__BackingField",sched);
+var w=new MainWindow();double ms=0;Field(w,"TestGetElapsedMs",(Func<double>)(()=>ms));var tick=typeof(MainWindow).GetMethod("OnUpdateTick",flags)!;
+bool Dirty()=>(bool)typeof(SaveCoordinator).GetField("_stateDirty",flags)!.GetValue(saves)!;void Tick()=>tick.Invoke(w,new object?[]{null,EventArgs.Empty});
+Tick();Check(Dirty(),"new plan notifies real queue");saves.Flush();var loaded=new ArchiveService(dir).LoadState().State;Check(loaded.RareEventPlan!=null&&!loaded.RareEventPlan.Consumed,"queue-only flush persists unconsumed plan");
+ms=60000;Tick();Check(!Dirty(),"unchanged tick does not notify after flushed queue");
+sched.RestorePlan(new RareEventPlan{LocalDate=DateTime.Now.ToString("yyyy-MM-dd"),TriggerDelayMinutes=20,TriggerRoll=0.9,AccumulatedBaselineMinutes=0});ms=21*60000;Tick();Check(Dirty()&&sched.CurrentPlan!.Consumed,"roll failed notifies queue");saves.Flush();loaded=new ArchiveService(dir).LoadState().State;Check(loaded.RareEventPlan!.Consumed&&loaded.AccumulatedRuntimeMinutes==21,"queue-only flush persists consumed and total");
+ms=22*60000;Tick();Check(!Dirty(),"already consumed tick does not renotify");
+var fire=new RareEventScheduler(1);fire.RestorePlan(new RareEventPlan{LocalDate=DateTime.Now.ToString("yyyy-MM-dd"),TriggerDelayMinutes=20,TriggerRoll=0.1,AccumulatedBaselineMinutes=0});Field(app,"<RareEventScheduler>k__BackingField",fire);ms=23*60000;Tick();Check(Dirty()&&fire.CurrentPlan!.Consumed,"should fire notifies real queue");saves.Flush();loaded=new ArchiveService(dir).LoadState().State;Check(loaded.RareEventPlan!.Consumed&&loaded.RareEventPlan.TriggerRoll==0.1,"fire snapshot persisted via queue-only flush");
+Field(app,"_saveCoordinator",null);saves.Dispose();w.Close();if(Directory.Exists(dir))Directory.Delete(dir,true);Console.WriteLine("ALL "+count+" CHECKS PASS");
+}}

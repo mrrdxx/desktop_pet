@@ -1,0 +1,6 @@
+PASS actual driver judgment: nc1-timeout.log; accepted=False
+PASS actual driver judgment: nc2-nonzero-exit.log; accepted=False
+PASS actual driver judgment: nc3-missing-result.log; accepted=False
+PASS actual driver judgment: nc4-tray-exit-fail.log; accepted=False
+PASS actual driver judgment: nc5-missing-marker.log; accepted=False
+PASS actual driver judgment: pc1-valid.log; accepted=True

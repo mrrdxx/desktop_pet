@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-05",
+  "head": "4b2568188369e451ee0d9be7f8665e71d54a758c",
+  "sdk": "10.0.403",
+  "sha256": {
+    "docs/STATUS.md": "1e344f0202c78957e19619b69b67e6f980101b27659fc752d2efe41caccd2bd7",
+    "docs/TASKS.md": "9e21793689cbaecf259ba5c3b62369340c3116599561e0160901eff549a49866",
+    "docs/ARCHITECTURE.md": "2ae5d1ce72a38eb4f761819fdca7a2d0259f225bb7ab6017161ff368babbb859",
+    "docs/PRODUCT.md": "d552460a4233e88dae7fea78a4d1b7b3909be572f5ec6f13905fab34533f0f49",
+    "src/DesktopPet.Core/Persistence/PetStateArchive.cs": "1ec8d623e4f17cb6052d19ae2954b5fbca310b8a9df60044c9f047af3723d90d",
+    "src/DesktopPet.App/Persistence/ArchiveService.cs": "a248a884d8c47b0cb54a5ebd8be8c4bf7c8e4f2dc5feba69e9503402ce9a9cd9",
+    "src/DesktopPet.App/App.xaml.cs": "64df379f30597f835f40e4311b4b143bae14a9f981028aa13712a559f8594c0d",
+    "tests/DesktopPet.App.Tests/ArchiveServiceTests.cs": "fa7d6adeda3a464ff2f9706fd775f5d146ab48a951bd5cb2c62f804b03699fac"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-06",
+  "product_sha256": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": "6216c3db25fcbf461d2a2a3818fa1b5ee9e45400d503d4fc5a6fd4acd5b497f0",
+    "src/DesktopPet.App/App.xaml.cs": "19a345999f27f75da9c9d0203c55e715f5ca4b455eded0344606a5743e71d737"
+  },
+  "fixture_sha256": "ab9e52935378daf245bb8218b0967d4c56f10ac9ce926fd18db2bb56bbd73e7b"
+}

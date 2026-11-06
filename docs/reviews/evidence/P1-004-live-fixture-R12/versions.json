@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-05",
+  "method": "静态夹具审查；未运行BuildOnly或live，不新增构建/实机通过声明",
+  "sha256": {
+    "tests/Integration/Run-ProbeLive.ps1": "c9cb67c5ce1586756a81cd178c743360f6b1c5fca6290af678b469cf5e68ca35",
+    "tests/Integration/ProbeLiveProbe.cs": "05735031cb6c43cb533a084846c9a8aa147b4dab68286acdf5d3f8732acc9114"
+  }
+}

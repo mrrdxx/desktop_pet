@@ -1,0 +1,19 @@
+using System; using System.Reflection; using System.IO; using DesktopPet.App; using DesktopPet.App.Persistence; using DesktopPet.Core.Persistence; using DesktopPet.Core.Events;
+class Program {
+static BindingFlags flags=BindingFlags.NonPublic|BindingFlags.Instance;
+static void Field(object o,string n,object v)=>o.GetType().GetField(n,flags)!.SetValue(o,v);
+[STAThread] static void Main(){
+var dir=Path.Combine(Path.GetTempPath(),"PetR6_"+Guid.NewGuid().ToString("N"));
+var app=new App();var state=new PetStateArchive();var saves=new SaveCoordinator(new ArchiveService(dir),TimeSpan.FromHours(1));
+Field(app,"_state",state);Field(app,"_saveCoordinator",saves);
+var tracker=new EffectiveRuntimeTracker();tracker.StartActivePeriod(0);var sched=new RareEventScheduler();
+Field(app,"<RuntimeTracker>k__BackingField",tracker);Field(app,"<RareEventScheduler>k__BackingField",sched);
+var w=new MainWindow();double ms=0;Field(w,"TestGetElapsedMs",(Func<double>)(()=>ms));
+var tick=typeof(MainWindow).GetMethod("OnUpdateTick",flags)!;
+tick.Invoke(w,new object?[]{null,EventArgs.Empty});
+Console.WriteLine("plan_created="+(sched.CurrentPlan!=null)+"; save_dirty_after_create="+typeof(SaveCoordinator).GetField("_stateDirty",flags)!.GetValue(saves));
+sched.RestorePlan(new RareEventPlan{LocalDate=DateTime.Now.ToString("yyyy-MM-dd"),TriggerDelayMinutes=20,TriggerRoll=0.9,AccumulatedBaselineMinutes=0});
+ms=21*60000;tick.Invoke(w,new object?[]{null,EventArgs.Empty});
+Console.WriteLine("roll_failed_consumed="+sched.CurrentPlan!.Consumed+"; save_dirty_after_roll_failed="+typeof(SaveCoordinator).GetField("_stateDirty",flags)!.GetValue(saves));
+Field(app,"_saveCoordinator",null!);saves.Dispose();w.Close();if(Directory.Exists(dir))Directory.Delete(dir,true);
+}}

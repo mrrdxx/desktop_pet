@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-05",
+  "sha256": {
+    "docs/PRODUCT.md": "4cb587065dbc4d68fe41e98c4f8a504287c0c7ec5c5a0dc663c120ad3879142b",
+    "docs/ARCHITECTURE.md": "e28b521f5978cafabca440f2a2c86039b70cd539cc984140859742895da0bd10",
+    "docs/remediation/P1-004-response.md": "d29fc44c0b3ebef5c6472716fd66fb10e47e627e71ebe520ad025fe10422ebec",
+    "docs/STATUS.md": "0ff20a7f2f9757111ccc828bff506a96758567159f7c53f14a205f1d3183623d",
+    "docs/TASKS.md": "2b27d8cc02fac15264efd49d7e8b6ddcd8318b377c23722fc77cf9500443c211"
+  },
+  "checks": "仅文档磁盘核对；未重跑测试，427/427沿用R4"
+}

@@ -1,0 +1,2 @@
+plan_created=True; save_dirty_after_create=False
+roll_failed_consumed=True; save_dirty_after_roll_failed=False

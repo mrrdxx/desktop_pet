@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-06",
+  "run": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\probe-live\\run-6e7b5eb3",
+  "sha256": {
+    "tests/Integration/Run-ProbeLive.ps1": "d4bd3de155769c681bfcaef8fac6d9d425765286cb01e110e81f7813a2dcea2b",
+    "tests/Integration/ProbeLiveProbe.cs": "a10f426098bc67cd02208c03e88fbacfd488f014675b95bd5eace8445b62bc27",
+    "src/DesktopPet.App/MainWindow.xaml.cs": "6216c3db25fcbf461d2a2a3818fa1b5ee9e45400d503d4fc5a6fd4acd5b497f0",
+    "docs/STATUS.md": "42f21db33b3f42087636a034d8c10a70bacc6c243cc7d9b738f91cab28710d6d",
+    "docs/TASKS.md": "fb01e2d573502c8b48b57cccc3bfdf8c499dc70c226ad0b61a3dfc0e7abdd94b"
+  }
+}

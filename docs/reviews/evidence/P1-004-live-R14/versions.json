@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-06",
+  "run": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\probe-live\\run-19ee64dd",
+  "sha256": {
+    "tests/Integration/Run-ProbeLive.ps1": "0f437f32abda44be20605a73414b33c9015856a9fd1e288e10a56a9be3e1daa5",
+    "tests/Integration/ProbeLiveProbe.cs": "744f7a25b5e5fb248fe6c79f70bb8e909b213d9dbf79fd7a7d123c233012f5ad",
+    "tests/Integration/Run-NegativeControls.ps1": "3c3ee0ff0586733bcdb6e4a3f3ab8caed0335e95b4ae9c8df9a327fc9a348eb4",
+    "docs/STATUS.md": "8884971904c9ff8c57bd1230438f2a15615bde5871bf84fcff756e9ed295e498",
+    "docs/TASKS.md": "86326efe8be12b0f0775a499cba1d08d0b7140d27a411d6f5ae2cc62a4e53cb3"
+  }
+}

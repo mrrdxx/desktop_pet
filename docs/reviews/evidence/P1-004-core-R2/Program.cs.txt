@@ -1,0 +1,20 @@
+using DesktopPet.Core.Events;
+using System.Text.Json;
+int n=0;void Check(bool pass,string message){Console.WriteLine((pass?"PASS ":"FAIL ")+message);if(!pass)throw new Exception(message);n++;}
+var scheduler=new RareEventScheduler(1);
+scheduler.EnsurePlanForDate("2026-11-04",new Random(1),20,20,0);
+Check(scheduler.Evaluate(130,"2026-11-04").ShouldFire,"day1 fires");
+Check(scheduler.EnsurePlanForDate("2026-11-05",new Random(2),20,20,130),"actual Ensure creates day2");
+Check(scheduler.CurrentPlan!.AccumulatedBaselineMinutes==130,"actual CreateNew preserves baseline");
+Check(!scheduler.Evaluate(130,"2026-11-05").ShouldFire,"day2 zero elapsed does not fire");
+Check(!scheduler.Evaluate(149,"2026-11-05").ShouldFire,"day2 19 minutes does not fire");
+var json=JsonSerializer.Serialize(scheduler.GetSnapshot());var restored=new RareEventScheduler(1);
+Check(restored.RestorePlan(JsonSerializer.Deserialize<RareEventPlan>(json)),"real JSON snapshot restored");
+Check(restored.Evaluate(149,"2026-11-04").Reason==RareEventScheduler.DenyReason.DateRollback,"restored rollback denied");
+var tracker=new EffectiveRuntimeTracker();tracker.Restore(149);tracker.StartActivePeriod(1000);var total=tracker.UpdateTo(1001);
+Check(total==150&&restored.Evaluate(total,"2026-11-05").ShouldFire,"restored tracker plus plan reaches day2 20, excluding offline");
+foreach(var invalid in new[]{double.NaN,double.PositiveInfinity,double.NegativeInfinity,-1.0}){
+ var t=new EffectiveRuntimeTracker();t.StartActivePeriod(10);t.UpdateTo(15);t.StartActivePeriod(invalid);t.EndActivePeriod(invalid);
+ Check(t.AccumulatedMinutes==5&&t.LastActiveMonotonicMinutes==15&&t.UpdateTo(20)==10,"invalid Start/End preserves valid running state: "+invalid);
+}
+Console.WriteLine("ALL "+n+" CHECKS PASS");

@@ -1,0 +1,7 @@
+F01 day1 first fire=True
+F01 rollback planCreated=False; second fire on consumed day1=True; expected false
+F02 rollback across pause/resume then original high-water=25; expected 10, actual includes repeated interval
+G01 restore active timestamp then first tick 12h later=765; requires explicit offline exclusion contract
+F03 invalid restore: repairWithValidDate=False; invalidPlanFires=True; expected rejected before installation
+F03 NaN effective time fires=True; expected reject
+F02 UTC clock advanced 12h without matching active elapsed: counted=730; timing needs an independent monotonic source

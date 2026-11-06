@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-05",
+  "files": {
+    "docs/STATUS.md": {
+      "sha256": "1caad9365ee96999d7f3db62275ccefccf7ff0b9a6db08c9ab174bfd2eca9a29",
+      "mtime_ns": 1793843719799026600
+    },
+    "docs/TASKS.md": {
+      "sha256": "d41998fc3890dac46065738473a03f31500f3303fcba7bf16d3071e85b0ff5dd",
+      "mtime_ns": 1793843719799026600
+    },
+    "docs/PRODUCT.md": {
+      "sha256": "f236e7ec5d9914ed3a519f3a2b85f2524e8f71e00774df894fd4c6d91be16da9",
+      "mtime_ns": 1793849709028498800
+    },
+    "docs/ARCHITECTURE.md": {
+      "sha256": "e28b521f5978cafabca440f2a2c86039b70cd539cc984140859742895da0bd10",
+      "mtime_ns": 1793849676444498800
+    },
+    "src/DesktopPet.App/App.xaml.cs": {
+      "sha256": "73f014d4ffcb3468961cb229305aa93fd0d503dfc532b63aa210253dadd5f813",
+      "mtime_ns": 1793849341953189100
+    },
+    "src/DesktopPet.Core/Persistence/PetStateArchive.cs": {
+      "sha256": "301981084415f1dea26593515ea594fb0cc37d820970eaa393decb9485667423",
+      "mtime_ns": 1793849724915922600
+    },
+    "tests/DesktopPet.App.Tests/RareEventPersistenceTests.cs": {
+      "sha256": "b2963f62b7f2edd00dfeda4ca7ab79cf7b9b08a529f9350bec2b4f002cdfb3d1",
+      "mtime_ns": 1793849567838171400
+    }
+  }
+}

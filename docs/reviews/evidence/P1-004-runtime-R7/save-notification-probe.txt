@@ -1,0 +1,9 @@
+PASS new plan notifies real queue
+PASS queue-only flush persists unconsumed plan
+PASS unchanged tick does not notify after flushed queue
+PASS roll failed notifies queue
+PASS queue-only flush persists consumed and total
+PASS already consumed tick does not renotify
+PASS should fire notifies real queue
+PASS fire snapshot persisted via queue-only flush
+ALL 8 CHECKS PASS

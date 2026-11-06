@@ -1,0 +1,13 @@
+{"ev":"down","time":"2026-11-06T10:29:35.2950346\u002B08:00","left":-60,"top":400,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","time":"2026-11-06T10:29:35.2988764\u002B08:00","left":-60,"top":400,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","time":"2026-11-06T10:29:35.2997611\u002B08:00","left":-60,"top":400,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","time":"2026-11-06T10:29:35.3065779\u002B08:00","left":-28,"top":412.66666666666663,"probing":false,"dragging":true,"paused":false}
+{"ev":"up","time":"2026-11-06T10:29:35.3114471\u002B08:00","left":-28,"top":412.66666666666663,"probing":false,"dragging":true,"paused":false}
+{"ev":"down","cursorX":0,"cursorY":646,"time":"2026-11-06T10:31:04.9778190\u002B08:00","left":-60,"top":412.66666666666663,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","cursorX":0,"cursorY":646,"time":"2026-11-06T10:31:04.9817741\u002B08:00","left":-60,"top":412.66666666666663,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","cursorX":48,"cursorY":665,"time":"2026-11-06T10:31:04.9826439\u002B08:00","left":-60,"top":412.66666666666663,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","cursorX":48,"cursorY":665,"time":"2026-11-06T10:31:04.9896625\u002B08:00","left":-28,"top":425.3333333333333,"probing":false,"dragging":true,"paused":false}
+{"ev":"up","cursorX":48,"cursorY":665,"time":"2026-11-06T10:31:04.9944516\u002B08:00","left":-28,"top":425.3333333333333,"probing":false,"dragging":true,"paused":false}
+{"ev":"down","cursorX":0,"cursorY":665,"time":"2026-11-06T10:33:22.1423438\u002B08:00","left":-60,"top":425.3333333333333,"probing":true,"dragging":false,"paused":false}
+{"ev":"move","cursorX":0,"cursorY":665,"time":"2026-11-06T10:33:22.1465830\u002B08:00","left":-60,"top":425.3333333333333,"probing":true,"dragging":false,"paused":false}
+{"ev":"up","cursorX":0,"cursorY":665,"time":"2026-11-06T10:33:22.1585726\u002B08:00","left":-60,"top":425.3333333333333,"probing":true,"dragging":false,"paused":false}

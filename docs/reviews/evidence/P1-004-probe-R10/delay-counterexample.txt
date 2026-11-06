@@ -1,0 +1,7 @@
+start: probing=True; action=curious
+after401ms: probing=True; action=curious
+headPoint=31,0
+headPress: accepted=True; dragging=False; probing=True; positionUnchanged=True
+headTapAfter3500ms: probing=False; originalRestored=True
+concurrentGrievance: expressing=True; probing=False; action=grievance
+afterGrievance: consumed=True; probing=False; action=idle

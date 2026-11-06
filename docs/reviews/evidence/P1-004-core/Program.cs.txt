@@ -1,0 +1,20 @@
+using DesktopPet.Core.Events;
+var t = new DateTime(2026,11,4,12,0,0,DateTimeKind.Utc);
+var s = new RareEventScheduler(1);
+s.EnsurePlanForDate("2026-11-04",new Random(1),20,20);
+Console.WriteLine($"F01 day1 first fire={s.Evaluate(30).ShouldFire}");
+s.EnsurePlanForDate("2026-11-05",new Random(2),20,20);
+var created = s.EnsurePlanForDate("2026-11-04",new Random(3),20,20);
+Console.WriteLine($"F01 rollback planCreated={created}; second fire on consumed day1={s.Evaluate(30).ShouldFire}; expected false");
+var r = new EffectiveRuntimeTracker();
+r.StartActivePeriod(t);r.UpdateTo(t.AddMinutes(10));
+r.EndActivePeriod(t.AddMinutes(-10));r.StartActivePeriod(t.AddMinutes(-5));
+Console.WriteLine($"F02 rollback across pause/resume then original high-water={r.UpdateTo(t.AddMinutes(10))}; expected 10, actual includes repeated interval");
+var offline = new EffectiveRuntimeTracker();offline.Restore(45,t);
+Console.WriteLine($"G01 restore active timestamp then first tick 12h later={offline.UpdateTo(t.AddHours(12))}; requires explicit offline exclusion contract");
+var invalid = new RareEventScheduler();invalid.RestorePlan(new RareEventPlan{LocalDate="bad-date",TriggerDelayMinutes=20,TriggerRoll=0.1});
+Console.WriteLine($"F03 invalid restore: repairWithValidDate={invalid.EnsurePlanForDate("2026-11-04",new Random(4))}; invalidPlanFires={invalid.Evaluate(30).ShouldFire}; expected rejected before installation");
+var nan = new RareEventScheduler();nan.RestorePlan(new RareEventPlan{LocalDate="2026-11-04",TriggerDelayMinutes=20,TriggerRoll=0.1});
+Console.WriteLine($"F03 NaN effective time fires={nan.Evaluate(double.NaN).ShouldFire}; expected reject");
+
+var jump = new EffectiveRuntimeTracker(); jump.StartActivePeriod(t); jump.UpdateTo(t.AddMinutes(10)); Console.WriteLine($"F02 UTC clock advanced 12h without matching active elapsed: counted={jump.UpdateTo(t.AddHours(12).AddMinutes(10))}; timing needs an independent monotonic source");

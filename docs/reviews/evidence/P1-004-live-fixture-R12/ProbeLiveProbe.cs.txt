@@ -1,0 +1,152 @@
+using System.IO;
+using System.Reflection;
+using System.Text.Json;
+using System.Windows.Controls;
+using DesktopPet.Core.Animation;
+using DesktopPet.Core.Events;
+using Point = System.Windows.Point;
+using Image = System.Windows.Controls.Image;
+
+namespace DesktopPet.App;
+
+// Included only in an isolated copy of the production App. Real DispatcherTimer,
+// real monitor enumeration, real DPI, real archive save/exit path. The rare-event
+// plan is pre-seeded via the isolated state.json (accumulatedRuntimeMinutes=150,
+// triggerDelayMinutes=20, triggerRoll=0.0, consumed=false) so the probe fires on
+// the first OnUpdateTick without waiting 20 minutes or changing production probability.
+//
+// The probe does NOT send mouse input. It observes the window position and action
+// to verify: probe starts (window moves to edge, action=curious), probe ends after
+// ~3 seconds (window restores, action=idle), and the plan is consumed in the archive.
+// Drag/pause/exit interactions are left for the user to test manually if desired.
+public partial class App
+{
+    private int _probeLiveFailures;
+    private string ProbeLiveDir => Environment.GetEnvironmentVariable("DESKTOPPET_VALIDATION_DIR")!;
+    private void ProbeLiveLog(string message) =>
+        File.AppendAllText(Path.Combine(ProbeLiveDir, "live.log"), $"{DateTimeOffset.Now:O} {message}\n");
+    private void ProbeLiveCheck(bool ok, string message)
+    { if (!ok) _probeLiveFailures++; ProbeLiveLog($"{(ok ? "PASS" : "FAIL")} {message}"); }
+    private static T ProbeField<T>(object instance, string name) =>
+        (T)instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(instance)!;
+    private Image ProbeLiveImage => (Image)_mainWindow!.FindName("PetImage");
+
+    private async Task RunProbeLiveAsync()
+    {
+        try
+        {
+            await Task.Delay(500); // Let the first few OnUpdateTick cycles run.
+
+            // Position the window at a known location for consistent observation.
+            _mainWindow!.Left = 500;
+            _mainWindow.Top = 400;
+            double originalLeft = _mainWindow.Left;
+            double originalTop = _mainWindow.Top;
+            MarkStateDirty();
+
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
+            ProbeLiveLog($"HWND={hwnd}; visible={LiveInput.IsWindowVisible(hwnd)}; " +
+                $"windowPos=({_mainWindow.Left},{_mainWindow.Top}); " +
+                $"action={_mainWindow.CurrentAction}; isProbing={_mainWindow.IsProbing}");
+
+            // Verify all Test injection fields are null (production path, no test bypass).
+            ProbeLiveCheck(typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(f => f.Name.StartsWith("Test", StringComparison.Ordinal))
+                .All(f => f.GetValue(_mainWindow) is null),
+                "all Test injection fields remain null — production path, no test bypass");
+
+            // The pre-seeded plan should have caused ShouldFire on the first tick.
+            // By now (500ms+ later) the probe should be active.
+            ProbeLiveLog($"After 500ms: action={_mainWindow.CurrentAction}; isProbing={_mainWindow.IsProbing}; " +
+                $"windowPos=({_mainWindow.Left},{_mainWindow.Top})");
+
+            // ── Check 1: Probe started (window moved to edge, action=curious) ──
+            // Give a short grace period in case the first tick was delayed.
+            bool probeStarted = _mainWindow.IsProbing;
+            for (int i = 0; i < 10 && !probeStarted; i++)
+            {
+                await Task.Delay(200);
+                probeStarted = _mainWindow.IsProbing;
+            }
+
+            ProbeLiveCheck(probeStarted,
+                $"probe started within ~2.5s — IsProbing={_mainWindow.IsProbing}");
+
+            if (probeStarted)
+            {
+                ProbeLiveCheck(_mainWindow.CurrentAction == "curious",
+                    $"probe action is 'curious' (got '{_mainWindow.CurrentAction}')");
+
+                bool windowMoved = _mainWindow.Left != originalLeft || _mainWindow.Top != originalTop;
+                ProbeLiveCheck(windowMoved,
+                    $"window moved to edge position ({_mainWindow.Left},{_mainWindow.Top}) vs original ({originalLeft},{originalTop})");
+
+                ProbeLiveLog($"Probe position: ({_mainWindow.Left},{_mainWindow.Top}); " +
+                    $"original: ({originalLeft},{originalTop})");
+
+                // ── Check 2: Probe ends after ~3 seconds, window restores ──
+                // Wait for the probe duration (3s) plus margin.
+                await Task.Delay(3500);
+
+                ProbeLiveLog($"After 3.5s: action={_mainWindow.CurrentAction}; isProbing={_mainWindow.IsProbing}; " +
+                    $"windowPos=({_mainWindow.Left},{_mainWindow.Top})");
+
+                ProbeLiveCheck(!_mainWindow.IsProbing,
+                    $"probe ended after duration — IsProbing={_mainWindow.IsProbing}");
+
+                ProbeLiveCheck(Math.Abs(_mainWindow.Left - originalLeft) < 1.0 &&
+                    Math.Abs(_mainWindow.Top - originalTop) < 1.0,
+                    $"window restored to original position ({_mainWindow.Left},{_mainWindow.Top}) vs ({originalLeft},{originalTop})");
+
+                // After probe ends, action should be idle (no grievance active).
+                ProbeLiveCheck(_mainWindow.CurrentAction == "idle",
+                    $"action returned to 'idle' after probe (got '{_mainWindow.CurrentAction}')");
+            }
+
+            // ── Check 3: Plan is consumed in the archive ──
+            await Task.Delay(6000); // Wait for debounce save (5s).
+            string statePath = _archive!.StateFilePath;
+            if (File.Exists(statePath))
+            {
+                using var json = JsonDocument.Parse(File.ReadAllText(statePath));
+                if (json.RootElement.TryGetProperty("rareEventPlan", out var plan))
+                {
+                    bool consumed = plan.GetProperty("consumed").GetBoolean();
+                    ProbeLiveCheck(consumed,
+                        $"archive rareEventPlan.consumed={consumed} (expected true after probe)");
+                }
+                else
+                {
+                    ProbeLiveCheck(false, "archive has rareEventPlan element");
+                }
+            }
+            else
+            {
+                ProbeLiveCheck(false, "archive state.json exists after probe");
+            }
+
+            ProbeLiveLog($"FINAL: checksFailures={_probeLiveFailures}");
+        }
+        catch (Exception ex)
+        {
+            _probeLiveFailures++;
+            ProbeLiveLog("ERROR " + ex);
+        }
+        finally
+        {
+            ProbeLiveLog("Normal tray Exit follows");
+            // Use tray Exit for clean shutdown (same as P1-003 pattern).
+            var icon = ProbeField<System.Windows.Forms.NotifyIcon>(_tray!, "_notifyIcon");
+            icon.ContextMenuStrip!.Items.OfType<System.Windows.Forms.ToolStripMenuItem>()
+                .Single(i => i.Text == "Exit").PerformClick();
+            ProbeLiveLog($"RESULT failures={_probeLiveFailures}; pre-seeded archive, real timer/DPI/monitors, no Test injection");
+            Environment.ExitCode = _probeLiveFailures == 0 ? 0 : 1;
+        }
+    }
+
+    private static class LiveInput
+    {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        internal static extern bool IsWindowVisible(IntPtr h);
+    }
+}

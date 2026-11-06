@@ -1,0 +1,5 @@
+start: probing=True; action=curious
+after401ms: probing=True; action=idle
+headPoint=30,9
+headPress: accepted=True; dragging=False; probing=False; positionUnchanged=True
+headTapAfter3500ms: probing=False; originalRestored=False

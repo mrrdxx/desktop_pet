@@ -1,0 +1,11 @@
+{
+  "unchanged": true,
+  "before": {
+    "state.json": "d4c6d60880e1c2527ef580bd0d72109f6823d28c1066a2fc8922594a7a4efe6a",
+    "state.json.bak": "35f2ca3d61d454ffda7e886463ef14cebfd6354a37543a23c3eb85fc58598fc5"
+  },
+  "after": {
+    "state.json": "d4c6d60880e1c2527ef580bd0d72109f6823d28c1066a2fc8922594a7a4efe6a",
+    "state.json.bak": "35f2ca3d61d454ffda7e886463ef14cebfd6354a37543a23c3eb85fc58598fc5"
+  }
+}

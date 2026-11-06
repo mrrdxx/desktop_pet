@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-04 Asia/Shanghai",
+  "baseCommit": "4b25681",
+  "uncommitted": true,
+  "coreTests": 253,
+  "independentChecks": 12,
+  "AppNotRun": true,
+  "files": {
+    "src\\DesktopPet.Core\\Events\\EffectiveRuntimeTracker.cs": "5324D1D77CB8420513537E5A29A2B4DA1775453889D03D8D46C8B76DAEA76EE9",
+    "src\\DesktopPet.Core\\Events\\RareEventPlan.cs": "EF38072CB4941BD80A0F4EE317C03449F9059E6C9A4FEE37EE7DE058D96B04C8",
+    "src\\DesktopPet.Core\\Events\\RareEventScheduler.cs": "3719BF1B69DB7E28E4225842D0D2E8BE3B0804ACB58E5BC6C87737409FEA3967",
+    "tests\\DesktopPet.Core.Tests\\RareEventSchedulerTests.cs": "A2344A03CC5EFF20147E59471A4BA8C51567DB168B32E56391A0047A3C1627F2",
+    "tests\\DesktopPet.Core.Tests\\EffectiveRuntimeTrackerTests.cs": "37D806E8AD26C39CFFD92394FBDF180E13F0F36BF4DAB1EEFB2F238568910DEB",
+    "docs\\ARCHITECTURE.md": "2AE5D1CE72A38EB4F761819FDCA7A2D0259F225BB7AB6017161FF368BABBB859",
+    "docs\\remediation\\P1-004-response.md": "93CE1248BDDAA7E1F6D9CD15F1786F86699AF4F5B40747CAA05749AFDC3D184D"
+  }
+}

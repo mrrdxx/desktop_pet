@@ -1,0 +1,43 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-19ee64dd\isolated-app\DesktopPet.App.csproj (用时 65 毫秒)。
+  已还原 C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-19ee64dd\isolated-core\DesktopPet.Core.csproj (用时 59 毫秒)。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-19ee64dd\isolated-core\bin\Debug\net10.0\DesktopPet.Core.dll
+  DesktopPet.App -> C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-19ee64dd\isolated-app\bin\Debug\net10.0-windows\DesktopPet.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:02.23
+2026-11-06T10:07:26.9772333+08:00 [DRIVER] REAL_ARCHIVE_BEFORE=state.json:D4C6D60880E1C2527EF580BD0D72109F6823D28C1066A2FC8922594A7A4EFE6A|state.json.bak:35F2CA3D61D454FFDA7E886463EF14CEBFD6354A37543A23C3EB85FC58598FC5
+2026-11-06T10:07:27.0429709+08:00 [DRIVER] PROCESS_STARTED pid=31992 probeMode=auto timeoutMs=90000
+2026-11-06T10:07:28.5062802+08:00 === PROBE_LIVE_START ===
+2026-11-06T10:07:28.5075394+08:00 PROBE_MODE=auto
+2026-11-06T10:07:28.5085936+08:00 HWND_DPI scale=(1.5000,1.5000)
+2026-11-06T10:07:28.5089059+08:00 MONITOR device=\\.\DISPLAY1 dpiScale=1.5000 full=(0,0,2560,1600,2560x1600) work=(0,0,2560,1528,2560x1528)
+2026-11-06T10:07:28.5096040+08:00 STATE[BASELINE] hwnd=5180638 dpi=144 dpiScale=1.5000 windowDIP=(100.00,100.00) windowPhys=(150.00,150.00) windowSizePhys=(180.00,180.00) action=idle isProbing=False
+2026-11-06T10:07:28.5098723+08:00 BASELINE_TIME=2026-11-06T10:07:28.5098662+08:00
+2026-11-06T10:07:28.5109664+08:00 PASS all Test injection fields remain null — production path, no test bypass
+2026-11-06T10:07:28.7144877+08:00 PROBE_START_DETECTED=2026-11-06T10:07:28.7144758+08:00 IsProbing=True
+2026-11-06T10:07:28.7147226+08:00 PASS probe started within ~3s — IsProbing=True
+2026-11-06T10:07:28.7150141+08:00 STATE[PROBE_ACTIVE] hwnd=5180638 dpi=144 dpiScale=1.5000 windowDIP=(100.00,-60.00) windowPhys=(150.00,-90.00) windowSizePhys=(180.00,180.00) action=curious isProbing=True
+2026-11-06T10:07:28.7151827+08:00 PASS probe action is 'curious' (got 'curious')
+2026-11-06T10:07:28.7153703+08:00 EDGE_DISTANCE (phys px) left=150.0 right=2230.0 top=-90.0 bottom=1438.0 windowPhys=(150.0,-90.0,180.0x180.0) workArea=(0,0,2560,1528)
+2026-11-06T10:07:28.7154967+08:00 NEAREST_EDGE=top distance=-90.0px (half-window=90.0px) — INFO: half-body visibility is subjective, requires human review
+2026-11-06T10:07:28.7157247+08:00 PASS window moved from baseline by probe (100.00,-60.00) vs baseline (100.00,100.00)
+2026-11-06T10:07:31.5875213+08:00 PROBE_END_DETECTED=2026-11-06T10:07:31.5875069+08:00 IsProbing=False
+2026-11-06T10:07:31.5877567+08:00 PASS probe ended within ~5s — IsProbing=False
+2026-11-06T10:07:31.5878958+08:00 STATE[PROBE_ENDED] hwnd=5180638 dpi=144 dpiScale=1.5000 windowDIP=(100.00,100.00) windowPhys=(150.00,150.00) windowSizePhys=(180.00,180.00) action=idle isProbing=False
+2026-11-06T10:07:31.5880381+08:00 PASS window restored to baseline (100.00,100.00) vs (100.00,100.00)
+2026-11-06T10:07:31.5882015+08:00 PASS action returned to 'idle' after probe (got 'idle')
+2026-11-06T10:07:31.5884086+08:00 PROBE_DURATION=2.87s (expected ~3s)
+2026-11-06T10:07:37.5950942+08:00 PASS archive rareEventPlan.consumed=True (expected true after probe)
+2026-11-06T10:07:37.5953421+08:00 FINAL: checksFailures=0
+2026-11-06T10:07:37.6010866+08:00 ARCHIVE_SNAPSHOT_AFTER=state.json:d4c6d60880e1c2527ef580bd0d72109f6823d28c1066a2fc8922594a7a4efe6a|state.json.bak:35f2ca3d61d454ffda7e886463ef14cebfd6354a37543a23c3eb85fc58598fc5
+2026-11-06T10:07:37.6012850+08:00 EXIT_MODE=auto — attempting tray Exit
+2026-11-06T10:07:37.6213790+08:00 EXIT_MODE=auto (tray PerformClick)
+2026-11-06T10:07:37.6217244+08:00 RESULT failures=0; pre-seeded archive, real timer/DPI/monitors, no Test injection
+PROCESS_EXIT_CODE=0
+EXIT_MODE=auto (process exited on its own)
+PASS original user archive snapshot unchanged
+ALL PROBE LIVE CHECKS PASS; C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-19ee64dd

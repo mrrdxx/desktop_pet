@@ -1,0 +1,9 @@
+F01 day1 fires=True
+F01 rollback=DateRollback; consumed=False
+F05 day2 created at sessionTotal=130; new day elapsed=0; fire=True; expected false before today's delay
+G01 restored before active=45
+G01 after 15 active minutes=60; expected60
+F03 EndActivePeriod Infinity accumulated=∞
+F03 StartActivePeriod NaN then UpdateTo10=0; baseline=NaN
+F03 bad restore accepted=False
+F03 NaN evaluate=InvalidRuntime; consumed=False

@@ -1,0 +1,11 @@
+
+=== F-11 R13 NEGATIVE CONTROL RESULTS ===
+NC1_TIMEOUT: REJECTED (correct) — 2 error(s)
+NC2_NONZERO_EXIT: REJECTED (correct) — 1 error(s)
+NC3_MISSING_RESULT: REJECTED (correct) — 1 error(s)
+NC4_TRAY_EXIT_FAIL: REJECTED (correct) — 2 error(s)
+NC5_MISSING_MARKER: REJECTED (correct) — 1 error(s)
+PC1_VALID: PASSED (correct) — 0 error(s)
+
+ALL NEGATIVE CONTROLS CORRECT — judgment logic properly rejects invalid runs
+NEGATIVE_CONTROL_PASS; C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\negative-controls

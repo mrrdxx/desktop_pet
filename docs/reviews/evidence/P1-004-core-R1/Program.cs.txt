@@ -1,0 +1,10 @@
+using DesktopPet.Core.Events;
+RareEventPlan Plan(string date, bool used=false)=>new(){LocalDate=date,TriggerDelayMinutes=20,TriggerRoll=.1,Consumed=used};
+var s=new RareEventScheduler();s.RestorePlan(Plan("2026-11-04")); Console.WriteLine($"F01 day1 fires={s.Evaluate(130,"2026-11-04").ShouldFire}");
+s.EnsurePlanForDate("2026-11-05",new Random(1),20,20);
+Console.WriteLine($"F01 rollback={s.Evaluate(130,"2026-11-04").Reason}; consumed={s.CurrentPlan!.Consumed}");
+Console.WriteLine($"F05 day2 created at sessionTotal=130; new day elapsed=0; fire={s.Evaluate(130,"2026-11-05").ShouldFire}; expected false before today's delay");
+var r=new EffectiveRuntimeTracker();r.Restore(45); Console.WriteLine($"G01 restored before active={r.UpdateTo(1000)}");r.StartActivePeriod(1000);Console.WriteLine($"G01 after 15 active minutes={r.UpdateTo(1015)}; expected60");
+var poison=new EffectiveRuntimeTracker();poison.StartActivePeriod(0);poison.EndActivePeriod(double.PositiveInfinity);Console.WriteLine($"F03 EndActivePeriod Infinity accumulated={poison.AccumulatedMinutes}");
+var stuck=new EffectiveRuntimeTracker();stuck.StartActivePeriod(double.NaN);Console.WriteLine($"F03 StartActivePeriod NaN then UpdateTo10={stuck.UpdateTo(10)}; baseline={stuck.LastActiveMonotonicMinutes}");
+var restore=new RareEventScheduler();Console.WriteLine($"F03 bad restore accepted={restore.RestorePlan(new(){LocalDate="bad-date",TriggerDelayMinutes=20,TriggerRoll=.1})}");restore.RestorePlan(Plan("2026-11-04"));Console.WriteLine($"F03 NaN evaluate={restore.Evaluate(double.NaN,"2026-11-04").Reason}; consumed={restore.CurrentPlan!.Consumed}");
