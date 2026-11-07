@@ -50,7 +50,13 @@ dotnet publish src/DesktopPet.App/DesktopPet.App.csproj -c Release -r win-x64 --
 
 ## 小熊形象与表情
 
-本机桌面的 `启动小熊桌宠.cmd` 可双击启动当前已构建的小熊版，入口脚本维护在 [tools/Start-DesktopPet.cmd](tools/Start-DesktopPet.cmd)。该入口使用 `artifacts/affinity-removal/build` 中的程序，不自动构建；旧版仍运行时先从其托盘Exit退出，再双击入口。重复启动仍由单实例保护处理，不强制结束其他进程。若清理了构建产物，需先按STATUS所述重新构建。
+桌面启动入口 [tools/Start-DesktopPet.cmd](tools/Start-DesktopPet.cmd) 指向当前项目构建输出（`src/DesktopPet.App/bin/Debug/net10.0-windows/DesktopPet.exe`），包含最新物理手感功能和高分辨率时钟修复。使用前需先构建：
+
+```powershell
+dotnet build DesktopPet.slnx -c Debug
+```
+
+旧版仍运行时先从其托盘 Exit 退出，再双击入口。重复启动由单实例保护处理，不强制结束其他进程。若清理了构建产物，需重新构建。
 
 当前默认角色为已确认的小熊，资源在 [assets/pets/bear](assets/pets/bear/README.md)，旧占位原型保留。已有待机/好奇/受惊/委屈的对应图片，其他静态表情已预备；身体动作暂缓，不等于所有表情都有自动触发行为。
 

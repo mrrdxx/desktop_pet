@@ -162,10 +162,87 @@
 
 ## 阶段 2：物理手感
 
-- `P2-PLAN`：`todo`，依赖 P1-004。
-- 在开始时将 R-04 拆成：轨迹测速/抛掷 → 固定步长碰撞 → 稳定落地/滑落表现 → 手感验收。
-- D-013已永久取消好感度与高亲近主动靠近，阶段2不恢复该功能；仅按PRODUCT R-04拆分物理手感。
-- 先用 Core 测试覆盖极端 dt、边界和停止条件，再做真实鼠标体验；不引入完整刚体引擎作为默认前提。
+依据[D-016](DECISIONS.md#d-016阶段2轻放悬停与玩偶式物理手感)及PRODUCT R-04：方向已确认，以下均未实现/未开工。按顺序小步验收，D-009/D-013取消项不恢复。
+
+### P2-001 释放测速与轻放/甩出判定
+
+- 状态：`done`。依赖：P1-004。关联：R-04。
+- 范围：先Core纯逻辑采样/释放判定及测试，沿用物理像素/DPI边界与可控单调时钟；定义可调采样窗/轻放阈值/上限等初值并写回PRODUCT，不接App位置、不先做全套物理或新增图片。
+- 验收：静止/轻放不启动物理，快拖释放产生有界方向速度，快速往返合理处理，停住后松手不沿用旧峰值；零时间/采样中断/恢复/DPI切换不产生异常速度，相关测试有正反例。此为释放测速，不能恢复D-009快划受惊。
+- 完成依据：Core `ReleaseSpeedSampler`（`src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs`）实现释放测速纯逻辑：近期运动段速度估算（`FindRecentMotionSegment` 从末尾向前找连续同方向运动 pair）、停止判定（`StopSpeedPxPerMs`）、轻放/甩出阈值判定、方向保持的速度钳位、DPI上下文重置（`ClearSampleContext`）、坐标/释放时间有限值校验。44 项专项测试覆盖方向反转/连续序列停止/DPI上下文重置/坐标校验/释放时间校验/往返拖动/零时间差/采样中断/边界阈值/NaN-Infinity 拒绝/Reset 重用。全量 Core 297/297 通过，0 回归。PRODUCT R-04 参数初值已写入（SampleWindowMs=100, ThrowThreshold=0.15px/ms, MaxSpeed=2.0px/ms, MinSamples=2, MinTimeSpan=5ms, StopSpeedPxPerMs=0.02px/ms），标为调试初值待手感校准。未接 App、未实现重力/碰撞、未新增图片。不自行签通过，提交监理审查。
+
+- 当前审查：[P2-001复核R1](reviews/P2-001-review.md)已关闭F-01～F-03，独立Core297/297及8项原反例/恢复检查通过，纯Core验收完成。App实际DPI清空接线留P2-003，手感初值留P2-004；不宣称物理已接桌宠。开发方原整改记录追加关闭依据，不改报告。
+
+### P2-002 有界物理轨迹与碰撞停止
+
+- 状态：`done`。依赖：P2-001。关联：R-04。
+- 范围：Core固定步长重力、当前工作区边界、衰减反弹和最终停止；先验证极端dt/长卡顿/暂停恢复，再接UI。
+- 验收：无力松手路径保持原地；抛掷轨迹可复现且有界，底部反弹衰减后确实静止，不能无限抖动、越界或落入屏幕空洞；暂停无积压。
+- 完成依据：Core `PhysicsSimulator`（`src/DesktopPet.Core/Physics/PhysicsSimulator.cs`）实现固定步长 semi-implicit Euler 重力积分、`WorkArea` 矩形边界碰撞（反射+钳位+地板摩擦）、衰减反弹与停止判定。`PhysicsConfig` 可调参数：FixedStepMs=1000/60, MaxStepsPerUpdate=5, GravityPxPerMs2=0.002, BounceRestitution=0.4, StopSpeedPxPerMs=0.02, MaxBounces=8。28 项专项测试覆盖重力轨迹/确定性/地板反弹/墙壁反弹/天花板反弹/不越界/MaxBounces上限/无无限微抖/极端dt/零dt/负dt/NaN dt/Infinity dt/暂停恢复/多次Update累积/轻放不进物理/ForceStop/Reset/弹跳计数/地板摩擦/有限值校验/与ReleaseSpeedSampler集成。全量 Core 325/325 通过，0 回归。PRODUCT R-04 追加 P2-002 参数表，ARCHITECTURE §5 追加物理模拟器描述。未接 App、未新增图片、未进入 P2-003。不自行签通过，提交监理审查。
+
+- 监理当前结论：[P2-002首轮审查](reviews/P2-002-review.md)未通过。独立Core325/325，但F-01固定步长余量、F-02自然停止支撑、F-03输入/配置边界反例已复现，阻断本小步完成和P2-003。开发方原有交付保留，下一步仅限这些问题整改与复核，不自行关闭或推进。
+
+- 整改进度（2026-11-06）：F-01～F-03 代码与测试整改已完成，整改记录见 [P2-002-response](remediation/P2-002-response.md)。F-01 新增 `_timeCarryMs` 累积器（跨调用等价）；F-02 `ResolveCollisions` 返回 `hitFloor`，自然停止只在地板，MaxBounces 达上限重力继续，`<=` 比较保证零/等于阈值收敛；F-03 `Launch` 返回 `bool`、`Update` 返回 `Rejected`、新增 `IsValid`/`IsFinite` 校验。专项测试 54/54 通过（28 旧适配 + 22 新反例 + 4 零/等于阈值补充），全量 Core 351/351 通过，0 回归。PRODUCT/ARCHITECTURE 已同步。状态保持 `awaiting-verification`，待监理复核，不自行关闭。
+
+- 最新监理复核：[R1](reviews/P2-002-review.md)：Core347/347及7项独立原反例通过；F-01/F-03关闭，F-02主要修复接受，仅剩合法零/等于停止阈值的地板收敛。保持awaiting-verification，只补此边界，不进入App/P2-003；旧轮次记录保留历史含义。
+
+- 最终复核：[监理R2](reviews/P2-002-review.md)已关闭F-02，F-01～F-03全部关闭，独立Core351/351及原反例复验通过；纯Core验收完成。App/实际手感未实现或验证，P2-003须用户明确开工，不自动提交/推送；上列旧轮次结论按历史保留。
+
+### P2-003 App接入与行为打断
+
+- 状态：`done`。依赖：P2-002。关联：R-04、R-03。
+- 范围：实际拖动释放→Core→统一位置写入，抓取打断、暂停/退出恢复、工作区变化和探头延迟协调；复用现有熊图，确需缺失反馈再短暂文字占位。
+- 验收：实际App接线及隔离保存链可验证，运动中抓取无锚点跳变，物理/探头不抢位置，重启静止恢复合法位置；普通悬停/头部非计分手势保留，不抢焦点、不扩大透明命中。
+- 第一小步进度（2026-11-06）：拖动采样和释放判定已接入。`MainWindow` 新增 `ReleaseSpeedSampler` 字段，`StartDragging` 清空采样器后记录按下基准样本，`ProcessCapturedPointerMove` 每帧将 foot-center 物理像素+单调 ms 喂入 `RecordSample`，`EndDrag` 调 `EvaluateRelease` 记录结果并 `Reset`。`OnDisplayLayoutChanged` 调 `ClearSampleContext`，`PauseAnimation` 调 `ClearSampleContext`+`Reset`。暂不驱动窗口按物理轨迹运动。8 项 App 接线测试通过（轻放/甩出/二次拖动重置/停住不误抛/暂停清采样/显示器变化清采样/默认状态），全量 App 218/218 + Core 351/351 通过，0 回归。下一步：接入 PhysicsSimulator 驱动窗口运动。
+
+- 当前监理结论：[S1首轮](reviews/P2-003-review.md)部分接受。独立App专项8/8通过，但F-01初始/静止采样及F-02真实DPI上下文清理待修，阻断S2窗口运动；保持in-progress。全量569是开发自测，旧进度不能当放行。开发方在docs/remediation/P2-003-response.md独立整改。
+
+- F-01/F-02 整改进度（2026-11-06）：代码与测试整改已完成，整改记录见 [P2-003-response](remediation/P2-003-response.md)。F-01 `StartDragging` 记录按下基准样本（`RecordFootSample`），`EndDrag` 静止探测（释放距最后样本>50ms 补当前位置样本）；F-02 接入 WPF `DpiChanged` 事件→`NotifyDpiChanged`→`ClearSampleContext`，`NotifyDpiChanged` 为 internal 供测试共用。`ReleaseSpeedSampler` 新增 `NewestSampleTimeMs` 只读属性。13 项 App 接线测试通过（新增 6 项 F-01/F-02 关键场景，去掉 1 项重复，修正 `StopBeforeRelease` 去掉虚构同位置 Move），全量 App 223/223 + Core 351/351 = 574/574 通过，0 回归。ARCHITECTURE §5 已同步。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。
+
+- 最新监理 S1 R1：[报告](reviews/P2-003-review.md)关闭 F-02；F-01 身体初始基准和真实静止修复接受，仅剩头部单次快移转拖动的同时间采样丢失。独立专项 13/13 及真实手势探针已执行；全量 574 为开发自测。P2-003 保持 `in-progress`，只补该分支及相关测试，S2/S3 尚未放行。
+
+- F-01 R1 头部整改进度（2026-11-06）：代码与测试整改已完成，整改记录追加见 [P2-003-response](remediation/P2-003-response.md)。`BeginCapturedPointerInteraction` 记录按下时间到 `_pointerPressTimeMs`；`StartDragging` 用 `_pointerPressTimeMs` 作为基准样本时间，使头部转换时基准@0、首次 Move@10 不同时间戳，Core 相同时间拒绝不丢弃首次位移。新增 `HeadPress_SingleFastMove_ConvertsAndThrows`（头部单次快移转拖动可甩）和 `HeadPress_LightTapWithinSlop_NoThrow`（容差内微移不误抛）2 项实际手势链测试。专项 15/15 通过，全量 App 225/225 + Core 351/351 = 576/576 通过，0 回归。ARCHITECTURE §5 已同步。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。
+
+- 最新监理 S1 R2：[报告](reviews/P2-003-review.md)关闭 F-01，F-01/F-02 全部关闭，S1 接线接受。独立专项 15/15 及原头部/身体/真实静止手势探针通过；全量 576 为开发自测。整体保持 `in-progress`，下一小步可进入 S2 窗口物理接入，不代表 S2/S3 已实现或实机手感通过。
+
+- S2 窗口物理接入进度（2026-11-06）：代码与测试实现完成，整改记录追加见 [P2-003-response](remediation/P2-003-response.md)。`MainWindow` 新增 `PhysicsSimulator`/`_isPhysicsActive`/`_lastPhysicsUpdateMs` 字段；`EndDrag(bool isCancellation)` 拆分正常释放（`ShouldThrow=true` 时 `Launch` + `_isPhysicsActive=true`）与取消路径（只清理不 Launch）；`OnUpdateTick` 中 `_isPhysicsActive && !_isDragging` 时 `UpdatePhysics` 驱动窗口按物理轨迹运动并转回 DIP 设置 `Left/Top`；`BuildWorkArea` 构建 foot-center 坐标系合法边界；`ClampWindowToWorkArea` 物理活动时跳过；`StartDragging` 停止物理。`EndCapturedPointerInteraction(bool)` 传参，`LostMouseCapture` 传 `isCancellation: true`。新增 5 项 S2 测试（快移甩出/轻放/丢失捕获/物理到静止/重新抓取停止），修复 4 处测试回归（3 处反射 `EndDrag` 传 `false` + `SharedGestureEntry` 改极慢移动避免触发 throw）。专项 20/20 通过，全量 App 230/230 + Core 351/351 = 581/581 通过，0 回归。ARCHITECTURE §5 已同步。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。不进入 S3，不提交/推送。
+
+- 最新监理 S2 R3：[报告](reviews/P2-003-review.md)部分接受普通运动与边界换算；独立专项 20/20 和实际 tick 普通运动通过，但 F-03 菜单/关闭默认正常释放、F-04 Rejected 后不清理活动状态待补。仅整改该两项，S1 F-01/F-02 不重开；整体保持 `in-progress`，不进入 S3，不提交/推送。全量 581 为开发自测。
+
+- S2 R3 整改进度（2026-11-06）：F-03/F-04 代码与测试整改完成，整改记录追加见 [P2-003-response](remediation/P2-003-response.md)。F-03 `ShowNativeContextMenu` 和 `OnClosed` 中 `EndDrag()` 改为 `EndDrag(isCancellation: true)`；F-04 `UpdatePhysics` 中 `Rejected` 时设 `_isPhysicsActive=false`、`_physicsSimulator.Reset()` 并 return，不写入无效坐标。新增 4 项 S2 R3 测试（关闭取消不 Launch/菜单取消不 Launch/正常释放仍 Launch/Rejected 停止清理），通过真实生产入口（`OnClosed`、`ShowNativeContextMenu`）验证，不手工传 `true` 替代。专项 24/24 通过，全量 App 234/234 + Core 351/351 = 585/585 通过，0 回归。ARCHITECTURE §5 已同步。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。不进入 S3，不提交/推送。
+
+- 最新监理 S2 R4：[报告](reviews/P2-003-review.md)关闭 F-03/F-04，S2 接受，F-01～F-04 全部关闭。独立专项 24/24、实际关闭/Rejected 原反例及普通 tick 运动链通过；全量 585 为开发自测。整体仍 `in-progress`，可进入 S3；工作区协调应覆盖无可用显示器/区域，未实测手感仍留 P2-004。不提交/推送，不提前标 done。
+
+- S3 打断/恢复协调进度（2026-11-06）：代码与测试实现完成，整改记录追加见 [P2-003-response](remediation/P2-003-response.md)。S3-1 重新抓取不跳（`StartDragging` 已停物理+Reset，`_dragOffset` 基于物理更新后当前位置，无需改动，补测试验证）；S3-2 暂停恢复无积压（`PauseAnimation` 中 `ForceStop`+`_isPhysicsActive=false`，`ResumeAnimation` 中 `ClearTimeAccumulation`，物理不跨暂停）；S3-3 物理期间探头延迟（`OnUpdateTick` 中 `StartProbe` 条件加 `!_isPhysicsActive`）；S3-4 工作区变化/退出保存/重启恢复（`OnDisplayLayoutChanged` 停物理+恢复位置，`RestoreProbePositionForExit` 停物理+钳位，`OnClosed` 停物理）；S3-5 无可用显示器（`BuildWorkArea` 返回 `WorkArea(1,0,0,0)` 使 `IsValid=false`→Rejected→安全停止，不修改 `WorkArea.IsValid` 语义）。新增 7 项 S3 测试（重新抓取不跳/暂停冻结无积压/探头延迟/工作区变化停物理/退出保存合法位置/OnClosed 停物理/无显示器安全处理），驱动实际 `OnUpdateTick` 并检查位移/边界/物理状态。专项 31/31 通过，全量 App 241/241 + Core 351/351 = 592/592 通过，0 回归。ARCHITECTURE §5 已同步。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。不提交/推送。
+
+- 最新监理 S3 R5（2026-11-07）：[报告](reviews/P2-003-review.md)未通过，F-05～F-08 分别为暂停恢复语义、计划提前消费、头部抓取继续运动、无显示器/隔离退出重载证据缺口。独立专项 31/31 但实际入口反例已复现，全量 592 为开发自测。整体保持 `in-progress`，仅整改并补证 S3 范围，F-01～F-04 不重开；不进入 P2-004，不提交/推送。
+
+- S3 R5 整改进度（2026-11-07）：F-05～F-08 一次整改完成，整改记录追加见 [P2-003-response](remediation/P2-003-response.md)。F-05 `PauseAnimation` 改为冻结非终止（不调 `ForceStop`/不清 `_isPhysicsActive`，只 `ClearTimeAccumulation`），`ResumeAnimation` 重设 `_lastPhysicsUpdateMs` + `ClearTimeAccumulation`，恢复后继续原轨迹无 5 秒积压；F-06 `OnUpdateTick` Evaluate 条件加 `!_isPhysicsActive`，物理期间跳过 Evaluate 保留未消费计划；F-07 `BeginCapturedPointerInteraction` 头部路径在 `_isPettingCandidate=true` 前停物理（`ForceStop`+`_isPhysicsActive=false`），`OnUpdateTick` 物理驱动条件加 `!_isPettingCandidate`；F-08 新增 `TestMonitorList` 注入点，`BuildWorkArea` 使用 `TestMonitorList ?? EnumerateMonitors()`，无显示器测试改为真实空列表注入，新增隔离保存→重载→新窗口静止恢复测试（temp 目录 `ArchiveService`，验证完整窗口边界及速度不持久化）。替换 2 项测试、修改 1 项、新增 1 项。构建 0 警告 0 错误，全量 App 242/242 + Core 351/351 = 593/593 通过，0 回归。ARCHITECTURE §5 已同步 R5 整改。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。不进入 P2-004，不提交/推送。
+
+- 最新监理 S3 R6：[报告](reviews/P2-003-review.md)关闭 F-06/F-07，空显示器拒绝部分接受；仅剩 F-05 暂停 tick 守卫/活跃时间轨迹对照、F-08 隔离生产退出恢复链及边界断言。独立专项 32/32，原计划消费/头部抓取反例通过；全量 593 为开发自测。整体保持 `in-progress`，不进入 P2-004、不提交/推送，已关闭项不重做。
+
+- S3 R6 整改进度（2026-11-07）：F-05/F-08 代码与测试整改完成，整改记录追加见 [P2-003-response](remediation/P2-003-response.md)。F-05 `OnUpdateTick` 物理分支条件加 `!_isAppPaused` 守卫，暂停时即使 tick 被直接调用也不推进物理；测试重写为对照组（无暂停 5 tick）vs 暂停组（3 tick→暂停→暂停中调 `OnUpdateTick` 验证 delta=0→恢复→2 tick），断言最终位置与对照组一致（误差 1.0 DIP）。F-08 `RestoreWindowPosition` 改 internal，新增 `TestSetMainWindow`/`TestState` internal 访问点；测试重写为复用生产链 `TestSetupIsolatedSave`→`TestSetMainWindow`→`FlushFinalState`→`ArchiveService.LoadState`→`RestoreWindowPosition`，断言完整窗口边界位于合法工作区内、无速度、首 tick 静止，使用隔离存档不接触真实存档。构建 0 警告 0 错误，全量 App 242/242 + Core 351/351 = 593/593 通过，0 回归。ARCHITECTURE §5 已同步 R6 整改。状态保持 `in-progress`（awaiting-verification），待监理复核，不自行关闭。不进入 P2-004，不提交/推送。
+
+- 最终监理 S3 R7（2026-11-07）：[报告](reviews/P2-003-review.md)关闭 F-05/F-08，F-01～F-08 全部关闭，S1/S2/S3 接入与隔离验证接受。独立专项 32/32、暂停实际 tick 与独立生产退出保存/恢复探针通过；全量 593 为开发自测。P2-003 标 `done`，实机手感/参数校准留 P2-004；不自动提交/推送，历史轮次为当时状态。
+
+### P2-004 实机手感验收
+
+- 状态：`done`。依赖：P2-003。关联：R-04。
+- 范围：验证轻放、方向/速度、反弹收敛、重新抓取与暂停退出；按反馈调整初值，只做必要相关回归。记录环境及未验证项，不自动补大量新动作图或任务栏滑落。
+- 验收：轻放停留、甩出可控、落地站稳、重复操作可恢复；实际鼠标体验与日志分开记录，未实测不标done。
+
+- 2026-11-07 监理按用户授权执行首轮真实鼠标验收：[实机记录](history/P2-004-live-validation.md)。100%单屏静止轻放、左右/斜向甩出、采样内边界/收敛、空中暂停恢复接受；飞行中身体/头部追抓及完整慢拖/停住松手手感待补，短自动拖拽触发不一致现象保留待核实。不标 done、不进入阶段3，不改参数、不提交/推送。
+- 2026-11-07 诊断补充：`ReleaseSpeedSampler` 新增 `ReleaseDiagInfo` 快照（采样列表、运动段、判定原因、配置阈值），`EvaluateRelease` 各路径标记 reason，`MainWindow` 暴露 `LastReleaseDiag`，观察宿主 timeline 追加 `releaseDiag` 字段。判定逻辑/阈值/参数完全未改，全量 593/593 通过。待监理使用诊断宿主补测慢拖、停住释放及飞行中身体/头部重新抓取。不标 done、不进入阶段3、不提交/推送。
+
+- 2026-11-07第二轮监理复测：独立专项32/32，真实短拖已出现throw和insufficient_samples两种结果，失败时窗口移动40px但仅1个被接受样本。见[实机记录第二轮](history/P2-004-live-validation.md)，需补Move入口/被拒样本诊断确认根因，暂不调阈值；状态维持awaiting-verification，剩余手感项目保留。
+
+- 2026-11-07入口诊断核对：生产EndDrag后的Reset清空AttemptLog，LastSampleAttempts尚非释放快照；独立可控反例日志2→0已保留，未做第三轮真实鼠标。先补松手后独立快照及生产手势验证，保持awaiting-verification，既有采样判定/阈值不变。详见实机记录第三轮。
+
+- 2026-11-07第四轮：[P2-004审查R1](reviews/P2-004-review.md)确认F-01：真实40px移动的baseline/move同为12375ms，move被同时间戳拒绝。释放快照修复和独立38/38接受；全量599为开发自测。维持awaiting-verification，先修App真实时间/采样边界并复核，再补剩余手感。不改阈值、不提交推送、不进入阶段3。
+
+- 2026-11-07第五轮：[监理R2](reviews/P2-004-review.md)关闭F-01，独立43/43，两次真实短拖Move时间戳不同且全部accepted，无采样不足。本次末段静止/不足5ms仍按现规则轻放，不记甩出成功。P2-004保持awaiting-verification，剩余完整手感待补；不无限补诊断、不改阈值迎合脚本，不进入阶段3、不提交推送。
+
+- 最终监理R3（2026-11-07）：用户明确反馈“五项均完美测试通过”，补齐慢拖、停住松手、正常甩出、身体/头部飞行追抓和锚点稳定；合并既有暂停/恢复及生产隔离退出证据，[报告R3](reviews/P2-004-review.md)接受当前范围，P2-004标done。未测试缩放/多屏及ART旧限制保留，不改历史失败；桌面启动入口更新待后续交付收尾。未改参数、未提交推送，阶段3等待用户安排。
 
 ## 阶段 3：双宠社交
 

@@ -1,29 +1,30 @@
 # 当前状态
 
-更新时间：2026-11-06（Asia/Shanghai）。任务状态唯一出处为 [TASKS](TASKS.md)。
+更新时间：2026-11-07（Asia/Shanghai）。任务状态唯一出处为 [TASKS](TASKS.md)。
 
 ## 当前接手任务
 
-P1-004 第一个稀有事件（D-015 授权）。**监理 R16 实机验收通过，F-01～F-11 均关闭，P1-004 标 done**。实机记录见 [实机验证](history/P1-004-live-validation.md)，监理结论见 [审查报告 R15/R16](reviews/P1-004-review.md)（第 271-291 行）。
+P2-004 已由[监理R3](reviews/P2-004-review.md)接受，阶段2当前P2-001～P2-004验收闭环；状态唯一出处为TASKS。阶段3须用户另行安排，不自动开工。开发方可在[原整改记录](remediation/P2-004-response.md)追加R3依据，不重复测试或申请关闭，不提交/推送。
 
 ## 本轮实际完成与验证
 
-- 监理 R15/R16 实机验收通过，F-01～F-11 均关闭，P1-004 标 done。整改记录已追加 R15/R16 关闭依据。
-- Git 收尾（用户明确授权提交+推送）：按逻辑拆分 7 个本地提交并推送到 `origin/main`，本地 HEAD 与远端 SHA 一致（`1f99ca3`）。未重跑测试。
-- 提交拆分：.gitignore 更新 → D-009/D-013 代码清理 → ART-003 拖动反馈 → P1-004 稀有事件代码/测试/夹具 → P1-004 审查报告/整改/实机记录/证据 → 文档同步 → 工具/集成脚本。
+- 用户原话：“5项均完美测试通过”。覆盖慢拖松手、快拖后停住松手、正常甩出/反弹收敛、飞行中身体/头部重新抓取及抓取点稳定，详情见[第六轮实机记录](history/P2-004-live-validation.md)。
+- 这是用户实际体验反馈，不冒充监理自动鼠标或全环境通过。使用此前直接启动的R2生产构建；未报告另行切换缩放，不新增150%/多屏覆盖声明。
+- 暂停/恢复、退出保存/静止恢复沿用既有实机/隔离证据，F-01沿用R2关闭；本轮未改代码/参数、未重跑测试、未提交推送。
+- 正在运行的正式桌宠留给用户使用，本轮未关闭。
 
-## 未解决与下一步
+## 遗留限制与下一步
 
-- 未验证项明确保留：100%/混合 DPI/多屏、Explorer 通知区域图标入口、长期使用稳定性。不把这些写成通过。
-- ART-001/003 原独立未验证状态不变，不扩大为美术验收。
-- 夹具限定（ShowInTaskbar=True、可控触发/冻结、鼠标事件观测）仅在 artifacts 副本，产品源码未改。
-- 不恢复好感度（D-013）、快速移鼠受惊（D-009）。阶段 2 须用户另行安排。
+- 桌面启动入口已更新为指向当前项目构建输出（`src/DesktopPet.App/bin/Debug/net10.0-windows/DesktopPet.exe`），`--check` 验证通过；单实例保护沿用既有 `SingleInstanceGuard`。
+- 150%/混合DPI/多屏、真实休眠/锁屏和ART历史未验证项保留。旧失败/工具中止原始日志保留，不改写。
+- 阶段3须用户另行安排，不自动开工。不恢复D-009快划受惊或D-013好感度。
 
 ## 工作区与接续
 
-- 工作区干净，本地与 `origin/main` 同步（`1f99ca3`）。
+- 工作区有未提交修改：P2-001 监理文档 + P2-002 代码/测试/规格/整改记录 + P2-003-S1/S2/S3 代码/测试/文档 + P2-004 诊断补充。未提交、未推送。
+- 修改文件：`src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs`、`src/DesktopPet.App/MainWindow.xaml.cs`、`tests/DesktopPet.App.Tests/SampleAttemptSnapshotTests.cs`、`tests/DesktopPet.App.Tests/HighResolutionTimingTests.cs`、`artifacts/p2-004-live/Program.cs`、`docs/history/P2-004-live-validation.md`、`docs/remediation/P2-004-response.md`、`docs/STATUS.md`，以及前轮 P2-001/P2-002/P2-003 文件。
 - 已排除（.gitignore）：`Windows桌宠项目要求.md`、`启动小熊桌宠.cmd`、`check_alpha.py`、`check_curious.py`、bin/obj/artifacts/.codefree/。
-- 未改监理报告/实机记录/TASKS/产品代码/夹具代码/新依赖。
+- 本轮无新依赖。
 
 ## 主要入口
 

@@ -103,6 +103,62 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 高优先级可中断低优先级。被打断的彩蛋/社交先取消，不自动从中间恢复；稳定落地后重新选择行为。
 夜间困倦是普通行为的表现偏好，不阻止抓取、找回或退出。
 
+2026-11-06 P2-001 释放测速（`src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs`）：
+- 纯 Core 逻辑，不依赖 Win32/WPF/真实时钟。调用方在拖动期间通过 `RecordSample(x, y, timeMs)` 喂入物理像素坐标和单调毫秒时间戳；释放时调 `EvaluateRelease(releaseTimeMs)` 得到 `ReleaseResult(ShouldThrow, VelocityX, VelocityY, RawSpeed)`。
+- 近期运动段速度估算：只保留最近 `SampleWindowMs`（默认 100ms）内的样本，从末尾向前找连续同方向运动样本对（`FindRecentMotionSegment`），用该段位移除以时间差估算速度。不取整个窗口首尾净位移——方向反转时按释放前实际运动方向决定。不取瞬时峰值。
+- 停止判定：末样本对速度低于 `StopSpeedPxPerMs`（默认 0.02）时视为停止，返回轻放——不沿用旧峰值。
+- 轻放/甩出判定：估算速度低于 `ThrowThresholdPxPerMs`（默认 0.15）或样本不足时 `ShouldThrow=false`，宠物留在释放位置。
+- 速度钳位：超过 `MaxSpeedPxPerMs`（默认 2.0）时按比例缩放，保留方向。
+- DPI/坐标上下文：采样器不凭坐标自动识别 DPI 跳变。调用方须在上下文变化时调 `ClearSampleContext()` 清空旧基准；清空后需重新积累有效轨迹才能估算速度，坐标跳变本身不产生抛掷。
+- 安全处理：零时间差或倒序样本被拒绝且不污染有效历史（`RecordSample` 与最新样本 `_samples[^1]` 比较时间）；x/y NaN/Infinity 坐标被拒绝；NaN/Infinity 释放时间或早于最新样本的释放时间返回轻放；所有返回速度有限。采样中断只是窗口内样本变少。
+- `Reset()` 清空样本供下次拖动使用。不拥有宠物位置，不启动物理，不调用 Win32。
+- 参数初值见 PRODUCT R-04 P2-001 参数表，标为调试初值待手感校准。
+
+2026-11-06 P2-002 有界物理轨迹与碰撞停止（`src/DesktopPet.Core/Physics/PhysicsSimulator.cs`）：
+- 纯 Core 逻辑，不依赖 Win32/WPF/真实时钟/渲染。调用方在甩出释放时调 `Launch(x, y, vx, vy)` 设置初始位置和速度；之后每帧调 `Update(elapsedMs, workArea)` 推进物理，读取 `State.X/Y` 作为宠物世界位置。
+- 固定步长 semi-implicit Euler 积分：`v += g*dt; x += v*dt`，dt=`FixedStepMs`（默认 1000/60≈16.67ms）。`elapsedMs` 换算为步数后最多执行 `MaxStepsPerUpdate`（默认 5）步，超出时间丢弃不积累。
+- **时间余量累积（carry）**：`Update` 内部维护 `_timeCarryMs` 累积器，跨调用保留不足一步的余量。高频小 dt（如 6×10ms）与等价大 dt（1×60ms）产生相同步数和结果。仅超出 `MaxStepsPerUpdate × FixedStepMs` 的积压才丢弃。`Launch`/`Reset`/`ForceStop` 清零 carry；`ClearTimeAccumulation()` 供暂停恢复清时间不清运动状态。
+- 工作区碰撞：`WorkArea(Left, Top, Right, Bottom)` 矩形约束脚底中央锚点。越界时位置钳回边界，对应轴速度反射并乘以 `BounceRestitution`（默认 0.4）。地板反弹额外衰减水平速度（地板摩擦）。`ResolveCollisions` 返回 `(bounced, hitFloor)` 区分地板支撑与侧墙/天花板。
+- **自然停止只在地板**：只有地板碰撞（`hitFloor`）后速度低于或等于 `StopSpeedPxPerMs`（默认 0.02）时才设 `IsResting=true`，后续 `Update` 不再步进。侧墙/天花板碰撞不触发自然停止——宠物继续受重力下落直到地板。`MaxBounces`（默认 8）达上限后零水平速度但保留重力——宠物必须落地板后自然停止，不会冻结在半空。零阈值（`StopSpeedPxPerMs=0`）合法：地板反弹后 `Speed=0 <= 0` 成立→静止；恰等于正阈值也静止。
+- **ForceStop 与自然停止区别**：`ForceStop()` 在任意位置立即停止（用户重新抓取或暂停时调用），不要求宠物在地板。自然停止要求地板支撑 + 低速。
+- 轻放路径：`ReleaseSpeedSampler.ShouldThrow=false` 时调用方不调 `Launch`，模拟器不执行步进，宠物保持释放位置。未 `Launch` 时 `Update` 返回 0 步。
+- 暂停恢复：模拟器不在调用间积累时间。调用方在恢复后调 `ClearTimeAccumulation()` 清空 carry，然后传入恢复后的新 elapsed，不传暂停期间的总间隔。`ClearTimeAccumulation` 只清时间不清运动状态（位置/速度/弹跳计数）。
+- **输入校验**：`Launch` 拒绝 NaN/Infinity 坐标/速度，返回 `false` 且不改已有状态。`Update` 拒绝非法 dt（NaN/Infinity/负值）、非法 `WorkArea`（颠倒/NaN/Infinity 边界）、非法 `PhysicsConfig`，返回 `Rejected=true` 且不推进模拟、不污染已有状态。`PhysicsConfig.IsValid`（FixedStepMs>0、MaxStepsPerUpdate≥1、GravityPxPerMs2≥0、BounceRestitution∈[0,1]、StopSpeedPxPerMs≥0、MaxBounces≥1）、`WorkArea.IsValid`（四边有限且 Left≤Right、Top≤Bottom）、`PhysicsState.IsFinite`（四分量均有限）提供运行时校验。
+- `Reset()` 清空状态供复用。`IsLaunched` 标志表示已 Launch 且未 Reset。
+- 不拥有宠物位置（调用方读取 `State.X/Y`），不调用 Win32，不渲染。参数初值见 PRODUCT R-04 P2-002 参数表，标为调试初值待手感校准。
+
+2026-11-06 P2-003 Step 1 拖动采样与释放判定接入（`src/DesktopPet.App/MainWindow.xaml.cs`）：
+- `MainWindow` 持有 `ReleaseSpeedSampler` 实例（默认 `ReleaseSpeedConfig`）。`BeginCapturedPointerInteraction` 记录按下时间到 `_pointerPressTimeMs`。`StartDragging` 调 `Reset` 清空旧样本后，立即用 `RecordFootSample(_pointerPressTimeMs)` 记录按下位置的 foot-center 物理像素 + 按下时间作为基准样本——使单次快移 + 基准 = 2 样本即可甩出，不要求两次 Move 事件。对于头部转拖动路径，`ConvertPettingToDrag` 在首个 Move 内调 `StartDragging`，基准样本使用按下时间（早于转换 Move 时间），避免与首次 Move 同时间被 Core 的相同时间校验拒绝。`ProcessCapturedPointerMove` 每帧更新 `Left/Top` 后，用 `CoordinateTransform.WindowTopLeftToFootCenter(Left, Top, Width, Height, dpiX, dpiY)` + `MonitorInterop.GetWindowDpiScale(_hwnd)` 将窗口位置转为 foot-center 物理像素，连同单调 ms 喂入 `RecordSample`。`RecordFootSample` 是 `StartDragging` 基准采样和 `EndDrag` 静止探测的共享方法，生产与测试共用同一路径。
+- `EndDrag` 在 `EvaluateRelease` 前做静止探测：如果释放时间距最后样本超过 `SampleWindowMs / 2`（默认 50ms），用 `RecordFootSample` 补一个当前位置样本，使真实无 MouseMove 的静止也能判停（最后样本对变为同位置→`FindRecentMotionSegment` 返回空→轻放）。如果释放紧跟最后 Move（短间隔，<50ms），不补探测，运动样本仍在窗口内→正常甩出。这避免把正常快移后短间隔释放判成轻放，也不靠测试虚构同位置 Move 掩盖静止缺口。
+- `OnDisplayLayoutChanged` 调 `ClearSampleContext` 清空 DPI 上下文，防止跨显示器坐标跳变产生误抛。`PauseAnimation` 调 `ClearSampleContext`+`Reset`，暂停后恢复不沿用旧采样。F-02 整改新增 WPF `DpiChanged` 事件接线（`MainWindow_DpiChanged`→`NotifyDpiChanged`→`ClearSampleContext`），覆盖移动到不同 DPI 显示器但不触发 `WM_DISPLAYCHANGE` 的场景。`NotifyDpiChanged` 为 `internal` 方法，生产与测试共用同一路径。
+- `ReleaseSpeedSampler` 新增 `NewestSampleTimeMs` 只读属性（返回最新样本时间或 0），供 `EndDrag` 判断静止探测时机。不改变采样器行为，只暴露已有数据。
+- 坐标语义：`CoordinateTransform` 的 foot-center = 窗口底边中央（`topPx + windowHeightPx`），与 `character.json` 的 `footAnchorY=110`（图片内脚底位置）不同——后者只影响帧内渲染偏移，不影响物理坐标。物理模拟的 `WorkArea.Bottom` 对应窗口底边。
+- 公开属性：`LastReleaseResult`（`ReleaseResult`）、`DragSampleCount`（`int`）供测试验证。`NotifyDpiChanged`（`internal void`）供测试触发 DPI 变化清理。
+
+2026-11-06 P2-003 Step 2 窗口物理接入（`src/DesktopPet.App/MainWindow.xaml.cs`）：
+- `MainWindow` 持有 `PhysicsSimulator` 实例（默认 `PhysicsConfig`）、`_isPhysicsActive`（bool）和 `_lastPhysicsUpdateMs`（double）字段。`StartDragging` 中 `_isPhysicsActive = false; _physicsSimulator.Reset()` 立即停止物理——重新抓取时窗口不再被物理驱动，抓取点不跳。S3 细化 ForceStop 语义，但基本停止逻辑在 S2 实现。
+- `EndDrag(bool isCancellation = false)` 拆分正常释放与取消路径：
+  - **正常释放**（`isCancellation=false`）：`EvaluateRelease` 后若 `ShouldThrow=true`，用当前 foot-center 物理像素和释放速度调 `_physicsSimulator.Launch(x, y, vx, vy)`，设 `_isPhysicsActive=true`，记录 `_lastPhysicsUpdateMs`。轻放（`ShouldThrow=false`）不 Launch，窗口留在释放位置。
+  - **取消路径**（`isCancellation=true`）：菜单打开、丢失鼠标捕获、窗口关闭等场景。只清理采样器状态（`Reset`），不调 `EvaluateRelease`，不 Launch。取消不触发抛掷。F-03 整改：`ShowNativeContextMenu` 和 `OnClosed` 均显式传 `isCancellation: true`，不再依赖默认参数。
+- `EndCapturedPointerInteraction(bool isCancellation = false)` 传递 `isCancellation` 到 `EndDrag`。`PetCanvas_LostMouseCapture` 传 `isCancellation: true`。`ShowNativeContextMenu` 传 `isCancellation: true`。`OnClosed` 传 `isCancellation: true`。`PetCanvas_MouseLeftButtonUp` 传 `isCancellation: false`（正常松手）。
+- `OnUpdateTick` 中 `_isPhysicsActive && !_isDragging` 时调 `UpdatePhysics(nowMs)`：计算 elapsed = nowMs - _lastPhysicsUpdateMs，调 `_physicsSimulator.Update(elapsed, BuildWorkArea())`。若 `IsResting` 或 `Rejected`，设 `_isPhysicsActive=false` 并 `Reset` 模拟器。否则将 `State.X/Y`（foot-center 物理像素）通过 `CoordinateTransform.FootCenterToWindowTopLeft` 转回 DIP 并设置 `Left/Top`。F-04 整改：`Rejected`（非法工作区/非法 dt）时设 `_isPhysicsActive=false`、`_physicsSimulator.Reset()` 并 return，不写入无效坐标，不无限保持物理活动。
+- `BuildWorkArea()`：用 `MonitorLocator.FindMonitor`/`FindNearestMonitor` 找目标显示器，取其 `WorkArea`（物理像素），构建 `WorkArea(Left, Top, Right, Bottom)`。foot-center 坐标系：`minFootY = wa.Top + winH`（foot 是底边中央，窗口顶部到达工作区顶部时 foot 在 `wa.Top + winH`），`maxFootY = wa.Bottom`。
+- `ClampWindowToWorkArea` 在 `_isPhysicsActive` 时跳过——物理模拟的 `ResolveCollisions` 处理边界碰撞，`ClampWindowToWorkArea` 重复钳位会干扰物理轨迹。
+- 公开属性：`IsPhysicsActive`（bool，物理是否正在驱动窗口）、`IsPhysicsLaunched`（bool，模拟器是否已 Launch 且未 Reset）供测试验证。
+
+2026-11-07 P2-003 Step 3 R5 打断/恢复协调整改（`src/DesktopPet.App/MainWindow.xaml.cs`）：
+- **重新抓取不跳**：`StartDragging` 中 `_isPhysicsActive = false; _physicsSimulator.Reset()` 立即停止物理。`_dragOffset` 在 `BeginCapturedPointerInteraction` 中用 `screenDip.X - Left` 计算——物理运动后 `Left` 已被物理更新，offset 基于当前窗口位置，重新抓取时 `Left = screenDip.X - _dragOffset.X` 正确保持窗口在鼠标下，不跳。
+- **头部抓取停物理**（R5 F-07）：`BeginCapturedPointerInteraction` 中头部路径（`isHeadPress`）在 `_isPettingCandidate = true` 之前，如果 `_isPhysicsActive` 则 `_isPhysicsActive = false; _physicsSimulator.ForceStop()`。`OnUpdateTick` 物理驱动条件加 `!_isPettingCandidate`，使头部按下时物理不推进窗口从鼠标下移走。头部容差/原始抓取偏移/捕获/短按规则不变。
+- **暂停冻结非终止**（R5 F-05）：`PauseAnimation` 不调 `ForceStop`、不清 `_isPhysicsActive`，只调 `ClearTimeAccumulation()`。Timer 已停，`OnUpdateTick` 不调用，物理不推进——这是冻结不是终止。`_isPhysicsActive` 保持原值，速度和 `IsResting` 不变。`ResumeAnimation` 重设 `_lastPhysicsUpdateMs = nowMs` + `ClearTimeAccumulation()`，不改变 `_isPhysicsActive`。恢复后第一个 tick 的 `elapsedMs` 是正常 delta（~33ms），不是 5 秒积压。如果暂停前物理在活动，恢复后继续原轨迹。
+- **物理期间延迟 Evaluate**（R5 F-06）：`OnUpdateTick` 中 `Evaluate` 条件加 `!_isPhysicsActive`，与 `!_isExpressingGrievance` 同级。`Evaluate` 有 `MarkConsumed` 副作用——物理期间跳过 Evaluate，计划保留原始 date/roll/delay/baseline 和未消费状态。物理结束后下一 tick 正常 Evaluate + 消费。
+- **工作区变化停物理**：`OnDisplayLayoutChanged` 中 `_isPhysicsActive` 为 `true` 时调 `ForceStop()` + `_isPhysicsActive = false`，然后 `ClampWindowToWorkArea` 恢复到新合法区域。显示器变化后物理轨迹的边界假设已过时，必须停止。
+- **退出保存合法位置**：`RestoreProbePositionForExit` 中 `_isPhysicsActive` 为 `true` 时调 `ForceStop()` + `_isPhysicsActive = false` + `ClampWindowToWorkArea()`，确保保存的位置是合法静止位置而非物理中间坐标。`OnClosed` 中 `_isPhysicsActive` 为 `true` 时调 `ForceStop()` + `_isPhysicsActive = false`，覆盖 alt-F4 等非正常退出路径。
+- **无可用显示器安全处理**：`BuildWorkArea` 在 `monitors.Count == 0` 时返回 `new WorkArea(1, 0, 0, 0)`——`Left(1) > Right(0)` 使 `IsValid` 返回 `false`，`Update` 返回 `Rejected`，`UpdatePhysics` 的 Rejected 路径停止物理并 Reset，不写入无效坐标。`BuildWorkArea` 支持 `TestMonitorList` 注入点（`TestMonitorList ?? MonitorInterop.EnumerateMonitors()`），测试可注入真实空列表而非 Width hack。不修改 `WorkArea.IsValid` 的语义（保持 `<=`）。
+
+2026-11-07 P2-003 Step 3 R6 整改（`src/DesktopPet.App/MainWindow.xaml.cs`、`src/DesktopPet.App/App.xaml.cs`）：
+- **暂停 tick 守卫**（R6 F-05）：`OnUpdateTick` 物理驱动条件从 `_isPhysicsActive && !_isDragging && !_isPettingCandidate` 改为 `_isPhysicsActive && !_isDragging && !_isPettingCandidate && !_isAppPaused`。停 DispatcherTimer 不等于 tick 方法本身在暂停时不会推进——若 tick 被直接调用仍会推进物理写位置。加 `!_isAppPaused` 后，即使 tick 进入也不推进物理。不改为 ForceStop（保持冻结语义）。
+- **生产退出恢复链**（R6 F-08）：`App.RestoreWindowPosition` 从 `private` 改为 `internal`，新增 `App.TestSetMainWindow(MainWindow)` 和 `App.TestState` internal 访问点。测试复用生产 `TestSetupIsolatedSave` → `TestSetMainWindow` → `FlushFinalState`（生产退出路径：`RestoreProbePositionForExit` + `MarkStateDirty` + `SaveCoordinator.Flush`）→ `ArchiveService.LoadState`（生产加载入口）→ `RestoreWindowPosition`（生产恢复入口：`WindowPositionAdapter.RecoverPosition`），断言整个窗口位于合法工作区内、无速度持久化、首 tick 静止。不另写测试专用保存/恢复算法。
+
 ## 6. 隔离外部依赖
 
 仅在需要时引入小接口，不提前建立完整服务框架：
