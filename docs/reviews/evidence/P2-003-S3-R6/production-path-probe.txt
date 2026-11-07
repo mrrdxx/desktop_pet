@@ -1,0 +1,5 @@
+PAUSED_TICK active=True delta=(166.66666666666669,11.111111111111114)
+PAUSE_RESUME active=True delta=(200.00000000000006,15)
+HEAD_REGRAB accepted=True candidate=True active=False delta=(0,0)
+FIRE_DURING_PHYSICS active=True probing=False consumed=False
+AFTER_PHYSICS active=False probing=True consumed=True

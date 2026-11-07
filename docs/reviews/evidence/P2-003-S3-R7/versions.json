@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-07",
+  "scope": "P2-003 S3 R7, uncommitted after 190b065",
+  "sha256": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": "7bda300d7537092c27144f69a8ab1a47952995d7fa8ff8a6954d67be0f60ca6f",
+    "src/DesktopPet.App/App.xaml.cs": "e4c346032c0e528669ea8fe2abe44423ae61073e0b5451e8ab2c407ffa2a9cd8",
+    "tests/DesktopPet.App.Tests/ReleaseSamplingIntegrationTests.cs": "4585e285f1c2a2fb70c4ddb34e4027dbd0d23c097dd5ca76786a08fd75ff26ff",
+    "docs/ARCHITECTURE.md": "a8f0f8a0b073a3e2f28de2f79397699bf641010700569758eb33da69c5218c4e",
+    "docs/remediation/P2-003-response.md": "492ee20728e1f89120f3ad92662f917d5b4aac5784e41c1e509c75c503503008"
+  }
+}

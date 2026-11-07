@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-06",
+  "scope": "P2-003 S1 R1; uncommitted workspace after 190b065",
+  "sha256": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": "5b0dc9cac3113a97706e637269fd101ca9309809507087873c3f9af1c6f5803a",
+    "src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs": "dce7068b876967092c4cd0861a148cb8493f8d26391cc5c378dd7a533a3c334b",
+    "tests/DesktopPet.App.Tests/ReleaseSamplingIntegrationTests.cs": "030e0b1cb7e6d9507847a2b2c8857eb983119421296def17c1eaaaf34fefae40",
+    "docs/ARCHITECTURE.md": "6481cbdbba9016640bcacc760ab56923f869eb335996aeb6151729315cebefff",
+    "docs/remediation/P2-003-response.md": "307770f16b30f93f406dfdd185ae3249d6a39b8a276ef66b9c8e8db6dce7bc5f"
+  }
+}

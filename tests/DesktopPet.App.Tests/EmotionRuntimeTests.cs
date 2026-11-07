@@ -612,7 +612,7 @@ public class EmotionRuntimeTests
             // EndDrag triggers the interrupt logic.
             var endDragMethod = typeof(MainWindow).GetMethod("EndDrag",
                 BindingFlags.NonPublic | BindingFlags.Instance);
-            endDragMethod!.Invoke(window, null);
+            endDragMethod!.Invoke(window, new object[] { false });
 
             Assert.IsFalse(window.IsExpressingGrievance,
                 "Expression must stop after drag interrupt.");

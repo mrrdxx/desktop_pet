@@ -1,0 +1,3 @@
+CLOSE_CANCEL active=False launched=False throw=False
+REAL_TICK movedTicks=62 active=False start=(300,100) final=(1421.9306666666694,912)
+INVALID_WORKAREA active=False launched=False

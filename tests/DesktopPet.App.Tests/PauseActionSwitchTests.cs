@@ -123,7 +123,7 @@ public class PauseActionSwitchTests
                 "Action must have switched to drag");
 
             // --- Simulate drag end: EndDrag (calls PlayAction("idle") + UpdateFrame) ---
-            InvokeMethod(window, "EndDrag");
+            InvokeMethod(window, "EndDrag", false);
 
             // After EndDrag during pause: player must STILL be paused.
             Assert.IsTrue(window.IsPlayerPaused,

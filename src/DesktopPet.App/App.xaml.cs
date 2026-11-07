@@ -78,6 +78,20 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
+    /// P2-003 S3 R6 F-08: Test-only injection of a MainWindow so tests can
+    /// exercise the real FlushFinalState → MarkStateDirty → SaveCoordinator
+    /// chain and the real RestoreWindowPosition recovery entry point,
+    /// without re-implementing save/restore logic.
+    /// </summary>
+    internal void TestSetMainWindow(MainWindow w) => _mainWindow = w;
+
+    /// <summary>
+    /// P2-003 S3 R6 F-08: Test-only accessor for the isolated state object
+    /// so tests can verify the saved archive after FlushFinalState.
+    /// </summary>
+    internal PetStateArchive? TestState => _state;
+
+    /// <summary>
     /// F-05: Production mapping from PetStateArchive to emotion objects.
     /// This is the same logic used in OnStartup, extracted so tests can
     /// verify the real load→map→save→reload chain without copying code.
@@ -258,7 +272,9 @@ public partial class App : System.Windows.Application
             _tray.ShowReadOnlyArchiveNotice();
     }
 
-    private void RestoreWindowPosition()
+    // P2-003 S3 R6 F-08: Made internal so tests can call the real
+    // production recovery entry point instead of re-implementing it.
+    internal void RestoreWindowPosition()
     {
         if (_state is null || _mainWindow is null)
             return;

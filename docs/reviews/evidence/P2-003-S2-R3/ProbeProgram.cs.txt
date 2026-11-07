@@ -1,0 +1,11 @@
+using System;using System.Reflection;using System.Windows;using DesktopPet.App;
+class Program{
+static BindingFlags F=BindingFlags.Instance|BindingFlags.NonPublic;
+[STAThread]static void Main(){Closing();Motion();Rejected();}
+static void Time(MainWindow w,Func<double> n)=>typeof(MainWindow).GetField("TestGetElapsedMs",F)!.SetValue(w,n);
+static void Begin(MainWindow w)=>typeof(MainWindow).GetMethod("BeginCapturedPointerInteraction",F)!.Invoke(w,new object[]{new Point(60,65),new Point(w.Left+60,w.Top+65)});
+static void Move(MainWindow w,double n)=>typeof(MainWindow).GetMethod("ProcessCapturedPointerMove",F)!.Invoke(w,new object[]{new Point(70,65),new Point(360,165),true,n});
+static void Closing(){var w=new MainWindow{Left=100,Top=100};double n=0;Time(w,()=>n);Begin(w);n=10;Move(w,n);n=35;w.Close();Console.WriteLine($"CLOSE_CANCEL active={w.IsPhysicsActive} launched={w.IsPhysicsLaunched} throw={w.LastReleaseResult.ShouldThrow}");}
+static void Motion(){var w=new MainWindow{Left=100,Top=100};double n=0;Time(w,()=>n);Begin(w);n=10;Move(w,n);n=35;typeof(MainWindow).GetMethod("EndCapturedPointerInteraction",F)!.Invoke(w,new object[]{false});double x=w.Left,y=w.Top;int moved=0;for(int i=0;i<700&&w.IsPhysicsActive;i++){n+=33;typeof(MainWindow).GetMethod("OnUpdateTick",F)!.Invoke(w,new object?[]{null,EventArgs.Empty});if(w.Left!=x||w.Top!=y)moved++;}Console.WriteLine($"REAL_TICK movedTicks={moved} active={w.IsPhysicsActive} start=({x},{y}) final=({w.Left},{w.Top})");w.Close();}
+static void Rejected(){var w=new MainWindow{Left=100,Top=100};double n=0;Time(w,()=>n);Begin(w);n=10;Move(w,n);n=35;typeof(MainWindow).GetMethod("EndCapturedPointerInteraction",F)!.Invoke(w,new object[]{false});w.Width=100000;for(int i=0;i<3;i++){n+=33;typeof(MainWindow).GetMethod("UpdatePhysics",F)!.Invoke(w,new object[]{n});}Console.WriteLine($"INVALID_WORKAREA active={w.IsPhysicsActive} launched={w.IsPhysicsLaunched}");w.Close();}
+}

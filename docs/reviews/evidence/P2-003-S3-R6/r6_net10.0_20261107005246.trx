@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="0b81f851-98ac-42f6-8ded-591a362bc625" name="mrrdxx@毛茸茸的小熊 2026-11-07 00:52:45" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-07T00:52:45.9343409+08:00" queuing="2026-11-07T00:52:45.9343414+08:00" start="2026-11-07T00:52:43.5367657+08:00" finish="2026-11-07T00:52:46.5037454+08:00" />
+  <TestSettings name="default" id="bfc72482-6adf-4922-8d26-48376d3c5525">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-07_00_52_45" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2bc818f0-33ab-4375-a967-461144a6226b" testId="5cda643b-c6f9-33bf-8825-839afc0bfd61" testName="FastDrag_SingleMove_ThrowsWithPressBaseline" computerName="毛茸茸的小熊" duration="00:00:00.8067762" startTime="2026-11-07T00:52:44.8790008+08:00" endTime="2026-11-07T00:52:45.8043097+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2bc818f0-33ab-4375-a967-461144a6226b" />
+    <UnitTestResult executionId="d9efefbe-de42-46be-84de-7d5db3c90a78" testId="65240a01-e1f6-8648-8c35-e21d0b4f621c" testName="S3_NoMonitor_PhysicsRejectedAndStopped" computerName="毛茸茸的小熊" duration="00:00:00.0164179" startTime="2026-11-07T00:52:46.3213935+08:00" endTime="2026-11-07T00:52:46.3442026+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9efefbe-de42-46be-84de-7d5db3c90a78" />
+    <UnitTestResult executionId="3ed0f98e-ec3b-4338-8fa2-cf8399a6b26f" testId="e1516eb1-13a4-b71d-ffd0-79f0873855b3" testName="S2_FastDrag_Throws_LaunchesPhysics" computerName="毛茸茸的小熊" duration="00:00:00.0074221" startTime="2026-11-07T00:52:45.9891053+08:00" endTime="2026-11-07T00:52:46.0148093+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ed0f98e-ec3b-4338-8fa2-cf8399a6b26f" />
+    <UnitTestResult executionId="739131d8-49c6-48ab-a684-46a87316ee74" testId="e700a5de-7110-4121-952c-4bfff3221f2e" testName="S2_CaptureLoss_NoPhysicsLaunch" computerName="毛茸茸的小熊" duration="00:00:00.0074480" startTime="2026-11-07T00:52:46.0240136+08:00" endTime="2026-11-07T00:52:46.0354106+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="739131d8-49c6-48ab-a684-46a87316ee74" />
+    <UnitTestResult executionId="531258ab-3c7b-4704-80cd-89f2a6a26dcc" testId="3891cb80-8df0-ff6e-ec90-d2be3b2a2781" testName="StopBeforeRelease_GentleDespiteEarlierFastMovement" computerName="毛茸茸的小熊" duration="00:00:00.0081989" startTime="2026-11-07T00:52:45.9015124+08:00" endTime="2026-11-07T00:52:45.9125806+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="531258ab-3c7b-4704-80cd-89f2a6a26dcc" />
+    <UnitTestResult executionId="cd477058-b42d-4812-8278-072aed4a9165" testId="1584378a-ebbc-c481-bce4-bd040fd18e50" testName="GentleRelease_SlowMovement_StaysInPlace" computerName="毛茸茸的小熊" duration="00:00:00.0070951" startTime="2026-11-07T00:52:45.8779536+08:00" endTime="2026-11-07T00:52:45.8888397+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd477058-b42d-4812-8278-072aed4a9165" />
+    <UnitTestResult executionId="a88e8609-49bb-4624-be87-a66798199525" testId="fff62ea8-2233-31e0-1332-d5627432f277" testName="S2_R3_RejectedPhysics_StopsAndCleansUp" computerName="毛茸茸的小熊" duration="00:00:00.0239281" startTime="2026-11-07T00:52:46.1035540+08:00" endTime="2026-11-07T00:52:46.1481264+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a88e8609-49bb-4624-be87-a66798199525" />
+    <UnitTestResult executionId="e28938fb-0739-4c37-8dbf-422899de7c2b" testId="4194cf0e-a377-1519-7c37-abb912f55768" testName="S3_ProbeDelayedDuringPhysics_EvaluateSkipped" computerName="毛茸茸的小熊" duration="00:00:00.0235470" startTime="2026-11-07T00:52:46.1893299+08:00" endTime="2026-11-07T00:52:46.2170940+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e28938fb-0739-4c37-8dbf-422899de7c2b" />
+    <UnitTestResult executionId="1a1c9fe4-6e96-42a1-9971-abcb63cfc008" testId="b04aaac8-4914-874c-b982-946700b55687" testName="DisplayLayoutChange_ClearsSamples" computerName="毛茸茸的小熊" duration="00:00:00.0100675" startTime="2026-11-07T00:52:45.9317283+08:00" endTime="2026-11-07T00:52:45.9451721+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1a1c9fe4-6e96-42a1-9971-abcb63cfc008" />
+    <UnitTestResult executionId="0ebe0a41-2683-4350-b5d8-a26a216b24bc" testId="bebb095b-14bf-572d-c3ac-d35a9aa59ba4" testName="HeadPress_SingleFastMove_ConvertsAndThrows" computerName="毛茸茸的小熊" duration="00:00:00.0093291" startTime="2026-11-07T00:52:45.8417458+08:00" endTime="2026-11-07T00:52:45.8541377+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0ebe0a41-2683-4350-b5d8-a26a216b24bc" />
+    <UnitTestResult executionId="fc5d15f0-13d6-47f7-b1af-6027898b4c66" testId="f9e471db-756f-d4fe-9a73-08f61d117ccc" testName="DpiChange_ThenNewMovement_CanThrow" computerName="毛茸茸的小熊" duration="00:00:00.0084679" startTime="2026-11-07T00:52:45.9659862+08:00" endTime="2026-11-07T00:52:45.9779531+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fc5d15f0-13d6-47f7-b1af-6027898b4c66" />
+    <UnitTestResult executionId="ad0f8c73-3f40-4fcb-aa65-7a17bf1367dc" testId="8c1a7010-dbbf-5b78-1fbd-e5e456e250b0" testName="DpiChange_Alone_ClearsSamples_NoThrowOnRelease" computerName="毛茸茸的小熊" duration="00:00:00.0077740" startTime="2026-11-07T00:52:45.9452413+08:00" endTime="2026-11-07T00:52:45.9560172+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad0f8c73-3f40-4fcb-aa65-7a17bf1367dc" />
+    <UnitTestResult executionId="670318ee-4321-4436-8b64-6a1e6fb7f5f5" testId="e0357088-c7c0-13ee-fd04-719fc202a9c8" testName="Pause_ClearsSamples_NoThrowOnResume" computerName="毛茸茸的小熊" duration="00:00:00.0090883" startTime="2026-11-07T00:52:45.9200531+08:00" endTime="2026-11-07T00:52:45.9316573+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="670318ee-4321-4436-8b64-6a1e6fb7f5f5" />
+    <UnitTestResult executionId="39afafd2-adc3-48ec-86cd-541801cffb4a" testId="a0a96f4c-fb93-d864-d1d9-ece230e89212" testName="S3_RegrabDuringPhysics_StopsPhysics_NoJump" computerName="毛茸茸的小熊" duration="00:00:00.0176948" startTime="2026-11-07T00:52:46.1482180+08:00" endTime="2026-11-07T00:52:46.1708199+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39afafd2-adc3-48ec-86cd-541801cffb4a" />
+    <UnitTestResult executionId="f07122fd-6c13-4df1-9bbc-c59cb8693997" testId="cc530734-9d2b-19e5-c062-328d7f20b528" testName="S3_ExitDuringPhysics_StopsAndSavesValidPosition" computerName="毛茸茸的小熊" duration="00:00:00.0104027" startTime="2026-11-07T00:52:46.2351021+08:00" endTime="2026-11-07T00:52:46.2508086+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f07122fd-6c13-4df1-9bbc-c59cb8693997" />
+    <UnitTestResult executionId="dc2f3ad0-392f-4841-bd4c-a3992fd158d2" testId="aaba0cee-4383-5f75-b788-56ca7e0d9386" testName="NoDragEverStarted_DefaultReleaseIsGentle" computerName="毛茸茸的小熊" duration="00:00:00.0070040" startTime="2026-11-07T00:52:45.9780320+08:00" endTime="2026-11-07T00:52:45.9890222+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dc2f3ad0-392f-4841-bd4c-a3992fd158d2" />
+    <UnitTestResult executionId="f6b0fb1c-f6e6-4d14-87be-ce8650ce91c0" testId="56dff655-beee-2f79-b05a-277c2c98717f" testName="S3_PauseDuringPhysics_FreezesAndResumes" computerName="毛茸茸的小熊" duration="00:00:00.0129642" startTime="2026-11-07T00:52:46.1709171+08:00" endTime="2026-11-07T00:52:46.1892439+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f6b0fb1c-f6e6-4d14-87be-ce8650ce91c0" />
+    <UnitTestResult executionId="69c2da7a-aebf-4501-8984-0e20669c0f72" testId="750ec2ee-71a2-f452-a3b8-33581bab218f" testName="HeadPress_LightTapWithinSlop_NoThrow" computerName="毛茸茸的小熊" duration="00:00:00.0084160" startTime="2026-11-07T00:52:45.8542101+08:00" endTime="2026-11-07T00:52:45.8659257+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69c2da7a-aebf-4501-8984-0e20669c0f72" />
+    <UnitTestResult executionId="ae1aa363-01cc-4082-9d70-e75c7797ce83" testId="61fb4afb-d245-c01b-ee48-84813077fc08" testName="GentleRelease_NoMovement_StaysInPlace" computerName="毛茸茸的小熊" duration="00:00:00.0085409" startTime="2026-11-07T00:52:45.8660427+08:00" endTime="2026-11-07T00:52:45.8778496+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ae1aa363-01cc-4082-9d70-e75c7797ce83" />
+    <UnitTestResult executionId="c46f81be-a8e6-427f-b7a3-2b19383878d5" testId="fe4baefb-d9ef-3233-683f-0ac5a477393e" testName="S2_R3_CloseDuringDrag_NoPhysicsLaunch" computerName="毛茸茸的小熊" duration="00:00:00.0073004" startTime="2026-11-07T00:52:46.0621145+08:00" endTime="2026-11-07T00:52:46.0731219+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c46f81be-a8e6-427f-b7a3-2b19383878d5" />
+    <UnitTestResult executionId="d1963973-f3bb-4dee-9e8e-6441748297b2" testId="ed50d42c-c709-3ea4-7b3f-a3a0eed478b0" testName="S3_ExitDuringPhysics_IsolatedSaveReload_NewWindowStaticRecovery" computerName="毛茸茸的小熊" duration="00:00:00.0440592" startTime="2026-11-07T00:52:46.2508933+08:00" endTime="2026-11-07T00:52:46.3016551+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d1963973-f3bb-4dee-9e8e-6441748297b2" />
+    <UnitTestResult executionId="c7648285-6465-48bf-9da1-a9c200689dac" testId="83611ee2-c4cd-7b2e-ce6d-ad2ce6c8cb99" testName="S3_DisplayLayoutChange_StopsPhysics" computerName="毛茸茸的小熊" duration="00:00:00.0123674" startTime="2026-11-07T00:52:46.2191866+08:00" endTime="2026-11-07T00:52:46.2350276+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c7648285-6465-48bf-9da1-a9c200689dac" />
+    <UnitTestResult executionId="0ab0e117-33f9-4741-b866-39f8846b700e" testId="0ec4e59a-b6f6-193d-8509-2e9e3dd9ec9f" testName="S2_GentleRelease_NoPhysicsLaunch" computerName="毛茸茸的小熊" duration="00:00:00.0055918" startTime="2026-11-07T00:52:46.0148854+08:00" endTime="2026-11-07T00:52:46.0239554+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0ab0e117-33f9-4741-b866-39f8846b700e" />
+    <UnitTestResult executionId="0c934f6e-8c7b-42bd-8d57-9c6a78df18fa" testId="5fa39210-a8cb-6173-d3be-7e65d641f2fd" testName="S2_R3_MenuCancelDuringDrag_NoPhysicsLaunch" computerName="毛茸茸的小熊" duration="00:00:00.0105535" startTime="2026-11-07T00:52:46.0731996+08:00" endTime="2026-11-07T00:52:46.0864437+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c934f6e-8c7b-42bd-8d57-9c6a78df18fa">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Warning: 0 : Cannot activate menu owner: 1400</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1bab701f-c32c-4dfb-9366-86436f4124da" testId="7517ad92-ebd1-b5c5-522c-a8085829c986" testName="S2_PhysicsDriven_WindowMovesUntilRest" computerName="毛茸茸的小熊" duration="00:00:00.0095891" startTime="2026-11-07T00:52:46.0383795+08:00" endTime="2026-11-07T00:52:46.0506410+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1bab701f-c32c-4dfb-9366-86436f4124da" />
+    <UnitTestResult executionId="27e1bc09-937e-451f-b27a-30f34bcba142" testId="ac6b3a00-1f82-7a6f-00da-24e194aa5f1c" testName="S2_Regrab_StopsPhysics" computerName="毛茸茸的小熊" duration="00:00:00.0077936" startTime="2026-11-07T00:52:46.0507197+08:00" endTime="2026-11-07T00:52:46.0620420+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="27e1bc09-937e-451f-b27a-30f34bcba142" />
+    <UnitTestResult executionId="f96afaf2-527a-4d93-9f78-636b77a9adf7" testId="ab5d63a7-8e51-640c-8de1-5087fbfefe99" testName="S2_R3_NormalRelease_StillLaunches" computerName="毛茸茸的小熊" duration="00:00:00.0089375" startTime="2026-11-07T00:52:46.0919709+08:00" endTime="2026-11-07T00:52:46.1034861+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f96afaf2-527a-4d93-9f78-636b77a9adf7" />
+    <UnitTestResult executionId="82a17ea8-3372-46bf-b042-9f5db2199caf" testId="2b373102-59d0-df04-44e1-d5fab0bcfb90" testName="SecondDrag_StartsWithFreshSamples" computerName="毛茸茸的小熊" duration="00:00:00.0083237" startTime="2026-11-07T00:52:45.8889080+08:00" endTime="2026-11-07T00:52:45.9014406+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="82a17ea8-3372-46bf-b042-9f5db2199caf" />
+    <UnitTestResult executionId="fbbd1535-89dc-4f0a-9700-5267add7f0d9" testId="42036553-2dd9-72fd-ee49-70640de1d485" testName="S3_OnClosed_StopsPhysics" computerName="毛茸茸的小熊" duration="00:00:00.0139419" startTime="2026-11-07T00:52:46.3017683+08:00" endTime="2026-11-07T00:52:46.3212970+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fbbd1535-89dc-4f0a-9700-5267add7f0d9" />
+    <UnitTestResult executionId="35576048-098b-4429-a84a-8e9b508b0d8f" testId="793f97d9-73b7-2135-3103-6fb6445fa4b5" testName="FastDrag_ImmediateRelease_StillThrows" computerName="毛茸茸的小熊" duration="00:00:00.0091915" startTime="2026-11-07T00:52:45.8280306+08:00" endTime="2026-11-07T00:52:45.8416552+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="35576048-098b-4429-a84a-8e9b508b0d8f" />
+    <UnitTestResult executionId="c7ee2a78-9997-433a-bb39-c28aad652a12" testId="0c9d70e5-e668-eec4-5455-db628cd75206" testName="SameDpi_NormalDrag_NotCleared" computerName="毛茸茸的小熊" duration="00:00:00.0065759" startTime="2026-11-07T00:52:45.9560863+08:00" endTime="2026-11-07T00:52:45.9659197+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c7ee2a78-9997-433a-bb39-c28aad652a12" />
+    <UnitTestResult executionId="41344b40-9215-4c2c-91e7-62c856a01e9d" testId="ab73ef5f-7b05-c05e-345d-96a1ef39e077" testName="FastMove_ThenRealStillness_GentleRelease" computerName="毛茸茸的小熊" duration="00:00:00.0151271" startTime="2026-11-07T00:52:45.8093062+08:00" endTime="2026-11-07T00:52:45.8274933+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="41344b40-9215-4c2c-91e7-62c856a01e9d" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="FastMove_ThenRealStillness_GentleRelease" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ab73ef5f-7b05-c05e-345d-96a1ef39e077">
+      <Execution id="41344b40-9215-4c2c-91e7-62c856a01e9d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="FastMove_ThenRealStillness_GentleRelease" />
+    </UnitTest>
+    <UnitTest name="FastDrag_ImmediateRelease_StillThrows" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="793f97d9-73b7-2135-3103-6fb6445fa4b5">
+      <Execution id="35576048-098b-4429-a84a-8e9b508b0d8f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="FastDrag_ImmediateRelease_StillThrows" />
+    </UnitTest>
+    <UnitTest name="DisplayLayoutChange_ClearsSamples" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="b04aaac8-4914-874c-b982-946700b55687">
+      <Execution id="1a1c9fe4-6e96-42a1-9971-abcb63cfc008" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="DisplayLayoutChange_ClearsSamples" />
+    </UnitTest>
+    <UnitTest name="S2_R3_CloseDuringDrag_NoPhysicsLaunch" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="fe4baefb-d9ef-3233-683f-0ac5a477393e">
+      <Execution id="c46f81be-a8e6-427f-b7a3-2b19383878d5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_R3_CloseDuringDrag_NoPhysicsLaunch" />
+    </UnitTest>
+    <UnitTest name="GentleRelease_SlowMovement_StaysInPlace" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="1584378a-ebbc-c481-bce4-bd040fd18e50">
+      <Execution id="cd477058-b42d-4812-8278-072aed4a9165" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="GentleRelease_SlowMovement_StaysInPlace" />
+    </UnitTest>
+    <UnitTest name="FastDrag_SingleMove_ThrowsWithPressBaseline" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="5cda643b-c6f9-33bf-8825-839afc0bfd61">
+      <Execution id="2bc818f0-33ab-4375-a967-461144a6226b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="FastDrag_SingleMove_ThrowsWithPressBaseline" />
+    </UnitTest>
+    <UnitTest name="S3_PauseDuringPhysics_FreezesAndResumes" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="56dff655-beee-2f79-b05a-277c2c98717f">
+      <Execution id="f6b0fb1c-f6e6-4d14-87be-ce8650ce91c0" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_PauseDuringPhysics_FreezesAndResumes" />
+    </UnitTest>
+    <UnitTest name="S3_OnClosed_StopsPhysics" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="42036553-2dd9-72fd-ee49-70640de1d485">
+      <Execution id="fbbd1535-89dc-4f0a-9700-5267add7f0d9" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_OnClosed_StopsPhysics" />
+    </UnitTest>
+    <UnitTest name="S2_FastDrag_Throws_LaunchesPhysics" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e1516eb1-13a4-b71d-ffd0-79f0873855b3">
+      <Execution id="3ed0f98e-ec3b-4338-8fa2-cf8399a6b26f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_FastDrag_Throws_LaunchesPhysics" />
+    </UnitTest>
+    <UnitTest name="SameDpi_NormalDrag_NotCleared" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0c9d70e5-e668-eec4-5455-db628cd75206">
+      <Execution id="c7ee2a78-9997-433a-bb39-c28aad652a12" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="SameDpi_NormalDrag_NotCleared" />
+    </UnitTest>
+    <UnitTest name="S2_Regrab_StopsPhysics" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ac6b3a00-1f82-7a6f-00da-24e194aa5f1c">
+      <Execution id="27e1bc09-937e-451f-b27a-30f34bcba142" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_Regrab_StopsPhysics" />
+    </UnitTest>
+    <UnitTest name="S3_NoMonitor_PhysicsRejectedAndStopped" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="65240a01-e1f6-8648-8c35-e21d0b4f621c">
+      <Execution id="d9efefbe-de42-46be-84de-7d5db3c90a78" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_NoMonitor_PhysicsRejectedAndStopped" />
+    </UnitTest>
+    <UnitTest name="S3_ProbeDelayedDuringPhysics_EvaluateSkipped" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="4194cf0e-a377-1519-7c37-abb912f55768">
+      <Execution id="e28938fb-0739-4c37-8dbf-422899de7c2b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_ProbeDelayedDuringPhysics_EvaluateSkipped" />
+    </UnitTest>
+    <UnitTest name="S2_CaptureLoss_NoPhysicsLaunch" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e700a5de-7110-4121-952c-4bfff3221f2e">
+      <Execution id="739131d8-49c6-48ab-a684-46a87316ee74" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_CaptureLoss_NoPhysicsLaunch" />
+    </UnitTest>
+    <UnitTest name="S2_GentleRelease_NoPhysicsLaunch" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0ec4e59a-b6f6-193d-8509-2e9e3dd9ec9f">
+      <Execution id="0ab0e117-33f9-4741-b866-39f8846b700e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_GentleRelease_NoPhysicsLaunch" />
+    </UnitTest>
+    <UnitTest name="S2_PhysicsDriven_WindowMovesUntilRest" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="7517ad92-ebd1-b5c5-522c-a8085829c986">
+      <Execution id="1bab701f-c32c-4dfb-9366-86436f4124da" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_PhysicsDriven_WindowMovesUntilRest" />
+    </UnitTest>
+    <UnitTest name="SecondDrag_StartsWithFreshSamples" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="2b373102-59d0-df04-44e1-d5fab0bcfb90">
+      <Execution id="82a17ea8-3372-46bf-b042-9f5db2199caf" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="SecondDrag_StartsWithFreshSamples" />
+    </UnitTest>
+    <UnitTest name="StopBeforeRelease_GentleDespiteEarlierFastMovement" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="3891cb80-8df0-ff6e-ec90-d2be3b2a2781">
+      <Execution id="531258ab-3c7b-4704-80cd-89f2a6a26dcc" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="StopBeforeRelease_GentleDespiteEarlierFastMovement" />
+    </UnitTest>
+    <UnitTest name="HeadPress_SingleFastMove_ConvertsAndThrows" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="bebb095b-14bf-572d-c3ac-d35a9aa59ba4">
+      <Execution id="0ebe0a41-2683-4350-b5d8-a26a216b24bc" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="HeadPress_SingleFastMove_ConvertsAndThrows" />
+    </UnitTest>
+    <UnitTest name="DpiChange_ThenNewMovement_CanThrow" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f9e471db-756f-d4fe-9a73-08f61d117ccc">
+      <Execution id="fc5d15f0-13d6-47f7-b1af-6027898b4c66" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="DpiChange_ThenNewMovement_CanThrow" />
+    </UnitTest>
+    <UnitTest name="S3_DisplayLayoutChange_StopsPhysics" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="83611ee2-c4cd-7b2e-ce6d-ad2ce6c8cb99">
+      <Execution id="c7648285-6465-48bf-9da1-a9c200689dac" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_DisplayLayoutChange_StopsPhysics" />
+    </UnitTest>
+    <UnitTest name="S2_R3_NormalRelease_StillLaunches" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ab5d63a7-8e51-640c-8de1-5087fbfefe99">
+      <Execution id="f96afaf2-527a-4d93-9f78-636b77a9adf7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_R3_NormalRelease_StillLaunches" />
+    </UnitTest>
+    <UnitTest name="DpiChange_Alone_ClearsSamples_NoThrowOnRelease" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="8c1a7010-dbbf-5b78-1fbd-e5e456e250b0">
+      <Execution id="ad0f8c73-3f40-4fcb-aa65-7a17bf1367dc" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="DpiChange_Alone_ClearsSamples_NoThrowOnRelease" />
+    </UnitTest>
+    <UnitTest name="S2_R3_MenuCancelDuringDrag_NoPhysicsLaunch" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="5fa39210-a8cb-6173-d3be-7e65d641f2fd">
+      <Execution id="0c934f6e-8c7b-42bd-8d57-9c6a78df18fa" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_R3_MenuCancelDuringDrag_NoPhysicsLaunch" />
+    </UnitTest>
+    <UnitTest name="S3_ExitDuringPhysics_StopsAndSavesValidPosition" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="cc530734-9d2b-19e5-c062-328d7f20b528">
+      <Execution id="f07122fd-6c13-4df1-9bbc-c59cb8693997" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_ExitDuringPhysics_StopsAndSavesValidPosition" />
+    </UnitTest>
+    <UnitTest name="S3_RegrabDuringPhysics_StopsPhysics_NoJump" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a0a96f4c-fb93-d864-d1d9-ece230e89212">
+      <Execution id="39afafd2-adc3-48ec-86cd-541801cffb4a" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_RegrabDuringPhysics_StopsPhysics_NoJump" />
+    </UnitTest>
+    <UnitTest name="NoDragEverStarted_DefaultReleaseIsGentle" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="aaba0cee-4383-5f75-b788-56ca7e0d9386">
+      <Execution id="dc2f3ad0-392f-4841-bd4c-a3992fd158d2" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="NoDragEverStarted_DefaultReleaseIsGentle" />
+    </UnitTest>
+    <UnitTest name="S2_R3_RejectedPhysics_StopsAndCleansUp" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="fff62ea8-2233-31e0-1332-d5627432f277">
+      <Execution id="a88e8609-49bb-4624-be87-a66798199525" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S2_R3_RejectedPhysics_StopsAndCleansUp" />
+    </UnitTest>
+    <UnitTest name="HeadPress_LightTapWithinSlop_NoThrow" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="750ec2ee-71a2-f452-a3b8-33581bab218f">
+      <Execution id="69c2da7a-aebf-4501-8984-0e20669c0f72" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="HeadPress_LightTapWithinSlop_NoThrow" />
+    </UnitTest>
+    <UnitTest name="GentleRelease_NoMovement_StaysInPlace" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="61fb4afb-d245-c01b-ee48-84813077fc08">
+      <Execution id="ae1aa363-01cc-4082-9d70-e75c7797ce83" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="GentleRelease_NoMovement_StaysInPlace" />
+    </UnitTest>
+    <UnitTest name="Pause_ClearsSamples_NoThrowOnResume" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e0357088-c7c0-13ee-fd04-719fc202a9c8">
+      <Execution id="670318ee-4321-4436-8b64-6a1e6fb7f5f5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="Pause_ClearsSamples_NoThrowOnResume" />
+    </UnitTest>
+    <UnitTest name="S3_ExitDuringPhysics_IsolatedSaveReload_NewWindowStaticRecovery" storage="c:\users\mrrdxx\desktop\pet\artifacts\p2-003-s3-r6\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ed50d42c-c709-3ea4-7b3f-a3a0eed478b0">
+      <Execution id="d1963973-f3bb-4dee-9e8e-6441748297b2" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p2-003-s3-r6\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReleaseSamplingIntegrationTests" name="S3_ExitDuringPhysics_IsolatedSaveReload_NewWindowStaticRecovery" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5cda643b-c6f9-33bf-8825-839afc0bfd61" executionId="2bc818f0-33ab-4375-a967-461144a6226b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="65240a01-e1f6-8648-8c35-e21d0b4f621c" executionId="d9efefbe-de42-46be-84de-7d5db3c90a78" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1516eb1-13a4-b71d-ffd0-79f0873855b3" executionId="3ed0f98e-ec3b-4338-8fa2-cf8399a6b26f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e700a5de-7110-4121-952c-4bfff3221f2e" executionId="739131d8-49c6-48ab-a684-46a87316ee74" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3891cb80-8df0-ff6e-ec90-d2be3b2a2781" executionId="531258ab-3c7b-4704-80cd-89f2a6a26dcc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1584378a-ebbc-c481-bce4-bd040fd18e50" executionId="cd477058-b42d-4812-8278-072aed4a9165" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fff62ea8-2233-31e0-1332-d5627432f277" executionId="a88e8609-49bb-4624-be87-a66798199525" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4194cf0e-a377-1519-7c37-abb912f55768" executionId="e28938fb-0739-4c37-8dbf-422899de7c2b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b04aaac8-4914-874c-b982-946700b55687" executionId="1a1c9fe4-6e96-42a1-9971-abcb63cfc008" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bebb095b-14bf-572d-c3ac-d35a9aa59ba4" executionId="0ebe0a41-2683-4350-b5d8-a26a216b24bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f9e471db-756f-d4fe-9a73-08f61d117ccc" executionId="fc5d15f0-13d6-47f7-b1af-6027898b4c66" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8c1a7010-dbbf-5b78-1fbd-e5e456e250b0" executionId="ad0f8c73-3f40-4fcb-aa65-7a17bf1367dc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e0357088-c7c0-13ee-fd04-719fc202a9c8" executionId="670318ee-4321-4436-8b64-6a1e6fb7f5f5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a0a96f4c-fb93-d864-d1d9-ece230e89212" executionId="39afafd2-adc3-48ec-86cd-541801cffb4a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cc530734-9d2b-19e5-c062-328d7f20b528" executionId="f07122fd-6c13-4df1-9bbc-c59cb8693997" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aaba0cee-4383-5f75-b788-56ca7e0d9386" executionId="dc2f3ad0-392f-4841-bd4c-a3992fd158d2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56dff655-beee-2f79-b05a-277c2c98717f" executionId="f6b0fb1c-f6e6-4d14-87be-ce8650ce91c0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="750ec2ee-71a2-f452-a3b8-33581bab218f" executionId="69c2da7a-aebf-4501-8984-0e20669c0f72" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61fb4afb-d245-c01b-ee48-84813077fc08" executionId="ae1aa363-01cc-4082-9d70-e75c7797ce83" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fe4baefb-d9ef-3233-683f-0ac5a477393e" executionId="c46f81be-a8e6-427f-b7a3-2b19383878d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ed50d42c-c709-3ea4-7b3f-a3a0eed478b0" executionId="d1963973-f3bb-4dee-9e8e-6441748297b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="83611ee2-c4cd-7b2e-ce6d-ad2ce6c8cb99" executionId="c7648285-6465-48bf-9da1-a9c200689dac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0ec4e59a-b6f6-193d-8509-2e9e3dd9ec9f" executionId="0ab0e117-33f9-4741-b866-39f8846b700e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5fa39210-a8cb-6173-d3be-7e65d641f2fd" executionId="0c934f6e-8c7b-42bd-8d57-9c6a78df18fa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7517ad92-ebd1-b5c5-522c-a8085829c986" executionId="1bab701f-c32c-4dfb-9366-86436f4124da" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ac6b3a00-1f82-7a6f-00da-24e194aa5f1c" executionId="27e1bc09-937e-451f-b27a-30f34bcba142" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab5d63a7-8e51-640c-8de1-5087fbfefe99" executionId="f96afaf2-527a-4d93-9f78-636b77a9adf7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2b373102-59d0-df04-44e1-d5fab0bcfb90" executionId="82a17ea8-3372-46bf-b042-9f5db2199caf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="42036553-2dd9-72fd-ee49-70640de1d485" executionId="fbbd1535-89dc-4f0a-9700-5267add7f0d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="793f97d9-73b7-2135-3103-6fb6445fa4b5" executionId="35576048-098b-4429-a84a-8e9b508b0d8f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0c9d70e5-e668-eec4-5455-db628cd75206" executionId="c7ee2a78-9997-433a-bb39-c28aad652a12" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab73ef5f-7b05-c05e-345d-96a1ef39e077" executionId="41344b40-9215-4c2c-91e7-62c856a01e9d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="32" executed="32" passed="32" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

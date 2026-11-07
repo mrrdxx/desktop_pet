@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -10,7 +11,9 @@ using DesktopPet.App.Platform;
 using DesktopPet.Core.Animation;
 using DesktopPet.Core.Emotion;
 using DesktopPet.Core.Events;
+using DesktopPet.Core.Geometry;
 using DesktopPet.Core.Input;
+using DesktopPet.Core.Physics;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
 using MediaColor = System.Windows.Media.Color;
@@ -41,6 +44,37 @@ public partial class MainWindow : System.Windows.Window
     private bool _isDragging;
     private System.Windows.Point _dragOffset;
     private Point _pointerPressScreenDip;
+
+    // P2-003 F-01: Monotonic timestamp captured at pointer-down. Used as the
+    // baseline sample time for StartDragging so that head-press→convert-to-drag
+    // preserves the real press-down position and time, not the conversion
+    // moment. Without this, the baseline and first Move share the same
+    // timestamp and Core's same-time rejection drops the first displacement.
+    private double _pointerPressTimeMs;
+
+    // P2-003: Release speed sampler for throw/gentle-release detection.
+    // Fed with foot-center physical pixels + monotonic ms during drag.
+    // P2-004: Diagnostics capture enabled so the live observation host can
+    // record actual samples, segment indices, and decision reason for
+    // short-drag non-trigger analysis. Zero overhead when no one reads Diag.
+    private readonly ReleaseSpeedSampler _speedSampler = new() { CaptureDiagnostics = true };
+    private ReleaseResult _lastReleaseResult;
+
+    // P2-004: Frozen snapshot of RecordSample attempts from the most recent
+    // completed drag. Copied before _speedSampler.Reset() in EndDrag so the
+    // observation host can read the full attempt log (accepted + rejected)
+    // after release, even though Reset clears the live AttemptLog. While a
+    // drag is in progress, LastSampleAttempts returns the live AttemptLog
+    // instead so the host can observe attempts in real time.
+    private IReadOnlyList<SampleAttempt> _lastSampleAttemptsSnapshot = Array.Empty<SampleAttempt>();
+
+    // P2-003 S2: Physics simulator drives window motion after a throw.
+    // Launch is called only on a normal release with ShouldThrow=true;
+    // cancellation paths (menu, capture loss, closing) never Launch.
+    // OnUpdateTick drives Update and writes Left/Top from the physics state.
+    private readonly PhysicsSimulator _physicsSimulator = new();
+    private double _lastPhysicsUpdateMs;
+    private bool _isPhysicsActive;
 
     // P1-003: Petting detection state (R-02, D-013).
     // Head zone = upper 1/3 of the pet image (resource-driven zones deferred).
@@ -93,6 +127,11 @@ public partial class MainWindow : System.Windows.Window
     // When non-null, OnUpdateTick uses these instead of App.Current.
     internal EffectiveRuntimeTracker? TestRuntimeTracker;
     internal RareEventScheduler? TestRareEventScheduler;
+
+    // P2-003 S3 R5 F-08: Test injection point for monitor list.
+    // When non-null, BuildWorkArea uses this instead of MonitorInterop.EnumerateMonitors().
+    // Set to an empty list to simulate "no display available" without Width hacks.
+    internal List<DesktopPet.Core.Geometry.MonitorInfo>? TestMonitorList;
 
     // F-08: Track the last-known rare-event plan state so we only call
     // MarkStateDirty when the plan actually changes (new plan created,
@@ -217,12 +256,21 @@ public partial class MainWindow : System.Windows.Window
     }
 
     // P1-001: Monotonic time source for AnimationPlayer.
+    // P2-004 F-01: Use high-resolution Stopwatch instead of Environment.TickCount64.
+    // TickCount64 has ~10-16ms granularity on Windows .NET 10, causing real
+    // fast drags to have identical timestamps for press-down and first Move,
+    // which makes RecordSample reject the Move sample (same-or-older time)
+    // and lose the displacement from the velocity trajectory.
+    // Stopwatch.GetTimestamp uses the QPC counter with sub-microsecond
+    // resolution, converted to double milliseconds via Stopwatch.Frequency.
+    // This preserves fractional ms so press, Move, release, physics tick,
+    // and pause/resume all share a single high-resolution monotonic time domain.
     private static double _startTimeMs = -1;
     private static double GetElapsedMs()
     {
         if (_startTimeMs < 0)
-            _startTimeMs = Environment.TickCount64;
-        return Environment.TickCount64 - _startTimeMs;
+            _startTimeMs = Stopwatch.GetTimestamp() * 1000.0 / Stopwatch.Frequency;
+        return Stopwatch.GetTimestamp() * 1000.0 / Stopwatch.Frequency - _startTimeMs;
     }
 
     /// <summary>
@@ -427,6 +475,31 @@ public partial class MainWindow : System.Windows.Window
         var source = System.Windows.Interop.HwndSource.FromHwnd(
             new System.Windows.Interop.WindowInteropHelper(this).Handle);
         source?.AddHook(WndProc);
+
+        // P2-003 F-02: Hook WPF DpiChanged event so moving the window to a
+        // different-DPI monitor clears stale sample coordinates. This covers
+        // per-monitor DPI changes that do NOT trigger WM_DISPLAYCHANGE.
+        DpiChanged += MainWindow_DpiChanged;
+    }
+
+    /// <summary>
+    /// P2-003 F-02: WPF DpiChanged handler. Clears the drag sample context
+    /// so old-DPI physical coordinates are never subtracted from new-DPI
+    /// coordinates. Production and test share this path via NotifyDpiChanged.
+    /// </summary>
+    private void MainWindow_DpiChanged(object? sender, System.Windows.DpiChangedEventArgs e)
+    {
+        NotifyDpiChanged();
+    }
+
+    /// <summary>
+    /// P2-003 F-02: Clear drag sample context on DPI change. Called by the
+    /// WPF DpiChanged event handler in production and directly by tests.
+    /// After clearing, a fresh baseline is needed before a throw can occur.
+    /// </summary>
+    internal void NotifyDpiChanged()
+    {
+        _speedSampler.ClearSampleContext();
     }
 
     private IntPtr _hwnd;
@@ -495,7 +568,7 @@ public partial class MainWindow : System.Windows.Window
         int originalStyle = GetWindowLong(_hwnd, GWL_EXSTYLE);
         uint command = 0;
         _isContextMenuOpen = true;
-        EndDrag();
+        EndDrag(isCancellation: true);
 
         // Reset hover when opening the menu.
         _hoverDetector.Reset();
@@ -571,6 +644,22 @@ public partial class MainWindow : System.Windows.Window
     private void OnUpdateTick(object? sender, EventArgs e)
     {
         var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+
+        // P2-003 S2: Drive physics simulation after a throw release.
+        // While physics is active, advance the simulator and write the
+        // resulting foot-center position back to Left/Top. This owns the
+        // window position during the throw — no other branch writes
+        // Left/Top while physics is active.
+        // P2-003 S3 R5 F-07: Also exclude _isPettingCandidate so physics
+        // does not drive the window away from the cursor during a head press.
+        // P2-003 S3 R6 F-05: Also exclude _isAppPaused so that even if tick
+        // is called directly during pause, physics does not advance or write
+        // position. Stopping the DispatcherTimer is not sufficient — the
+        // method itself must guard against direct invocation.
+        if (_isPhysicsActive && !_isDragging && !_isPettingCandidate && !_isAppPaused)
+        {
+            UpdatePhysics(nowMs);
+        }
 
         if (_animPlayer.CurrentActionId != "curious")
             _curiosity.Cancel();
@@ -775,8 +864,15 @@ public partial class MainWindow : System.Windows.Window
             // Note: a probe that already started and was interrupted by
             // grievance was already consumed by its own Evaluate call (before
             // grievance began). That consumption stands — no replay.
+            // P2-003 S3 R5 F-06: Also skip Evaluate while physics is active.
+            // Evaluate has a MarkConsumed side-effect — calling it during
+            // physics would consume the plan and start a probe that competes
+            // with the throw trajectory. The plan retains its original date,
+            // roll, delay, baseline, and unconsumed state. After physics ends
+            // (resting or stopped), the next tick evaluates the same plan
+            // normally.
             RareEventScheduler.TriggerResult? result = null;
-            if (!_isExpressingGrievance)
+            if (!_isExpressingGrievance && !_isPhysicsActive)
             {
                 // Evaluate trigger conditions. Social and rest-reminder are not
                 // implemented yet — pass false per PRODUCT R-03.
@@ -824,7 +920,7 @@ public partial class MainWindow : System.Windows.Window
                 // states. (Evaluate is skipped during grievance per R10, so
                 // ShouldFire should not reach here while grievance is active,
                 // but the guard is retained as a secondary safety check.)
-                if (!_isProbing && !_isDragging && !_isExpressingGrievance)
+                if (!_isProbing && !_isDragging && !_isExpressingGrievance && !_isPhysicsActive)
                 {
                     StartProbe(nowMs);
                 }
@@ -988,6 +1084,14 @@ public partial class MainWindow : System.Windows.Window
         _pointerPressScreenDip = screenDip;
         _dragOffset = new Point(screenDip.X - Left, screenDip.Y - Top);
 
+        // P2-003 F-01: Record the press-down timestamp so StartDragging can
+        // use the real press-down time as the baseline sample time. This
+        // matters for head-press→convert-to-drag: the conversion happens
+        // inside the first Move event, so without this the baseline and the
+        // first Move sample would share the same timestamp and Core's
+        // same-time rejection would drop the first displacement.
+        _pointerPressTimeMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+
         // F-04: Drag/petting start immediately interrupts grievance expression.
         // Per R-02, expression is interrupted when the user starts dragging;
         // this must happen at MouseLeftButtonDown, not at EndDrag.
@@ -998,6 +1102,18 @@ public partial class MainWindow : System.Windows.Window
 
         if (isHeadPress)
         {
+            // P2-003 S3 R5 F-07: Stop active physics when the user presses
+            // the head zone. Without this, physics keeps driving the window
+            // away from the cursor during a head press. ForceStop zeroes
+            // velocity and sets IsResting; _isPhysicsActive is cleared so
+            // OnUpdateTick stops driving physics. The head press keeps its
+            // tolerance, original grab offset, capture, and short-press rules.
+            if (_isPhysicsActive)
+            {
+                _isPhysicsActive = false;
+                _physicsSimulator.ForceStop();
+            }
+
             // Start petting candidate — may convert to drag if movement exceeds threshold.
             // F-10: A head short-press does NOT cancel the probe.  Only when
             // the head press converts to an actual drag (ConvertPettingToDrag)
@@ -1030,10 +1146,41 @@ public partial class MainWindow : System.Windows.Window
         // This covers body-press-immediate-drag and head-press-convert-to-drag.
         CancelProbeForDrag();
         _dragRelease?.Cancel();
+        // P2-003 S2: Stop any active physics when the user re-grabs the pet.
+        _isPhysicsActive = false;
+        _physicsSimulator.Reset();
         _isDragging = true;
         _hoverDetector.Reset();
         _animPlayer.PlayAction("drag");
         UpdateFrame();
+
+        // P2-003 F-01: Clear any stale samples from a previous drag session,
+        // then record the press-down position as the baseline sample so
+        // a single fast Move event already has 2 samples (press + move)
+        // and can produce a throw — no need for two Move events.
+        //
+        // Use _pointerPressTimeMs (set in BeginCapturedPointerInteraction) as
+        // the baseline time. For body-press the press time ≈ now, so behavior
+        // is unchanged. For head-press→convert-to-drag the press time is
+        // earlier than the conversion Move, so the baseline sample and the
+        // first Move sample have different timestamps and Core's same-time
+        // rejection does not drop the first displacement.
+        _speedSampler.Reset();
+        RecordFootSample(_pointerPressTimeMs);
+    }
+
+    /// <summary>
+    /// P2-003 F-01: Record the current foot-center position as a sampler
+    /// sample. Shared by StartDragging (baseline) and EndDrag (stationary
+    /// detection probe). Uses the same coordinate path as
+    /// ProcessCapturedPointerMove so production and test share one pipeline.
+    /// </summary>
+    private void RecordFootSample(double nowMs, string source = "baseline")
+    {
+        var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+        var foot = CoordinateTransform.WindowTopLeftToFootCenter(
+            Left, Top, Width, Height, dpiX, dpiY);
+        _speedSampler.RecordSample(foot.FootCenterX, foot.FootCenterY, nowMs, source);
     }
 
     private void PetCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -1076,16 +1223,23 @@ public partial class MainWindow : System.Windows.Window
             // conversion movement; do not require a second move to catch up.
             Left = screenDip.X - _dragOffset.X;
             Top = screenDip.Y - _dragOffset.Y;
+
+            // P2-003: Feed the release speed sampler with foot-center
+            // physical pixels + monotonic ms for throw/gentle-release detection.
+            var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+            var foot = CoordinateTransform.WindowTopLeftToFootCenter(
+                Left, Top, Width, Height, dpiX, dpiY);
+            _speedSampler.RecordSample(foot.FootCenterX, foot.FootCenterY, nowMs, "move");
         }
     }
 
     private void PetCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        EndCapturedPointerInteraction();
+        EndCapturedPointerInteraction(isCancellation: false);
         e.Handled = true;
     }
 
-    internal void EndCapturedPointerInteraction()
+    internal void EndCapturedPointerInteraction(bool isCancellation = false)
     {
         if (_isPettingCandidate)
         {
@@ -1093,7 +1247,7 @@ public partial class MainWindow : System.Windows.Window
         }
         else if (_isDragging)
         {
-            EndDrag();
+            EndDrag(isCancellation);
         }
     }
 
@@ -1284,20 +1438,89 @@ public partial class MainWindow : System.Windows.Window
     /// F-02: After drag ends, clamp the window to a visible work area.
     /// P0-004: Notify App to mark state dirty for debounced save.
     /// P1-001: Return to idle action after drag ends.
+    /// P2-003 S2: isCancellation=true for capture loss / menu / closing paths —
+    /// these do NOT evaluate throw or Launch physics. Only a normal mouse-up
+    /// release (isCancellation=false) may Launch the physics simulator.
     /// </summary>
-    private void EndDrag()
+    private void EndDrag(bool isCancellation = false)
     {
         bool wasDragging = _isDragging;
         _isDragging = false;
         if (PetCanvas.IsMouseCaptured)
             PetCanvas.ReleaseMouseCapture();
 
+        // P2-003: Evaluate release speed to determine throw vs gentle drop.
+        // Cancellation paths (capture loss, menu, closing) skip evaluation
+        // entirely — the pet stays at its current position with no physics.
+        if (wasDragging && !isCancellation)
+        {
+            var releaseMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+
+            // P2-003 F-01: If the user stopped moving and held the pet still
+            // before releasing, there will be no MouseMove events during that
+            // stationary period. Probe the current position at release time so
+            // the sampler sees a real stationary sample pair (same position,
+            // later time) and correctly detects the stop → gentle release.
+            //
+            // The probe is injected only when the gap between the last sample
+            // and release exceeds half the sample window. This distinguishes a
+            // real hold (e.g. 66ms of stillness) from a normal fast drag where
+            // the release follows a few ms after the last Move — in the latter
+            // case the motion samples are still fresh and must NOT be masked
+            // by a same-position probe.
+            if (_speedSampler.HasSamples)
+            {
+                var config = _speedSampler.Config;
+                var gapMs = releaseMs - _speedSampler.NewestSampleTimeMs;
+                if (gapMs > config.SampleWindowMs / 2.0)
+                {
+                    // P2-004: Mark for diagnostics so the snapshot records
+                    // that a stationary probe was injected before evaluation.
+                    _speedSampler.MarkStationaryProbeInjected();
+                    RecordFootSample(releaseMs, "probe");
+                }
+            }
+
+            _lastReleaseResult = _speedSampler.EvaluateRelease(releaseMs);
+            // P2-004: Freeze the attempt log before Reset clears it, so the
+            // observation host can read the complete accepted/rejected record
+            // after release. This snapshot corresponds to _lastReleaseResult.
+            _lastSampleAttemptsSnapshot = _speedSampler.AttemptLog.ToList();
+            _speedSampler.Reset();
+
+            // P2-003 S2: Launch physics if the release is a throw.
+            // Use the current foot-center position (physical pixels) and the
+            // release velocity (px/ms) to initialize the trajectory.
+            if (_lastReleaseResult.ShouldThrow)
+            {
+                var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+                var foot = CoordinateTransform.WindowTopLeftToFootCenter(
+                    Left, Top, Width, Height, dpiX, dpiY);
+                _physicsSimulator.Launch(
+                    foot.FootCenterX, foot.FootCenterY,
+                    _lastReleaseResult.VelocityX, _lastReleaseResult.VelocityY);
+                _isPhysicsActive = true;
+                _lastPhysicsUpdateMs = releaseMs;
+            }
+        }
+        else if (wasDragging && isCancellation)
+        {
+            // Cancellation: freeze attempt log for diagnostics, then clear
+            // samples without evaluating or launching.
+            _lastSampleAttemptsSnapshot = _speedSampler.AttemptLog.ToList();
+            _speedSampler.Reset();
+        }
+
         // P1-003: Drag interrupts grievance expression (R-02).
         // F-04: Primary interrupt is at MouseLeftButtonDown; this is a safety net.
         InterruptGrievanceExpression();
 
         // F-02: Constrain the pet to a visible work area after dragging.
-        ClampWindowToWorkArea();
+        // P2-003 S2: Skip clamp when physics is active — the physics
+        // simulator handles boundary collisions. Clamp only for gentle
+        // release and cancellation paths.
+        if (!_isPhysicsActive)
+            ClampWindowToWorkArea();
 
         // P1-003: Record corner drag if the pet was released in a corner zone.
         var cornerTrack = TestCornerTracking;
@@ -1329,6 +1552,96 @@ public partial class MainWindow : System.Windows.Window
 
         // Start a fresh hover dwell after dragging.
         _hoverDetector.Reset();
+    }
+
+    /// <summary>
+    /// P2-003 S2: Advance the physics simulator and write the resulting
+    /// foot-center position back to window Left/Top. Called from
+    /// OnUpdateTick while _isPhysicsActive is true.
+    ///
+    /// When the simulator reports IsResting, physics is deactivated and
+    /// the final position is marked dirty for persistence.
+    /// </summary>
+    private void UpdatePhysics(double nowMs)
+    {
+        var elapsedMs = nowMs - _lastPhysicsUpdateMs;
+        _lastPhysicsUpdateMs = nowMs;
+
+        var area = BuildWorkArea();
+        var result = _physicsSimulator.Update(elapsedMs, area);
+
+        if (result.Rejected)
+        {
+            // F-04: Rejected (invalid work area / invalid dt) must not leave
+            // physics active indefinitely. Stop the simulation and reset so
+            // subsequent ticks don't repeat the rejection and ClampWindowToWorkArea
+            // resumes normal clamping. Do not write invalid coordinates to Left/Top.
+            _isPhysicsActive = false;
+            _physicsSimulator.Reset();
+            return;
+        }
+
+        // Convert physics foot-center (physical px) → DIP Left/Top.
+        var monitors = MonitorInterop.EnumerateMonitors();
+        if (monitors.Count > 0)
+        {
+            var monitor = MonitorLocator.FindMonitor(monitors, result.State.X, result.State.Y)
+                          ?? MonitorLocator.FindNearestMonitor(monitors, result.State.X, result.State.Y);
+            var (leftDip, topDip) = CoordinateTransform.FootCenterToWindowTopLeft(
+                new PetWorldPosition(result.State.X, result.State.Y),
+                Width, Height, monitor.DpiScaleX, monitor.DpiScaleY);
+            Left = leftDip;
+            Top = topDip;
+        }
+
+        if (result.IsResting)
+        {
+            _isPhysicsActive = false;
+            _physicsSimulator.Reset();
+            if (System.Windows.Application.Current is App app)
+                app.MarkStateDirty();
+        }
+    }
+
+    /// <summary>
+    /// P2-003 S2: Build a WorkArea (physical pixels) for the monitor the
+    /// pet's foot-center is currently on. The work area excludes the
+    /// taskbar. Window dimensions are accounted for so the foot anchor
+    /// (bottom-center) stays within bounds: minFootY = wa.Top + winHeight,
+    /// maxFootY = wa.Bottom.
+    /// </summary>
+    private WorkArea BuildWorkArea()
+    {
+        var monitors = TestMonitorList ?? MonitorInterop.EnumerateMonitors();
+        if (monitors.Count == 0)
+            // P2-003 S3: No available display — return an explicitly invalid
+            // work area (Left > Right) so PhysicsSimulator.Update rejects it
+            // and UpdatePhysics safely stops physics. Do NOT return (0,0,0,0)
+            // which passes IsValid (0<=0) and would let physics run in a
+            // zero-area box, potentially moving the window to the origin.
+            return new WorkArea(1, 0, 0, 0);
+
+        var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+        var foot = CoordinateTransform.WindowTopLeftToFootCenter(
+            Left, Top, Width, Height, dpiX, dpiY);
+
+        var monitor = MonitorLocator.FindMonitor(monitors, foot.FootCenterX, foot.FootCenterY)
+                      ?? MonitorLocator.FindNearestMonitor(monitors, foot.FootCenterX, foot.FootCenterY);
+
+        var wa = monitor.WorkArea.Bounds;
+        var winW = Width * monitor.DpiScaleX;
+        var winH = Height * monitor.DpiScaleY;
+
+        // Foot-center bounds: the window must be fully visible.
+        // Left edge: footX >= wa.Left + winW/2
+        // Right edge: footX <= wa.Right - winW/2
+        // Top edge: footY >= wa.Top + winH (foot is bottom-center)
+        // Bottom edge: footY <= wa.Bottom
+        return new WorkArea(
+            wa.Left + winW / 2.0,
+            wa.Top + winH,
+            wa.Right - winW / 2.0,
+            wa.Bottom);
     }
 
     /// <summary>
@@ -1467,8 +1780,10 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     private void PetCanvas_LostMouseCapture(object sender, System.Windows.Input.MouseEventArgs e)
     {
+        // P2-003 S2: Capture loss is a cancellation, not a normal release.
+        // Do NOT Launch physics — the pet stays where it is.
         if (_isDragging)
-            EndDrag();
+            EndDrag(isCancellation: true);
         if (_isPettingCandidate)
             EndPetting();
     }
@@ -1502,6 +1817,20 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     private void OnDisplayLayoutChanged()
     {
+        // P2-003: Clear drag sample context so old DPI coordinates are never
+        // subtracted from new-DPI coordinates after a monitor change.
+        _speedSampler.ClearSampleContext();
+
+        // P2-003 S3: Stop any active physics — the work area has changed,
+        // the trajectory's boundary assumptions are stale. ForceStop keeps
+        // the current position; ClampWindowToWorkArea (below) will correct
+        // it to the new valid area.
+        if (_isPhysicsActive)
+        {
+            _physicsSimulator.ForceStop();
+            _isPhysicsActive = false;
+        }
+
         var monitors = MonitorInterop.EnumerateMonitors();
         if (monitors.Count == 0)
             return;
@@ -1566,6 +1895,20 @@ public partial class MainWindow : System.Windows.Window
 
         // Discard hover dwell at the pause boundary.
         _hoverDetector.Reset();
+
+        // P2-003: Clear drag sampling state at pause boundary so stale
+        // samples don't produce a throw on resume.
+        _speedSampler.ClearSampleContext();
+        _speedSampler.Reset();
+
+        // P2-003 S3 R5 F-05: Freeze physics on pause — NOT terminate.
+        // The timer is already stopped above, so OnUpdateTick will not fire
+        // and physics will not advance. We must NOT call ForceStop (which
+        // zeroes velocity and sets IsResting=true) or clear _isPhysicsActive,
+        // because ResumeAnimation must continue the original trajectory.
+        // Only clear the time carry so stale accumulated time doesn't cause
+        // a large jump on the first post-resume tick.
+        _physicsSimulator.ClearTimeAccumulation();
 
         // P1-004: End the active period so paused time is not counted as
         // effective runtime for rare-event scheduling.
@@ -1637,6 +1980,15 @@ public partial class MainWindow : System.Windows.Window
         _animPlayer.Resume();
         _updateTimer.Start();
 
+        // P2-003 S3 R5 F-05: Resume continues the original trajectory.
+        // _isPhysicsActive was NOT cleared at pause (freeze, not terminate),
+        // so if physics was active before pause it remains active now.
+        // Reset the physics time reference to now and clear the carry so the
+        // first post-resume tick uses a normal delta (no 5-second backlog).
+        var resumePhysicsMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        _lastPhysicsUpdateMs = resumePhysicsMs;
+        _physicsSimulator.ClearTimeAccumulation();
+
         // P1-004: Start a fresh active period on resume.
         var resumeMonotonicMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
         EffectiveRuntimeTracker? rtResume = TestRuntimeTracker;
@@ -1663,9 +2015,22 @@ public partial class MainWindow : System.Windows.Window
     /// the saved state reflects the pre-probe position. Called by
     /// App.FlushFinalState before the final save. Does NOT end the probe
     /// animation — just restores the window position for save capture.
+    /// P2-003 S3: Also stop active physics so the saved position is a
+    /// legal rest position, not a mid-trajectory coordinate. ForceStop
+    /// zeroes velocity at the current position, then ClampWindowToWorkArea
+    /// ensures the position is within a valid work area.
     /// </summary>
     public void RestoreProbePositionForExit()
     {
+        // P2-003 S3: Stop physics first so the saved position is stable.
+        if (_isPhysicsActive)
+        {
+            _physicsSimulator.ForceStop();
+            _isPhysicsActive = false;
+            // Clamp to a valid work area so the exit position is legal.
+            ClampWindowToWorkArea();
+        }
+
         if (_isProbing)
         {
             Left = _probeOriginalLeft;
@@ -1717,6 +2082,59 @@ public partial class MainWindow : System.Windows.Window
     public bool IsDragging => _isDragging;
 
     /// <summary>
+    /// P2-003: Public accessor for the last release evaluation result.
+    /// Valid after EndDrag; defaults to gentle release before first drag.
+    /// </summary>
+    public ReleaseResult LastReleaseResult => _lastReleaseResult;
+
+    /// <summary>
+    /// P2-004: Public accessor for the last release diagnostics snapshot.
+    /// Null until the first drag completes or if diagnostics capture is disabled.
+    /// Contains sample buffer, segment indices, decision reason, and config
+    /// thresholds at the moment of EvaluateRelease — for offline analysis of
+    /// short-drag non-trigger cases.
+    /// </summary>
+    public ReleaseDiagInfo? LastReleaseDiag => _lastReleaseResult.Diag;
+
+    /// <summary>
+    /// P2-004: Public accessor for the recent RecordSample attempt log.
+    /// Each entry records the input (x, y, timeMs, source), the buffer state
+    /// before the call, and whether the sample was accepted or rejected (with
+    /// reason). For offline analysis of short-drag non-trigger cases at the
+    /// input level — e.g. whether the first Move was rejected due to
+    /// same-timestamp as the baseline.
+    ///
+    /// Lifecycle:
+    /// - While dragging: returns the live AttemptLog (real-time observation).
+    /// - After release (EndDrag → Reset): returns a frozen copy taken before
+    ///   Reset, so the host can still read the complete attempt log of the
+    ///   last drag. This snapshot corresponds to LastReleaseResult/LastReleaseDiag.
+    /// - On the next drag start (StartDragging → Reset): the snapshot is
+    ///   replaced by the new drag's live AttemptLog.
+    /// </summary>
+    public IReadOnlyList<SampleAttempt> LastSampleAttempts =>
+        _isDragging ? _speedSampler.AttemptLog : _lastSampleAttemptsSnapshot;
+
+    /// <summary>
+    /// P2-003: Public accessor for the current sample count in the sampler.
+    /// Useful for testing that samples are recorded during drag.
+    /// </summary>
+    public int DragSampleCount => _speedSampler.SampleCount;
+
+    /// <summary>
+    /// P2-003 S2: True while the physics simulator is actively driving
+    /// window position (after a throw release, until the pet comes to rest).
+    /// </summary>
+    public bool IsPhysicsActive => _isPhysicsActive;
+
+    /// <summary>
+    /// P2-003 S2: True if the physics simulator has been launched and not
+    /// yet Reset. Distinct from IsPhysicsActive: IsLaunched remains true
+    /// even after resting, until Reset is called.
+    /// </summary>
+    public bool IsPhysicsLaunched => _physicsSimulator.IsLaunched;
+
+    /// <summary>
     /// P1-003: Public accessor for the petting candidate state (for testing/diagnostics).
     /// True while the user is pressing the head zone and may be petting.
     /// </summary>
@@ -1736,12 +2154,22 @@ public partial class MainWindow : System.Windows.Window
 
     protected override void OnClosed(EventArgs e)
     {
-        // F-03: Clean up drag state on window close.
+        // F-03: Clean up drag state on window close — cancellation, not a release.
         if (_isDragging)
-            EndDrag();
+            EndDrag(isCancellation: true);
         // P1-003: Clean up petting state on window close.
         if (_isPettingCandidate)
             EndPetting();
+        // P2-003 S3: Stop active physics on close. FlushFinalState (called
+        // by App.ShutdownMainWindow before OnClosed) already calls
+        // RestoreProbePositionForExit which stops physics and clamps, but
+        // OnClosed may also be reached via alt-F4 or other paths — ensure
+        // physics is always stopped.
+        if (_isPhysicsActive)
+        {
+            _physicsSimulator.ForceStop();
+            _isPhysicsActive = false;
+        }
         _updateTimer.Stop();
         base.OnClosed(e);
     }

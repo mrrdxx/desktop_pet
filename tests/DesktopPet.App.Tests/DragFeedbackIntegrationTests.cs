@@ -12,7 +12,7 @@ namespace DesktopPet.App.Tests;
 public class DragFeedbackIntegrationTests
 {
     private const BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
-    private static void Invoke(MainWindow w,string method) => typeof(MainWindow).GetMethod(method,Private)!.Invoke(w,method=="OnUpdateTick"?[null,EventArgs.Empty]:null);
+    private static void Invoke(MainWindow w,string method,params object[] args) => typeof(MainWindow).GetMethod(method,Private)!.Invoke(w,method=="OnUpdateTick"?[null!,EventArgs.Empty]:args);
     private static void Tick(MainWindow w)=>Invoke(w,"OnUpdateTick");
     private static DragReleaseFeedback Feedback(MainWindow w)=>(DragReleaseFeedback)typeof(MainWindow).GetField("_dragRelease",Private)!.GetValue(w)!;
     private static string ImagePath(MainWindow w)=>((BitmapImage)((Image)w.FindName("PetImage")).Source).UriSource.LocalPath;
@@ -27,15 +27,18 @@ public class DragFeedbackIntegrationTests
             w.TestGetElapsedMs=()=>now; w.TestGetCursorPos=()=>(900,900);
             BeginBody(w); StringAssert.EndsWith(ImagePath(w),"drag_gentle.png");
             Assert.IsTrue(w.IsDragging, "Establish a live drag before checking release.");
-            w.ProcessCapturedPointerMove(new Point(75,75),new Point(175,175),true,10);
-            now=20; w.EndCapturedPointerInteraction();
+            // S2: Use a very slow move so ShouldThrow=false (no physics launch).
+            // 2 DIP over 200ms ≈ 0.015 px/ms, well below the 0.15 threshold.
+            // This test verifies release feedback animation, not physics trajectory.
+            w.ProcessCapturedPointerMove(new Point(75,75),new Point(77,77),true,200);
+            now=210; w.EndCapturedPointerInteraction();
             double left=w.Left,top=w.Top;
             Assert.IsFalse(w.IsDragging);
             Assert.AreEqual("idle",w.CurrentAction); Assert.IsTrue(Feedback(w).IsActive);
             StringAssert.EndsWith(ImagePath(w),"drag_gentle.png");
-            now=110; Tick(w); StringAssert.EndsWith(ImagePath(w),"release_settle.png");
-            now=200; Tick(w); StringAssert.EndsWith(ImagePath(w),"idle_0.png");
-            now=270; Tick(w); Assert.IsFalse(Feedback(w).IsActive);
+            now=300; Tick(w); StringAssert.EndsWith(ImagePath(w),"release_settle.png");
+            now=390; Tick(w); StringAssert.EndsWith(ImagePath(w),"idle_0.png");
+            now=460; Tick(w); Assert.IsFalse(Feedback(w).IsActive);
             Assert.AreEqual(left,w.Left); Assert.AreEqual(top,w.Top);
             Assert.AreEqual(0.0,w.CurrentFrameOffset.y);
         }
@@ -101,7 +104,7 @@ public class DragFeedbackIntegrationTests
     public void EndDragWithoutActualDrag_DoesNotInventRelease()
     {
         var w=new MainWindow();
-        try {Invoke(w,"EndDrag"); Assert.IsFalse(Feedback(w).IsActive); StringAssert.EndsWith(ImagePath(w),"idle_0.png");}
+        try {Invoke(w,"EndDrag",false); Assert.IsFalse(Feedback(w).IsActive); StringAssert.EndsWith(ImagePath(w),"idle_0.png");}
         finally {w.Close();}
     }
 }

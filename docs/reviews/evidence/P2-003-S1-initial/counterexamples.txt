@@ -1,0 +1,4 @@
+single move fast countBeforeRelease=1
+single move fast result=ReleaseResult { ShouldThrow = False, VelocityX = 0, VelocityY = 0, RawSpeed = 0 }
+stop66ms no move event countBeforeRelease=2
+stop66ms no move event result=ReleaseResult { ShouldThrow = True, VelocityX = 2, VelocityY = 0, RawSpeed = 5 }
