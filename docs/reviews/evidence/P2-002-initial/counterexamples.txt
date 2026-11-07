@@ -1,0 +1,5 @@
+six10ms: PhysicsState { X = 100, Y = 100, Vx = 1, Vy = 0, Speed = 1 }; one60ms: PhysicsState { X = 150, Y = 103.33333333333334, Vx = 1, Vy = 0.10000000000000002, Speed = 1.004987562112089 }
+wall bounce cap: PhysicsState { X = 1000, Y = 100.55555555555556, Vx = 0, Vy = 0, Speed = 0 }; resting=True
+slow wall contact near apex: PhysicsState { X = 0, Y = 100, Vx = 0, Vy = 0, Speed = 0 }; resting=True
+NaN launch: X=NaN; resting=False
+inverted area: PhysicsState { X = 200, Y = 200, Vx = -0.4, Vy = -0.013333333333333336, Speed = 0.40022216052809695 }

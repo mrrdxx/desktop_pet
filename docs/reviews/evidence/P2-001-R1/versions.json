@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-06",
+  "sha256": {
+    "src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs": "e3fcc4f23ce015cf59074c67d987458ea9f9c0709e4d4a26afa23450a129c099",
+    "tests/DesktopPet.Core.Tests/ReleaseSpeedSamplerTests.cs": "dcb758836fb6ed893590731bc2482646c7a44c411f8658bfbd891944f12e3500",
+    "docs/PRODUCT.md": "9a89cfec274a3937db97337db63efea80b97d892cbbda0cdbf0fdc4549e89e5e",
+    "docs/ARCHITECTURE.md": "9bff22adbf9791de143bd86641c045b8656fa809e743f41e43bfa270a72de2a6",
+    "docs/remediation/P2-001-response.md": "b8791d716abc390cfb364c71a5bd6e319c7fbc7864fb1d187394b8c1f0ccc54a"
+  }
+}

@@ -1,0 +1,10 @@
+PASS six10 equals60
+PASS pause clear preserves motion
+PASS wall budget does not rest in air
+PASS budget eventually floor rests
+PASS slow wall contact no air rest
+PASS invalid launch preserves valid state
+PASS bad area preserves state
+HUGE_DT steps=5,next_normal_steps=1,X=199.99999999999997
+ZERO_THRESHOLD valid=True,resting=False,speed=0,bounces=1199
+Original checks passed=7

@@ -1,0 +1,6 @@
+using DesktopPet.Core.Physics;
+var area=new WorkArea(0,0,1000,800);var a=new PhysicsSimulator();a.Launch(100,100,1,0);for(int i=0;i<6;i++)a.Update(10,area);var b=new PhysicsSimulator();b.Launch(100,100,1,0);b.Update(60,area);Console.WriteLine($"six10ms: {a.State}; one60ms: {b.State}");
+var c=new PhysicsSimulator(new PhysicsConfig{MaxBounces=1});c.Launch(999,100,1,0);c.Update(c.Config.FixedStepMs,area);Console.WriteLine($"wall bounce cap: {c.State}; resting={c.IsResting}");
+var d=new PhysicsSimulator();d.Launch(0.01,100,-0.03,-0.03333333333333333);d.Update(d.Config.FixedStepMs,area);Console.WriteLine($"slow wall contact near apex: {d.State}; resting={d.IsResting}");
+var n=new PhysicsSimulator();n.Launch(double.NaN,100,1,0);n.Update(20,area);Console.WriteLine($"NaN launch: X={n.State.X}; resting={n.IsResting}");
+var invalid=new PhysicsSimulator();invalid.Launch(100,100,1,0);invalid.Update(20,new WorkArea(200,200,0,0));Console.WriteLine($"inverted area: {invalid.State}");

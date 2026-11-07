@@ -1,0 +1,8 @@
+using DesktopPet.Core.Physics;
+void Run(string name, (double x,double y,double t)[] points,double release){var s=new ReleaseSpeedSampler();foreach(var p in points)s.RecordSample(p.x,p.y,p.t);Console.WriteLine(name+": "+System.Text.Json.JsonSerializer.Serialize(s.EvaluateRelease(release),new System.Text.Json.JsonSerializerOptions{NumberHandling=System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals}));}
+Run("release_moving_left",new[]{(100d,0d,0d),(400d,0d,50d),(300d,0d,100d)},100);
+Run("held_still_66ms",new[]{(0d,0d,0d),(100d,0d,33d),(200d,0d,66d),(200d,0d,99d),(200d,0d,132d)},132);
+Run("dpi_only_jump",new[]{(100d,200d,0d),(150d,300d,50d)},50);
+Run("out_of_order",new[]{(0d,0d,0d),(100d,0d,50d),(0d,0d,25d)},50);
+Run("nan_coordinate",new[]{(0d,0d,0d),(double.NaN,0d,50d)},50);
+Run("nan_release_time",new[]{(0d,0d,0d),(100d,0d,50d)},double.NaN);

@@ -1,0 +1,9 @@
+PASS reverse direction left
+PASS stop66ms gentle
+PASS context jump no throw
+PASS new context real motion throws
+PASS out of order rejected history preserved
+PASS invalid coordinates rejected
+PASS invalid release safe
+PASS invalid release preserves history
+ALL 8 CHECKS PASS

@@ -1,0 +1,6 @@
+release_moving_left: {"ShouldThrow":true,"VelocityX":2,"VelocityY":0,"RawSpeed":2}
+held_still_66ms: {"ShouldThrow":true,"VelocityX":1.0101010101010102,"VelocityY":0,"RawSpeed":1.0101010101010102}
+dpi_only_jump: {"ShouldThrow":true,"VelocityX":0.8944271909999159,"VelocityY":1.7888543819998317,"RawSpeed":2.23606797749979}
+out_of_order: {"ShouldThrow":false,"VelocityX":0,"VelocityY":0,"RawSpeed":0}
+nan_coordinate: {"ShouldThrow":true,"VelocityX":"NaN","VelocityY":0,"RawSpeed":"NaN"}
+nan_release_time: {"ShouldThrow":true,"VelocityX":2,"VelocityY":0,"RawSpeed":2}

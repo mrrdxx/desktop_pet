@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-06",
+  "sha256": {
+    "src/DesktopPet.Core/Physics/PhysicsSimulator.cs": "73fde6a46d5934f9fc914f87b067633fe8ee35c1569fe7f4afdb28848bcca10b",
+    "tests/DesktopPet.Core.Tests/PhysicsSimulatorTests.cs": "f87b9f24e768018e758988c6e083f353548ab9a81d067832bc4deef633940743",
+    "docs/PRODUCT.md": "886eb1e818ba206eb6285e805525e2993a9fe4b975d4f7482cdddcc4ca89f459",
+    "docs/ARCHITECTURE.md": "b0ddd0ef654a5b6c4b41556d519f0870fa3908b879124b361c24de411d6e3500"
+  }
+}

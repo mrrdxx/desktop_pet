@@ -1,0 +1,10 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.Core\DesktopPet.Core.csproj (用时 58 毫秒)。
+  已还原 C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.Core.Tests\DesktopPet.Core.Tests.csproj (用时 1.69 秒)。
+  DesktopPet.Core -> C:\Users\mrrdxx\Desktop\pet\artifacts\p2-001-r1\build\bin\DesktopPet.Core\debug\DesktopPet.Core.dll
+  DesktopPet.Core.Tests -> C:\Users\mrrdxx\Desktop\pet\artifacts\p2-001-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll
+C:\Users\mrrdxx\Desktop\pet\artifacts\p2-001-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll (.NETCoreApp,Version=v10.0)的测试运行
+总共 1 个测试文件与指定模式相匹配。
+结果文件: C:\Users\mrrdxx\Desktop\pet\artifacts\p2-001-r1\results\r1-core_net10.0_20261106161823.trx
+
+已通过! - 失败:     0，通过:   297，已跳过:     0，总计:   297，持续时间: 272 ms - DesktopPet.Core.Tests.dll (net10.0)
