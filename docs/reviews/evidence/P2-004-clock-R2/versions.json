@@ -1,0 +1,6 @@
+{
+  "src/DesktopPet.App/MainWindow.xaml.cs": "fc1335ba8eadc794a5d336b8a3f99bb04260c7f1e0cb6f1c0155cf363af541a8",
+  "src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs": "7528741b07c150f47be7a10f902345d1c9fa5dc46d47ab8dee9312aa7f99af44",
+  "tests/DesktopPet.App.Tests/HighResolutionTimingTests.cs": "015c6b5a091f5479b3e91d4444f3df01490c8284c200061e1fc3b340110a20cc",
+  "docs/remediation/P2-004-response.md": "b73b8918484fe3d65df7e23e0c732f982f695efe89ad86f0c7f7024faa8a631b"
+}

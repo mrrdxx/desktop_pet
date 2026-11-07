@@ -1,0 +1,62 @@
+[
+  {
+    "samples": 2064,
+    "activeSamples": 36,
+    "dpi": [
+      96
+    ],
+    "boundsViolationsInObservedActiveSamples": 0,
+    "horizontalDirectionReversals": 1,
+    "activePausedSamples": 0,
+    "activePausedSpanMs": 0,
+    "pausedUniquePositions": 0,
+    "final": {
+      "ms": 97941,
+      "left": 1435,
+      "top": 912,
+      "width": 120,
+      "height": 120,
+      "dragging": false,
+      "head": false,
+      "active": false,
+      "paused": false,
+      "release": {
+        "ShouldThrow": false,
+        "VelocityX": 0,
+        "VelocityY": 0,
+        "RawSpeed": 0
+      },
+      "dpi": 96
+    }
+  },
+  {
+    "samples": 4022,
+    "activeSamples": 426,
+    "dpi": [
+      96
+    ],
+    "boundsViolationsInObservedActiveSamples": 0,
+    "horizontalDirectionReversals": 2,
+    "activePausedSamples": 345,
+    "activePausedSpanMs": 16253,
+    "pausedUniquePositions": 1,
+    "final": {
+      "ms": 189865,
+      "left": 1077,
+      "top": 912,
+      "width": 120,
+      "height": 120,
+      "dragging": false,
+      "head": false,
+      "active": false,
+      "paused": false,
+      "release": {
+        "ShouldThrow": true,
+        "VelocityX": 1.872658355138089,
+        "VelocityY": -0.7022468831767834,
+        "RawSpeed": 2.6700011704117284
+      },
+      "dpi": 96
+    }
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "src/DesktopPet.App/MainWindow.xaml.cs": "2beff4858e10c25d1e9ac8775d3067abe5fe767b43be967467c38b2e44acef5c",
+  "src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs": "7528741b07c150f47be7a10f902345d1c9fa5dc46d47ab8dee9312aa7f99af44",
+  "tests/DesktopPet.App.Tests/SampleAttemptSnapshotTests.cs": "9311d17c69fd422b6c5c22729a570f4bc273c5665515adea5a0d9c54ff7b53a9"
+}

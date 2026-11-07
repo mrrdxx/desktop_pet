@@ -1,0 +1,5 @@
+before release attempts=2
+SampleAttempt { Source = baseline, X = 705, Y = 1032, TimeMs = 100, NewestBeforeTimeMs = 0, CountBefore = 0, Result = accepted, CountAfter = 1 }
+SampleAttempt { Source = move, X = 745, Y = 1032, TimeMs = 100, NewestBeforeTimeMs = 100, CountBefore = 1, Result = rejected_same_or_older_time, CountAfter = 1 }
+result=False reason=insufficient_samples
+after EndDrag-equivalent Reset attempts=0

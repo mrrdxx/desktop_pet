@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-07 Asia/Shanghai",
+  "scope": "actual CUA mouse actions against production MainWindow, external observation host; no App.OnStartup or real archive",
+  "sourceSha256": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": "7bda300d7537092c27144f69a8ab1a47952995d7fa8ff8a6954d67be0f60ca6f",
+    "src/DesktopPet.App/App.xaml.cs": "e4c346032c0e528669ea8fe2abe44423ae61073e0b5451e8ab2c407ffa2a9cd8",
+    "src/DesktopPet.Core/Physics/PhysicsSimulator.cs": "73fde6a46d5934f9fc914f87b067633fe8ee35c1569fe7f4afdb28848bcca10b",
+    "src/DesktopPet.Core/Physics/ReleaseSpeedSampler.cs": "dce7068b876967092c4cd0861a148cb8493f8d26391cc5c378dd7a533a3c334b"
+  },
+  "dllSha256": "39850a68edac56687ad8743dd56f9a5adf7d6fa8083c82de5edae8b8dcd95df4",
+  "environment": {
+    "hwndDpi": 96,
+    "monitorBounds": [
+      0,
+      0,
+      1920,
+      1080
+    ],
+    "workArea": [
+      0,
+      0,
+      1920,
+      1032
+    ]
+  }
+}

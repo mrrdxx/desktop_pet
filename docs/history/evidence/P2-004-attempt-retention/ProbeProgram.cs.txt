@@ -1,0 +1,2 @@
+using System;using DesktopPet.Core.Physics;
+class Program{static void Main(){var s=new ReleaseSpeedSampler{CaptureDiagnostics=true};s.RecordSample(705,1032,100,"baseline");s.RecordSample(745,1032,100,"move");Console.WriteLine($"before release attempts={s.AttemptLog.Count}");foreach(var a in s.AttemptLog)Console.WriteLine(a);var result=s.EvaluateRelease(116);Console.WriteLine($"result={result.ShouldThrow} reason={result.Diag?.Reason}");s.Reset();Console.WriteLine($"after EndDrag-equivalent Reset attempts={s.AttemptLog.Count}");}}
