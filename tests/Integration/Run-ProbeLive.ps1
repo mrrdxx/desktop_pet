@@ -1,4 +1,4 @@
-param([switch]$BuildOnly, [switch]$Interactive)
+param([switch]$BuildOnly, [switch]$Interactive, [string]$Configuration = 'Debug')
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $suiteId = [guid]::NewGuid().ToString('N').Substring(0,8)
@@ -25,7 +25,7 @@ Get-ChildItem -LiteralPath $coreSource -Recurse -File | Where-Object { $_.FullNa
 }
 
 # Copy App source.
-foreach ($item in @('DesktopPet.App.csproj','app.manifest','App.xaml','App.xaml.cs','MainWindow.xaml','MainWindow.xaml.cs','Platform','Persistence')) {
+foreach ($item in @('DesktopPet.App.csproj','app.manifest','App.xaml','App.xaml.cs','MainWindow.xaml','MainWindow.xaml.cs','Platform','Persistence','Diagnostics')) {
     Copy-Item -LiteralPath (Join-Path $repositoryRoot "src/DesktopPet.App/$item") -Destination $fixtureApp -Recurse
 }
 
@@ -78,7 +78,7 @@ $seedState = @{
 [IO.File]::WriteAllText((Join-Path $dataDirectory 'state.json'),$seedState,[Text.UTF8Encoding]::new($false))
 
 # Build.
-dotnet build $project -c Debug -m:1 --ignore-failed-sources --nologo -v minimal
+dotnet build $project -c $Configuration -m:1 --ignore-failed-sources --nologo -v minimal
 if ($LASTEXITCODE -ne 0) { throw 'Isolated fixture build failed.' }
 if ($BuildOnly) { "BUILD_ONLY_COMPLETE=$suiteRoot"; exit 0 }
 
