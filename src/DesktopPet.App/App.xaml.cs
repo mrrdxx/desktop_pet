@@ -1,4 +1,8 @@
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
+using DesktopPet.App.Diagnostics;
 using DesktopPet.App.Platform;
 using DesktopPet.App.Persistence;
 using DesktopPet.Core.Emotion;
@@ -24,6 +28,34 @@ public partial class App : System.Windows.Application
     private bool _isPaused;
     private bool _isShuttingDown;
 
+    // PREP-001 R3 F-02: When true, OnStartup skips production initialization
+    // (SingleInstanceGuard, ArchiveService, MainWindow, TrayService) and
+    // preserves the isolated dependencies injected by ProbeSetupIsolated.
+    // This prevents the WPF startup pipeline from overwriting isolated
+    // archive/log/lock configuration with production defaults.
+    internal bool _probeIsolatedMode;
+
+    // PREP-001: Diagnostic logger for unhandled exception notifications.
+    // Registered at the very start of OnStartup, before any other initialization.
+    internal DiagnosticLogger? DiagnosticLogger { get; private set; }
+
+    /// <summary>
+    /// PREP-001 R1 F-02: Allows the isolation probe to inject an isolated
+    /// DiagnosticLogger before calling RegisterDiagnosticHandlers, ensuring
+    /// the probe uses the production registration path with a test logger.
+    /// </summary>
+    internal void SetDiagnosticLogger(DiagnosticLogger logger)
+    {
+        DiagnosticLogger = logger;
+    }
+
+    /// <summary>
+    /// PREP-001: Application version/build identifier for diagnostic logs.
+    /// Uses assembly version; can be overridden in tests.
+    /// </summary>
+    internal string AppVersion =>
+        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+
     // P1-003: Emotion objects held at App level so they survive window recreation
     // and are accessible from MainWindow via App.Current.
     internal EmotionDecayAccumulator? EmotionAccumulator { get; private set; }
@@ -35,6 +67,64 @@ public partial class App : System.Windows.Application
     // RareEventScheduler manages the daily plan and trigger evaluation.
     internal EffectiveRuntimeTracker? RuntimeTracker { get; private set; }
     internal RareEventScheduler? RareEventScheduler { get; private set; }
+
+    /// <summary>
+    /// PREP-001 R2 F-02: Isolated startup for diagnostic probes.
+    /// Sets up isolated archive/save infrastructure (like TestSetupIsolatedSave)
+    /// but also creates an isolated SingleInstanceGuard with a unique mutex name,
+    /// so the probe does NOT access the production mutex or user archive.
+    /// 
+    /// This method does NOT call the production OnStartup, does NOT create
+    /// a MainWindow, does NOT create a TrayService, and does NOT access the
+    /// user's default archive directory. The probe can then call
+    /// RegisterDiagnosticHandlers() to wire the real exception handlers.
+    /// </summary>
+    internal void ProbeSetupIsolated(string isolatedDir, string isolatedMutexName)
+    {
+        // Isolated archive — uses the provided temp directory, not the user's
+        // default %LOCALAPPDATA%\DesktopPet\ path.
+        _archive = new ArchiveService(isolatedDir);
+        _saveCoordinator = new SaveCoordinator(_archive);
+        _state = new PetStateArchive();
+        _settings = new PetSettingsArchive();
+        _isPaused = false;
+        _isShuttingDown = false;
+
+        // Isolated single-instance guard — uses a unique mutex name so the
+        // probe does NOT contend with the production DesktopPet instance.
+        _instanceGuard = new SingleInstanceGuard(isolatedMutexName);
+
+        // PREP-001 R3 F-02: Set the isolated-mode flag so that if the WPF
+        // startup pipeline invokes OnStartup (e.g. via Dispatcher pumping),
+        // it will skip production initialization and preserve the isolated
+        // dependencies set above.
+        _probeIsolatedMode = true;
+
+        // Isolated diagnostic logger — uses a subdirectory of the temp dir.
+        if (DiagnosticLogger is null)
+        {
+            var logDir = Path.Combine(isolatedDir, "logs");
+            DiagnosticLogger = new DiagnosticLogger(logDir);
+        }
+    }
+
+    /// <summary>
+    /// PREP-001 R2 F-02: Exposes the save coordinator for probe/test
+    /// verification of normal/abnormal save snapshots.
+    /// </summary>
+    internal SaveCoordinator? TestSaveCoordinator => _saveCoordinator;
+
+    /// <summary>
+    /// PREP-001 R3 F-02: Exposes the instance guard for probe verification
+    /// that the isolated mutex is still in effect after Dispatcher pumping.
+    /// </summary>
+    internal SingleInstanceGuard? TestInstanceGuard => _instanceGuard;
+
+    /// <summary>
+    /// PREP-001 R2 F-02: Exposes the archive service for probe/test
+    /// verification of save snapshots.
+    /// </summary>
+    internal ArchiveService? TestArchive => _archive;
 
     /// <summary>
     /// F-08: Test-only setup method that configures the App with isolated
@@ -60,6 +150,14 @@ public partial class App : System.Windows.Application
         EmotionAccumulator ??= new EmotionDecayAccumulator(50, DateTime.UtcNow);
         GrievanceExpression ??= new GrievanceExpressionState();
         CornerTracking ??= new CornerTracker();
+
+        // PREP-001: Allow tests to inject an isolated log directory.
+        // If not provided, uses a subdirectory of isolatedDir.
+        if (DiagnosticLogger is null)
+        {
+            var logDir = Path.Combine(isolatedDir, "logs");
+            DiagnosticLogger = new DiagnosticLogger(logDir);
+        }
     }
 
     /// <summary>
@@ -75,6 +173,9 @@ public partial class App : System.Windows.Application
         _tray = null;
         _instanceGuard?.Dispose();
         _instanceGuard = null;
+        // PREP-001: Clean up diagnostic logger.
+        DiagnosticLogger?.Dispose();
+        DiagnosticLogger = null;
     }
 
     /// <summary>
@@ -198,6 +299,23 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        // PREP-001 R3 F-02: If the probe has already injected isolated
+        // dependencies via ProbeSetupIsolated, skip production initialization
+        // entirely. This prevents OnStartup from overwriting the isolated
+        // ArchiveService, SingleInstanceGuard, DiagnosticLogger, and from
+        // creating a production MainWindow/TrayService.
+        if (_probeIsolatedMode)
+        {
+            RegisterDiagnosticHandlers();
+            return;
+        }
+
+        // PREP-001: Register diagnostic exception notifications as early as
+        // possible, before any other initialization. These are diagnostic-only:
+        // they record to a local bounded log and do NOT swallow exceptions,
+        // force-save archives, or auto-restart.
+        RegisterDiagnosticHandlers();
+
         // Single-instance check.
         _instanceGuard = new SingleInstanceGuard();
         if (!_instanceGuard.TryAcquire())
@@ -247,12 +365,31 @@ public partial class App : System.Windows.Application
         // time and will be resumed by OnPauseToggled(false) or ResumeAnimation.
         if (!_isPaused && RuntimeTracker is not null)
         {
-            var nowMs = DesktopPet.App.MainWindow.GetElapsedMsPublic();
+            // PREP-002: Use shared MonotonicClock instead of the static
+            // MainWindow.GetElapsedMsPublic() accessor, eliminating the
+            // App→MainWindow static dependency for time retrieval.
+            var nowMs = MonotonicClock.Instance.GetElapsedMs();
             RuntimeTracker.StartActivePeriod(nowMs / 60000.0);
         }
 
         // Apply the paused behavior before the window can start rendering.
         _mainWindow = new MainWindow();
+
+        // PREP-002: Pass the shared state objects and save-dirty notification
+        // to MainWindow via an explicit context, so that MainWindow no longer
+        // needs to reach back through Application.Current to access them.
+        // The App.Current fallback in MainWindow remains only for tests that
+        // use the parameterless constructor without setting StateContext.
+        _mainWindow.StateContext = new PetStateContext
+        {
+            EmotionAccumulator = EmotionAccumulator,
+            CornerTracking = CornerTracking,
+            GrievanceExpression = GrievanceExpression,
+            RuntimeTracker = RuntimeTracker,
+            RareEventScheduler = RareEventScheduler,
+            MarkStateDirty = MarkStateDirty,
+        };
+
         if (_isPaused)
             _mainWindow.PauseAnimation();
         // HWND/DPI are available here, before the first visible frame. Never
@@ -270,6 +407,86 @@ public partial class App : System.Windows.Application
         _mainWindow.Show();
         if (stateUnknown || settingsUnknown)
             _tray.ShowReadOnlyArchiveNotice();
+    }
+
+    /// <summary>
+    /// PREP-001: Registers diagnostic notifications for the three WPF/.NET
+    /// unhandled exception channels. Per ARCHITECTURE §10:
+    /// - DispatcherUnhandledException: record, then keep default handling
+    ///   (do NOT set Handled=true — unknown UI exceptions should not be
+    ///   globally swallowed).
+    /// - AppDomain.UnhandledException: best-effort record only; no recovery
+    ///   promise.
+    /// - TaskScheduler.UnobservedTaskException: record the real source; this
+    ///   is a notification, not an immediate/inevitable crash. Normal
+    ///   await/local catch still owns known async errors.
+    /// </summary>
+    internal void RegisterDiagnosticHandlers()
+    {
+        // Create the logger with default settings (%LOCALAPPDATA%/DesktopPet/logs/).
+        // Tests can inject a custom logger via TestSetupIsolatedSave.
+        DiagnosticLogger ??= new DiagnosticLogger();
+
+        var version = AppVersion;
+
+        // 1. WPF Dispatcher unhandled exception — record but do NOT swallow.
+        //    Setting e.Handled = false (the default) lets the framework's
+        //    normal exception handling proceed.
+        DispatcherUnhandledException += (sender, e) =>
+        {
+            try
+            {
+                DiagnosticLogger?.Record(
+                    "DispatcherUnhandled",
+                    isTerminating: false,
+                    e.Exception,
+                    version);
+            }
+            catch
+            {
+                // Log failure must not cause a second exception.
+            }
+            // Explicitly do NOT set e.Handled = true.
+            // Unknown UI exceptions keep framework default handling.
+        };
+
+        // 2. AppDomain terminal notification — best-effort record only.
+        System.AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            try
+            {
+                var isTerminating = e.IsTerminating;
+                var ex = e.ExceptionObject as Exception;
+                DiagnosticLogger?.Record(
+                    "AppDomainUnhandled",
+                    isTerminating,
+                    ex,
+                    version);
+            }
+            catch
+            {
+                // Best-effort only; no recovery promise.
+            }
+        };
+
+        // 3. TaskScheduler unobserved task exception — notification, not
+        //    immediate crash. Record the real source.
+        TaskScheduler.UnobservedTaskException += (sender, e) =>
+        {
+            try
+            {
+                DiagnosticLogger?.Record(
+                    "TaskUnobserved",
+                    isTerminating: false,
+                    e.Exception,
+                    version);
+                // Do NOT set e.SetObserved() — we are diagnosing, not hiding.
+            }
+            catch
+            {
+                // Log failure must not cause a second exception.
+            }
+        };
     }
 
     // P2-003 S3 R6 F-08: Made internal so tests can call the real
@@ -308,7 +525,8 @@ public partial class App : System.Windows.Application
             // as effective runtime for rare-event scheduling.
             if (RuntimeTracker is not null)
             {
-                var nowMs = DesktopPet.App.MainWindow.GetElapsedMsPublic();
+                // PREP-002: Shared MonotonicClock — no more MainWindow static call.
+                var nowMs = MonotonicClock.Instance.GetElapsedMs();
                 RuntimeTracker.EndActivePeriod(nowMs / 60000.0);
             }
         }
@@ -318,7 +536,8 @@ public partial class App : System.Windows.Application
             // P1-004: Start a fresh active period on resume.
             if (RuntimeTracker is not null)
             {
-                var nowMs = DesktopPet.App.MainWindow.GetElapsedMsPublic();
+                // PREP-002: Shared MonotonicClock — no more MainWindow static call.
+                var nowMs = MonotonicClock.Instance.GetElapsedMs();
                 RuntimeTracker.StartActivePeriod(nowMs / 60000.0);
             }
         }

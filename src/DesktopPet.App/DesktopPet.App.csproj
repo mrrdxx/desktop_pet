@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DesktopPet.App.Tests" />
+    <InternalsVisibleTo Include="DesktopPet.DiagnosticProbe" />
   </ItemGroup>
 
   <ItemGroup>
