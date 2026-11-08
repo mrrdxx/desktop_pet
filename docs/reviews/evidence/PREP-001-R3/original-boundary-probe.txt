@@ -1,0 +1,2 @@
+locked roll: cap256 currentBytes=256
+lock contention returnedWithin200ms=True

@@ -1,0 +1,5 @@
+{
+  "tests\\Integration\\Collect-Perf.ps1": "474c2d1a3501de898251669264915aa174dc2e293e4113231bdfd9fd6248dd31",
+  "docs\\history\\PREP-003-perf-baseline.md": "5ed0594519db60e6322d38ecc01ae44e6039ca70c0209d557deaecb9fe185152",
+  "src\\DesktopPet.App\\MainWindow.xaml.cs": "982021e4e352c503a07aa19b88cbd840235afa68be4f454e5b69219ec4f82296"
+}

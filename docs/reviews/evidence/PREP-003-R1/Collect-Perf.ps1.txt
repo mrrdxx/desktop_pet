@@ -1,0 +1,102 @@
+# PREP-003 性能基线采集脚本
+# 按 TESTING M-08 采集空闲和动态性能数据
+# 用法：.\Collect-Perf.ps1 -DurationSec 300 -Label "idle-r1" -ProcessName "DesktopPet"
+#       .\Collect-Perf.ps1 -DurationSec 120 -Label "dynamic-r1" -ProcessName "DesktopPet"
+param(
+    [Parameter(Mandatory=$true)][int]$DurationSec,
+    [Parameter(Mandatory=$true)][string]$Label,
+    [string]$ProcessName = "DesktopPet",
+    [string]$OutDir = (Join-Path $PSScriptRoot "..\..\artifacts\perf-baseline")
+)
+
+$ErrorActionPreference = 'Stop'
+$timestamp = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+$outFile = Join-Path $OutDir "${Label}_${timestamp}.csv"
+New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
+
+# Find the process
+$proc = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($null -eq $proc) {
+    Write-Error "Process '$ProcessName' not found. Start the app first."
+    exit 1
+}
+
+$pid_ = $proc.Id
+$startTime = Get-Date
+$endTime = $startTime.AddSeconds($DurationSec)
+
+"timestamp_iso,elapsed_sec,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count" | Out-File -FilePath $outFile -Encoding UTF8
+
+Write-Host "Collecting perf data for PID=$pid_ ($ProcessName) for $DurationSec seconds..."
+Write-Host "Output: $outFile"
+Write-Host "Start: $startTime | End: $endTime"
+
+# Use PerformanceCounter for CPU (process CPU time in seconds)
+# Fall back to Process.TotalProcessorTime for cumulative CPU
+$sampleCount = 0
+while ((Get-Date) -lt $endTime) {
+    try {
+        $p = Get-Process -Id $pid_ -ErrorAction SilentlyContinue
+        if ($null -eq $p) {
+            Write-Host "Process exited at $(Get-Date -Format 'O')"
+            "PROCESS_EXITED,$((Get-Date - $startTime).TotalSeconds),,,," | Out-File -FilePath $outFile -Encoding UTF8 -Append
+            break
+        }
+        $now = Get-Date
+        $elapsed = ($now - $startTime).TotalSeconds
+        $cpuMs = $p.TotalProcessorTime.TotalMilliseconds
+        $wsMb = [math]::Round($p.WorkingSet64 / 1MB, 2)
+        $privMb = [math]::Round($p.PrivateMemorySize64 / 1MB, 2)
+        $handles = $p.HandleCount
+        $threads = $p.Threads.Count
+        "$($now.ToString('O')),$([math]::Round($elapsed,1)),$([math]::Round($cpuMs,0)),$wsMb,$privMb,$handles,$threads" | Out-File -FilePath $outFile -Encoding UTF8 -Append
+        $sampleCount++
+    } catch {
+        Write-Host "Sample error: $_"
+    }
+    Start-Sleep -Milliseconds 1000
+}
+
+$actualEnd = Get-Date
+$actualDuration = ($actualEnd - $startTime).TotalSeconds
+Write-Host "Done. Samples: $sampleCount | Actual duration: $([math]::Round($actualDuration,1))s"
+Write-Host "Output: $outFile"
+
+# Summary
+$samples = Import-Csv -Path $outFile
+if ($samples.Count -gt 1) {
+    $first = $samples[0]
+    $last = $samples[$samples.Count - 1]
+    $cpuDelta = [double]$last.cpu_ms_total - [double]$first.cpu_ms_total
+    $elapsedDelta = [double]$last.elapsed_sec - [double]$first.elapsed_sec
+    $logicalCores = (Get-CimInstance Win32_Processor).NumberOfLogicalProcessors
+    $cpuPercentSingle = if ($elapsedDelta -gt 0) { ($cpuDelta / ($elapsedDelta * 1000)) * 100 } else { 0 }
+    $cpuPercentNormalized = if ($logicalCores -gt 0) { $cpuPercentSingle / $logicalCores } else { 0 }
+    $wsFirst = [double]$first.working_set_mb
+    $wsLast = [double]$last.working_set_mb
+    $privFirst = [double]$first.private_memory_mb
+    $privLast = [double]$last.private_memory_mb
+    $handleFirst = [int]$first.handle_count
+    $handleLast = [int]$last.handle_count
+    $threadFirst = [int]$first.thread_count
+    $threadLast = [int]$last.thread_count
+
+    $summary = @"
+=== PREP-003 性能基线摘要: $Label ===
+采样数: $($samples.Count)
+实际经过时间: $([math]::Round($elapsedDelta,1)) 秒
+CPU 累计差: $([math]::Round($cpuDelta,0)) ms
+单核 CPU 占比: $([math]::Round($cpuPercentSingle,2))%
+逻辑核数: $logicalCores
+归一化 CPU 占比 (单核%/逻辑核数): $([math]::Round($cpuPercentNormalized,4))%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 $wsFirst MB -> 末样本 $wsLast MB (差 $([math]::Round($wsLast - $wsFirst,2)) MB)
+私有内存: 首样本 $privFirst MB -> 末样本 $privLast MB (差 $([math]::Round($privLast - $privFirst,2)) MB)
+句柄: 首样本 $handleFirst -> 末样本 $handleLast (差 $($handleLast - $handleFirst))
+线程: 首样本 $threadFirst -> 末样本 $threadLast (差 $($threadLast - $threadFirst))
+"@
+    Write-Host $summary
+    $summaryFile = Join-Path $OutDir "${Label}_${timestamp}_summary.txt"
+    $summary | Out-File -FilePath $summaryFile -Encoding UTF8
+    Write-Host "Summary: $summaryFile"
+}

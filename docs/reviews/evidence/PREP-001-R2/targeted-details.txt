@@ -1,0 +1,120 @@
+C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll (.NETCoreApp,Version=v10.0)的测试运行
+总共 1 个测试文件与指定模式相匹配。
+  失败 UiException_ThroughDispatcher_LogsToDiagnosticFile [1 s]
+  错误消息:
+   Assert.IsTrue 失败。Log must contain the actual exception message. Content:
+--- diagnostic-2026-11-07.log ---
+[2026-11-07T10:06:35.5875079Z] source=DispatcherUnhandled terminating=False version=1.0.0.0 thread=2
+  type: System.InvalidOperationException
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。
+  stack:    at System.Windows.Input.InputManager..ctor()
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()
+   at System.Windows.Input.KeyboardNavigation..ctor()
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()
+   at System.Windows.FrameworkElement..ctor()
+   at System.Windows.Controls.Control..ctor()
+   at System.Windows.Window..ctor()
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297
+   at System.Windows.Application.<.ctor>b__1_0(Object unused)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+[2026-11-07T10:06:35.5985668Z] source=DispatcherUnhandled terminating=False version=1.0.0.0 thread=2
+  type: System.InvalidOperationException
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。
+  stack:    at System.Windows.Input.InputManager..ctor()
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()
+   at System.Windows.Input.KeyboardNavigation..ctor()
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()
+   at System.Windows.FrameworkElement..ctor()
+   at System.Windows.Controls.Control..ctor()
+   at System.Windows.Window..ctor()
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297
+   at System.Windows.Application.<.ctor>b__1_0(Object unused)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+[2026-11-07T10:06:35.5999191Z] source=AppDomainUnhandled terminating=True version=1.0.0.0 thread=2
+  type: System.InvalidOperationException
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。
+  stack:    at System.Windows.Input.InputManager..ctor()
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()
+   at System.Windows.Input.KeyboardNavigation..ctor()
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()
+   at System.Windows.FrameworkElement..ctor()
+   at System.Windows.Controls.Control..ctor()
+   at System.Windows.Window..ctor()
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297
+   at System.Windows.Application.<.ctor>b__1_0(Object unused)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   at MS.Internal.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at MS.Internal.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Threading.DispatcherOperation.Invoke()
+   at System.Windows.Threading.Dispatcher.ProcessQueue()
+   at System.Windows.Threading.Dispatcher.WndProcHook(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+   at System.Windows.Threading.Dispatcher.LegacyInvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Int32 numArgs)
+   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)
+   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)
+   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG& msg)
+   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)
+   at DesktopPet.DiagnosticProbe.Program.TriggerUiException() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 136
+   at DesktopPet.DiagnosticProbe.Program.Main(String[] args) in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 80
+[2026-11-07T10:06:35.6009526Z] source=AppDomainUnhandled terminating=True version=1.0.0.0 thread=2
+  type: System.InvalidOperationException
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。
+  stack:    at System.Windows.Input.InputManager..ctor()
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()
+   at System.Windows.Input.KeyboardNavigation..ctor()
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()
+   at System.Windows.FrameworkElement..ctor()
+   at System.Windows.Controls.Control..ctor()
+   at System.Windows.Window..ctor()
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297
+   at System.Windows.Application.<.ctor>b__1_0(Object unused)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   at MS.Internal.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at MS.Internal.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Threading.DispatcherOperation.Invoke()
+   at System.Windows.Threading.Dispatcher.ProcessQueue()
+   at System.Windows.Threading.Dispatcher.WndProcHook(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean& handled)
+   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+   at System.Windows.Threading.Dispatcher.LegacyInvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Int32 numArgs)
+   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)
+   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)
+   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG& msg)
+   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)
+   at DesktopPet.DiagnosticProbe.Program.TriggerUiException() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 136
+   at DesktopPet.DiagnosticProbe.Program.Main(String[] args) in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 80
+
+  堆栈跟踪:
+     at DesktopPet.App.Tests.DiagnosticIsolationTests.UiException_ThroughDispatcher_LogsToDiagnosticFile() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\DiagnosticIsolationTests.cs:line 93
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+  已跳过 TaskUnobserved_ThroughTaskScheduler_LogsToDiagnosticFile [1 s]
+结果文件: C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\results\prep001-r2.trx
+
+失败!  - 失败:     1，通过:    18，已跳过:     1，总计:    20，持续时间: 7 s - DesktopPet.App.Tests.dll (net10.0)

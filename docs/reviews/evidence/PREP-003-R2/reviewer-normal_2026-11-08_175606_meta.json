@@ -1,0 +1,18 @@
+﻿{
+    "processStartTime":  "2026-11-08T17:56:05.4961907+08:00",
+    "sampleErrors":  0,
+    "commandLine":  "\"C:\\Program Files\\PowerShell\\7\\pwsh.exe\" -Command \"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n$reviewDir = Join-Path (Get-Location) \u0027docs/reviews/evidence/PREP-003-R2\u0027\nNew-Item -ItemType Directory -Path $reviewDir -Force | Out-Null\n\u0026 powershell -NoProfile -ExecutionPolicy Bypass -File tests/Integration/Collect-Perf.ps1 -DurationSec 2 -Label reviewer-normal -TargetPid $PID -OutDir $reviewDir *\u003e (Join-Path $reviewDir \u0027normal-run.txt\u0027)\n\\\"COLLECTOR_EXIT=$LASTEXITCODE\\\"\nGet-Content (Join-Path $reviewDir \u0027normal-run.txt\u0027)\n$testProcess = Start-Process powershell -ArgumentList \u0027-NoProfile\u0027,\u0027-Command\u0027,\u0027Start-Sleep -Seconds 3\u0027 -WindowStyle Hidden -PassThru\n\u0026 powershell -NoProfile -ExecutionPolicy Bypass -File tests/Integration/Collect-Perf.ps1 -DurationSec 6 -Label reviewer-early-exit -TargetPid $testProcess.Id -OutDir $reviewDir *\u003e (Join-Path $reviewDir \u0027early-exit-run.txt\u0027)\n\\\"EARLY_EXIT_COLLECTOR_EXIT=$LASTEXITCODE\\\"\nGet-Content (Join-Path $reviewDir \u0027early-exit-run.txt\u0027)\nGet-ChildItem $reviewDir -Filter \u0027*.csv\u0027 | ForEach-Object { $_.Name; Get-Content $_.FullName }\nGet-Content docs/TASKS.md | Select-Object -Skip 312 -First 12\"",
+    "csvColumns":  "timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count",
+    "targetPid":  67068,
+    "processPath":  "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+    "label":  "reviewer-normal",
+    "logicalCores":  24,
+    "processExitedDuringCollection":  false,
+    "collectionStartIso":  "2026-11-08T17:56:06.9211530+08:00",
+    "sampleCount":  2,
+    "processName":  "pwsh",
+    "timer":  "System.Diagnostics.Stopwatch (high-resolution monotonic)",
+    "durationRequestedSec":  2,
+    "collectionEndIso":  "2026-11-08T17:56:10.1096480+08:00",
+    "actualDurationSec":  2.069
+}

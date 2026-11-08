@@ -1,0 +1,6 @@
+{
+  "src/DesktopPet.App/Diagnostics/DiagnosticLogger.cs": "88e510d3fee5a4e68beed1a763be577220f4aa1c581428defabc9cea9ffb55e4",
+  "src/DesktopPet.App/App.xaml.cs": "9667558ebbaec436d9fad238606eabda3ee14f8e189b7f10a8347ef0c65d81f3",
+  "tests/DesktopPet.DiagnosticProbe/Program.cs": "ff2c459ad8f4f5e904674ac4b51443ec03abb3f6205bb324e673623c00c66a7f",
+  "tests/DesktopPet.App.Tests/DiagnosticIsolationTests.cs": "e24384ab878758cefe0457fa3f9cc1901fcaada7522248b46b9bad5e17845ba0"
+}

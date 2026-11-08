@@ -1,0 +1,18 @@
+﻿{
+    "processStartTime":  "2026-11-08T17:56:10.4113194+08:00",
+    "sampleErrors":  0,
+    "commandLine":  "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -Command Start-Sleep -Seconds 3",
+    "csvColumns":  "timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count",
+    "targetPid":  79524,
+    "processPath":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "label":  "reviewer-early-exit",
+    "logicalCores":  24,
+    "processExitedDuringCollection":  true,
+    "collectionStartIso":  "2026-11-08T17:56:11.1118730+08:00",
+    "sampleCount":  2,
+    "processName":  "powershell",
+    "timer":  "System.Diagnostics.Stopwatch (high-resolution monotonic)",
+    "durationRequestedSec":  6,
+    "collectionEndIso":  "2026-11-08T17:56:14.2703439+08:00",
+    "actualDurationSec":  2.072
+}

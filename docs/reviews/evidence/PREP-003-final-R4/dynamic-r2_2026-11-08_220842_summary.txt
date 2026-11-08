@@ -1,0 +1,19 @@
+﻿=== PREP-003 性能基线摘要: dynamic-r2 ===
+PID: 88644
+采样数: 120
+首末有效区间: 120.608 秒 (首 elapsed=0.002s, 末 elapsed=120.61s)
+脚本总耗时: 120.618 秒
+CPU 累计差: 3406 ms
+单核 CPU 占比: 2.82%
+逻辑核数: 24
+归一化 CPU 占比 (单核%/逻辑核数): 0.1177%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 137.12 MB -> 末样本 138.37 MB (差 1.25 MB)
+私有内存: 首样本 71.26 MB -> 末样本 72.45 MB (差 1.19 MB)
+句柄: 首样本 705 -> 末样本 714 (差 9)
+线程: 首样本 18 -> 末样本 17 (差 -1)
+进程退出: False
+身份变更: False
+终点样本: True
+采样错误: 0
+退出码: 0 (COMPLETED)

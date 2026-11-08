@@ -1,0 +1,4 @@
+﻿timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count
+2026-11-08T17:56:12.2173062+08:00,0.019,79524,359,74.54,61.11,592,26
+2026-11-08T17:56:13.2386211+08:00,1.041,79524,359,74.54,61.11,592,26
+2026-11-08T17:56:14.2663556+08:00,2.068,79524,EXITED,,,,SAMPLE_FAILED_PROCESS_EXITED

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 3,
+  "windowLeft": 947,
+  "windowTop": 204,
+  "savedDeviceName": "\\\\.\\DISPLAY1",
+  "lastSavedUtc": "2026-11-08T05:00:43.9035206Z",
+  "isPaused": false,
+  "grievance": 50,
+  "lastDecayUtc": "2026-11-08T05:00:43.8272347Z",
+  "pendingGrievanceExpression": false,
+  "grievanceExpressionDate": null,
+  "accumulatedRuntimeMinutes": 181.39371112166822,
+  "rareEventPlan": {
+    "localDate": "2026-11-08",
+    "triggerDelayMinutes": 20,
+    "triggerRoll": 0,
+    "consumed": true,
+    "accumulatedBaselineMinutes": 0
+  }
+}

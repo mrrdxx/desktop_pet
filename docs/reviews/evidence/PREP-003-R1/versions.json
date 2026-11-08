@@ -1,0 +1,8 @@
+{
+  "src/DesktopPet.App/MainWindow.xaml.cs": "982021e4e352c503a07aa19b88cbd840235afa68be4f454e5b69219ec4f82296",
+  "src/DesktopPet.App/Platform/MonotonicClock.cs": "4b0b2c83f3dfeb5a317dfeb4df981098d307e033da7dd79b344ae0b82a252221",
+  "src/DesktopPet.App/Platform/PetStateContext.cs": "05359032d50c34513133f8cfe3b6b4f5c5d05df5df1cca809c986c3865f9c72a",
+  "src/DesktopPet.App/Platform/RareEventUpdateService.cs": "e6fa3e6d1657c1f05859a8c6ebfc838c0a91056b061728b802263b46a267dcab",
+  "tests/Integration/Collect-Perf.ps1": "32c6dca53f624eb48759db0868e000e7ea1c62358d029d603b1d44878b12f0bd",
+  "tests/Integration/Run-PerfIsolated.ps1": "5fa3485024c2852ea9defe6d491c5ecdd73956414207a51b4a17b1af67151a31"
+}

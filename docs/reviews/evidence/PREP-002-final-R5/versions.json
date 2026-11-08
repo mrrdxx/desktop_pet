@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-08",
+  "fixtureRun": "artifacts/probe-live/run-bb4af09a",
+  "sourceAndFixtureIdentical": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": true,
+    "src/DesktopPet.App/Platform/MonotonicClock.cs": true,
+    "src/DesktopPet.App/Platform/PetStateContext.cs": true,
+    "src/DesktopPet.App/Platform/RareEventUpdateService.cs": true,
+    "src/DesktopPet.App/Diagnostics/DiagnosticLogger.cs": true
+  },
+  "sourceSha256": {
+    "src/DesktopPet.App/MainWindow.xaml.cs": "982021e4e352c503a07aa19b88cbd840235afa68be4f454e5b69219ec4f82296",
+    "src/DesktopPet.App/Platform/MonotonicClock.cs": "4b0b2c83f3dfeb5a317dfeb4df981098d307e033da7dd79b344ae0b82a252221",
+    "src/DesktopPet.App/Platform/PetStateContext.cs": "05359032d50c34513133f8cfe3b6b4f5c5d05df5df1cca809c986c3865f9c72a",
+    "src/DesktopPet.App/Platform/RareEventUpdateService.cs": "e6fa3e6d1657c1f05859a8c6ebfc838c0a91056b061728b802263b46a267dcab",
+    "src/DesktopPet.App/Diagnostics/DiagnosticLogger.cs": "88e510d3fee5a4e68beed1a763be577220f4aa1c581428defabc9cea9ffb55e4"
+  }
+}

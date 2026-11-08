@@ -1,0 +1,3 @@
+cap256 retention3 actualFiles=4 maxBytes=310
+historical retention3 files=7
+record while lock held finishedWithin200ms=False

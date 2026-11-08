@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="839c2aab-9693-4edf-89d3-94f59151b4c7" name="mrrdxx@毛茸茸的小熊 2026-11-07 18:06:37" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-07T18:06:37.0570725+08:00" queuing="2026-11-07T18:06:37.0570727+08:00" start="2026-11-07T18:06:33.3063688+08:00" finish="2026-11-07T18:06:40.8121174+08:00" />
+  <TestSettings name="default" id="a90f3df5-611a-4629-867a-e3de43941c56">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-07_18_06_37" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="0b645fbf-a925-4060-8680-ec6e489b5a52" testId="f3860c2c-f59b-a0f9-20db-a46c818a6440" testName="Record_FileSizeCap_TriggersRollOver" computerName="毛茸茸的小熊" duration="00:00:00.0289447" startTime="2026-11-07T18:06:40.4208411+08:00" endTime="2026-11-07T18:06:40.4499015+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b645fbf-a925-4060-8680-ec6e489b5a52" />
+    <UnitTestResult executionId="d9317b08-4f93-42bd-93ac-fc267b95c2b5" testId="a7d1cbe6-b38a-558b-df49-e8bbbff969d8" testName="UiException_ThroughDispatcher_LogsToDiagnosticFile" computerName="毛茸茸的小熊" duration="00:00:01.7185817" startTime="2026-11-07T18:06:33.6872044+08:00" endTime="2026-11-07T18:06:37.0211992+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9317b08-4f93-42bd-93ac-fc267b95c2b5">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue 失败。Log must contain the actual exception message. Content:
+--- diagnostic-2026-11-07.log ---&#xD;
+[2026-11-07T10:06:35.5875079Z] source=DispatcherUnhandled terminating=False version=1.0.0.0 thread=2&#xD;
+  type: System.InvalidOperationException&#xD;
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。&#xD;
+  stack:    at System.Windows.Input.InputManager..ctor()&#xD;
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()&#xD;
+   at System.Windows.Input.KeyboardNavigation..ctor()&#xD;
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()&#xD;
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()&#xD;
+   at System.Windows.FrameworkElement..ctor()&#xD;
+   at System.Windows.Controls.Control..ctor()&#xD;
+   at System.Windows.Window..ctor()&#xD;
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216&#xD;
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297&#xD;
+   at System.Windows.Application.&lt;.ctor&gt;b__1_0(Object unused)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)&#xD;
+[2026-11-07T10:06:35.5985668Z] source=DispatcherUnhandled terminating=False version=1.0.0.0 thread=2&#xD;
+  type: System.InvalidOperationException&#xD;
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。&#xD;
+  stack:    at System.Windows.Input.InputManager..ctor()&#xD;
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()&#xD;
+   at System.Windows.Input.KeyboardNavigation..ctor()&#xD;
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()&#xD;
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()&#xD;
+   at System.Windows.FrameworkElement..ctor()&#xD;
+   at System.Windows.Controls.Control..ctor()&#xD;
+   at System.Windows.Window..ctor()&#xD;
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216&#xD;
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297&#xD;
+   at System.Windows.Application.&lt;.ctor&gt;b__1_0(Object unused)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)&#xD;
+[2026-11-07T10:06:35.5999191Z] source=AppDomainUnhandled terminating=True version=1.0.0.0 thread=2&#xD;
+  type: System.InvalidOperationException&#xD;
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。&#xD;
+  stack:    at System.Windows.Input.InputManager..ctor()&#xD;
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()&#xD;
+   at System.Windows.Input.KeyboardNavigation..ctor()&#xD;
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()&#xD;
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()&#xD;
+   at System.Windows.FrameworkElement..ctor()&#xD;
+   at System.Windows.Controls.Control..ctor()&#xD;
+   at System.Windows.Window..ctor()&#xD;
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216&#xD;
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297&#xD;
+   at System.Windows.Application.&lt;.ctor&gt;b__1_0(Object unused)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)&#xD;
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()&#xD;
+   at MS.Internal.CulturePreservingExecutionContext.CallbackWrapper(Object obj)&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+--- End of stack trace from previous location ---&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at MS.Internal.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at System.Windows.Threading.DispatcherOperation.Invoke()&#xD;
+   at System.Windows.Threading.Dispatcher.ProcessQueue()&#xD;
+   at System.Windows.Threading.Dispatcher.WndProcHook(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)&#xD;
+   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)&#xD;
+   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)&#xD;
+   at System.Windows.Threading.Dispatcher.LegacyInvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)&#xD;
+   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)&#xD;
+   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG&amp; msg)&#xD;
+   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)&#xD;
+   at DesktopPet.DiagnosticProbe.Program.TriggerUiException() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 136&#xD;
+   at DesktopPet.DiagnosticProbe.Program.Main(String[] args) in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 80&#xD;
+[2026-11-07T10:06:35.6009526Z] source=AppDomainUnhandled terminating=True version=1.0.0.0 thread=2&#xD;
+  type: System.InvalidOperationException&#xD;
+  message: 调用线程必须为 STA，因为许多 UI 组件都需要。&#xD;
+  stack:    at System.Windows.Input.InputManager..ctor()&#xD;
+   at System.Windows.Input.InputManager.GetCurrentInputManagerImpl()&#xD;
+   at System.Windows.Input.KeyboardNavigation..ctor()&#xD;
+   at System.Windows.FrameworkElement.FrameworkServices..ctor()&#xD;
+   at System.Windows.FrameworkElement.EnsureFrameworkServices()&#xD;
+   at System.Windows.FrameworkElement..ctor()&#xD;
+   at System.Windows.Controls.Control..ctor()&#xD;
+   at System.Windows.Window..ctor()&#xD;
+   at DesktopPet.App.MainWindow..ctor() in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\MainWindow.xaml.cs:line 216&#xD;
+   at DesktopPet.App.App.OnStartup(StartupEventArgs e) in C:\Users\mrrdxx\Desktop\pet\src\DesktopPet.App\App.xaml.cs:line 297&#xD;
+   at System.Windows.Application.&lt;.ctor&gt;b__1_0(Object unused)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)&#xD;
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()&#xD;
+   at MS.Internal.CulturePreservingExecutionContext.CallbackWrapper(Object obj)&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+--- End of stack trace from previous location ---&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at MS.Internal.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at System.Windows.Threading.DispatcherOperation.Invoke()&#xD;
+   at System.Windows.Threading.Dispatcher.ProcessQueue()&#xD;
+   at System.Windows.Threading.Dispatcher.WndProcHook(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)&#xD;
+   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)&#xD;
+   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)&#xD;
+   at System.Windows.Threading.Dispatcher.LegacyInvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Int32 numArgs)&#xD;
+   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)&#xD;
+   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)&#xD;
+   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG&amp; msg)&#xD;
+   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)&#xD;
+   at DesktopPet.DiagnosticProbe.Program.TriggerUiException() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 136&#xD;
+   at DesktopPet.DiagnosticProbe.Program.Main(String[] args) in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.DiagnosticProbe\Program.cs:line 80&#xD;
+</Message>
+          <StackTrace>   at DesktopPet.App.Tests.DiagnosticIsolationTests.UiException_ThroughDispatcher_LogsToDiagnosticFile() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\DiagnosticIsolationTests.cs:line 93&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="258dd72a-9c16-4a3c-98ce-726f08a552dd" testId="2fdfa723-ab7f-36f6-6aee-c7b24c33f356" testName="Record_LogDirectoryNotWritable_DoesNotThrow" computerName="毛茸茸的小熊" duration="00:00:00.0018310" startTime="2026-11-07T18:06:40.4175842+08:00" endTime="2026-11-07T18:06:40.4195652+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="258dd72a-9c16-4a3c-98ce-726f08a552dd" />
+    <UnitTestResult executionId="346707dd-de84-4c8d-93bf-41b93e820084" testId="a8633e70-1189-be59-76a8-804aea2c7953" testName="Record_SingleEntryLargerThanCap_TruncatedToFit" computerName="毛茸茸的小熊" duration="00:00:00.0094413" startTime="2026-11-07T18:06:40.5667658+08:00" endTime="2026-11-07T18:06:40.5764027+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="346707dd-de84-4c8d-93bf-41b93e820084" />
+    <UnitTestResult executionId="c30f9882-a642-4a06-ae8d-3ff14fb25115" testId="a273516f-e888-f72d-bf77-a932dd800f36" testName="TaskUnobserved_ThroughTaskScheduler_LogsToDiagnosticFile" computerName="毛茸茸的小熊" duration="00:00:01.0304609" startTime="2026-11-07T18:06:38.4186188+08:00" endTime="2026-11-07T18:06:39.4492733+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c30f9882-a642-4a06-ae8d-3ff14fb25115">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Inconclusive 失败。TaskScheduler.UnobservedTaskException did not fire within the GC window. This is a known GC-dependent timing limitation per ARCHITECTURE §10, not a wiring failure. The handler is registered; the event is delayed.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.DiagnosticIsolationTests.TaskUnobserved_ThroughTaskScheduler_LogsToDiagnosticFile() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\DiagnosticIsolationTests.cs:line 149&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5ca8a6d1-fd4b-41dd-95e6-b76bad7cbfd4" testId="aa10369a-bca1-4492-1eb6-0dd5572bc158" testName="Record_RetainedFileLimit_Enforced" computerName="毛茸茸的小熊" duration="00:00:00.0708373" startTime="2026-11-07T18:06:40.4500007+08:00" endTime="2026-11-07T18:06:40.5210328+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ca8a6d1-fd4b-41dd-95e6-b76bad7cbfd4" />
+    <UnitTestResult executionId="920cdae3-f403-49d8-80a6-ff4fb800dc4e" testId="e91bf24c-9947-9ab4-30f1-e3406a886040" testName="Record_RepeatedLoggerFailure_DoesNotRecursOrDeadlock" computerName="毛茸茸的小熊" duration="00:00:00.0099226" startTime="2026-11-07T18:06:40.5474421+08:00" endTime="2026-11-07T18:06:40.5575479+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="920cdae3-f403-49d8-80a6-ff4fb800dc4e" />
+    <UnitTestResult executionId="a1e0ca97-d967-4554-a333-7719cfacae42" testId="a107f2c5-061c-7ef4-7a05-6e34e7c7b2c0" testName="Record_AfterDispose_DoesNotThrow" computerName="毛茸茸的小熊" duration="00:00:00.0010973" startTime="2026-11-07T18:06:40.4196102+08:00" endTime="2026-11-07T18:06:40.4208029+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a1e0ca97-d967-4554-a333-7719cfacae42" />
+    <UnitTestResult executionId="749cf592-7d4a-49c1-8957-ae60600ed2cb" testId="f20d429c-8ce4-901b-2ca7-236fe0b0c3d0" testName="Record_FileExactlyAtCap_NextWriteTriggersRoll" computerName="毛茸茸的小熊" duration="00:00:00.0313711" startTime="2026-11-07T18:06:40.5765098+08:00" endTime="2026-11-07T18:06:40.6082977+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="749cf592-7d4a-49c1-8957-ae60600ed2cb" />
+    <UnitTestResult executionId="6fe6ce30-32de-474c-8962-1e735e03a593" testId="c2c15c0c-068f-3cb6-eeda-c65d9a2fce9e" testName="WorkerException_ThroughAppDomain_LogsToDiagnosticFile" computerName="毛茸茸的小熊" duration="00:00:01.3798013" startTime="2026-11-07T18:06:37.0358673+08:00" endTime="2026-11-07T18:06:38.4160074+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6fe6ce30-32de-474c-8962-1e735e03a593" />
+    <UnitTestResult executionId="5be9df2c-5259-454e-83f6-1fa16d1af4a1" testId="bf7a69bc-428f-41df-9e5e-9972f7599c54" testName="Record_ConcurrentWrites_AllSucceedSafely" computerName="毛茸茸的小熊" duration="00:00:00.0154442" startTime="2026-11-07T18:06:40.5317203+08:00" endTime="2026-11-07T18:06:40.5473430+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5be9df2c-5259-454e-83f6-1fa16d1af4a1" />
+    <UnitTestResult executionId="e984e74a-4b3e-4350-bae0-4d82e6ed6e6d" testId="6915512f-cd34-169b-2aa1-c0fad1561d6a" testName="Record_LongException_Truncated" computerName="毛茸茸的小熊" duration="00:00:00.0088505" startTime="2026-11-07T18:06:40.5211325+08:00" endTime="2026-11-07T18:06:40.5301761+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e984e74a-4b3e-4350-bae0-4d82e6ed6e6d" />
+    <UnitTestResult executionId="3e8fbaba-9a75-44a3-9940-dab7c3ee59ed" testId="ae09d84c-53b4-bc29-b3ec-6a1a7cf66b00" testName="Record_WritesEntryWithTimestampSourceVersionAndException" computerName="毛茸茸的小熊" duration="00:00:00.1171146" startTime="2026-11-07T18:06:40.2739684+08:00" endTime="2026-11-07T18:06:40.3913959+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3e8fbaba-9a75-44a3-9940-dab7c3ee59ed" />
+    <UnitTestResult executionId="7e98f78f-4334-4d3c-a743-83d9457e08e6" testId="984ffc26-7e19-2918-f571-8f5a8448e3c4" testName="Record_LockHeldByAnotherThread_ReturnsBounded" computerName="毛茸茸的小熊" duration="00:00:00.0020074" startTime="2026-11-07T18:06:40.7504424+08:00" endTime="2026-11-07T18:06:40.7526357+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7e98f78f-4334-4d3c-a743-83d9457e08e6" />
+    <UnitTestResult executionId="cc778e58-946e-4804-9120-efd2b205776d" testId="999ce048-f164-2607-f965-263963e736cc" testName="Record_CrossDateFiles_PrunedToRetainedLimit" computerName="毛茸茸的小熊" duration="00:00:00.0088246" startTime="2026-11-07T18:06:40.5576473+08:00" endTime="2026-11-07T18:06:40.5666618+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cc778e58-946e-4804-9120-efd2b205776d" />
+    <UnitTestResult executionId="537dd636-f5d8-4d46-9a7e-c634d4f31ca5" testId="af19a8ce-3200-add0-ac88-feda59750378" testName="Record_NullException_WritesNullMarker" computerName="毛茸茸的小熊" duration="00:00:00.0126237" startTime="2026-11-07T18:06:40.3915780+08:00" endTime="2026-11-07T18:06:40.4043883+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="537dd636-f5d8-4d46-9a7e-c634d4f31ca5" />
+    <UnitTestResult executionId="033c4eb3-430e-42b8-a840-dc6142954782" testId="befb24b2-3dc4-22e0-94ab-948eb61e7ef3" testName="Dispose_LockHeldByAnotherThread_ReturnsBounded" computerName="毛茸茸的小熊" duration="00:00:00.0013171" startTime="2026-11-07T18:06:40.7526896+08:00" endTime="2026-11-07T18:06:40.7550384+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="033c4eb3-430e-42b8-a840-dc6142954782" />
+    <UnitTestResult executionId="aa110e50-db5e-46ad-841e-8b1f03c5db81" testId="696634f2-33f3-871c-70a7-9f253d81d0df" testName="RecordMessage_WritesNonExceptionEntry" computerName="毛茸茸的小熊" duration="00:00:00.0127621" startTime="2026-11-07T18:06:40.4044812+08:00" endTime="2026-11-07T18:06:40.4174579+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa110e50-db5e-46ad-841e-8b1f03c5db81" />
+    <UnitTestResult executionId="9b73a369-ae77-4ade-abc6-4860521517e0" testId="55955c27-56e5-d5e2-2deb-de58fdcab732" testName="NormalExit_NoFalsePositiveDiagnosticLogs" computerName="毛茸茸的小熊" duration="00:00:00.8240469" startTime="2026-11-07T18:06:39.4493448+08:00" endTime="2026-11-07T18:06:40.2737628+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9b73a369-ae77-4ade-abc6-4860521517e0" />
+    <UnitTestResult executionId="9f55281f-ff9b-48b6-ae03-3795c6839d29" testId="397a5c30-c54e-334d-7f47-dba713573c0d" testName="Record_SustainedWrites_TotalBytesBoundedPrecisely" computerName="毛茸茸的小熊" duration="00:00:00.1417417" startTime="2026-11-07T18:06:40.6083953+08:00" endTime="2026-11-07T18:06:40.7503192+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9f55281f-ff9b-48b6-ae03-3795c6839d29" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Record_LockHeldByAnotherThread_ReturnsBounded" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="984ffc26-7e19-2918-f571-8f5a8448e3c4">
+      <Execution id="7e98f78f-4334-4d3c-a743-83d9457e08e6" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_LockHeldByAnotherThread_ReturnsBounded" />
+    </UnitTest>
+    <UnitTest name="Record_CrossDateFiles_PrunedToRetainedLimit" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="999ce048-f164-2607-f965-263963e736cc">
+      <Execution id="cc778e58-946e-4804-9120-efd2b205776d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_CrossDateFiles_PrunedToRetainedLimit" />
+    </UnitTest>
+    <UnitTest name="NormalExit_NoFalsePositiveDiagnosticLogs" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="55955c27-56e5-d5e2-2deb-de58fdcab732">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Isolation" />
+      </TestCategory>
+      <Execution id="9b73a369-ae77-4ade-abc6-4860521517e0" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticIsolationTests" name="NormalExit_NoFalsePositiveDiagnosticLogs" />
+    </UnitTest>
+    <UnitTest name="Record_SustainedWrites_TotalBytesBoundedPrecisely" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="397a5c30-c54e-334d-7f47-dba713573c0d">
+      <Execution id="9f55281f-ff9b-48b6-ae03-3795c6839d29" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_SustainedWrites_TotalBytesBoundedPrecisely" />
+    </UnitTest>
+    <UnitTest name="Record_LogDirectoryNotWritable_DoesNotThrow" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="2fdfa723-ab7f-36f6-6aee-c7b24c33f356">
+      <Execution id="258dd72a-9c16-4a3c-98ce-726f08a552dd" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_LogDirectoryNotWritable_DoesNotThrow" />
+    </UnitTest>
+    <UnitTest name="Dispose_LockHeldByAnotherThread_ReturnsBounded" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="befb24b2-3dc4-22e0-94ab-948eb61e7ef3">
+      <Execution id="033c4eb3-430e-42b8-a840-dc6142954782" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Dispose_LockHeldByAnotherThread_ReturnsBounded" />
+    </UnitTest>
+    <UnitTest name="WorkerException_ThroughAppDomain_LogsToDiagnosticFile" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c2c15c0c-068f-3cb6-eeda-c65d9a2fce9e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Isolation" />
+      </TestCategory>
+      <Execution id="6fe6ce30-32de-474c-8962-1e735e03a593" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticIsolationTests" name="WorkerException_ThroughAppDomain_LogsToDiagnosticFile" />
+    </UnitTest>
+    <UnitTest name="Record_FileExactlyAtCap_NextWriteTriggersRoll" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f20d429c-8ce4-901b-2ca7-236fe0b0c3d0">
+      <Execution id="749cf592-7d4a-49c1-8957-ae60600ed2cb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_FileExactlyAtCap_NextWriteTriggersRoll" />
+    </UnitTest>
+    <UnitTest name="TaskUnobserved_ThroughTaskScheduler_LogsToDiagnosticFile" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a273516f-e888-f72d-bf77-a932dd800f36">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Isolation" />
+      </TestCategory>
+      <Execution id="c30f9882-a642-4a06-ae8d-3ff14fb25115" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticIsolationTests" name="TaskUnobserved_ThroughTaskScheduler_LogsToDiagnosticFile" />
+    </UnitTest>
+    <UnitTest name="UiException_ThroughDispatcher_LogsToDiagnosticFile" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a7d1cbe6-b38a-558b-df49-e8bbbff969d8">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Isolation" />
+      </TestCategory>
+      <Execution id="d9317b08-4f93-42bd-93ac-fc267b95c2b5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticIsolationTests" name="UiException_ThroughDispatcher_LogsToDiagnosticFile" />
+    </UnitTest>
+    <UnitTest name="Record_RepeatedLoggerFailure_DoesNotRecursOrDeadlock" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e91bf24c-9947-9ab4-30f1-e3406a886040">
+      <Execution id="920cdae3-f403-49d8-80a6-ff4fb800dc4e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_RepeatedLoggerFailure_DoesNotRecursOrDeadlock" />
+    </UnitTest>
+    <UnitTest name="RecordMessage_WritesNonExceptionEntry" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="696634f2-33f3-871c-70a7-9f253d81d0df">
+      <Execution id="aa110e50-db5e-46ad-841e-8b1f03c5db81" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="RecordMessage_WritesNonExceptionEntry" />
+    </UnitTest>
+    <UnitTest name="Record_SingleEntryLargerThanCap_TruncatedToFit" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a8633e70-1189-be59-76a8-804aea2c7953">
+      <Execution id="346707dd-de84-4c8d-93bf-41b93e820084" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_SingleEntryLargerThanCap_TruncatedToFit" />
+    </UnitTest>
+    <UnitTest name="Record_ConcurrentWrites_AllSucceedSafely" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="bf7a69bc-428f-41df-9e5e-9972f7599c54">
+      <Execution id="5be9df2c-5259-454e-83f6-1fa16d1af4a1" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_ConcurrentWrites_AllSucceedSafely" />
+    </UnitTest>
+    <UnitTest name="Record_NullException_WritesNullMarker" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="af19a8ce-3200-add0-ac88-feda59750378">
+      <Execution id="537dd636-f5d8-4d46-9a7e-c634d4f31ca5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_NullException_WritesNullMarker" />
+    </UnitTest>
+    <UnitTest name="Record_FileSizeCap_TriggersRollOver" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f3860c2c-f59b-a0f9-20db-a46c818a6440">
+      <Execution id="0b645fbf-a925-4060-8680-ec6e489b5a52" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_FileSizeCap_TriggersRollOver" />
+    </UnitTest>
+    <UnitTest name="Record_LongException_Truncated" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="6915512f-cd34-169b-2aa1-c0fad1561d6a">
+      <Execution id="e984e74a-4b3e-4350-bae0-4d82e6ed6e6d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_LongException_Truncated" />
+    </UnitTest>
+    <UnitTest name="Record_WritesEntryWithTimestampSourceVersionAndException" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ae09d84c-53b4-bc29-b3ec-6a1a7cf66b00">
+      <Execution id="3e8fbaba-9a75-44a3-9940-dab7c3ee59ed" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_WritesEntryWithTimestampSourceVersionAndException" />
+    </UnitTest>
+    <UnitTest name="Record_AfterDispose_DoesNotThrow" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a107f2c5-061c-7ef4-7a05-6e34e7c7b2c0">
+      <Execution id="a1e0ca97-d967-4554-a333-7719cfacae42" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_AfterDispose_DoesNotThrow" />
+    </UnitTest>
+    <UnitTest name="Record_RetainedFileLimit_Enforced" storage="c:\users\mrrdxx\desktop\pet\artifacts\prep001-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="aa10369a-bca1-4492-1eb6-0dd5572bc158">
+      <Execution id="5ca8a6d1-fd4b-41dd-95e6-b76bad7cbfd4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\prep001-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.DiagnosticLoggerTests" name="Record_RetainedFileLimit_Enforced" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="f3860c2c-f59b-a0f9-20db-a46c818a6440" executionId="0b645fbf-a925-4060-8680-ec6e489b5a52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a7d1cbe6-b38a-558b-df49-e8bbbff969d8" executionId="d9317b08-4f93-42bd-93ac-fc267b95c2b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2fdfa723-ab7f-36f6-6aee-c7b24c33f356" executionId="258dd72a-9c16-4a3c-98ce-726f08a552dd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a8633e70-1189-be59-76a8-804aea2c7953" executionId="346707dd-de84-4c8d-93bf-41b93e820084" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a273516f-e888-f72d-bf77-a932dd800f36" executionId="c30f9882-a642-4a06-ae8d-3ff14fb25115" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="aa10369a-bca1-4492-1eb6-0dd5572bc158" executionId="5ca8a6d1-fd4b-41dd-95e6-b76bad7cbfd4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e91bf24c-9947-9ab4-30f1-e3406a886040" executionId="920cdae3-f403-49d8-80a6-ff4fb800dc4e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a107f2c5-061c-7ef4-7a05-6e34e7c7b2c0" executionId="a1e0ca97-d967-4554-a333-7719cfacae42" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f20d429c-8ce4-901b-2ca7-236fe0b0c3d0" executionId="749cf592-7d4a-49c1-8957-ae60600ed2cb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c2c15c0c-068f-3cb6-eeda-c65d9a2fce9e" executionId="6fe6ce30-32de-474c-8962-1e735e03a593" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf7a69bc-428f-41df-9e5e-9972f7599c54" executionId="5be9df2c-5259-454e-83f6-1fa16d1af4a1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6915512f-cd34-169b-2aa1-c0fad1561d6a" executionId="e984e74a-4b3e-4350-bae0-4d82e6ed6e6d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae09d84c-53b4-bc29-b3ec-6a1a7cf66b00" executionId="3e8fbaba-9a75-44a3-9940-dab7c3ee59ed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="984ffc26-7e19-2918-f571-8f5a8448e3c4" executionId="7e98f78f-4334-4d3c-a743-83d9457e08e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="999ce048-f164-2607-f965-263963e736cc" executionId="cc778e58-946e-4804-9120-efd2b205776d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="af19a8ce-3200-add0-ac88-feda59750378" executionId="537dd636-f5d8-4d46-9a7e-c634d4f31ca5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="befb24b2-3dc4-22e0-94ab-948eb61e7ef3" executionId="033c4eb3-430e-42b8-a840-dc6142954782" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="696634f2-33f3-871c-70a7-9f253d81d0df" executionId="aa110e50-db5e-46ad-841e-8b1f03c5db81" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="55955c27-56e5-d5e2-2deb-de58fdcab732" executionId="9b73a369-ae77-4ade-abc6-4860521517e0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="397a5c30-c54e-334d-7f47-dba713573c0d" executionId="9f55281f-ff9b-48b6-ae03-3795c6839d29" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="20" executed="19" passed="18" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>在测试运行中跳过测试“TaskUnobserved_ThroughTaskScheduler_LogsToDiagnosticFile”。&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,50 @@
+[
+  {
+    "file": "idle-r1_2026-11-08_215225.csv",
+    "pid": 69800,
+    "start": "2026-11-08T21:52:07.2158785+08:00",
+    "commandLine": "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll\"",
+    "expectedDll": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll",
+    "samples": 295,
+    "seconds": 300.554,
+    "cpuDeltaMs": 2937.0,
+    "cpuSinglePercent": 0.9771954457435271,
+    "cpuNormalizedPercent": 0.0407164769059803
+  },
+  {
+    "file": "idle-r2_2026-11-08_215914.csv",
+    "pid": 88644,
+    "start": "2026-11-08T21:58:55.0663517+08:00",
+    "commandLine": "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll\"",
+    "expectedDll": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll",
+    "samples": 297,
+    "seconds": 300.09,
+    "cpuDeltaMs": 1657.0,
+    "cpuSinglePercent": 0.5521676830284249,
+    "cpuNormalizedPercent": 0.02300698679285104
+  },
+  {
+    "file": "dynamic-r1_2026-11-08_220539.csv",
+    "pid": 88644,
+    "start": "2026-11-08T21:58:55.0663517+08:00",
+    "commandLine": "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll\"",
+    "expectedDll": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll",
+    "samples": 120,
+    "seconds": 120.70400000000001,
+    "cpuDeltaMs": 4813.0,
+    "cpuSinglePercent": 3.987440349946977,
+    "cpuNormalizedPercent": 0.16614334791445737
+  },
+  {
+    "file": "dynamic-r2_2026-11-08_220842.csv",
+    "pid": 88644,
+    "start": "2026-11-08T21:58:55.0663517+08:00",
+    "commandLine": "\"C:\\Program Files\\dotnet\\dotnet.exe\" \"C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll\"",
+    "expectedDll": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-6530d80f\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll",
+    "samples": 120,
+    "seconds": 120.608,
+    "cpuDeltaMs": 3406.0,
+    "cpuSinglePercent": 2.8240249403024675,
+    "cpuNormalizedPercent": 0.11766770584593615
+  }
+]

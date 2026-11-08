@@ -1,0 +1,29 @@
+WARNING: Identity check: PID=84488 command line does NOT contain 'DesktopPet.dll'
+WARNING:   Command line: "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command Start-Sleep 
+-Seconds 8
+Metadata: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\wrong-dll-isolated_2026-11-08_213823_meta.json
+Collecting perf data for PID=84488 (powershell) for 1 seconds...
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\wrong-dll-isolated_2026-11-08_213823.csv
+Wall start: 11/08/2026 21:38:24 | Process start: 11/08/2026 21:38:22
+Endpoint sample captured at elapsed=1.051s
+Done. Samples: 2 | Errors: 0 | Monotonic duration: 1.053s | Exited: False | ExitCode: 2
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\wrong-dll-isolated_2026-11-08_213823.csv
+=== PREP-003 鎬ц兘鍩虹嚎鎽樿: wrong-dll-isolated ===
+PID: 84488
+閲囨牱鏁? 2
+棣栨湯鏈夋晥鍖洪棿: 1.037 绉?(棣?elapsed=0.014s, 鏈?elapsed=1.051s)
+鑴氭湰鎬昏€楁椂: 1.053 绉?
+CPU 绱宸? 0 ms
+鍗曟牳 CPU 鍗犳瘮: 0%
+閫昏緫鏍告暟: 24
+褰掍竴鍖?CPU 鍗犳瘮 (鍗曟牳%/閫昏緫鏍告暟): 0%
+鍏紡: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+宸ヤ綔闆? 棣栨牱鏈?74.46 MB -> 鏈牱鏈?74.46 MB (宸?0 MB)
+绉佹湁鍐呭瓨: 棣栨牱鏈?61.02 MB -> 鏈牱鏈?61.02 MB (宸?0 MB)
+鍙ユ焺: 棣栨牱鏈?592 -> 鏈牱鏈?592 (宸?0)
+绾跨▼: 棣栨牱鏈?26 -> 鏈牱鏈?26 (宸?0)
+杩涚▼閫€鍑? False
+韬唤鍙樻洿: False
+閲囨牱閿欒: 0
+閫€鍑虹爜: 2 (IDENTITY_MISMATCH)
+Summary: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\wrong-dll-isolated_2026-11-08_213823_summary.txt

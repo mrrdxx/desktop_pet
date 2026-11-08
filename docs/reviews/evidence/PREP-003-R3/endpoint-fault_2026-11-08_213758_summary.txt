@@ -1,0 +1,18 @@
+﻿=== PREP-003 性能基线摘要: endpoint-fault ===
+PID: 83608
+采样数: 2
+首末有效区间: 1.035 秒 (首 elapsed=0.017s, 末 elapsed=1.052s)
+脚本总耗时: 2.074 秒
+CPU 累计差: 47 ms
+单核 CPU 占比: 4.54%
+逻辑核数: 24
+归一化 CPU 占比 (单核%/逻辑核数): 0.1892%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 107.48 MB -> 末样本 107.76 MB (差 0.28 MB)
+私有内存: 首样本 38.83 MB -> 末样本 38.89 MB (差 0.06 MB)
+句柄: 首样本 649 -> 末样本 649 (差 0)
+线程: 首样本 28 -> 末样本 28 (差 0)
+进程退出: False
+身份变更: False
+采样错误: 0
+退出码: 0 (COMPLETED)

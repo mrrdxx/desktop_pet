@@ -1,0 +1,5 @@
+{
+  "tests/Integration/Collect-Perf.ps1": "f2ed8bd1b3e904999525d00c1439ddc1f0a24bdd414b87de9a228af82ed2e25b",
+  "docs/remediation/PREP-003-response.md": "585a38d1949c30ab726a0c562880443af3cd9c2c1eb31b032f5e3954f8170456",
+  "docs/history/PREP-003-perf-baseline.md": "b9e450dd9f8ffff38e267fe02f4ef3356b351660520259a861b078f14897d2b0"
+}

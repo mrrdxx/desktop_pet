@@ -1,0 +1,149 @@
+# PREP-003 性能基线采集脚本（R1 整改版）
+# 按 TESTING M-08 采集空闲和动态性能数据
+# 改为显式 PID 入口，Stopwatch 计时，保存进程元数据
+# 用法：.\Collect-Perf.ps1 -DurationSec 300 -Label "idle-r1" -TargetPid 65656
+#       .\Collect-Perf.ps1 -DurationSec 120 -Label "dynamic-r1" -TargetPid 65656
+param(
+    [Parameter(Mandatory=$true)][int]$DurationSec,
+    [Parameter(Mandatory=$true)][string]$Label,
+    [Parameter(Mandatory=$true)][int]$TargetPid,
+    [string]$OutDir = (Join-Path $PSScriptRoot "..\..\artifacts\perf-baseline")
+)
+
+$ErrorActionPreference = 'Stop'
+$timestamp = Get-Date -Format 'yyyy-MM-dd_HHmmss'
+$outFile = Join-Path $OutDir "${Label}_${timestamp}.csv"
+$metaFile = Join-Path $OutDir "${Label}_${timestamp}_meta.json"
+New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
+
+# Verify target process exists and capture identity metadata
+$proc = Get-Process -Id $TargetPid -ErrorAction SilentlyContinue
+if ($null -eq $proc) {
+    Write-Error "Process PID=$TargetPid not found. Start the app first."
+    exit 1
+}
+
+# Capture process identity metadata
+$procStartTime = $proc.StartTime
+$procPath = $proc.Path
+$procName = $proc.ProcessName
+$cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$TargetPid").CommandLine
+
+# Save run metadata
+$meta = @{
+    label = $Label
+    targetPid = $TargetPid
+    processName = $procName
+    processStartTime = $procStartTime.ToString('O')
+    processPath = $procPath
+    commandLine = $cmdLine
+    durationRequestedSec = $DurationSec
+    collectionStartIso = (Get-Date).ToString('O')
+    logicalCores = (Get-CimInstance Win32_Processor).NumberOfLogicalProcessors
+    timer = 'System.Diagnostics.Stopwatch (high-resolution monotonic)'
+    csvColumns = 'timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count'
+}
+$meta | ConvertTo-Json -Depth 3 | Out-File -FilePath $metaFile -Encoding UTF8
+Write-Host "Metadata: $metaFile"
+
+# Use Stopwatch for elapsed time (monotonic, not wall clock)
+$sw = [System.Diagnostics.Stopwatch]::StartNew()
+$wallStart = Get-Date
+
+# CSV header includes PID
+"timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count" | Out-File -FilePath $outFile -Encoding UTF8
+
+Write-Host "Collecting perf data for PID=$TargetPid ($procName) for $DurationSec seconds..."
+Write-Host "Output: $outFile"
+Write-Host "Wall start: $wallStart | Process start: $procStartTime"
+
+$sampleCount = 0
+$processExited = $false
+$sampleErrors = 0
+
+while ($sw.Elapsed.TotalSeconds -lt $DurationSec) {
+    try {
+        $p = Get-Process -Id $TargetPid -ErrorAction SilentlyContinue
+        if ($null -eq $p) {
+            $exitWall = Get-Date
+            $exitElapsed = [math]::Round($sw.Elapsed.TotalSeconds, 3)
+            Write-Host "PROCESS_EXITED at wall=$exitWall, elapsed=${exitElapsed}s"
+            "$($exitWall.ToString('O')),$exitElapsed,$TargetPid,EXITED,,,,SAMPLE_FAILED_PROCESS_EXITED" | Out-File -FilePath $outFile -Encoding UTF8 -Append
+            $processExited = $true
+            break
+        }
+        $now = Get-Date
+        $elapsed = [math]::Round($sw.Elapsed.TotalSeconds, 3)
+        $cpuMs = $p.TotalProcessorTime.TotalMilliseconds
+        $wsMb = [math]::Round($p.WorkingSet64 / 1MB, 2)
+        $privMb = [math]::Round($p.PrivateMemorySize64 / 1MB, 2)
+        $handles = $p.HandleCount
+        $threads = $p.Threads.Count
+        "$($now.ToString('O')),$elapsed,$TargetPid,$([math]::Round($cpuMs,0)),$wsMb,$privMb,$handles,$threads" | Out-File -FilePath $outFile -Encoding UTF8 -Append
+        $sampleCount++
+    } catch {
+        $sampleErrors++
+        $errElapsed = [math]::Round($sw.Elapsed.TotalSeconds, 3)
+        "$((Get-Date).ToString('O')),$errElapsed,$TargetPid,SAMPLE_ERROR,,,,$_" | Out-File -FilePath $outFile -Encoding UTF8 -Append
+    }
+    Start-Sleep -Milliseconds 1000
+}
+
+$sw.Stop()
+$actualDuration = $sw.Elapsed.TotalSeconds
+$wallEnd = Get-Date
+
+# Update metadata with actual results
+$meta.collectionEndIso = $wallEnd.ToString('O')
+$meta.actualDurationSec = [math]::Round($actualDuration, 3)
+$meta.sampleCount = $sampleCount
+$meta.sampleErrors = $sampleErrors
+$meta.processExitedDuringCollection = $processExited
+$meta | ConvertTo-Json -Depth 3 | Out-File -FilePath $metaFile -Encoding UTF8
+
+Write-Host "Done. Samples: $sampleCount | Errors: $sampleErrors | Monotonic duration: $([math]::Round($actualDuration,3))s | Exited: $processExited"
+Write-Host "Output: $outFile"
+
+# Summary
+$samples = Import-Csv -Path $outFile | Where-Object { $_.cpu_ms_total -match '^\d+$' }
+if ($samples.Count -gt 1) {
+    $first = $samples[0]
+    $last = $samples[$samples.Count - 1]
+    $cpuDelta = [double]$last.cpu_ms_total - [double]$first.cpu_ms_total
+    $elapsedDelta = [double]$last.elapsed_sec - [double]$first.elapsed_sec
+    $logicalCores = $meta.logicalCores
+    $cpuPercentSingle = if ($elapsedDelta -gt 0) { ($cpuDelta / ($elapsedDelta * 1000)) * 100 } else { 0 }
+    $cpuPercentNormalized = if ($logicalCores -gt 0) { $cpuPercentSingle / $logicalCores } else { 0 }
+    $wsFirst = [double]$first.working_set_mb
+    $wsLast = [double]$last.working_set_mb
+    $privFirst = [double]$first.private_memory_mb
+    $privLast = [double]$last.private_memory_mb
+    $handleFirst = [int]$first.handle_count
+    $handleLast = [int]$last.handle_count
+    $threadFirst = [int]$first.thread_count
+    $threadLast = [int]$last.thread_count
+
+    $summary = @"
+=== PREP-003 性能基线摘要: $Label ===
+PID: $TargetPid
+采样数: $($samples.Count)
+单调时钟经过时间: $([math]::Round($elapsedDelta,3)) 秒
+CPU 累计差: $([math]::Round($cpuDelta,0)) ms
+单核 CPU 占比: $([math]::Round($cpuPercentSingle,2))%
+逻辑核数: $logicalCores
+归一化 CPU 占比 (单核%/逻辑核数): $([math]::Round($cpuPercentNormalized,4))%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 $wsFirst MB -> 末样本 $wsLast MB (差 $([math]::Round($wsLast - $wsFirst,2)) MB)
+私有内存: 首样本 $privFirst MB -> 末样本 $privLast MB (差 $([math]::Round($privLast - $privFirst,2)) MB)
+句柄: 首样本 $handleFirst -> 末样本 $handleLast (差 $($handleLast - $handleFirst))
+线程: 首样本 $threadFirst -> 末样本 $threadLast (差 $($threadLast - $threadFirst))
+进程退出: $processExited
+采样错误: $sampleErrors
+"@
+    Write-Host $summary
+    $summaryFile = Join-Path $OutDir "${Label}_${timestamp}_summary.txt"
+    $summary | Out-File -FilePath $summaryFile -Encoding UTF8
+    Write-Host "Summary: $summaryFile"
+} else {
+    Write-Host "Insufficient valid samples for summary (count=$($samples.Count))"
+}

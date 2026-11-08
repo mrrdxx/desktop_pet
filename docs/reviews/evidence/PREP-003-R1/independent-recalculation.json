@@ -1,0 +1,106 @@
+[
+  {
+    "file": "dynamic-r1_2026-11-08_125518.csv",
+    "count": 119,
+    "elapsed_s": 120.0,
+    "cpuDelta_ms": 10500.0,
+    "singleCorePercent": 8.75,
+    "normalized24Percent": 0.3645833333333333,
+    "first": {
+      "timestamp_iso": "2026-11-08T12:55:18.4462760+08:00",
+      "elapsed_sec": "0",
+      "cpu_ms_total": "12203",
+      "working_set_mb": "224.14",
+      "private_memory_mb": "73.3",
+      "handle_count": "693",
+      "thread_count": "18"
+    },
+    "last": {
+      "timestamp_iso": "2026-11-08T12:57:18.3892516+08:00",
+      "elapsed_sec": "120",
+      "cpu_ms_total": "22703",
+      "working_set_mb": "224.48",
+      "private_memory_mb": "71.98",
+      "handle_count": "692",
+      "thread_count": "17"
+    }
+  },
+  {
+    "file": "dynamic-r2_2026-11-08_125735.csv",
+    "count": 119,
+    "elapsed_s": 120.0,
+    "cpuDelta_ms": 6078.0,
+    "singleCorePercent": 5.0649999999999995,
+    "normalized24Percent": 0.21104166666666666,
+    "first": {
+      "timestamp_iso": "2026-11-08T12:57:35.3995801+08:00",
+      "elapsed_sec": "0",
+      "cpu_ms_total": "23781",
+      "working_set_mb": "223.4",
+      "private_memory_mb": "72.88",
+      "handle_count": "695",
+      "thread_count": "18"
+    },
+    "last": {
+      "timestamp_iso": "2026-11-08T12:59:35.3664296+08:00",
+      "elapsed_sec": "120",
+      "cpu_ms_total": "29859",
+      "working_set_mb": "250.84",
+      "private_memory_mb": "72.93",
+      "handle_count": "690",
+      "thread_count": "17"
+    }
+  },
+  {
+    "file": "idle-r1_2026-11-08_122958.csv",
+    "count": 295,
+    "elapsed_s": 299.1,
+    "cpuDelta_ms": 1265.0,
+    "singleCorePercent": 0.4229354730859244,
+    "normalized24Percent": 0.017622311378580183,
+    "first": {
+      "timestamp_iso": "2026-11-08T12:29:58.2639570+08:00",
+      "elapsed_sec": "0",
+      "cpu_ms_total": "1141",
+      "working_set_mb": "119.62",
+      "private_memory_mb": "58.72",
+      "handle_count": "694",
+      "thread_count": "22"
+    },
+    "last": {
+      "timestamp_iso": "2026-11-08T12:34:57.3372069+08:00",
+      "elapsed_sec": "299.1",
+      "cpu_ms_total": "2406",
+      "working_set_mb": "135.15",
+      "private_memory_mb": "73.41",
+      "handle_count": "685",
+      "thread_count": "18"
+    }
+  },
+  {
+    "file": "idle-r2_2026-11-08_123632.csv",
+    "count": 292,
+    "elapsed_s": 299.1,
+    "cpuDelta_ms": 1906.0,
+    "singleCorePercent": 0.6372450685389501,
+    "normalized24Percent": 0.02655187785578959,
+    "first": {
+      "timestamp_iso": "2026-11-08T12:36:32.8859922+08:00",
+      "elapsed_sec": "0",
+      "cpu_ms_total": "3094",
+      "working_set_mb": "129.14",
+      "private_memory_mb": "66.86",
+      "handle_count": "696",
+      "thread_count": "18"
+    },
+    "last": {
+      "timestamp_iso": "2026-11-08T12:41:31.9850858+08:00",
+      "elapsed_sec": "299.1",
+      "cpu_ms_total": "5000",
+      "working_set_mb": "130.6",
+      "private_memory_mb": "68.59",
+      "handle_count": "688",
+      "thread_count": "17"
+    }
+  }
+]

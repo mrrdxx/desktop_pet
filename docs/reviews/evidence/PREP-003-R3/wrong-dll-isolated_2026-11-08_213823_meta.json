@@ -1,0 +1,23 @@
+﻿{
+    "collectionStartIso":  "2026-11-08T21:38:24.7020328+08:00",
+    "expectedDll":  "DesktopPet.dll",
+    "exitCode":  2,
+    "collectionEndIso":  "2026-11-08T21:38:25.7878085+08:00",
+    "processExitedDuringCollection":  false,
+    "targetPid":  84488,
+    "processName":  "powershell",
+    "sampleCount":  2,
+    "actualDurationSec":  1.053,
+    "logicalCores":  24,
+    "commandLine":  "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -Command Start-Sleep -Seconds 8",
+    "label":  "wrong-dll-isolated",
+    "durationRequestedSec":  1,
+    "processStartTime":  "2026-11-08T21:38:22.9057605+08:00",
+    "exitCodeMeaning":  "IDENTITY_MISMATCH",
+    "dllMatched":  false,
+    "timer":  "System.Diagnostics.Stopwatch (high-resolution monotonic)",
+    "identityChanged":  false,
+    "processPath":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "sampleErrors":  0,
+    "csvColumns":  "timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count,status"
+}

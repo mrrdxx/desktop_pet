@@ -1,0 +1,7 @@
+{
+  "src/DesktopPet.App/App.xaml.cs": "8188571c309e9707a3d44187bdbe81aec0d238bc70624a121a3daf51351917b6",
+  "src/DesktopPet.App/Platform/SingleInstanceGuard.cs": "5fc2f641af5746764f4e3ec29ca018ece51c72379f0c6620959c76110f8abd9c",
+  "tests/DesktopPet.DiagnosticProbe/Program.cs": "5e9124c119c6f65f29c8d1d8cfd9372d8792e52d44c045d6cdbabfeb98c47479",
+  "tests/DesktopPet.App.Tests/DiagnosticIsolationTests.cs": "e2ccf5026196176872d608ca99e83167afb374aef478f2521b3a862a53fc527e",
+  "docs/remediation/PREP-001-response.md": "dbaae7669c5704533a45953957549828392ad31e0e920179f84bc6fe078481f3"
+}

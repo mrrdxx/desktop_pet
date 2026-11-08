@@ -1,0 +1,6 @@
+{
+  "src/DesktopPet.App/Platform/PetStateContext.cs": "05359032d50c34513133f8cfe3b6b4f5c5d05df5df1cca809c986c3865f9c72a",
+  "src/DesktopPet.App/MainWindow.xaml.cs": "ee5a906a68fa773b9519127446dcc005877641c50201cffde38a5b03f947b5c2",
+  "tests/DesktopPet.App.Tests/PetStateContextTests.cs": "d9cdf870494401f2afc64bdc1bc665bc955d081f993fa3b0e3dddc46a3b334c3",
+  "docs/remediation/PREP-002-response.md": "cdc71e5f24278d416a1d1ecd92d8e893c3c9928435cdf8447071966f2580cf5a"
+}

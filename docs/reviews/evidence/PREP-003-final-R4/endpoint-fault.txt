@@ -1,0 +1,27 @@
+Metadata: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-final-R4\endpoint-fault_2026-11-08_224636_meta.json
+Collecting perf data for PID=66812 (pwsh) for 2 seconds...
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-final-R4\endpoint-fault_2026-11-08_224636.csv
+Wall start: 11/08/2026 22:46:37 | Process start: 11/08/2026 22:46:35
+WARNING: Failed to capture endpoint sample: REVIEW_INJECTED_ENDPOINT_READ_FAILURE
+Done. Samples: 2 | Errors: 1 | Monotonic duration: 2.091s | Exited: False | ExitCode: 3
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-final-R4\endpoint-fault_2026-11-08_224636.csv
+=== PREP-003 性能基线摘要: endpoint-fault ===
+PID: 66812
+采样数: 2
+首末有效区间: 1.036 秒 (首 elapsed=0.021s, 末 elapsed=1.057s)
+脚本总耗时: 2.091 秒
+CPU 累计差: 31 ms
+单核 CPU 占比: 2.99%
+逻辑核数: 24
+归一化 CPU 占比 (单核%/逻辑核数): 0.1247%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 101.9 MB -> 末样本 102.11 MB (差 0.21 MB)
+私有内存: 首样本 35.87 MB -> 末样本 35.9 MB (差 0.03 MB)
+句柄: 首样本 644 -> 末样本 644 (差 0)
+线程: 首样本 27 -> 末样本 27 (差 0)
+进程退出: False
+身份变更: False
+终点样本: False
+采样错误: 1
+退出码: 3 (PROCESS_EXITED_EARLY)
+Summary: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-final-R4\endpoint-fault_2026-11-08_224636_summary.txt

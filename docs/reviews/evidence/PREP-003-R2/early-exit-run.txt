@@ -1,0 +1,23 @@
+Metadata: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R2\reviewer-early-exit_2026-11-08_175610_meta.json
+Collecting perf data for PID=79524 (powershell) for 6 seconds...
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R2\reviewer-early-exit_2026-11-08_175610.csv
+Wall start: 11/08/2026 17:56:12 | Process start: 11/08/2026 17:56:10
+PROCESS_EXITED at wall=11/08/2026 17:56:14, elapsed=2.068s
+Done. Samples: 2 | Errors: 0 | Monotonic duration: 2.072s | Exited: True
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R2\reviewer-early-exit_2026-11-08_175610.csv
+=== PREP-003 鎬ц兘鍩虹嚎鎽樿: reviewer-early-exit ===
+PID: 79524
+閲囨牱鏁? 2
+鍗曡皟鏃堕挓缁忚繃鏃堕棿: 1.022 绉?
+CPU 绱宸? 0 ms
+鍗曟牳 CPU 鍗犳瘮: 0%
+閫昏緫鏍告暟: 24
+褰掍竴鍖?CPU 鍗犳瘮 (鍗曟牳%/閫昏緫鏍告暟): 0%
+鍏紡: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+宸ヤ綔闆? 棣栨牱鏈?74.54 MB -> 鏈牱鏈?74.54 MB (宸?0 MB)
+绉佹湁鍐呭瓨: 棣栨牱鏈?61.11 MB -> 鏈牱鏈?61.11 MB (宸?0 MB)
+鍙ユ焺: 棣栨牱鏈?592 -> 鏈牱鏈?592 (宸?0)
+绾跨▼: 棣栨牱鏈?26 -> 鏈牱鏈?26 (宸?0)
+杩涚▼閫€鍑? True
+閲囨牱閿欒: 0
+Summary: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R2\reviewer-early-exit_2026-11-08_175610_summary.txt

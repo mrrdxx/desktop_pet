@@ -1,0 +1,3 @@
+﻿timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count
+2026-11-08T17:56:08.0534006+08:00,0.013,67068,422,101.5,35.27,642,27
+2026-11-08T17:56:09.0921240+08:00,1.051,67068,469,102.59,35.98,642,27

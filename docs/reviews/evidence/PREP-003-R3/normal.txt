@@ -1,0 +1,26 @@
+Metadata: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\normal_2026-11-08_213753_meta.json
+Collecting perf data for PID=83608 (pwsh) for 2 seconds...
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\normal_2026-11-08_213753.csv
+Wall start: 11/08/2026 21:37:55 | Process start: 11/08/2026 21:37:52
+Endpoint sample captured at elapsed=2.099s
+Done. Samples: 3 | Errors: 0 | Monotonic duration: 2.103s | Exited: False | ExitCode: 0
+Output: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\normal_2026-11-08_213753.csv
+=== PREP-003 鎬ц兘鍩虹嚎鎽樿: normal ===
+PID: 83608
+閲囨牱鏁? 3
+棣栨湯鏈夋晥鍖洪棿: 2.066 绉?(棣?elapsed=0.033s, 鏈?elapsed=2.099s)
+鑴氭湰鎬昏€楁椂: 2.103 绉?
+CPU 绱宸? 31 ms
+鍗曟牳 CPU 鍗犳瘮: 1.5%
+閫昏緫鏍告暟: 24
+褰掍竴鍖?CPU 鍗犳瘮 (鍗曟牳%/閫昏緫鏍告暟): 0.0625%
+鍏紡: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+宸ヤ綔闆? 棣栨牱鏈?103.01 MB -> 鏈牱鏈?103.21 MB (宸?0.2 MB)
+绉佹湁鍐呭瓨: 棣栨牱鏈?36.03 MB -> 鏈牱鏈?36.06 MB (宸?0.03 MB)
+鍙ユ焺: 棣栨牱鏈?649 -> 鏈牱鏈?649 (宸?0)
+绾跨▼: 棣栨牱鏈?28 -> 鏈牱鏈?28 (宸?0)
+杩涚▼閫€鍑? False
+韬唤鍙樻洿: False
+閲囨牱閿欒: 0
+閫€鍑虹爜: 0 (COMPLETED)
+Summary: C:\Users\mrrdxx\Desktop\pet\docs\reviews\evidence\PREP-003-R3\normal_2026-11-08_213753_summary.txt

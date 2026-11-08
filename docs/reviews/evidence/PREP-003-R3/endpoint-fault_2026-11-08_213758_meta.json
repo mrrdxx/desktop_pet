@@ -1,0 +1,23 @@
+﻿{
+    "collectionStartIso":  "2026-11-08T21:37:59.4904225+08:00",
+    "expectedDll":  "",
+    "exitCode":  0,
+    "collectionEndIso":  "2026-11-08T21:38:01.6021814+08:00",
+    "processExitedDuringCollection":  false,
+    "targetPid":  83608,
+    "processName":  "pwsh",
+    "sampleCount":  2,
+    "actualDurationSec":  2.074,
+    "logicalCores":  24,
+    "commandLine":  "\"C:\\Program Files\\PowerShell\\7\\pwsh.exe\" -Command \"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n@\u0027\nfrom pathlib import Path\nimport shutil\np=Path(\u0027docs/reviews/evidence/PREP-003-R3\u0027);p.mkdir(parents=True,exist_ok=True)\ns=Path(\u0027tests/Integration/Collect-Perf.ps1\u0027).read_text(encoding=\u0027utf-8-sig\u0027)\nshutil.copyfile(\u0027tests/Integration/Collect-Perf.ps1\u0027,p/\u0027Collect-Perf.ps1.txt\u0027)\n# Fault injection only in review copy: emulate a read failure at final sampling.\ns=s.replace(\u0027# Capture final endpoint sample if process still alive and loop completed normally\u0027,\u0027# Capture final endpoint sample if process still alive and loop completed normally\u0027,1)\nmarker=\u0027if (-not $processExited -and -not $identityChanged) {\\n    try {\u0027\nassert marker in s\ns=s.replace(marker,marker+\u0027\\n        throw \\\"REVIEW_INJECTED_ENDPOINT_READ_FAILURE\\\"\u0027,1)\n(p/\u0027endpoint-fault.ps1\u0027).write_text(s,encoding=\u0027utf-8-sig\u0027)\n\u0027@ | python -X utf8 -\n$reviewDir = Join-Path (Get-Location) \u0027docs/reviews/evidence/PREP-003-R3\u0027\n\u0026 powershell -NoProfile -ExecutionPolicy Bypass -File tests/Integration/Collect-Perf.ps1 -DurationSec 2 -Label normal -TargetPid $PID -OutDir $reviewDir *\u003e (Join-Path $reviewDir \u0027normal.txt\u0027)\n\\\"NORMAL_EXIT=$LASTEXITCODE\\\"\n\u0026 powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $reviewDir \u0027endpoint-fault.ps1\u0027) -DurationSec 2 -Label endpoint-fault -TargetPid $PID -OutDir $reviewDir *\u003e (Join-Path $reviewDir \u0027endpoint-fault.txt\u0027)\n\\\"ENDPOINT_FAULT_EXIT=$LASTEXITCODE\\\"\n\u0026 powershell -NoProfile -ExecutionPolicy Bypass -File tests/Integration/Collect-Perf.ps1 -DurationSec 1 -Label wrong-identity -TargetPid $PID -ExpectedDll \u0027THIS_IS_NOT_THE_TARGET.dll\u0027 -OutDir $reviewDir *\u003e (Join-Path $reviewDir \u0027wrong-identity.txt\u0027)\n\\\"WRONG_IDENTITY_EXIT=$LASTEXITCODE\\\"\nGet-ChildItem $reviewDir -Filter \u0027*_meta.json\u0027 | ForEach-Object { $m=Get-Content $_.FullName -Raw | ConvertFrom-Json; \\\"META $($m.label) exit=$($m.exitCode) errors=$($m.sampleErrors) count=$($m.sampleCount)\\\" }\n@\u0027\nfrom pathlib import Path\nimport csv,json\np=Path(\u0027docs/reviews/evidence/PREP-003-R3\u0027)\nfor f in p.glob(\u0027*.csv\u0027):\n rows=list(csv.DictReader(f.open(encoding=\u0027utf-8-sig\u0027)))\n print(f.name, \u0027statuses=\u0027,[r[\u0027status\u0027] for r in rows], \u0027interval=\u0027,float(rows[-1][\u0027elapsed_sec\u0027])-float(rows[0][\u0027elapsed_sec\u0027]))\nprint(\u0027BOM=\u0027,Path(\u0027tests/Integration/Collect-Perf.ps1\u0027).read_bytes()[:3].hex())\n\u0027@ | python -X utf8 -\"",
+    "label":  "endpoint-fault",
+    "durationRequestedSec":  2,
+    "processStartTime":  "2026-11-08T21:37:52.4233649+08:00",
+    "exitCodeMeaning":  "COMPLETED",
+    "dllMatched":  true,
+    "timer":  "System.Diagnostics.Stopwatch (high-resolution monotonic)",
+    "identityChanged":  false,
+    "processPath":  "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+    "sampleErrors":  0,
+    "csvColumns":  "timestamp_iso,elapsed_sec,pid,cpu_ms_total,working_set_mb,private_memory_mb,handle_count,thread_count,status"
+}
