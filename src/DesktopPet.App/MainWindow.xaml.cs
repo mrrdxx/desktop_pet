@@ -128,6 +128,14 @@ public partial class MainWindow : System.Windows.Window
     internal EffectiveRuntimeTracker? TestRuntimeTracker;
     internal RareEventScheduler? TestRareEventScheduler;
 
+    // PREP-002: Explicit state context supplied by App in production.
+    // When non-null, OnUpdateTick and other methods read shared state objects
+    // and invoke the save-dirty callback from here instead of reaching back
+    // through Application.Current. Test injection fields (Test*) still take
+    // highest priority; Application.Current is the final fallback for tests
+    // that use the parameterless constructor without setting StateContext.
+    internal PetStateContext? StateContext;
+
     // P2-003 S3 R5 F-08: Test injection point for monitor list.
     // When non-null, BuildWorkArea uses this instead of MonitorInterop.EnumerateMonitors().
     // Set to an empty list to simulate "no display available" without Width hacks.
@@ -255,28 +263,48 @@ public partial class MainWindow : System.Windows.Window
         _updateTimer.Start();
     }
 
+    // PREP-002: Centralised save-dirty notification. Replaces the scattered
+    // "Application.Current is App app → app.MarkStateDirty()" pattern.
+    // Priority: StateContext.MarkStateDirty (production, explicitly injected
+    // by App) → Application.Current fallback (for tests that use the
+    // parameterless constructor without StateContext).
+    private void NotifyStateDirty()
+    {
+        if (StateContext?.MarkStateDirty is not null)
+            StateContext.MarkStateDirty.Invoke();
+        else if (System.Windows.Application.Current is App app)
+            app.MarkStateDirty();
+    }
+
+    // PREP-002 F-01: Per-object three-tier resolution helpers.
+    // Each state object is independently resolved: Test* field (test injection)
+    // → StateContext member (production injection) → App.Current member
+    // (parameterless-constructor fallback). No object's null/non-null status
+    // controls another object's resolution path.
+    private static T? Resolve<T>(T? test, T? context, Func<App, T?> getApp) where T : class
+    {
+        if (test is not null) return test;
+        if (context is not null) return context;
+        if (System.Windows.Application.Current is App app)
+            return getApp(app);
+        return null;
+    }
+
     // P1-001: Monotonic time source for AnimationPlayer.
     // P2-004 F-01: Use high-resolution Stopwatch instead of Environment.TickCount64.
-    // TickCount64 has ~10-16ms granularity on Windows .NET 10, causing real
-    // fast drags to have identical timestamps for press-down and first Move,
-    // which makes RecordSample reject the Move sample (same-or-older time)
-    // and lose the displacement from the velocity trajectory.
-    // Stopwatch.GetTimestamp uses the QPC counter with sub-microsecond
-    // resolution, converted to double milliseconds via Stopwatch.Frequency.
-    // This preserves fractional ms so press, Move, release, physics tick,
-    // and pause/resume all share a single high-resolution monotonic time domain.
-    private static double _startTimeMs = -1;
-    private static double GetElapsedMs()
-    {
-        if (_startTimeMs < 0)
-            _startTimeMs = Stopwatch.GetTimestamp() * 1000.0 / Stopwatch.Frequency;
-        return Stopwatch.GetTimestamp() * 1000.0 / Stopwatch.Frequency - _startTimeMs;
-    }
+    // PREP-002: The actual clock logic now lives in the shared
+    // MonotonicClock class (Platform/MonotonicClock.cs). MainWindow keeps a
+    // thin local wrapper so that AnimationPlayer, OnUpdateTick and test
+    // injection (TestGetElapsedMs) all read from the same shared instance.
+    private static double GetElapsedMs() => MonotonicClock.Instance.GetElapsedMs();
 
     /// <summary>
     /// P1-004: Public accessor for the monotonic elapsed-milliseconds value.
     /// Used by App.OnPauseToggled to convert to monotonic minutes for
     /// EffectiveRuntimeTracker Start/EndActivePeriod calls.
+    /// PREP-002: Retained for backward compatibility — tests in
+    /// HighResolutionTimingTests call this method directly. Internally
+    /// delegates to the shared MonotonicClock.
     /// </summary>
     public static double GetElapsedMsPublic() => GetElapsedMs();
 
@@ -706,16 +734,13 @@ public partial class MainWindow : System.Windows.Window
         // P1-003: Advance emotion decay every tick (G-01: use float accumulator).
         // Decay runs even during drag/menu/petting — only paused stops it.
         // The accumulator handles clock rollback internally (F-02).
-        // Test injection: TestEmotionAccumulator bypasses App.Current for unit tests.
-        EmotionDecayAccumulator? emotionAcc = TestEmotionAccumulator;
-        CornerTracker? cornerTrack = TestCornerTracking;
-        GrievanceExpressionState? grievanceExpr = TestGrievanceExpression;
-        if (emotionAcc is null && System.Windows.Application.Current is App app)
-        {
-            emotionAcc = app.EmotionAccumulator;
-            cornerTrack = app.CornerTracking;
-            grievanceExpr = app.GrievanceExpression;
-        }
+        // PREP-002 F-01: Each object independently resolved Test* → StateContext → App.
+        EmotionDecayAccumulator? emotionAcc = Resolve(
+            TestEmotionAccumulator, StateContext?.EmotionAccumulator, a => a.EmotionAccumulator);
+        CornerTracker? cornerTrack = Resolve(
+            TestCornerTracking, StateContext?.CornerTracking, a => a.CornerTracking);
+        GrievanceExpressionState? grievanceExpr = Resolve(
+            TestGrievanceExpression, StateContext?.GrievanceExpression, a => a.GrievanceExpression);
 
         if (!_isAppPaused && emotionAcc is not null)
         {
@@ -741,8 +766,7 @@ public partial class MainWindow : System.Windows.Window
                         {
                             emotionAcc.AddGrievance(20);
                             cornerTrack.Clear();
-                            if (System.Windows.Application.Current is App app2)
-                                app2.MarkStateDirty();
+                            NotifyStateDirty();
                         }
                     }
                     else
@@ -774,8 +798,7 @@ public partial class MainWindow : System.Windows.Window
                         _isExpressingGrievance = false;
                         grievanceExpr.Clear();
                         emotionAcc.ResetGrievanceAfterExpression();
-                        if (System.Windows.Application.Current is App app3)
-                            app3.MarkStateDirty();
+                        NotifyStateDirty();
 
                         // F-04: Return to idle action after expression completes.
                         _animPlayer.PlayAction("idle");
@@ -829,87 +852,38 @@ public partial class MainWindow : System.Windows.Window
 
         // P1-004: Advance effective runtime tracker and evaluate rare-event
         // scheduler every tick. Only runs when not paused (same gate as emotion).
-        // Test injection: TestRuntimeTracker/TestRareEventScheduler bypass
-        // App.Current for unit tests.
-        EffectiveRuntimeTracker? runtimeTracker = TestRuntimeTracker;
-        RareEventScheduler? rareScheduler = TestRareEventScheduler;
-        if (runtimeTracker is null && System.Windows.Application.Current is App rareApp)
-        {
-            runtimeTracker = rareApp.RuntimeTracker;
-            rareScheduler = rareApp.RareEventScheduler;
-        }
+        // PREP-002 F-01: Each object independently resolved Test* → StateContext → App.
+        // PREP-002 S3: Plan evaluation and runtime advancement extracted to
+        // RareEventUpdateService. Probe start/timeout and save notification
+        // remain here (position ownership + unified save entry).
+        EffectiveRuntimeTracker? runtimeTracker = Resolve(
+            TestRuntimeTracker, StateContext?.RuntimeTracker, a => a.RuntimeTracker);
+        RareEventScheduler? rareScheduler = Resolve(
+            TestRareEventScheduler, StateContext?.RareEventScheduler, a => a.RareEventScheduler);
 
         if (!_isAppPaused && runtimeTracker is not null && rareScheduler is not null)
         {
-            var monotonicMinutes = nowMs / 60000.0;
-            runtimeTracker.UpdateTo(monotonicMinutes);
-
-            // Ensure a plan exists for today (local date).
             var today = DateTime.Now.ToString("yyyy-MM-dd");
-            var currentAccumulated = runtimeTracker.AccumulatedMinutes;
-            bool planCreated = rareScheduler.EnsurePlanForDate(
-                today, new Random(), currentAccumulatedMinutes: currentAccumulated);
 
-            // F-09 R10: Delay Evaluate while grievance is being expressed.
-            // Evaluate has a consumption side effect (marks the plan consumed
-            // internally on delay-reached, regardless of ShouldFire vs
-            // RollFailed). If we evaluate during grievance, the plan is
-            // consumed without the probe ever being shown — that is a premature
-            // skip, not the R-03 "delay to idle, skip only if no opportunity
-            // all day" rule. Instead, skip Evaluate entirely while grievance
-            // is active; the plan retains its original date, roll, delay,
-            // baseline, and unconsumed state. After grievance ends, the next
-            // tick evaluates the same plan normally.
-            //
-            // Note: a probe that already started and was interrupted by
-            // grievance was already consumed by its own Evaluate call (before
-            // grievance began). That consumption stands — no replay.
-            // P2-003 S3 R5 F-06: Also skip Evaluate while physics is active.
-            // Evaluate has a MarkConsumed side-effect — calling it during
-            // physics would consume the plan and start a probe that competes
-            // with the throw trajectory. The plan retains its original date,
-            // roll, delay, baseline, and unconsumed state. After physics ends
-            // (resting or stopped), the next tick evaluates the same plan
-            // normally.
-            RareEventScheduler.TriggerResult? result = null;
-            if (!_isExpressingGrievance && !_isPhysicsActive)
-            {
-                // Evaluate trigger conditions. Social and rest-reminder are not
-                // implemented yet — pass false per PRODUCT R-03.
-                result = rareScheduler.Evaluate(
-                    currentAccumulated, today,
-                    isPaused: false,
-                    isDragging: _isDragging,
-                    isSocialActive: false,
-                    isRestReminderActive: false);
-            }
+            var rareResult = RareEventUpdateService.EvaluateTick(
+                runtimeTracker,
+                rareScheduler,
+                nowMs,
+                today,
+                isDragging: _isDragging,
+                isExpressingGrievance: _isExpressingGrievance,
+                isPhysicsActive: _isPhysicsActive);
 
-            // F-08: Notify the save queue when the plan state actually changes,
-            // not only when ShouldFire is true. Three cases require persistence:
-            //   1. A new plan was created (EnsurePlanForDate returned true).
-            //   2. The plan's Consumed flag changed (ShouldFire OR RollFailed).
-            //   3. The plan's date changed (cross-day new plan).
-            // Without this, a newly created plan or a roll-failed consumption
-            // would not enter the 5-second debounce save and could be lost on
-            // an abnormal exit before the next unrelated MarkStateDirty call.
-            //
-            // We compare against the last-known plan date + consumed state to
-            // avoid calling MarkStateDirty every tick (which would reset the
+            // F-08: The service signals StateChanged for new plan or consumed.
+            // Additionally compare against cached values to detect cross-day
+            // drift, avoiding MarkStateDirty every tick (which would reset the
             // debounce timer indefinitely and prevent saving).
-            var currentPlan = rareScheduler.CurrentPlan;
-            var currentDate = currentPlan?.LocalDate;
-            var currentConsumed = currentPlan?.Consumed;
+            bool stateChanged = rareResult.StateChanged
+                || rareResult.PlanDate != _lastRareEventPlanDate
+                || rareResult.PlanConsumed != _lastRareEventPlanConsumed;
 
-            bool stateChanged = planCreated
-                || currentDate != _lastRareEventPlanDate
-                || currentConsumed != _lastRareEventPlanConsumed;
-
-            if (result is not null && result.Value.ShouldFire)
+            if (rareResult.ShouldFire)
             {
-                rareScheduler.MarkConsumed();
-                // ShouldFire always changes Consumed from false to true.
-                stateChanged = true;
-
                 // P1-004: Start probe (peek) visual if not already active and
                 // not dragging. The pet moves to the nearest screen edge,
                 // plays curious, and returns to original position after
@@ -938,10 +912,9 @@ public partial class MainWindow : System.Windows.Window
 
             if (stateChanged)
             {
-                _lastRareEventPlanDate = currentDate;
-                _lastRareEventPlanConsumed = currentPlan?.Consumed;
-                if (System.Windows.Application.Current is App dirtyApp)
-                    dirtyApp.MarkStateDirty();
+                _lastRareEventPlanDate = rareResult.PlanDate;
+                _lastRareEventPlanConsumed = rareResult.PlanConsumed;
+                NotifyStateDirty();
             }
         }
 
@@ -1263,17 +1236,14 @@ public partial class MainWindow : System.Windows.Window
 
         _isExpressingGrievance = false;
 
-        var grievanceExpr = TestGrievanceExpression;
-        var emotionAcc = TestEmotionAccumulator;
-        if (grievanceExpr is null && System.Windows.Application.Current is App appExpr)
-        {
-            grievanceExpr = appExpr.GrievanceExpression;
-            emotionAcc = appExpr.EmotionAccumulator;
-        }
+        // PREP-002 F-01: Each object independently resolved Test* → StateContext → App.
+        var grievanceExpr = Resolve(
+            TestGrievanceExpression, StateContext?.GrievanceExpression, a => a.GrievanceExpression);
+        var emotionAcc = Resolve(
+            TestEmotionAccumulator, StateContext?.EmotionAccumulator, a => a.EmotionAccumulator);
         grievanceExpr?.Clear();
         emotionAcc?.ResetGrievanceAfterExpression();
-        if (System.Windows.Application.Current is App appDirty)
-            appDirty.MarkStateDirty();
+        NotifyStateDirty();
 
         // F-04: Return to idle action after expression is interrupted.
         _animPlayer.PlayAction("idle");
@@ -1322,8 +1292,7 @@ public partial class MainWindow : System.Windows.Window
         {
             Left = _probeOriginalLeft;
             Top = _probeOriginalTop;
-            if (System.Windows.Application.Current is App app)
-                app.MarkStateDirty();
+            NotifyStateDirty();
         }
 
         // Return to idle unless dragging has already taken over.
@@ -1523,9 +1492,9 @@ public partial class MainWindow : System.Windows.Window
             ClampWindowToWorkArea();
 
         // P1-003: Record corner drag if the pet was released in a corner zone.
-        var cornerTrack = TestCornerTracking;
-        if (cornerTrack is null && System.Windows.Application.Current is App app)
-            cornerTrack = app.CornerTracking;
+        // PREP-002 F-01: Independent resolution Test* → StateContext → App.
+        var cornerTrack = Resolve(
+            TestCornerTracking, StateContext?.CornerTracking, a => a.CornerTracking);
         if (cornerTrack is not null)
         {
             var nowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
@@ -1541,8 +1510,7 @@ public partial class MainWindow : System.Windows.Window
         }
 
         // P0-004: Mark state dirty so position is persisted.
-        if (System.Windows.Application.Current is App app2)
-            app2.MarkStateDirty();
+        NotifyStateDirty();
 
         // Input and position stop immediately. Only the face settles briefly.
         _animPlayer.PlayAction("idle");
@@ -1598,8 +1566,7 @@ public partial class MainWindow : System.Windows.Window
         {
             _isPhysicsActive = false;
             _physicsSimulator.Reset();
-            if (System.Windows.Application.Current is App app)
-                app.MarkStateDirty();
+            NotifyStateDirty();
         }
     }
 
@@ -1842,8 +1809,7 @@ public partial class MainWindow : System.Windows.Window
 
         Left = leftDip;
         Top = topDip;
-        if (System.Windows.Application.Current is App app)
-            app.MarkStateDirty();
+        NotifyStateDirty();
     }
 
     /// <summary>
@@ -1862,8 +1828,7 @@ public partial class MainWindow : System.Windows.Window
 
         Left = leftDip;
         Top = topDip;
-        if (System.Windows.Application.Current is App app)
-            app.MarkStateDirty();
+        NotifyStateDirty();
     }
 
     // G-03: Pause duration tracking. When paused, wall-clock time continues
@@ -1912,9 +1877,9 @@ public partial class MainWindow : System.Windows.Window
 
         // P1-004: End the active period so paused time is not counted as
         // effective runtime for rare-event scheduling.
-        EffectiveRuntimeTracker? rtPause = TestRuntimeTracker;
-        if (rtPause is null && System.Windows.Application.Current is App appPause)
-            rtPause = appPause.RuntimeTracker;
+        // PREP-002 F-01: Independent resolution Test* → StateContext → App.
+        EffectiveRuntimeTracker? rtPause = Resolve(
+            TestRuntimeTracker, StateContext?.RuntimeTracker, a => a.RuntimeTracker);
         rtPause?.EndActivePeriod(_pauseStartMs / 60000.0);
     }
 
@@ -1956,9 +1921,9 @@ public partial class MainWindow : System.Windows.Window
                 // Compensate emotion decay: advance the accumulator's reference
                 // time forward by the pause duration so that the next AdvanceTo
                 // call doesn't count the paused interval as decay time.
-                var emotionAcc = TestEmotionAccumulator;
-                if (emotionAcc is null && System.Windows.Application.Current is App app)
-                    emotionAcc = app.EmotionAccumulator;
+                // PREP-002 F-01: Independent resolution Test* → StateContext → App.
+                var emotionAcc = Resolve(
+                    TestEmotionAccumulator, StateContext?.EmotionAccumulator, a => a.EmotionAccumulator);
                 if (emotionAcc is not null)
                 {
                     // Move the decay reference forward by the pause duration.
@@ -1967,9 +1932,9 @@ public partial class MainWindow : System.Windows.Window
                 }
 
                 // Compensate corner tracker's time-based windows.
-                var cornerTrack = TestCornerTracking;
-                if (cornerTrack is null && System.Windows.Application.Current is App appCT)
-                    cornerTrack = appCT.CornerTracking;
+                // PREP-002 F-01: Independent resolution Test* → StateContext → App.
+                var cornerTrack = Resolve(
+                    TestCornerTracking, StateContext?.CornerTracking, a => a.CornerTracking);
                 cornerTrack?.SkipInterval(pauseDurationMs);
             }
 
@@ -1990,10 +1955,10 @@ public partial class MainWindow : System.Windows.Window
         _physicsSimulator.ClearTimeAccumulation();
 
         // P1-004: Start a fresh active period on resume.
+        // PREP-002 F-01: Independent resolution Test* → StateContext → App.
         var resumeMonotonicMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
-        EffectiveRuntimeTracker? rtResume = TestRuntimeTracker;
-        if (rtResume is null && System.Windows.Application.Current is App appResume)
-            rtResume = appResume.RuntimeTracker;
+        EffectiveRuntimeTracker? rtResume = Resolve(
+            TestRuntimeTracker, StateContext?.RuntimeTracker, a => a.RuntimeTracker);
         rtResume?.StartActivePeriod(resumeMonotonicMs / 60000.0);
 
         // Resume starts a fresh hover dwell.
