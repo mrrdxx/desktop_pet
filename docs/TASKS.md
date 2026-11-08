@@ -244,11 +244,121 @@
 
 - 最终监理R3（2026-11-07）：用户明确反馈“五项均完美测试通过”，补齐慢拖、停住松手、正常甩出、身体/头部飞行追抓和锚点稳定；合并既有暂停/恢复及生产隔离退出证据，[报告R3](reviews/P2-004-review.md)接受当前范围，P2-004标done。未测试缩放/多屏及ART旧限制保留，不改历史失败；桌面启动入口更新待后续交付收尾。未改参数、未提交推送，阶段3等待用户安排。
 
-## 阶段 3：双宠社交
+## 阶段3前工程准备（D-018，已规划未实现）
 
-- `P3-PLAN`：`todo`，依赖阶段 2 验收。
-- 将 R-05 拆成：两只独立实例/存档 → 会话协议 → 追逐 → 被拖走后寻找 → 争位置/吵架。
-- 明确暂停、移除和打断如何同时释放双方；阶段末记录双宠性能。
+来源与取舍见[决策D-018](DECISIONS.md)；技术边界见[ARCHITECTURE §10](ARCHITECTURE.md)；验证入口见[TESTING M-07/M-08](TESTING.md)。不改变阶段2完成状态，不以外部评分新增无限整改。一次一个任务，首个仅PREP-001，开发AI接到用户转达的开工提示后实施；后续任务不能打包提前实现。
+
+### PREP-001 异常记录与明确退出策略
+
+- 状态：`done`。依赖：P2-004。关联：D-018、R-00。
+- 范围：App启动尽早接入UI未处理异常、AppDomain未处理异常和Task未观察异常的诊断通知，提取最小本地日志组件及明确的继续/退出策略；不接双宠，不搬动整个MainWindow，不新增云日志或自动重启。
+- 默认策略：未知UI异常记录后保持框架默认异常处理，不全局吞错；AppDomain只尽力记录，不许诺恢复。Task通知记录真实来源，不把通知当立即/必然崩溃；正常await/局部捕获仍负责已知异步错误。日志路径、容量限制与保留规则按架构§10落地。
+- 验收：隔离子进程通过实际异常事件验证UI/工作线程/Task通知各自日志和真实退出行为；注入日志目录不可写/日志组件失败时不再抛第二异常、不递归提示/死锁。日志包含时间/版本/来源/异常类型与堆栈，容量受限；实际路径不接触真实用户存档，不在未知状态强制Flush存档。
+- 限制：不要求模拟可控范围外StackOverflow/进程强杀/本机断电，也不承诺其必留日志。不能只直接调用handler就宣称事件接线通过；Task通知的延迟/GC依赖须在隔离测试中说明。
+- 完成条件：相关构建/异常隔离验证及必要原功能回归，更新实现位置和验证记录；提交监理复核，不自行签通过，不自动进入PREP-002或P3-001。
+- 实现依据（2026-11-07）：
+  - 日志组件 `src/DesktopPet.App/Diagnostics/DiagnosticLogger.cs`：最小本地有界日志，不依赖Dispatcher/复杂锁，记录失败不抛第二异常。单文件上限256KiB，最多保留5份，异常正文/堆栈截断（2048/8192字符）。日志路径 `%LOCALAPPDATA%/DesktopPet/logs/`，与存档隔离。
+  - App接线 `App.xaml.cs` `RegisterDiagnosticHandlers()`：在 `OnStartup` 最早期（`base.OnStartup` 之后、单实例检查之前）注册三个通知——DispatcherUnhandledException（记录不吞）、AppDomain.UnhandledException（尽力记录）、TaskScheduler.UnobservedTaskException（记录不SetObserved）。不自动重启、不强制保存、不全局Handled=true。
+  - 隔离子进程验证 `tests/DesktopPet.DiagnosticProbe/`（独立可执行项目）：通过真实子进程触发UI异常（Dispatcher BeginInvoke抛出）、Worker异常（后台线程抛出→AppDomain通知）、Task未观察异常（GC触发）。`DiagnosticIsolationTests` 4项场景：UI异常日志通过、Worker异常日志通过（含terminating=True）、Task通知GC依赖标注Inconclusive（架构§10已知限制）、正常退出无误报。
+  - 组件测试 `DiagnosticLoggerTests` 10项：日志内容（时间/版本/来源/类型/堆栈/线程）、null异常标记、普通消息、不可写目录不抛、Dispose后不抛、文件滚动、保留上限、长异常截断、并发写入安全、重复失败不递归/死锁。
+  - 构建0警告0错误。全量回归 Core 351/351 + App 266通过+1跳过 = 617+1，0 回归。
+  - 未改存档格式、物理参数或MainWindow行为；不进入PREP-002/003或P3-001。不提交/推送。
+
+- 最新监理R1：[报告](reviews/PREP-001-review.md)部分接受，独立13通过+1跳过，但F-01容量/跨日保留、F-02真实生产接线/退出证据、F-03锁竞争有界返回未满足。仅整改本范围并在独立整改记录回应，保持awaiting-verification，不进入PREP-002或双宠。全量617+1为开发自测。
+
+- R1整改（2026-11-07，[整改记录](remediation/PREP-001-response.md)）：
+  - F-01：`WriteEntry` 写前按 UTF-8 字节计算，`fileSize + entryBytes > cap` 时先滚动；单条超 cap 经 `TruncateUtf8Bytes` 按字符边界截断；新增 `PruneOldDateFiles` 写后全局清理（含跨日期），总文件数含当前≤maxRetainedFiles。修正测试断言为严格 cap/maxRetainedFiles，新增跨日保留/单条>cap/边界=cap/精确字节 4 项。
+  - F-02：探针删除自建 handler，改为创建 `WpfApp` 实例 → `SetDiagnosticLogger` 注入隔离 logger → 调用生产 `RegisterDiagnosticHandlers()`；UI/worker 异常不 catch 吞掉，父进程采集 OS 真实退出码（非零）；Task 修正 `type:` 格式匹配；异步读 stdout/stderr 防管道死锁。新增 `SetDiagnosticLogger` internal 方法 + `InternalsVisibleTo` 探针项目。
+  - F-03：`WriteEntry`/`Dispose` 改 `Monitor.TryEnter(0)` 有界策略，获取失败即舍弃/返回；新增 `TryEnterWriteLock`/`ExitWriteLock` 测试辅助。新增锁竞争有界 Record/Dispose 2 项测试，修正并发写测试适应有界丢弃。
+  - 构建0警告0错误。全量回归 Core 351/351 + App 272通过+1跳过 = 623+1，0 回归。新增6项+修正4项测试。
+  - 未修改 `OnExit`/`FlushFinalState`（理由：异常终止不经 `OnExit`，`FlushFinalState` 已有 null guard；存档完整性验证属 P0-004 域）。
+  - 未改存档格式/物理参数/MainWindow；不进入PREP-002/003/P3-001；不提交推送。待监理复核。
+
+- 最新监理R2：[报告](reviews/PREP-001-review.md)关闭F-03；F-01仅剩滚动失败后仍追加越界（独立256→512字节），F-02因UI实际STA失败及生产启动未隔离/保存证据缺失仍未通过。独立18通过+1失败+1跳过，全量623+1为开发自测。先修隔离、勿再运行旧UI探针；保持awaiting-verification，不进入PREP-002，不提交推送。
+
+- R2整改（2026-11-07，[整改记录](remediation/PREP-001-response.md)）：
+  - F-01：`RollFiles` 返回 `bool`（当前文件成功移走= true）。`WriteEntry` 滚动失败时检查当前文件剩余容量，不够则 `return` 安全放弃（不继续追加越界）；容量检查 `catch` 分支也防御性验证。新增 3 项反例测试：持有文件不可改名/删除时验证不越界且 entry 未写入、UTF-8 多字节字符截断不产生 U+FFFD、滚动失败但有剩余容量仍写入。
+  - F-02：探针 `Main` 标 `[STAThread]` 修复 UI 专项；新增 `App.ProbeSetupIsolated(dir, mutexName)` 隔离存档/锁名/日志（不执行生产 `OnStartup`，不创建 MainWindow/TrayService）；`SingleInstanceGuard` 新增 `internal` 构造函数支持自定义 mutex 名（探针用 `Global\DesktopPet.DiagnosticProbe.{GUID}` 唯一锁）；Task 提取 `[NoInlining]` helper 避免 TCS 局部变量存活。新增 `normal-save`/`abnormal-save` 场景验证正常保存链不被破坏、异常退出 `FlushFinalState` null guard 不强制保存未知状态。
+  - 构建0警告0错误。全量回归 Core 351/351 + App 277/277 = 628/628 通过，0 失败，0 跳过。DiagnosticLoggerTests 18/18，DiagnosticIsolationTests 6/6（含 R2 新增 5 项）。
+  - 未修改监理报告、`OnExit`/`FlushFinalState` 逻辑（只通过隔离测试验证 guard）；未改存档格式/物理参数/MainWindow；不进入PREP-002/003/P3-001；不提交推送。待监理复核。
+
+- 最新监理R3：[报告](reviews/PREP-001-review.md)关闭F-01，F-03保持关闭；F-02 STA/注册/异常通知通过，仅剩真实正常/异常保存生命周期及隔离配置不被OnStartup覆盖的证明。独立24/24、原容量反例通过，全量628为开发自测。保持awaiting-verification，只补剩余F-02，不进入PREP-002，不提交推送。
+
+- 最终监理R4：[报告](reviews/PREP-001-review.md)关闭F-02，F-01～F-03全部关闭，PREP-001标done。独立隔离专项7/7及真实Shutdown→OnExit保存探针通过，全量629为开发自测。异常/正常保存、启动隔离证据闭环；文件I/O与致命故障限制保留，未提交推送。PREP-002仅待用户指令开始共享时钟小步，不自动打包后续。
+
+### PREP-002 面向双宠的有限App职责整理
+
+- 状态：`done`。依赖：PREP-001。关联：D-018、R-04、R-05。
+- 第一小步：提取App可共享的高分辨率单调时钟，移除App向MainWindow静态取时间的依赖，保留double毫秒/统一原点/既有注入与暂停约定；先独立验证，不混入状态迁移。
+- 后续小步：按当前单宠需要收拢状态访问/保存通知，划分输入、行为更新和位置控制职责，使未来每只宠物能持有自己的状态。只抽取真正内聚部分，不机械partial拆文件、不预造通用框架，不以“文件少于多少行”作为验收。
+- 验收：生产与测试走同一时钟/行为路径，App无反向引用MainWindow时钟；物理、悬停、头部手势、暂停、探头/委屈优先级和保存语义保持；相关专项与一个当前环境的必要实机烟测通过。重构任务结束执行现有全量回归一次，只有后续变化/失败才扩大重跑。
+- 不改范围：单宠数量、存档v3及其兼容、阈值参数和资源不变；PetId/集合/迁移属于后续P3-001-S1。不重做已完成美术或阶段2验收。
+
+- S1监理R1（2026-11-07）：[报告](reviews/PREP-002-review.md)接受共享单调时钟提取，独立相关52/52通过，App反向取时钟依赖已消除；全量629为开发自测。整体未完成，下一小步限定单宠状态访问/保存通知收拢，保留后续更新职责整理与最终回归/实机烟测。不进入PREP-003/P3-001，不提交推送。
+
+- S2状态访问收拢（2026-11-07）：创建 `Platform/PetStateContext` 持有5个状态对象 + `MarkStateDirty` 回调，App显式注入 `MainWindow.StateContext`；MainWindow每个状态对象独立按 Test*→StateContext→App.Current 解析（`Resolve` helper），所有 `app.MarkStateDirty()` 改为 `NotifyStateDirty()` 集中方法。行为/时间注入/存档/物理参数不变，现有测试无需修改。构建0警告0错误，全量636/636通过（Core 351 + App 285，含7个非空上下文回归）。S2 R2 F-01整改后待监理复核，见[整改记录](remediation/PREP-002-response.md)，未提交推送。
+
+- S2监理R2：[报告](reviews/PREP-002-review.md)部分接受，独立47/47，完整上下文实际tick可用；F-01单个Test覆盖导致其他上下文依赖丢失待修，补逐对象独立解析与非空上下文回归。全量629为开发自测；整体in-progress，不继续后续抽取/PREP-003/双宠，不提交推送。S1/PREP-001保持接受。
+
+- S2监理R3（2026-11-08）：[报告](reviews/PREP-002-review.md)关闭F-01并接受S2；独立54/54与原上下文混用反例通过，全量636为开发自测。下一小步仅抽取稀有事件计划评估/有效运行时间推进，先写清架构边界，探头位移/输入/物理统一入口不搬动；保持延迟评估、每日额度及保存语义。整体in-progress，任务末全量/实机烟测仍待完成，不进入PREP-003/双宠、不提交推送。
+
+- S3稀有事件更新服务抽取（2026-11-08）：创建 `Platform/RareEventUpdateService`（静态服务，`EvaluateTick` 方法接收 tracker/scheduler/nowMs/today/isDragging/isExpressingGrievance/isPhysicsActive，返回 `RareEventUpdateResult` 记录——ShouldFire/StateChanged/PlanDate/PlanConsumed）。`OnUpdateTick` 稀有事件段改为调用服务方法，保留 `StartProbe`/探头超时 `EndProbe`/`NotifyStateDirty` 和 `_lastRareEventPlanDate`/`_lastRareEventPlanConsumed` 缓存更新在 MainWindow。行为/时间注入/存档/物理参数不变，`new Random()` 每次创建的随机源行为不变。构建0警告0错误，全量636/636通过（Core 351 + App 285）。待监理复核，未提交推送。
+
+- S3监理R4（2026-11-08）：[报告](reviews/PREP-002-review.md)接受有限稀有事件更新抽取，独立生产相关81/81，调用顺序/延迟/消费/保存缓存保持；不再扩大重构。整体awaiting-verification，仅剩当前构建必要实机烟测与证据汇总。本轮同版本636全量自测可沿用，无变化无需因复核通过重跑；烟测修代码后按需相关回归。不提前done/PREP-003/双宠，不提交推送。
+
+- 实机烟测与最终复核提交（2026-11-08）：用 `Run-ProbeLive.ps1 -Interactive` 隔离实例执行当前构建烟测（Debug/.NET 10 SDK 10.0.402/Win11 10.0.26200/DPI=144/单屏 2560×1600）。用户反馈全部正常：启动/悬停、身体拖动、头部拖动、轻放、抛掷、暂停恢复、找回、正常退出。探针自动验证探头启动/恢复/消费通过；隔离存档记录拖动后位置/恢复后退出/schemaVersion=3；生产存档哈希前后一致。夹具修复：复制列表补 `Diagnostics` 目录。S3后无代码变化，沿用636/636全量结果。已提交最终复核，待监理最终接收；不提前标done，不进入PREP-003/P3-001，不提交推送。
+
+- 最终监理R5（2026-11-08）：[报告](reviews/PREP-002-review.md)接受S1～S3+现构建150%单屏必要烟测，PREP-002标done。烟测关键源码与当前一致、探头自动检查无失败、正式存档快照未变，用户操作正常为执行方转述，实际边界详报告；稳定证据已入reviews/evidence。全量636与已有独立专项沿用，无变化不重复。单DPI/Shell/ART限制保留，不宣称性能提升；下一步PREP-003待用户安排，不提交推送。
+
+### PREP-003 当前单宠Release性能基线
+
+- 状态：`done`。依赖：PREP-002。关联：D-018、TESTING性能记录。
+- 范围：固定当前Release构建、同机环境采集空闲和真实拖动/抛掷负载；不发布安装包、不为性能测量改产品参数。
+- 验收：按TESTING M-08记录版本/环境、实际经过时间/CPU分子同区间、工作集/私有内存/句柄、原始数据及退出结果；空闲至少5分钟，动态至少2分钟并标注输入方式及次数。至少两轮同条件测量，说明差异；复用同一构建，不为每轮重建。
+- 限制：旧P0 Debug基线仅供历史背景，不直接把变化归因性能退化；不从短时增长推断泄漏，不在数据前指定任意CPU/内存承诺。若无可靠动态输入能力，保留未验证并安排用户操作，不把纯Core循环冒称实际窗口动态负载。
+- 完成后：形成阶段3双宠可对照的单宠基线，计划交付后再按用户指令开P3-001-S1；不自动开工、提交或推送。
+
+- PREP-003监理R1（2026-11-08）：[报告](reviews/PREP-003-review.md)接受四份CSV数值复算，但F-01显式目标进程归属待补；先找原始终端采样PID/启动DLL/退出材料，再决定仅补采无法确认轮次。脚本需显式PID/单调计时/元数据，报告修正CPU证明输入/噪声归因等过强措辞。保持awaiting-verification，不整批无条件重采，不进入双宠、不提交推送。
+
+- PREP-003监理R2（2026-11-08）：[报告](reviews/PREP-003-review.md)部分接受显式PID/元数据/Stopwatch及措辞修正，F-01未关闭：CPU累计递增和隔离存档时长不足以绑定目标进程，原终端材料未落库。独立短时验证发现终点不足、提前退出仍exit0，详稳定证据；先完善入口并用短时正反例验证，再补原始材料或仅补采无法绑定轮次。保持awaiting-verification，不进入双宠、不提交推送。
+
+- PREP-003监理R3（2026-11-08）：[报告](reviews/PREP-003-review.md)接受正常终点采集/身份负例及报告收窄，F-01部分通过；补齐终点失败误报成功、错误CSV列位和dynamic-r1原始材料。限定短测通过后直接补采缺证轮次，无需再等开采批准；收齐后一并最终复核。保持awaiting-verification，不进入双宠、不提交推送。
+
+- PREP-003最终监理R4（2026-11-08）：[报告](reviews/PREP-003-review.md)关闭F-01并接收四轮新Release基线，PID/完整DLL身份/终点/时长/退出状态一致，CPU独立复算通过，终点读取失败反例非零退出。稳定证据已入reviews/evidence；旧四轮仅作历史参考，操作次数/退出来源/单屏DPI等限制保留。PREP-001～003完成，P3-001-S1须用户安排，不提交推送。
+
+## 阶段 3：双宠社交（D-017，已规划未开工）
+
+需求权威出处：[PRODUCT R-05](PRODUCT.md)；拟采用架构：[ARCHITECTURE §6](ARCHITECTURE.md)；验证步骤：[TESTING M-06](TESTING.md)。用户已确认性格与底边范围，本轮仅文档，应用实现须用户明确开工且先完成D-018工程准备；按顺序一次一个小步。
+
+### P3-001 双宠共存与存档
+
+- 状态：`todo`。依赖：PREP-003（P2-004已完成）。关联：R-05、D-017、D-018。
+- 范围：最多两只、稳定ID/性格配置、独立输入/动画/物理/委屈状态、添加/移除第二只、全局操作及兼容存档。不实现社交/自主移动/关系值或新美术。
+- S1：核对单宠全局字段与存档v3，明确实例/全局数据归属；实现最小身份/集合及旧档迁移，写回架构/存档契约并验证。不开第二窗口前先交付可核对迁移证据。
+- S2：将运行时状态按PetId隔离，创建第二窗口；通过真实共享输入入口证明拖动/抛掷A不改B；保留单宠回归和位置单写入。
+- S3：接入添加/移除、全局暂停/恢复/找回/退出和实际保存/重载链；隔离文件验证旧档→双宠→移除→重启，最后实际双窗操作验收。
+- 验收：按R-05共存目标与M-06执行，稳定ID/数量/角色恢复、独立状态、最多两只、移除后不复活、找回不完全重叠；新格式未知高版本/损坏保护不退化。自动/隔离/实际UI证据分开记录。无实测保持awaiting-verification，不自行签监理。
+- 第一个允许交付范围仅S1；用户发出具体开工后执行，未验收不自动把S2/S3打包完成。
+
+### P3-002 相互注意与协调
+
+- 状态：`todo`。依赖：P3-001。关联：R-05。
+- 范围：双方识别/注意、短暂回应与拒绝、间距、唯一会话和双方取消；此时再落实社交协调器，不预做追逐全框架。
+- 验收：温和角色差异可观察；慢回应不延迟抓取；任一方被抓起/暂停/移除均释放双方；明确触发/冷却/超时，透明点不误中断。
+
+### P3-003 被拖走后寻找
+
+- 状态：`todo`。依赖：P3-002。关联：R-05。
+- 范围：等待释放/物理结束、同底边可达判断、寻找靠近并留间距；悬空只表达关注，不在抓取期间追鼠标。
+- 验收：有正反可达路径；目标离屏/移除/超时退出；两只不永久重叠，不与物理/探头抢位置。具体时长/步速先写规格再实现。
+
+### P3-004 短暂追逐及双宠阶段验收
+
+- 状态：`todo`。依赖：P3-003。关联：R-05。
+- 范围：邀请/接受/拒绝/短追逐/结束冷却，低频温和；阶段末记录双宠性能，不实现争位置/吵架。
+- 验收：追逐有距离/时间上限，不无限逃跑；底边支撑/打断/暂停/移除链健全，实际体验认可。与单宠性能基线说明同环境比较限制。
+
+- 后续扩展：争位置/吵架及长期关系记忆，待前述体验后由用户安排，不属P3-001～004交付门槛，不自行恢复好感度。
 
 ## 阶段 4：作息与体验
 

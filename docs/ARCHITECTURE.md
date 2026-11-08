@@ -99,7 +99,7 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - 用单调时钟计算运行间隔。卡顿最多补 5 个固定步，丢弃剩余积压；睡眠/暂停恢复时清空积压和拖动历史。
 - 即使渲染帧率变化，状态机的冷却和物理结果仍基于时间，而非“经过多少帧”。
 
-行为选择初始优先级：生命周期/暂停 → 用户抓取 → 可见区域恢复/支撑失效 → 抛掷与落地 → 鼠标躲避 → 休息提醒 → 社交 → 情绪表达/悬停 → 彩蛋 → 普通游走/休息。
+行为选择初始优先级：生命周期/暂停 → 用户抓取 → 可见区域恢复/支撑失效 → 抛掷与落地 → 休息提醒 → 社交 → 情绪表达/悬停 → 彩蛋 → 普通游走/休息。
 高优先级可中断低优先级。被打断的彩蛋/社交先取消，不自动从中间恢复；稳定落地后重新选择行为。
 夜间困倦是普通行为的表现偏好，不阻止抓取、找回或退出。
 
@@ -168,9 +168,15 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - 桌面快照：鼠标、显示器、空闲、后期的窗口信息；Core 不直接调用 Win32。
 - 存档仓库：App 负责 IO；Core 仅产出可保存状态。
 
-每只宠物有稳定 `PetId`；社交会话有独立 ID、参与者、阶段、截止时间和取消原因。
-关系按无序宠物 ID 对存储；个体情绪与双方关系分开，不能共享一个全局好感变量。
-移除宠物要取消所有相关会话；超时和被拖动的退出路径必须与正常结束一样可测试。
+### 阶段3拟采用边界（D-017，尚未实现）
+
+- 同一App/单实例进程管理最多两个Pet实例，每个实例持有自己的窗口、输入、动画、物理和个体委屈状态；PetId贯穿运行期与存档，不以数组下标/窗口句柄作为永久身份。当前仍为单宠实现，不把现有全局字段当成已隔离。
+- App负责实例增删、全局托盘操作与保存协调；只抽取当前双宠所需职责，不建立插件系统/通用实体框架。托盘Pause/Resume/Recover/Exit作用于全部现存宠物；单宠右键原有含义保留，避免删除错误目标。
+- 个体状态与全局暂停/设置/稀有每日计划分开；后者沿用全应用共享额度，不能复制一份计划给每只宠物以增加彩蛋次数。存档集合布局/版本号在P3-001-S1核实当前v3后写回本节，现有格式尚不修改。
+- 兼容迁移须保留单宠旧字段到第一只稳定实体，不复制旧状态给新增实体；旧无性格存档的首只默认稍主动，第二只慢半拍，角色与ID绑定。移除第二只须取消相关活动并释放窗口/引用，下一次新增不复用旧ID。
+- 后续社交协调器管理唯一共享会话，持会话ID/参与者/阶段/截止/取消原因；角色只提交位置意图，沿用单一位置所有权规则。用户实体抓取（含头部候选）立即优先，任一参与者中断须释放双方；首步不提前生成会话框架。
+- 主动移动先用已有工作区/窗口合法边界和物理静止状态判断底边支撑，同显示器同活动面才可达；悬空轻放不会因社交启动被下拉。具体容差/速度在相应任务规定，不复用图像透明底边测量来暗改坐标模型。
+- 性格是稳定行为配置，影响社交发起/回应，不阻塞Dispatcher线程或用户输入；不预写关系数值/对用户亲近度。规则唯一出处为[PRODUCT R-05](PRODUCT.md)。
 
 ## 7. 时间和存档
 
@@ -278,3 +284,32 @@ HWND 可能失效或复用，不能把一个数值句柄当成永久窗口身份
 来源：[SetWinEventHook](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwineventhook)。
 
 习惯统计先用本地频次模型，读取失败或样本不足时无预测。图标定位不属于窗口位置 API 自动提供的能力，另做验证任务。
+
+## 10. 双宠前工程准备（D-018）
+
+### PREP-001 异常诊断边界（已实现，待监理复核）
+
+- App在生产启动早期（OnStartup 首行，单实例检查之前）注册诊断通知，区分主UI Dispatcher、AppDomain终止通知和Task未观察异常；它们不覆盖所有线程/致命故障。已知可恢复业务错误仍在局部边界处理。实现位置：`src/DesktopPet.App/Diagnostics/DiagnosticLogger.cs`（日志组件）、`App.xaml.cs` `RegisterDiagnosticHandlers()`（接线）。
+- 未知UI异常默认记录后保留框架异常处理策略，不一律Handled=true；AppDomain只尽力记录，不许诺恢复。Task通知不等于立即或必然终止，不替代正常await/观察异常。不自动重启、不在未知损坏状态强制保存；既有正常退出保存链（FlushFinalState/SaveCoordinator）不受破坏，异常退出与正常退出接线已通过隔离子进程验证。
+- 日志组件不依赖Dispatcher排队/复杂锁在终止时运行；写锁采用有界策略（`Monitor.TryEnter(0)`，获取失败即舍弃日志），保证 `Record`/`Dispose` 不因其他线程持锁无限等待。记录失败不抛第二异常、不递归提示或死锁，不能为了日志吞掉原异常。异常去重/关联不改变原退出策略。
+- 本地目录采用 `%LOCALAPPDATA%/DesktopPet/logs/`，与state/settings隔离，支持测试专用目录。初值：单文件上限256KiB（编码字节），最多保留5份（含当前，跨日期全局清理），限制异常正文（2048字符）/堆栈长度（8192字符）；写前按实际UTF-8字节计算，超长单条按字符边界截断。不引入日志框架。实现若需调整初值写回这里，不让日志失败影响原有异常处理。
+- 记录UTC时间、应用版本/构建标识、事件来源、终止标记、异常类型/消息/堆栈及必要线程信息；不采集键盘内容、屏幕或存档全文，不自动上传。
+- 隔离子进程验证真实注册/事件/退出（`tests/DesktopPet.DiagnosticProbe/`），探针复用生产 `App.RegisterDiagnosticHandlers()` 入口（非自建handler副本），父进程采集OS真实退出码；不用直接调用handler冒充接线测试。组件测试验证容量、跨日保留、精确字节、锁竞争有界与记录失败（`DiagnosticLoggerTests` 16项）。不可恢复故障、进程强杀/断电等不承诺必留日志或自动恢复。Task通知的GC依赖在隔离测试中标注为Inconclusive。
+- 技术依据：[WPF异常通知](https://learn.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-10.0)、[AppDomain异常通知](https://learn.microsoft.com/en-us/dotnet/api/system.appdomain.unhandledexception?view=net-10.0)、[Task异常通知](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler.unobservedtaskexception)。
+
+### PREP-002 有限职责整理
+
+当前S1已实现：App与MainWindow共享 `Platform/MonotonicClock.Instance`，保留double毫秒/懒起点/暂停补偿和测试注入；App不再经MainWindow静态取时钟，MainWindow公开取时钟包装仅作兼容。见[监理S1 R1](reviews/PREP-002-review.md)。MainWindow仍集中输入/动画/物理/情绪/稀有事件更新，不是已完成组件化；后续分小步收拢单宠状态访问/保存通知和更新/位置职责，保留WPF命中/坐标适配边界。
+
+当前S2已实现（F-01整改后，R3接受）：创建 `Platform/PetStateContext`（持有 `EmotionAccumulator`/`CornerTracking`/`GrievanceExpression`/`RuntimeTracker`/`RareEventScheduler` 五个状态对象 + `Action? MarkStateDirty` 回调，`init` 属性），App在 `OnStartup` 中 `new MainWindow()` 后显式赋值 `MainWindow.StateContext`。MainWindow每个状态对象独立按 `Test*` → `StateContext` 对应成员 → `App.Current` 对应成员解析（`Resolve` helper），不用首对象判空控制其他对象回退；所有 `app.MarkStateDirty()` 散落调用改为 `NotifyStateDirty()` 集中方法（`StateContext.MarkStateDirty` → `App.Current` 回退）。生产显式上下文优先，保留 `App.Current` 回退，不宣称已完成按PetId实例隔离。行为、时间注入、存档格式和物理参数不变；现有测试无需修改。构建0警告0错误，全量636/636通过（Core 351 + App 285，含7个非空上下文回归）。见[监理S2 R3](reviews/PREP-002-review.md)、[整改记录](remediation/PREP-002-response.md)。
+
+当前S3已实现：抽取稀有事件计划评估和有效运行时间推进的更新职责到 `Platform/RareEventUpdateService`（静态服务，无实例状态）。边界如下：
+- **依赖**：`EffectiveRuntimeTracker`、`RareEventScheduler`（由调用方通过参数传入，不自行解析三级优先——解析仍由 `MainWindow.Resolve` 完成后传入）；单调时钟毫秒（`double nowMs`，由 `MainWindow` 的 `TestGetElapsedMs/GetElapsedMs` 提供）；当前本地日期字符串（`string today`，由调用方传入）；拖动/委屈/物理暂停状态（`bool isDragging`、`bool isExpressingGrievance`、`bool isPhysicsActive`，由调用方传入）。
+- **返回结果**：`RareEventUpdateResult` 记录——`bool ShouldFire`（是否应启动探头）、`bool StateChanged`（计划状态是否变更需保存）、`string? PlanDate`/`bool? PlanConsumed`（当前计划快照，供调用方更新 `_lastRareEventPlanDate`/`_lastRareEventPlanConsumed`）。
+- **保存通知**：`RareEventUpdateService` 不直接调用 `NotifyStateDirty()`——返回 `StateChanged` 后由 `MainWindow.OnUpdateTick` 调用 `NotifyStateDirty()`，保持保存通知在 MainWindow 统一入口。
+- **位置所有权**：`ShouldFire=true` 时的 `StartProbe` 调用和探头超时检查 `EndProbe` 保留在 `MainWindow.OnUpdateTick`——探头涉及窗口位移，不抽取到更新服务。
+- **不抽取**：探头启动/超时、物理推进、悬停检测、情绪衰减、帧更新——这些保留原统一入口。
+- **保持语义**：暂停时不推进 tracker/不评估 Evaluate；委屈/物理期间跳过 Evaluate（延迟评估）；每日共享额度（EnsurePlanForDate）和消费（MarkConsumed）/保存（stateChanged→NotifyStateDirty）语义不变；`new Random()` 每次创建的随机源行为不变。
+- **测试注入**：`MainWindow` 的 `TestRuntimeTracker`/`TestRareEventScheduler` 仍由 `Resolve` 解析后传入服务方法；服务本身不持有 `Test*` 字段或 `StateContext` 引用。
+
+不改变用户行为、单宠存档v3、物理参数或美术，不在此准备阶段引入PetId/双窗/社交会话。不能以partial拆文件冒称隔离完成，不建立泛化实体框架，不在重构和P3迁移阶段各写一套存档映射；阶段3按§6落实PetId所有权。S3已实施：`RareEventUpdateService.EvaluateTick` 接收 tracker/scheduler/nowMs/today/isDragging/isExpressingGrievance/isPhysicsActive，返回 `RareEventUpdateResult`（ShouldFire/StateChanged/PlanDate/PlanConsumed）；`OnUpdateTick` 调用服务后负责 `StartProbe`/探头超时 `EndProbe`/`NotifyStateDirty` 和 `_lastRareEventPlanDate`/`_lastRareEventPlanConsumed` 缓存更新。构建0警告0错误，全量636/636通过（Core 351 + App 285）。实机烟测通过（隔离实例，用户确认启动/悬停/身体头部拖动/轻放/抛掷/暂停恢复/找回/正常退出全部正常，生产存档未触碰），已提交最终复核。
