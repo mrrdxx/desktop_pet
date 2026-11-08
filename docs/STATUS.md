@@ -17,12 +17,17 @@ PREP-003 [监理R4](reviews/PREP-003-review.md)最终接收，F-01关闭；任�
 
 - 用户动态输入与采集后退出为执行方报告，次数未计数；首实例采集后意外退出原因未独立确认。采集器exit0不等于目标应用正常退出码；100%环境DPI非HWND实测。
 - 正式存档未变仅保留隔离路径静态核对/执行方报告，无本轮前后快照；多屏/混合DPI/ART历史限制保留。短时性能不证明无泄漏或性能提升。
-- 开发AI仅向[整改记录](remediation/PREP-003-response.md)追加R4关闭依据，不重复整改或测试；P3-001-S1等待用户安排，不提交推送。
+- 开发AI仅向[整改记录](remediation/PREP-003-response.md)追加R4关闭依据，不重复整改或测试；P3-001-S1等待用户安排。PREP-001～003已提交推送，不改变验收结论。
 
 ## 工作区与接续
 
-- 阶段2交付至984af1d已推送远端；STATUS准确性修正推送至b333490。PREP-001/002全部整改及代码修改尚未提交，不提交/推送。
-- 夹具修复：`Run-ProbeLive.ps1` 复制列表补 `Diagnostics` 目录（非产品代码修改）。
+- PREP-001～003 Git收尾完成：5个提交按逻辑分组推送至 origin/main，本地HEAD d6b3fc7 与远端一致。
+  - `9c5f44d` feat(PREP-001): 异常诊断代码与测试
+  - `cc95e82` refactor(PREP-002): 共享时钟/状态上下文/稀有事件服务
+  - `426963e` feat(PREP-003): 性能采集脚本与Release基线报告
+  - `e9f1481` docs: 架构/产品/测试/任务/整改记录同步
+  - `d6b3fc7` docs(reviews): 监理报告与审查证据
+- 排除项：`.temp/`（空临时文件）、artifacts/（.gitignore排除，早期验证脚本仅存本机）。
 - 已排除（.gitignore）：bin/obj/artifacts/.codefree/。artifacts/ 早期验证脚本和临时附件仅存本机。
 
 ## 主要入口
