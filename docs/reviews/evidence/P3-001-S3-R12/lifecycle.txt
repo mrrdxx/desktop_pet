@@ -1,0 +1,6 @@
+BeforeApplicationRun
+Startup
+ProductionShutdownRequested
+ProductionShutdownCallReturned
+OnExit:0
+ApplicationRunReturned:0

@@ -50,12 +50,15 @@ public class IsolatedArchiveChainTests
         var archive = new ArchiveService(_tempDir);
         var initialState = new PetStateArchive
         {
-            SchemaVersion = 2,
+            SchemaVersion = 2
+        };
+        initialState.Pets.Add(new PetInstanceArchive
+        {
             Grievance = 50,
             LastDecayUtc = DateTime.UtcNow.ToString("O"),
             WindowLeft = 100,
             WindowTop = 100
-        };
+        });
         archive.SaveState(initialState);
 
         // Verify file exists.
@@ -65,7 +68,7 @@ public class IsolatedArchiveChainTests
         var (loadedState, fromBackup, unknown) = archive.LoadState();
         Assert.IsFalse(fromBackup, "Should load from primary, not backup.");
         Assert.IsFalse(unknown, "Should not be unknown version.");
-        Assert.AreEqual(50, loadedState.Grievance, "Loaded grievance should be 50.");
+        Assert.AreEqual(50, loadedState.Pets[0].Grievance, "Loaded grievance should be 50.");
 
         // Map to emotion objects (same as App.OnStartup).
         var (acc, expr, tracker) = App.MapArchiveToEmotionObjects(loadedState);
@@ -81,8 +84,8 @@ public class IsolatedArchiveChainTests
 
         // Reload and verify persisted values.
         var (reloadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(70, reloadedState.Grievance,
-            $"Reloaded grievance must be 70 after save. Got {reloadedState.Grievance}.");
+        Assert.AreEqual(70, reloadedState.Pets[0].Grievance,
+            $"Reloaded grievance must be 70 after save. Got {reloadedState.Pets[0].Grievance}.");
         Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, reloadedState.SchemaVersion, "Schema version must be current.");
     }
 
@@ -107,14 +110,14 @@ public class IsolatedArchiveChainTests
         var archive = new ArchiveService(_tempDir);
         var (loadedState, _, _) = archive.LoadState();
 
-        // v1 should fall back to default emotion values.
-        Assert.AreEqual(1, loadedState.SchemaVersion, "Loaded schema should be v1.");
-        Assert.AreEqual(50, loadedState.Grievance, "v1 grievance should default to 50.");
-        Assert.IsFalse(loadedState.PendingGrievanceExpression, "v1 pending should default to false.");
-        Assert.IsNull(loadedState.GrievanceExpressionDate, "v1 expression date should default to null.");
+        // v1 should fall back to default emotion values (migrated to pets[0]).
+        Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, loadedState.SchemaVersion, "Loaded schema should be migrated to current.");
+        Assert.AreEqual(50, loadedState.Pets[0].Grievance, "v1 grievance should default to 50.");
+        Assert.IsFalse(loadedState.Pets[0].PendingGrievanceExpression, "v1 pending should default to false.");
+        Assert.IsNull(loadedState.Pets[0].GrievanceExpressionDate, "v1 expression date should default to null.");
 
         // v1 → v2: LastDecayUtc falls back to LastSavedUtc.
-        Assert.AreEqual("2026-10-20T12:00:00Z", loadedState.LastDecayUtc,
+        Assert.AreEqual("2026-10-20T12:00:00Z", loadedState.Pets[0].LastDecayUtc,
             "v1 LastDecayUtc should fall back to LastSavedUtc.");
 
         // Map to emotion objects.
@@ -128,7 +131,7 @@ public class IsolatedArchiveChainTests
         // Reload — should now be current version with persisted defaults.
         var (reloadedState, _, _) = archive.LoadState();
         Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, reloadedState.SchemaVersion, "After save, schema should be current.");
-        Assert.AreEqual(50, reloadedState.Grievance, "Grievance should still be 50.");
+        Assert.AreEqual(50, reloadedState.Pets[0].Grievance, "Grievance should still be 50.");
     }
 
     /// <summary>
@@ -142,18 +145,21 @@ public class IsolatedArchiveChainTests
         // Create state with pending grievance expression.
         var state = new PetStateArchive
         {
-            SchemaVersion = 2,
+            SchemaVersion = 2
+        };
+        state.Pets.Add(new PetInstanceArchive
+        {
             Grievance = 85,
             LastDecayUtc = DateTime.UtcNow.ToString("O"),
             PendingGrievanceExpression = true,
             GrievanceExpressionDate = "2026-10-22"
-        };
+        });
         archive.SaveState(state);
 
         // Reload.
         var (loadedState, _, _) = archive.LoadState();
-        Assert.IsTrue(loadedState.PendingGrievanceExpression, "Pending should be persisted.");
-        Assert.AreEqual("2026-10-22", loadedState.GrievanceExpressionDate, "Expression date should be persisted.");
+        Assert.IsTrue(loadedState.Pets[0].PendingGrievanceExpression, "Pending should be persisted.");
+        Assert.AreEqual("2026-10-22", loadedState.Pets[0].GrievanceExpressionDate, "Expression date should be persisted.");
 
         // Map to emotion objects — should restore pending state.
         var (_, expr, _) = App.MapArchiveToEmotionObjects(loadedState);
@@ -177,15 +183,18 @@ public class IsolatedArchiveChainTests
 
         var state = new PetStateArchive
         {
-            SchemaVersion = 2,
+            SchemaVersion = 2
+        };
+        state.Pets.Add(new PetInstanceArchive
+        {
             Grievance = 80,
             LastDecayUtc = testTime.ToString("O")
-        };
+        });
         archive.SaveState(state);
 
         // Reload.
         var (loadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(testTime.ToString("O"), loadedState.LastDecayUtc,
+        Assert.AreEqual(testTime.ToString("O"), loadedState.Pets[0].LastDecayUtc,
             "LastDecayUtc should be persisted exactly.");
 
         // Map to emotion objects — accumulator should use the persisted time.
@@ -209,10 +218,13 @@ public class IsolatedArchiveChainTests
 
         var state = new PetStateArchive
         {
-            SchemaVersion = 2,
+            SchemaVersion = 2
+        };
+        state.Pets.Add(new PetInstanceArchive
+        {
             Grievance = 50,
             LastDecayUtc = DateTime.UtcNow.ToString("O")
-        };
+        });
         archive.SaveState(state);
 
         var (loadedState, _, _) = archive.LoadState();
@@ -227,8 +239,8 @@ public class IsolatedArchiveChainTests
         archive.SaveState(loadedState);
 
         var (reloadedState, _, _) = archive.LoadState();
-        Assert.AreEqual(70, reloadedState.Grievance,
-            $"Reloaded grievance must be 70 after corner award. Got {reloadedState.Grievance}.");
+        Assert.AreEqual(70, reloadedState.Pets[0].Grievance,
+            $"Reloaded grievance must be 70 after corner award. Got {reloadedState.Pets[0].Grievance}.");
     }
 
     // ── F-05 R4: Real gesture-driven petting → isolated save → restore ──

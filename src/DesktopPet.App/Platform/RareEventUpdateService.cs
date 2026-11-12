@@ -60,7 +60,8 @@ public static class RareEventUpdateService
         string today,
         bool isDragging,
         bool isExpressingGrievance,
-        bool isPhysicsActive)
+        bool isPhysicsActive,
+        bool isSocialActive = false)
     {
         var monotonicMinutes = nowMs / 60000.0;
         tracker.UpdateTo(monotonicMinutes);
@@ -82,7 +83,7 @@ public static class RareEventUpdateService
                 currentAccumulated, today,
                 isPaused: false,
                 isDragging: isDragging,
-                isSocialActive: false,
+                isSocialActive: isSocialActive,
                 isRestReminderActive: false);
         }
 

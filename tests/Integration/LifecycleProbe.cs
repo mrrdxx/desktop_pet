@@ -159,22 +159,28 @@ public partial class App
     {
         string Root(string name) {var d=Path.Combine(ValidationDirectory,name);Directory.CreateDirectory(d);return d;}
         var save=new ArchiveService(Root("roundtrip"));
-        save.SaveState(new PetStateArchive{WindowLeft=123,WindowTop=234,IsPaused=true});
+        var roundtripState = new PetStateArchive{IsPaused=true};
+        roundtripState.Pets.Add(new PetInstanceArchive{WindowLeft=123,WindowTop=234});
+        save.SaveState(roundtripState);
         save.SaveSettings(new PetSettingsArchive{AnimationSpeed=1.7});
         var loaded=save.LoadState();
-        Check(loaded.State.WindowLeft==123 && loaded.State.WindowTop==234 && loaded.State.IsPaused,"isolated state service roundtrip");
+        Check(loaded.State.Pets[0].WindowLeft==123 && loaded.State.Pets[0].WindowTop==234 && loaded.State.IsPaused,"isolated state service roundtrip");
         Check(save.LoadSettings().Settings.AnimationSpeed==1.7,"isolated settings service roundtrip");
 
         var backup=new ArchiveService(Root("backup"));
-        backup.SaveState(new PetStateArchive{WindowLeft=111});
-        backup.SaveState(new PetStateArchive{WindowLeft=222});
+        var backupS1 = new PetStateArchive();
+        backupS1.Pets.Add(new PetInstanceArchive{WindowLeft=111});
+        backup.SaveState(backupS1);
+        var backupS2 = new PetStateArchive();
+        backupS2.Pets.Add(new PetInstanceArchive{WindowLeft=222});
+        backup.SaveState(backupS2);
         const string broken="{ broken JSON";
         File.WriteAllText(backup.StateFilePath,broken);
         var recovered=backup.LoadState();
-        Check(recovered.FromBackup && recovered.State.WindowLeft==111 && File.ReadAllText(backup.StateFilePath+".corrupted")==broken,"corrupt primary preserved byte-for-byte and valid backup selected");
+        Check(recovered.FromBackup && recovered.State.Pets[0].WindowLeft==111 && File.ReadAllText(backup.StateFilePath+".corrupted")==broken,"corrupt primary preserved byte-for-byte and valid backup selected");
         var defaults=new ArchiveService(Root("defaults"));
         File.WriteAllText(defaults.StateFilePath,broken);
-        Check(defaults.LoadState().State.WindowLeft==100 && File.ReadAllText(defaults.StateFilePath+".corrupted")==broken,"corrupt file without backup falls back to defaults");
+        Check(defaults.LoadState().State.Pets[0].WindowLeft==100 && File.ReadAllText(defaults.StateFilePath+".corrupted")==broken,"corrupt file without backup falls back to defaults");
 
         foreach(bool incompatible in new[]{false,true})
         {

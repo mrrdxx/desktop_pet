@@ -1,0 +1,3 @@
+legacy-wrong-type: THREW InvalidOperationException: An element of type 'String' cannot be converted to a 'System.Double'.; backupExists=True corruptedExists=False
+null-pet: load returned backup=False pets=1
+null-pet: THREW NullReferenceException: Object reference not set to an instance of an object.; backupExists=True corruptedExists=False

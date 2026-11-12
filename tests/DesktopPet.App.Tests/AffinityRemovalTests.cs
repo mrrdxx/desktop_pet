@@ -59,14 +59,14 @@ public class AffinityRemovalTests
         Assert.IsFalse(saved.RootElement.TryGetProperty("affinity", out _));
         var (reloaded, _, _) = new ArchiveService(_directory).LoadState();
         Assert.AreEqual(PetStateArchive.CurrentSchemaVersion, reloaded.SchemaVersion);
-        Assert.AreEqual(321.0, reloaded.WindowLeft);
-        Assert.AreEqual(456.0, reloaded.WindowTop);
-        Assert.AreEqual("test-monitor", reloaded.SavedDeviceName);
+        Assert.AreEqual(321.0, reloaded.Pets[0].WindowLeft);
+        Assert.AreEqual(456.0, reloaded.Pets[0].WindowTop);
+        Assert.AreEqual("test-monitor", reloaded.Pets[0].SavedDeviceName);
         Assert.IsTrue(reloaded.IsPaused);
-        Assert.AreEqual(90, reloaded.Grievance);
-        Assert.AreEqual(accumulator.LastDecayUtc.ToString("o"), reloaded.LastDecayUtc);
-        Assert.IsTrue(reloaded.PendingGrievanceExpression);
-        Assert.AreEqual("2026-10-25", reloaded.GrievanceExpressionDate);
+        Assert.AreEqual(90, reloaded.Pets[0].Grievance);
+        Assert.AreEqual(accumulator.LastDecayUtc.ToString("o"), reloaded.Pets[0].LastDecayUtc);
+        Assert.IsTrue(reloaded.Pets[0].PendingGrievanceExpression);
+        Assert.AreEqual("2026-10-25", reloaded.Pets[0].GrievanceExpressionDate);
     }
 
     [TestMethod]
@@ -77,7 +77,8 @@ public class AffinityRemovalTests
         File.WriteAllText(service.StateFilePath, json);
         var (state, _, unknown) = service.LoadState();
         Assert.IsTrue(unknown);
-        state.Grievance = 50;
+        // v4: Grievance is on PetInstanceArchive, not PetStateArchive.
+        // For unknown future versions, we just verify read-only protection.
         service.SaveState(state);
         Assert.AreEqual(json, File.ReadAllText(service.StateFilePath));
         Assert.IsFalse(File.Exists(service.StateBackupPath));
@@ -95,13 +96,18 @@ public class AffinityRemovalTests
         var (state, backup, unknown) = service.LoadState();
         Assert.IsTrue(backup);
         Assert.IsFalse(unknown);
-        Assert.AreEqual(74, state.Grievance);
-        Assert.AreEqual(212.0, state.WindowLeft);
+        Assert.AreEqual(74, state.Pets[0].Grievance);
+        Assert.AreEqual(212.0, state.Pets[0].WindowLeft);
         Assert.AreEqual(corrupt, File.ReadAllText(service.StateFilePath + ".corrupted"));
         service.SaveState(state);
         using var saved = JsonDocument.Parse(File.ReadAllText(service.StateFilePath));
         Assert.IsFalse(saved.RootElement.TryGetProperty("affinity", out _));
-        Assert.AreEqual(74, saved.RootElement.GetProperty("grievance").GetInt32());
+        // v4: grievance is under pets[0], not at the root level.
+        Assert.IsFalse(saved.RootElement.TryGetProperty("grievance", out _),
+            "v4 archive must not have flat grievance at root level.");
+        Assert.IsTrue(saved.RootElement.TryGetProperty("pets", out var petsElement),
+            "v4 archive must have pets array.");
+        Assert.AreEqual(74, petsElement[0].GetProperty("grievance").GetInt32());
     }
 
     [TestMethod]
@@ -121,7 +127,8 @@ public class AffinityRemovalTests
     [STATestMethod]
     public void RepeatedHeadMicroStrokes_DoNotChangePersistentState()
     {
-        var state = new PetStateArchive { Grievance = 70, LastDecayUtc = "2026-10-25T12:00:00Z" };
+        var state = new PetStateArchive();
+        state.Pets.Add(new PetInstanceArchive { Grievance = 70, LastDecayUtc = "2026-10-25T12:00:00Z" });
         var (accumulator, expression, _) = App.MapArchiveToEmotionObjects(state);
         App.MapEmotionObjectsToArchive(state, accumulator, expression);
         var before = JsonSerializer.Serialize(state);

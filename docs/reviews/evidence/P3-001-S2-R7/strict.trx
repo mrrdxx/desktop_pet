@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="73e4acf7-1e68-4dd8-8b85-bf59bb000da8" name="mrrdxx@毛茸茸的小熊 2026-11-09 18:52:14" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-09T18:52:14.6132822+08:00" queuing="2026-11-09T18:52:14.6132826+08:00" start="2026-11-09T18:52:12.5918873+08:00" finish="2026-11-09T18:52:14.6205664+08:00" />
+  <TestSettings name="default" id="fb368771-ba09-439e-b290-3203eaee7a6f">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-09_18_52_14" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="91cc1e92-1899-4fb7-acb9-fe0590179ab1" testId="e2629cf0-91ed-e35a-cd37-70f25750a43a" testName="Reviewer_Cleanup_UnshownWindow_StopsTimer" computerName="毛茸茸的小熊" duration="00:00:00.0335911" startTime="2026-11-09T18:52:14.3501519+08:00" endTime="2026-11-09T18:52:14.3887732+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="91cc1e92-1899-4fb7-acb9-fe0590179ab1">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。REVIEW: unshown factory window timer must stop on cleanup</Message>
+          <StackTrace>   at DesktopPet.App.Tests.MultiPetIsolationTests.Reviewer_Cleanup_UnshownWindow_StopsTimer() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s2-r7\strict-probe\MultiPetIsolationTests.cs:line 975&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="edca8e6e-2d12-4664-85cb-a4207c8fac40" testId="52044cfe-1304-296a-97dd-d597a0470f06" testName="F04_HeadDrag_AB_Bidirectional_OtherUnchanged" computerName="毛茸茸的小熊" duration="00:00:00.0152133" startTime="2026-11-09T18:52:14.3146220+08:00" endTime="2026-11-09T18:52:14.3358289+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edca8e6e-2d12-4664-85cb-a4207c8fac40" />
+    <UnitTestResult executionId="11f2a02a-c30a-4164-9d76-73171095cc9d" testId="f893327e-8967-d6c8-047d-0e6d06bac90b" testName="F04_CreatePetWindow_TwoPets_DictionaryAndContextCorrect" computerName="毛茸茸的小熊" duration="00:00:00.9347020" startTime="2026-11-09T18:52:13.2124624+08:00" endTime="2026-11-09T18:52:14.2400109+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="11f2a02a-c30a-4164-9d76-73171095cc9d" />
+    <UnitTestResult executionId="5dc2844d-fd18-4977-bc80-c578886dd36c" testId="57850999-2d6a-ff7d-57ac-2a05a7ba9133" testName="F04_ThrowA_PhysicsTick_Regrab_BUnchanged" computerName="毛茸茸的小熊" duration="00:00:00.0107907" startTime="2026-11-09T18:52:14.3359210+08:00" endTime="2026-11-09T18:52:14.3500360+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5dc2844d-fd18-4977-bc80-c578886dd36c" />
+    <UnitTestResult executionId="d4a99965-f262-4d42-8b20-2b1ba5e499ed" testId="604b9e62-53f1-d2cc-787b-7e50cded8bd3" testName="F04_BodyDrag_AB_Bidirectional_OtherUnchanged" computerName="毛茸茸的小熊" duration="00:00:00.0615125" startTime="2026-11-09T18:52:14.2466061+08:00" endTime="2026-11-09T18:52:14.3139811+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d4a99965-f262-4d42-8b20-2b1ba5e499ed" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="F04_ThrowA_PhysicsTick_Regrab_BUnchanged" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="57850999-2d6a-ff7d-57ac-2a05a7ba9133">
+      <Execution id="5dc2844d-fd18-4977-bc80-c578886dd36c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.MultiPetIsolationTests" name="F04_ThrowA_PhysicsTick_Regrab_BUnchanged" />
+    </UnitTest>
+    <UnitTest name="F04_CreatePetWindow_TwoPets_DictionaryAndContextCorrect" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="f893327e-8967-d6c8-047d-0e6d06bac90b">
+      <Execution id="11f2a02a-c30a-4164-9d76-73171095cc9d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.MultiPetIsolationTests" name="F04_CreatePetWindow_TwoPets_DictionaryAndContextCorrect" />
+    </UnitTest>
+    <UnitTest name="F04_HeadDrag_AB_Bidirectional_OtherUnchanged" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="52044cfe-1304-296a-97dd-d597a0470f06">
+      <Execution id="edca8e6e-2d12-4664-85cb-a4207c8fac40" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.MultiPetIsolationTests" name="F04_HeadDrag_AB_Bidirectional_OtherUnchanged" />
+    </UnitTest>
+    <UnitTest name="F04_BodyDrag_AB_Bidirectional_OtherUnchanged" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="604b9e62-53f1-d2cc-787b-7e50cded8bd3">
+      <Execution id="d4a99965-f262-4d42-8b20-2b1ba5e499ed" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.MultiPetIsolationTests" name="F04_BodyDrag_AB_Bidirectional_OtherUnchanged" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Cleanup_UnshownWindow_StopsTimer" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="e2629cf0-91ed-e35a-cd37-70f25750a43a">
+      <Execution id="91cc1e92-1899-4fb7-acb9-fe0590179ab1" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s2-r7\strict-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.MultiPetIsolationTests" name="Reviewer_Cleanup_UnshownWindow_StopsTimer" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="e2629cf0-91ed-e35a-cd37-70f25750a43a" executionId="91cc1e92-1899-4fb7-acb9-fe0590179ab1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="52044cfe-1304-296a-97dd-d597a0470f06" executionId="edca8e6e-2d12-4664-85cb-a4207c8fac40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f893327e-8967-d6c8-047d-0e6d06bac90b" executionId="11f2a02a-c30a-4164-9d76-73171095cc9d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="57850999-2d6a-ff7d-57ac-2a05a7ba9133" executionId="5dc2844d-fd18-4977-bc80-c578886dd36c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="604b9e62-53f1-d2cc-787b-7e50cded8bd3" executionId="d4a99965-f262-4d42-8b20-2b1ba5e499ed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="4" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

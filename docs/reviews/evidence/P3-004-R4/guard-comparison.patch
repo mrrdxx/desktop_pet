@@ -1,0 +1,35 @@
+diff --git a/src/DesktopPet.App/MainWindow.xaml.cs b/artifacts/p3-004-r4/app-guard-copy/MainWindow.xaml.cs
+index d9bb398..7eaafab 100644
+--- a/src/DesktopPet.App/MainWindow.xaml.cs
++++ b/artifacts/p3-004-r4/app-guard-copy/MainWindow.xaml.cs
+@@ -137,6 +137,7 @@ public partial class MainWindow : System.Windows.Window
+ 
+     // P3-002: Test injection point for social coordinator.
+     internal SocialCoordinator? TestSocialCoordinator;
++    internal bool ReviewerBlockChaseCommit;
+ 
+     // P3-002: Tracks the last non-idle activity timestamp for social idle detection.
+     // Updated when drag ends, physics stops, probe ends, or grievance ends.
+@@ -1217,6 +1218,7 @@ public partial class MainWindow : System.Windows.Window
+ 
+             // P3-004 R2 F-01: Check BOTH windows before writing either.
+             // If either cannot accept, neither writes — paired commit.
++            if (ReviewerBlockChaseCommit) _isPhysicsActive = true;
+             var leaderCanWrite = leaderWindow is not null &&
+                 !leaderWindow._isDragging &&
+                 !leaderWindow._isPhysicsActive &&
+@@ -1255,7 +1257,7 @@ public partial class MainWindow : System.Windows.Window
+                 // CheckInterrupt to notice the pet is busy. This prevents
+                 // single-sided writes and avoids leaving the session in a
+                 // limbo state where one pet is stuck.
+-                coordinator.ForceCancel(CancelReason.Paused, nowMs);
++                CancelSocialImmediately(CancelReason.Paused, nowMs);
+             }
+         }
+ 
+@@ -2874,3 +2876,5 @@ public partial class MainWindow : System.Windows.Window
+         base.OnClosed(e);
+     }
+ }
++
++

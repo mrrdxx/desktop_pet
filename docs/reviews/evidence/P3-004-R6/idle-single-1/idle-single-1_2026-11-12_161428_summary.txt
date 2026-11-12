@@ -1,0 +1,19 @@
+﻿=== PREP-003 性能基线摘要: idle-single-1 ===
+PID: 66264
+采样数: 296
+首末有效区间: 300.638 秒 (首 elapsed=0.01s, 末 elapsed=300.648s)
+脚本总耗时: 300.654 秒
+CPU 累计差: 2328 ms
+单核 CPU 占比: 0.77%
+逻辑核数: 24
+归一化 CPU 占比 (单核%/逻辑核数): 0.0323%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 120.49 MB -> 末样本 143.6 MB (差 23.11 MB)
+私有内存: 首样本 59.02 MB -> 末样本 75.82 MB (差 16.8 MB)
+句柄: 首样本 717 -> 末样本 744 (差 27)
+线程: 首样本 25 -> 末样本 18 (差 -7)
+进程退出: False
+身份变更: False
+终点样本: True
+采样错误: 0
+退出码: 0 (COMPLETED)

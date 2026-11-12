@@ -1603,9 +1603,9 @@ public class ReleaseSamplingIntegrationTests
             var archive = new ArchiveService(tempDir);
             var (restoredState, _, _) = archive.LoadState();
 
-            Assert.IsTrue(double.IsFinite(restoredState.WindowLeft),
+            Assert.IsTrue(double.IsFinite(restoredState.Pets[0].WindowLeft),
                 "F-08: Restored WindowLeft must be finite.");
-            Assert.IsTrue(double.IsFinite(restoredState.WindowTop),
+            Assert.IsTrue(double.IsFinite(restoredState.Pets[0].WindowTop),
                 "F-08: Restored WindowTop must be finite.");
 
             // Create a new window (simulating app restart).

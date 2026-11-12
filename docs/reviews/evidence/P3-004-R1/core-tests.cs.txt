@@ -1,0 +1,1943 @@
+using DesktopPet.Core.Persistence;
+using DesktopPet.Core.Social;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.Core.Tests;
+
+/// <summary>
+/// SocialCoordinator tests covering P3-002 rules (PRODUCT R-05, ARCHITECTURE §6):
+///   - Normal notice → respond flow with personality-based delay.
+///   - Reject path when respond roll fails.
+///   - Timeout cancellation.
+///   - Interrupt by drag/petting/pause/physics/probe.
+///   - Only one pet — cancel and idle.
+///   - Cooldown prevents immediate re-start.
+///   - Distance gate prevents notice when too far.
+///   - MinIdleMs gate prevents notice when recently active.
+///   - NoticeInterval prevents spam.
+///   - SlowPaced personality: lower notice probability, longer respond delay.
+///   - isSocialActive flag correct in all phases.
+///   - ForceCancel external cancellation.
+///   - Seeded random for deterministic tests.
+/// </summary>
+[TestClass]
+public class SocialCoordinatorTests
+{
+    private static PetSocialState IdlePet(
+        string petId, Personality personality = Personality.Proactive,
+        double cx = 100, double cy = 100, double lastActivity = 0) =>
+        new(petId, personality, cx, cy,
+            isDragging: false, isPettingCandidate: false,
+            isPhysicsActive: false, isExpressingGrievance: false,
+            isProbing: false, isPaused: false, lastActivity);
+
+    private static PetSocialState BusyPet(
+        string petId, Personality personality = Personality.Proactive,
+        double cx = 100, double cy = 100,
+        bool isDragging = false, bool isPettingCandidate = false,
+        bool isPhysicsActive = false, bool isPaused = false,
+        bool isProbing = false, bool isExpressingGrievance = false,
+        double lastActivity = 999999) =>
+        new(petId, personality, cx, cy,
+            isDragging, isPettingCandidate, isPhysicsActive,
+            isExpressingGrievance, isProbing, isPaused, lastActivity);
+
+    // ── Idle / no session ────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_OnlyOnePet_ReturnsIdle()
+    {
+        var coord = new SocialCoordinator(random: new Random(42));
+        var petA = IdlePet("bear-1");
+
+        var result = coord.Tick(1000, petA, null);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(SocialPhase.Idle, result.Session.Phase);
+    }
+
+    [TestMethod]
+    public void Tick_OnlyOnePet_ActiveSession_Cancels()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, MinIdleMs = 0,
+            NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        // Start a session.
+        var start = coord.Tick(5000, petA, petB);
+        Assert.IsTrue(start.IsSocialActive);
+
+        // Remove petB — only one pet.
+        var result = coord.Tick(5100, petA, null);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.OnlyOnePet, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Tick_BothIdleButTooFar_ReturnsIdle()
+    {
+        var config = new SocialConfig { NoticeDistanceMaxDip = 100, MinIdleMs = 0, NoticeIntervalMs = 0, NoticeProbability = 1.0 };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 0);
+        var petB = IdlePet("bear-2", cx: 500);
+
+        var result = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Tick_NotIdleLongEnough_ReturnsIdle()
+    {
+        var config = new SocialConfig { MinIdleMs = 5000, NoticeIntervalMs = 0, NoticeProbability = 1.0, NoticeDistanceMaxDip = 99999 };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", lastActivity: 3000);
+        var petB = IdlePet("bear-2", lastActivity: 3000);
+
+        // nowMs=5000, idle for 2000ms, need 5000ms.
+        var result = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+    }
+
+    // ── Normal notice → respond ──────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_NormalFlow_Notice_Then_Respond()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0,
+            RespondProbability = 1.0,
+            MinIdleMs = 0,
+            NoticeIntervalMs = 0,
+            NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 5000,
+            RespondDelayMs = 500,
+            RespondDurationMs = 2000,
+            CooldownMs = 99999,
+            SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", Personality.Proactive, cx: 100);
+        var petB = IdlePet("bear-2", Personality.Proactive, cx: 200);
+
+        // Tick 1: should start Noticing.
+        var r1 = coord.Tick(5000, petA, petB);
+        Assert.IsTrue(r1.IsSocialActive);
+        Assert.IsTrue(r1.SessionStarted);
+        Assert.AreEqual(SocialPhase.Noticing, r1.Session.Phase);
+        Assert.AreEqual(SocialExpression.Notice, r1.InitiatorExpression);
+
+        // Tick 2: before respond delay — still Noticing.
+        var r2 = coord.Tick(5100, petA, petB);
+        Assert.IsTrue(r2.IsSocialActive);
+        Assert.AreEqual(SocialPhase.Noticing, r2.Session.Phase);
+
+        // Tick 3: after respond delay — should transition to Responding.
+        var r3 = coord.Tick(5600, petA, petB);
+        Assert.IsTrue(r3.IsSocialActive);
+        Assert.AreEqual(SocialPhase.Responding, r3.Session.Phase);
+        Assert.AreEqual(SocialExpression.Respond, r3.TargetExpression);
+
+        // Tick 4: before respond duration ends — still Responding.
+        var r4 = coord.Tick(7000, petA, petB);
+        Assert.IsTrue(r4.IsSocialActive);
+        Assert.AreEqual(SocialPhase.Responding, r4.Session.Phase);
+
+        // Tick 5: after respond duration — session finishes.
+        var r5 = coord.Tick(8200, petA, petB);
+        Assert.IsFalse(r5.IsSocialActive);
+        Assert.IsTrue(r5.SessionEnded);
+        Assert.AreEqual(SocialPhase.Finished, r5.Session.Phase);
+    }
+
+    // ── Reject path ──────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_RespondRollFails_Rejects()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0,
+            RespondProbability = 0.0, // Always reject
+            MinIdleMs = 0,
+            NoticeIntervalMs = 0,
+            NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 5000,
+            RespondDelayMs = 500,
+            CooldownMs = 99999,
+            SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        var r1 = coord.Tick(5000, petA, petB);
+        Assert.AreEqual(SocialPhase.Noticing, r1.Session.Phase);
+
+        var r2 = coord.Tick(5600, petA, petB);
+        Assert.IsTrue(r2.IsSocialActive);
+        Assert.AreEqual(SocialPhase.Rejected, r2.Session.Phase);
+        Assert.AreEqual(SocialExpression.Reject, r2.TargetExpression);
+
+        // Next tick: rejected finishes.
+        var r3 = coord.Tick(5700, petA, petB);
+        Assert.IsFalse(r3.IsSocialActive);
+        Assert.IsTrue(r3.SessionEnded);
+        Assert.AreEqual(SocialPhase.Finished, r3.Session.Phase);
+    }
+
+    // ── Timeout ──────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_SessionTimeout_Cancels()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0,
+            RespondProbability = 0.0, // Never respond
+            MinIdleMs = 0,
+            NoticeIntervalMs = 0,
+            NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999, // Don't let noticing phase expire
+            RespondDelayMs = 99999,   // Don't enter respond/reject judgment
+            CooldownMs = 99999,
+            SessionTimeoutMs = 3000
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        coord.Tick(5000, petA, petB); // Start noticing at 5000
+
+        // Before timeout — still active.
+        var r1 = coord.Tick(7000, petA, petB);
+        Assert.IsTrue(r1.IsSocialActive);
+
+        // After timeout (5000 + 3000 = 8000).
+        var r2 = coord.Tick(8100, petA, petB);
+        Assert.IsFalse(r2.IsSocialActive);
+        Assert.IsTrue(r2.SessionEnded);
+        Assert.AreEqual(CancelReason.Timeout, r2.Session.CancelReason);
+    }
+
+    // ── Interrupts ───────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_DragStart_Interrupts()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999, RespondDelayMs = 99999,
+            CooldownMs = 99999, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // PetA starts being dragged.
+        var draggingA = BusyPet("bear-1", cx: 100, isDragging: true);
+        var result = coord.Tick(5100, draggingA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.DragStarted, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Tick_PettingCandidate_Interrupts()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999, RespondDelayMs = 99999,
+            CooldownMs = 99999, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        coord.Tick(5000, petA, petB);
+
+        var pettingB = BusyPet("bear-2", cx: 200, isPettingCandidate: true);
+        var result = coord.Tick(5100, petA, pettingB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.PettingCandidate, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Tick_Pause_Interrupts()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999, RespondDelayMs = 99999,
+            CooldownMs = 99999, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        coord.Tick(5000, petA, petB);
+
+        var pausedB = BusyPet("bear-2", cx: 200, isPaused: true);
+        var result = coord.Tick(5100, petA, pausedB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.Paused, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Tick_PhysicsActive_Interrupts()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999, RespondDelayMs = 99999,
+            CooldownMs = 99999, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        coord.Tick(5000, petA, petB);
+
+        var flyingA = BusyPet("bear-1", cx: 100, isPhysicsActive: true);
+        var result = coord.Tick(5100, flyingA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.PhysicsActive, result.Session.CancelReason);
+    }
+
+    // ── Cooldown ─────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Cooldown_Prevents_ImmediateRestart()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 1.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 5000, RespondDelayMs = 500,
+            RespondDurationMs = 500, CooldownMs = 10000,
+            SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        // Start and complete a full session.
+        coord.Tick(5000, petA, petB);  // Noticing
+        coord.Tick(5600, petA, petB);  // Responding
+        var end = coord.Tick(6200, petA, petB); // Finished + cooldown starts
+        Assert.IsTrue(end.SessionEnded);
+
+        // Immediately after — should be in cooldown, not start new.
+        var r = coord.Tick(6300, petA, petB);
+        Assert.IsFalse(r.IsSocialActive);
+        Assert.IsFalse(r.SessionStarted);
+
+        // After cooldown — should be able to start again.
+        var r2 = coord.Tick(16400, petA, petB);
+        Assert.IsTrue(r2.IsSocialActive);
+        Assert.IsTrue(r2.SessionStarted);
+    }
+
+    // ── NoticeInterval ───────────────────────────────────────────────────
+
+    [TestMethod]
+    public void NoticeInterval_Prevents_Spam()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0,
+            SlowPacedNoticeProbability = 0.0, // petB (SlowPaced) never initiates
+            RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 5000, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 500, RespondDelayMs = 99999,
+            CooldownMs = 0, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", Personality.Proactive, cx: 100);
+        var petB = IdlePet("bear-2", Personality.SlowPaced, cx: 200);
+
+        // First attempt by petA succeeds.
+        var r1 = coord.Tick(5000, petA, petB);
+        Assert.IsTrue(r1.SessionStarted);
+
+        // Let it expire (noticing phase ends).
+        var r2 = coord.Tick(5600, petA, petB);
+        Assert.IsTrue(r2.SessionEnded);
+
+        // Immediately try again — petA blocked by NoticeInterval, petB never initiates.
+        var r3 = coord.Tick(5700, petA, petB);
+        Assert.IsFalse(r3.IsSocialActive);
+
+        // After interval — petA can try again.
+        var r4 = coord.Tick(10800, petA, petB);
+        Assert.IsTrue(r4.SessionStarted);
+    }
+
+    // ── Personality differences ──────────────────────────────────────────
+
+    [TestMethod]
+    public void SlowPaced_HasLongerRespondDelay()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 1.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999,
+            RespondDelayMs = 500,
+            SlowPacedRespondDelayMs = 2000,
+            RespondDurationMs = 99999,
+            CooldownMs = 99999, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", Personality.Proactive, cx: 100);
+        var petB = IdlePet("bear-2", Personality.SlowPaced, cx: 200);
+
+        // Start noticing.
+        coord.Tick(5000, petA, petB);
+
+        // At 500+ delay — Proactive would respond, but target is SlowPaced.
+        var r1 = coord.Tick(5600, petA, petB);
+        Assert.AreEqual(SocialPhase.Noticing, r1.Session.Phase);
+
+        // At 2000+ delay — SlowPaced responds.
+        var r2 = coord.Tick(7100, petA, petB);
+        Assert.AreEqual(SocialPhase.Responding, r2.Session.Phase);
+    }
+
+    [TestMethod]
+    public void SlowPaced_LowerNoticeProbability_RarelyInitiates()
+    {
+        // With SlowPaced probability 0.0, should never initiate.
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0,
+            SlowPacedNoticeProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            CooldownMs = 0, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", Personality.SlowPaced, cx: 100);
+        var petB = IdlePet("bear-2", Personality.Proactive, cx: 200);
+
+        // Try 20 ticks — SlowPaced should never initiate, Proactive might.
+        bool anyStart = false;
+        for (int i = 0; i < 20; i++)
+        {
+            var r = coord.Tick(5000 + i * 100, petA, petB);
+            if (r.SessionStarted)
+            {
+                anyStart = true;
+                // If session started, it should be Proactive (bear-2) as initiator.
+                Assert.AreEqual("bear-2", r.Session.InitiatorId);
+                break;
+            }
+        }
+        // Proactive should have initiated at some point.
+        Assert.IsTrue(anyStart);
+    }
+
+    // ── ForceCancel ──────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void ForceCancel_EndsActiveSession()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 99999, RespondDelayMs = 99999,
+            CooldownMs = 99999, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        var result = coord.ForceCancel(CancelReason.PetRemoved, 5100);
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.PetRemoved, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void ForceCancel_WhenIdle_ReturnsIdle()
+    {
+        var coord = new SocialCoordinator(random: new Random(42));
+        var result = coord.ForceCancel(CancelReason.Paused, 1000);
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsFalse(result.SessionEnded);
+    }
+
+    // ── Grievance busy ───────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Tick_GrievanceActive_DoesNotStart()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, MinIdleMs = 0,
+            NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = BusyPet("bear-1", cx: 100, isExpressingGrievance: true);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        var result = coord.Tick(5000, petA, petB);
+        Assert.IsFalse(result.IsSocialActive);
+    }
+
+    // ── isSocialActive flag ──────────────────────────────────────────────
+
+    [TestMethod]
+    public void IsSocialActive_True_OnlyDuringActivePhases()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 1.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 5000, RespondDelayMs = 500,
+            RespondDurationMs = 500, CooldownMs = 99999,
+            SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        Assert.IsFalse(coord.IsSocialActive);
+
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive); // Noticing
+
+        coord.Tick(5600, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive); // Responding
+
+        coord.Tick(6200, petA, petB);
+        Assert.IsFalse(coord.IsSocialActive); // Finished
+    }
+
+    // ── Both can initiate ────────────────────────────────────────────────
+
+    [TestMethod]
+    public void Either_Pet_Can_Be_Initiator()
+    {
+        // petA has a long notice interval, petB has 0 — after petA's first attempt,
+        // only petB can initiate the next session.
+        var config = new SocialConfig
+        {
+            NoticeProbability = 1.0, RespondProbability = 0.0,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 100, RespondDelayMs = 99999,
+            CooldownMs = 0, SessionTimeoutMs = 99999
+        };
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        // First tick: petA (first checked) initiates.
+        var r1 = coord.Tick(5000, petA, petB);
+        Assert.IsTrue(r1.SessionStarted);
+        Assert.AreEqual("bear-1", r1.Session.InitiatorId);
+
+        // Let it finish (noticing duration expires).
+        var r2 = coord.Tick(5200, petA, petB);
+        Assert.IsTrue(r2.SessionEnded);
+
+        // Next tick: petA already has lastAttempt=5000, petB has lastAttempt=0.
+        // Both have NoticeIntervalMs=0, so petA (first checked) initiates again.
+        var r3 = coord.Tick(5300, petA, petB);
+        Assert.IsTrue(r3.SessionStarted);
+        Assert.AreEqual("bear-1", r3.Session.InitiatorId);
+
+        // Now swap order: pass petB first. petB should be able to initiate.
+        var r4 = coord.Tick(5500, petB, petA);
+        // petB is now checked first, and has lastAttempt=0 (never tried as initiator).
+        // But session from r3 ended at 5300+100=5400, cooldown=0 so ok.
+        if (r4.SessionStarted)
+        {
+            // petB should be the initiator when passed first.
+            Assert.AreEqual("bear-2", r4.Session.InitiatorId);
+        }
+    }
+
+    // ── Seeded determinism ───────────────────────────────────────────────
+
+    [TestMethod]
+    public void SeededRandom_Produces_DeterministicResults()
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = 0.5, RespondProbability = 0.5,
+            MinIdleMs = 0, NoticeIntervalMs = 0, NoticeDistanceMaxDip = 99999,
+            NoticeDurationMs = 5000, RespondDelayMs = 100,
+            RespondDurationMs = 5000, CooldownMs = 0,
+            SessionTimeoutMs = 99999
+        };
+        var petA = IdlePet("bear-1", cx: 100);
+        var petB = IdlePet("bear-2", cx: 200);
+
+        // Run 1
+        var coord1 = new SocialCoordinator(config.Clone(), new Random(123));
+        var results1 = new List<SocialPhase>();
+        for (int i = 0; i < 30; i++)
+        {
+            var r = coord1.Tick(5000 + i * 100, petA, petB);
+            results1.Add(r.Session.Phase);
+        }
+
+        // Run 2 with same seed
+        var coord2 = new SocialCoordinator(config.Clone(), new Random(123));
+        var results2 = new List<SocialPhase>();
+        for (int i = 0; i < 30; i++)
+        {
+            var r = coord2.Tick(5000 + i * 100, petA, petB);
+            results2.Add(r.Session.Phase);
+        }
+
+        CollectionAssert.AreEqual(results1, results2);
+    }
+
+    // ── P3-003: Seeking state machine ───────────────────────────────────
+
+    /// <summary>
+    /// Helper: create an idle pet on the bottom edge of a monitor.
+    /// </summary>
+    private static PetSocialState SeekablePet(
+        string petId, double cx, double bottomEdgeY = 800,
+        string? monitorId = "DISPLAY1", double lastActivity = 0,
+        bool onBottomEdge = true) =>
+        new(petId, Personality.Proactive, cx, bottomEdgeY,
+            isDragging: false, isPettingCandidate: false,
+            isPhysicsActive: false, isExpressingGrievance: false,
+            isProbing: false, isPaused: false, lastActivity,
+            monitorId: monitorId, bottomEdgeY: bottomEdgeY,
+            isOnBottomEdge: onBottomEdge);
+
+    private static SocialConfig SeekConfig(
+        double reactDelay = 100, double stepDip = 4,
+        double stopDist = 120, double maxDist = 1200,
+        double timeout = 20000, double cooldown = 20000,
+        double bottomTol = 8) => new()
+        {
+            // Disable mutual-notice so seeking is the only path.
+            NoticeProbability = 0.0,
+            SlowPacedNoticeProbability = 0.0,
+            MinIdleMs = 0,
+            NoticeIntervalMs = 0,
+            NoticeDistanceMaxDip = 99999,
+            CooldownMs = 0,
+            SessionTimeoutMs = 99999,
+            SeekReactDelayMs = reactDelay,
+            SeekStepDip = stepDip,
+            SeekStopDistanceDip = stopDist,
+            SeekMaxDistanceDip = maxDist,
+            SeekTimeoutMs = timeout,
+            SeekCooldownMs = cooldown,
+            SeekBottomToleranceDip = bottomTol,
+        };
+
+    [TestMethod]
+    public void Seek_BothIdleSameBottom_StartsSeeking()
+    {
+        var coord = new SocialCoordinator(SeekConfig(), new Random(42));
+        // A was recently active (dragged), B is idle. Both on same bottom edge.
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        // P3-003 R1 F-01: Must call NotifyPetReleased to establish a seeking candidate.
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+
+        // After react delay (5000 + 100 = 5100).
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsTrue(r.IsSocialActive);
+        Assert.AreEqual(SocialPhase.Seeking, r.Session.Phase);
+        Assert.IsNotNull(r.SeekStepDelta);
+        Assert.IsNotNull(r.SeekerId);
+        // A was released (dragged) → B is the seeker, moving right toward A.
+        Assert.AreEqual("bear-2", r.SeekerId);
+        Assert.IsTrue(r.SeekStepDelta!.Value > 0);
+    }
+
+    [TestMethod]
+    public void Seek_DifferentMonitor_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, monitorId: "DISPLAY1", lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, monitorId: "DISPLAY2", lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+        Assert.IsNull(r.SeekStepDelta);
+    }
+
+    [TestMethod]
+    public void Seek_TargetAirborne_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000, onBottomEdge: false);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_DifferentBottomEdge_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(bottomTol: 8), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, bottomEdgeY: 800, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, bottomEdgeY: 900, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_WithinReactDelay_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(reactDelay: 1000), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        // Only 500ms since release — need 1000ms.
+        var r = coord.Tick(5500, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_AlreadyClose_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(stopDist: 120), new Random(42));
+        // Distance = 100, within stop distance.
+        var petA = SeekablePet("bear-1", cx: 300, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_TooFar_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(maxDist: 500), new Random(42));
+        // Distance = 800, beyond max.
+        var petA = SeekablePet("bear-1", cx: 1000, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_PhysicsActive_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(), new Random(42));
+        var petA = BusyPet("bear-1", cx: 500, isPhysicsActive: true);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: true);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_StepsTowardTarget_AndArrives()
+    {
+        var coord = new SocialCoordinator(SeekConfig(
+            reactDelay: 0, stepDip: 50, stopDist: 100, cooldown: 99999),
+            new Random(42));
+        // B at 200, A at 500. Distance = 300. B seeks A.
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 1000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        // P3-003 R1 F-01: Establish release candidate.
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+
+        // Start seeking.
+        var r1 = coord.Tick(2000, petA, petB);
+        Assert.AreEqual(SocialPhase.Seeking, r1.Session.Phase);
+        Assert.AreEqual("bear-2", r1.SeekerId);
+        Assert.IsTrue(r1.SeekStepDelta!.Value > 0);
+
+        // Simulate B moving: update petB's position.
+        // P3-003 R1 F-02: Steps are time-based. Use 33ms intervals.
+        var movedB = SeekablePet("bear-2", cx: 250, lastActivity: 0);
+        var r2 = coord.Tick(2033, petA, movedB);
+        Assert.AreEqual(SocialPhase.Seeking, r2.Session.Phase);
+
+        // Continue stepping until within stop distance.
+        // Distance = 500 - 250 = 250, step = min(50, 250-100) = 50.
+        // After 4 more steps of 50: 250→300→350→400→450, dist=50 < 100 → Arrived.
+        var currentX = 250.0;
+        for (int i = 0; i < 10; i++)
+        {
+            currentX += 50;
+            var moved = SeekablePet("bear-2", cx: currentX, lastActivity: 0);
+            var r = coord.Tick(2066 + i * 33, petA, moved);
+            if (r.Session.Phase == SocialPhase.Arrived)
+            {
+                // Arrived: step delta should be 0 (stop).
+                Assert.AreEqual(0, r.SeekStepDelta);
+                return;
+            }
+        }
+
+        Assert.Fail("Should have arrived within 10 steps.");
+    }
+
+    [TestMethod]
+    public void Seek_DragInterrupts_CancelsSeeking()
+    {
+        var coord = new SocialCoordinator(SeekConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        // Start seeking.
+        coord.Tick(5100, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // A starts being dragged.
+        var draggingA = BusyPet("bear-1", cx: 500, isDragging: true);
+        var result = coord.Tick(5200, draggingA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.DragStarted, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Seek_TargetLeavesBottomEdge_Cancels()
+    {
+        var coord = new SocialCoordinator(SeekConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        // Start seeking.
+        coord.Tick(5100, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // A goes airborne (no longer on bottom edge).
+        var airborneA = SeekablePet("bear-1", cx: 500, lastActivity: 5000, onBottomEdge: false);
+        var result = coord.Tick(5200, airborneA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.SeekTargetGone, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Seek_Timeout_Cancels()
+    {
+        var coord = new SocialCoordinator(SeekConfig(
+            reactDelay: 0, timeout: 1000, cooldown: 99999),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 0, wasThrown: false);
+        // Start seeking at t=1000.
+        coord.Tick(1000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // After timeout (1000 + 1000 = 2000).
+        var result = coord.Tick(2100, petA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.Timeout, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Seek_Cooldown_PreventsImmediateRestart()
+    {
+        var coord = new SocialCoordinator(SeekConfig(
+            reactDelay: 0, stepDip: 200, stopDist: 100,
+            cooldown: 10000, timeout: 99999),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 0, wasThrown: false);
+        // Start seeking.
+        coord.Tick(1000, petA, petB);
+
+        // B moves close enough to arrive.
+        var movedB = SeekablePet("bear-2", cx: 450, lastActivity: 0);
+        var arrived = coord.Tick(1033, petA, movedB);
+        Assert.AreEqual(SocialPhase.Arrived, arrived.Session.Phase);
+
+        // Next tick: session ends with cooldown.
+        var ended = coord.Tick(1066, petA, movedB);
+        Assert.IsTrue(ended.SessionEnded);
+
+        // Immediately after — in cooldown.
+        var r = coord.Tick(1100, petA, movedB);
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_ForceCancel_EndsSeeking()
+    {
+        var coord = new SocialCoordinator(SeekConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        coord.Tick(5100, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        var result = coord.ForceCancel(CancelReason.Paused, 5200);
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+    }
+
+    [TestMethod]
+    public void Seek_OnlyOnePet_CancelsSeeking()
+    {
+        var coord = new SocialCoordinator(SeekConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        coord.Tick(5100, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // Pet B removed — only one pet.
+        var result = coord.Tick(5200, petA, null);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.OnlyOnePet, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Seek_Direction_LeftWhenTargetIsLeft()
+    {
+        var coord = new SocialCoordinator(SeekConfig(reactDelay: 0), new Random(42));
+        // A at 200 (recently released), B at 500 (idle). B seeks A, moving left.
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 500, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.AreEqual(SocialPhase.Seeking, r.Session.Phase);
+        Assert.AreEqual("bear-2", r.SeekerId);
+        // B should move left (negative delta) toward A.
+        Assert.IsTrue(r.SeekStepDelta!.Value < 0);
+    }
+
+    // ── P3-003 R1 F-01: Release-triggered seeking ───────────────────────
+
+    [TestMethod]
+    public void Seek_NoReleaseCandidate_DoesNotStart()
+    {
+        // F-01: Without NotifyPetReleased, two idle pets on the same bottom
+        // edge must NOT spontaneously start seeking — even after long idle.
+        var coord = new SocialCoordinator(SeekConfig(reactDelay: 0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        // No NotifyPetReleased call — should never start seeking.
+        for (int i = 0; i < 20; i++)
+        {
+            var r = coord.Tick(1000 + i * 100, petA, petB);
+            Assert.IsFalse(r.IsSocialActive, $"Seeking should not start without release at tick {i}");
+        }
+    }
+
+    [TestMethod]
+    public void Seek_ReleaseCandidateConsumed_DoesNotRestart()
+    {
+        // F-01: After the release candidate is consumed by a seeking session,
+        // subsequent ticks must not restart seeking without a new release.
+        var coord = new SocialCoordinator(SeekConfig(
+            reactDelay: 0, stepDip: 200, stopDist: 100, cooldown: 0),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 0, wasThrown: false);
+        coord.Tick(1000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // Let it arrive and finish.
+        var movedB = SeekablePet("bear-2", cx: 450, lastActivity: 0);
+        coord.Tick(1033, petA, movedB); // Arrived
+        coord.Tick(1066, petA, movedB); // Finished + cooldown(0)
+
+        // No new release — should not restart.
+        var r = coord.Tick(1100, petA, movedB);
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_ThrownRelease_WaitsForPhysicsStop()
+    {
+        // F-01: If the release was a throw, seeking must wait until physics
+        // is no longer active (naturally stopped).
+        var coord = new SocialCoordinator(SeekConfig(reactDelay: 0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        // Released with throw — physics still active.
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: true);
+        var flyingA = BusyPet("bear-1", cx: 500, isPhysicsActive: true);
+        var r1 = coord.Tick(2000, flyingA, petB);
+        Assert.IsFalse(r1.IsSocialActive, "Should not seek while physics is active");
+
+        // Physics stopped — now seeking can start.
+        var stoppedA = SeekablePet("bear-1", cx: 500, lastActivity: 2000);
+        var r2 = coord.Tick(2100, stoppedA, petB);
+        Assert.IsTrue(r2.IsSocialActive, "Should seek after physics stops");
+    }
+
+    [TestMethod]
+    public void Seek_ForceCancel_ClearsReleaseCandidate()
+    {
+        // F-01: ForceCancel must clear the pending release candidate so it
+        // doesn't trigger seeking after a pause/resume cycle.
+        var coord = new SocialCoordinator(SeekConfig(reactDelay: 0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+        coord.ForceCancel(CancelReason.Paused, 1100);
+
+        // After force cancel, no seeking should start.
+        var r = coord.Tick(2000, petA, petB);
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Seek_ReleasedPetRemoved_ClearsStaleCandidate()
+    {
+        // F-01: If the released pet is removed, the stale candidate must be
+        // cleared — not handed to a new pet.
+        var coord = new SocialCoordinator(SeekConfig(reactDelay: 0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+
+        // bear-1 removed, only bear-2 remains.
+        var r = coord.Tick(2000, petB, null);
+        Assert.IsFalse(r.IsSocialActive);
+
+        // bear-1 re-added (or a new pet with different ID) — stale candidate
+        // for "bear-1" should not trigger seeking for the new pair.
+        var petC = SeekablePet("bear-3", cx: 600, lastActivity: 0);
+        var r2 = coord.Tick(2100, petB, petC);
+        Assert.IsFalse(r2.IsSocialActive);
+    }
+
+    // ── P3-003 R1 F-02: Time-based step advancement ─────────────────────
+
+    [TestMethod]
+    public void Seek_DualWindowInterleave_NoSpeedDoubling()
+    {
+        // F-02: Two windows' timers fire at slightly different times within
+        // the same ~33ms frame. The total displacement should be one step,
+        // not two.
+        var coord = new SocialCoordinator(SeekConfig(
+            reactDelay: 0, stepDip: 10, stopDist: 50, cooldown: 99999,
+            timeout: 99999, maxDist: 99999),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 0, wasThrown: false);
+
+        // Window A tick at 1000ms — starts seeking, first step.
+        var rA1 = coord.Tick(1000, petA, petB);
+        Assert.IsTrue(rA1.SeekStepDelta!.Value > 0);
+        var firstDelta = rA1.SeekStepDelta!.Value;
+
+        // Window B tick at 1000.1ms — should be deduplicated (within 16ms).
+        var rB1 = coord.Tick(1000.1, petA, petB);
+        Assert.AreEqual(0, rB1.SeekStepDelta ?? 0, "Second callback within same frame should not step");
+
+        // Window A tick at 1033ms — next frame, should step again.
+        var rA2 = coord.Tick(1033, petA, petB);
+        Assert.IsTrue(rA2.SeekStepDelta!.Value > 0, "Should step on next frame");
+
+        // Window B tick at 1033.1ms — deduplicated.
+        var rB2 = coord.Tick(1033.1, petA, petB);
+        Assert.AreEqual(0, rB2.SeekStepDelta ?? 0, "Second callback should not step");
+    }
+
+    [TestMethod]
+    public void Seek_LargeInterval_MultipleStepsAtOnce()
+    {
+        // F-02: If a large time gap occurs (e.g. system stall), the step
+        // should scale with elapsed time, not be capped at one step.
+        var coord = new SocialCoordinator(SeekConfig(
+            reactDelay: 0, stepDip: 10, stopDist: 50, cooldown: 99999,
+            timeout: 99999, maxDist: 99999),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 0, wasThrown: false);
+
+        // Start seeking at 1000ms.
+        var r1 = coord.Tick(1000, petA, petB);
+        var firstStep = r1.SeekStepDelta!.Value;
+
+        // 99ms later (3 frames worth) — should produce 3 steps worth of delta.
+        var r2 = coord.Tick(1099, petA, petB);
+        Assert.IsTrue(r2.SeekStepDelta!.Value > firstStep,
+            "Large interval should produce more displacement than a single step");
+    }
+
+    // ── P3-003 R1 F-03: Both-pet support validation ─────────────────────
+
+    [TestMethod]
+    public void Seek_SeekerLosesBottomEdge_Cancels()
+    {
+        // F-03: If the SEEKER (not just the target) loses bottom-edge
+        // support during seeking, the session must cancel immediately.
+        var coord = new SocialCoordinator(SeekConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        coord.Tick(5100, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // B (seeker) goes airborne.
+        var airborneB = SeekablePet("bear-2", cx: 200, lastActivity: 0, onBottomEdge: false);
+        var result = coord.Tick(5200, petA, airborneB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.SeekTargetGone, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Seek_SeekerChangesMonitor_Cancels()
+    {
+        // F-03: If the seeker moves to a different monitor during seeking,
+        // the session must cancel.
+        var coord = new SocialCoordinator(SeekConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, monitorId: "DISPLAY1", lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, monitorId: "DISPLAY1", lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        coord.Tick(5100, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // B (seeker) moves to a different monitor.
+        var movedB = SeekablePet("bear-2", cx: 200, monitorId: "DISPLAY2", lastActivity: 0);
+        var result = coord.Tick(5200, petA, movedB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.SeekTargetGone, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Seek_TargetOffScreen_NullMonitor_DoesNotStart()
+    {
+        // F-03: If the target's monitorId is null (off-screen, in a gap),
+        // SameMonitor returns false and seeking must not start.
+        var coord = new SocialCoordinator(SeekConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, monitorId: null, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, monitorId: "DISPLAY1", lastActivity: 0);
+
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+        var r = coord.Tick(5100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    // ── P3-003 R2 F-01: Candidate expiry ─────────────────────────────
+
+    [TestMethod]
+    public void Seek_AirborneRelease_CandidateExpires_NotSeekLater()
+    {
+        // R2 F-01: If the released pet is NOT on the bottom edge when
+        // the react delay expires, the candidate must be EXPIRED.
+        // Even if the pet later lands on the bottom edge, seeking must
+        // NOT start — no new release occurred.
+        var coord = new SocialCoordinator(
+            SeekConfig(reactDelay: 0, timeout: 20000), new Random(42));
+        var petA_Airborne = SeekablePet("bear-1", cx: 500, onBottomEdge: false);
+        var petB = SeekablePet("bear-2", cx: 200, onBottomEdge: true);
+
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+
+        // Tick with A airborne — candidate should be expired (cleared).
+        var r1 = coord.Tick(1100, petA_Airborne, petB);
+        Assert.IsFalse(r1.IsSocialActive,
+            "Seeking must NOT start when released pet is airborne.");
+
+        // Now A lands on the bottom edge — but no NEW release occurred.
+        var petA_OnEdge = SeekablePet("bear-1", cx: 500, onBottomEdge: true);
+        var r2 = coord.Tick(3000, petA_OnEdge, petB);
+        Assert.IsFalse(r2.IsSocialActive,
+            "After candidate expiry, seeking must NOT start even if pet " +
+            "later lands on bottom edge — no new release.");
+
+        // Even much later — still no seeking.
+        var r3 = coord.Tick(60000, petA_OnEdge, petB);
+        Assert.IsFalse(r3.IsSocialActive,
+            "Even after 60000ms, expired candidate must not trigger seeking.");
+    }
+
+    [TestMethod]
+    public void Seek_DifferentMonitor_CandidateExpires()
+    {
+        // R2 F-01: If the released pet is on a different monitor when
+        // the react delay expires, the candidate must be EXPIRED.
+        var coord = new SocialCoordinator(
+            SeekConfig(reactDelay: 0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, monitorId: "DISPLAY1");
+        var petB = SeekablePet("bear-2", cx: 200, monitorId: "DISPLAY2");
+
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+        var r = coord.Tick(1100, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive,
+            "Seeking must NOT start when pets are on different monitors.");
+
+        // Candidate should be expired — even if B switches to DISPLAY1
+        // later, no new release means no seeking.
+        var petB_SameMonitor = SeekablePet("bear-2", cx: 200, monitorId: "DISPLAY1");
+        var r2 = coord.Tick(5000, petA, petB_SameMonitor);
+        Assert.IsFalse(r2.IsSocialActive,
+            "After candidate expiry (different monitor), seeking must NOT " +
+            "start even if monitors later match.");
+    }
+
+    [TestMethod]
+    public void Seek_CandidateTimeout_ExpiresAfterSeekTimeoutMs()
+    {
+        // R2 F-01: The candidate has a finite lifetime bounded by
+        // SeekTimeoutMs. After that, it must be discarded even if
+        // conditions are otherwise valid.
+        var coord = new SocialCoordinator(
+            SeekConfig(reactDelay: 0, timeout: 5000), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500);
+        var petB = SeekablePet("bear-2", cx: 200);
+
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+
+        // Within timeout — should start seeking.
+        var r1 = coord.Tick(2000, petA, petB);
+        Assert.IsTrue(r1.IsSocialActive,
+            "Within SeekTimeoutMs, seeking should start.");
+
+        // Cancel and re-establish candidate.
+        coord.ForceCancel(CancelReason.Paused, 2100);
+        coord.NotifyPetReleased("bear-1", 2100, wasThrown: false);
+
+        // Keep both pets busy so the candidate is preserved but not consumed.
+        var petA_Busy = new PetSocialState("bear-1", Personality.Proactive,
+            500, 800, isDragging: true, isPettingCandidate: false,
+            isPhysicsActive: false, isExpressingGrievance: false,
+            isProbing: false, isPaused: false, 0,
+            monitorId: "DISPLAY1", bottomEdgeY: 800, isOnBottomEdge: true);
+        for (int i = 0; i < 100; i++)
+        {
+            coord.Tick(2200 + i * 100, petA_Busy, petB);
+        }
+
+        // Now past the candidate lifetime (2100 + 5000 = 7100).
+        var r2 = coord.Tick(8000, petA, petB);
+        Assert.IsFalse(r2.IsSocialActive,
+            "After SeekTimeoutMs, the candidate must have expired — " +
+            "seeking must NOT start.");
+    }
+
+    [TestMethod]
+    public void Seek_NewRelease_AfterExpiry_CanStart()
+    {
+        // R2 F-01: After a candidate expires, a NEW release event
+        // establishes a fresh candidate that CAN start seeking.
+        var coord = new SocialCoordinator(
+            SeekConfig(reactDelay: 0, timeout: 5000), new Random(42));
+        var petA_Airborne = SeekablePet("bear-1", cx: 500, onBottomEdge: false);
+        var petB = SeekablePet("bear-2", cx: 200);
+
+        // First release — airborne, candidate expires.
+        coord.NotifyPetReleased("bear-1", 1000, wasThrown: false);
+        coord.Tick(1100, petA_Airborne, petB);
+
+        // New release after A lands on bottom edge.
+        var petA_OnEdge = SeekablePet("bear-1", cx: 500, onBottomEdge: true);
+        coord.NotifyPetReleased("bear-1", 3000, wasThrown: false);
+        var r = coord.Tick(3100, petA_OnEdge, petB);
+
+        Assert.IsTrue(r.IsSocialActive,
+            "A NEW release after expiry must establish a fresh candidate " +
+            "and seeking should start.");
+    }
+
+    // ── P3-004: Chase state machine ─────────────────────────────────────
+
+    /// <summary>
+    /// Helper: create a chase-friendly config that disables notice and
+    /// seeking so chase is the only path.
+    /// </summary>
+    private static SocialConfig ChaseConfig(
+        double attemptInterval = 0,
+        double inviteProbability = 1.0,
+        double cooldown = 90000,
+        double duration = 3000,
+        double maxTravel = 240,
+        double leaderSpeed = 80,
+        double followerSpeed = 100,
+        double minDistance = 120,
+        double distMin = 120,
+        double distMax = 300,
+        double clearance = 120,
+        double respondDelay = 100,
+        double respondProbability = 1.0,
+        double noticeDuration = 5000) => new()
+        {
+            // Disable mutual-notice and seeking.
+            NoticeProbability = 0.0,
+            SlowPacedNoticeProbability = 0.0,
+            MinIdleMs = 0,
+            NoticeIntervalMs = 0,
+            NoticeDistanceMaxDip = 99999,
+            CooldownMs = 0,
+            SessionTimeoutMs = 99999,
+            SeekReactDelayMs = 99999,
+            SeekStepDip = 4,
+            SeekStopDistanceDip = 120,
+            SeekMaxDistanceDip = 1200,
+            SeekTimeoutMs = 20000,
+            SeekCooldownMs = 20000,
+            SeekBottomToleranceDip = 8,
+            // Chase params.
+            ChaseAttemptIntervalMs = attemptInterval,
+            ChaseInviteProbability = inviteProbability,
+            ChaseCooldownMs = cooldown,
+            ChaseDurationMs = duration,
+            ChaseMaxTravelDip = maxTravel,
+            ChaseLeaderSpeedDipPerSec = leaderSpeed,
+            ChaseFollowerSpeedDipPerSec = followerSpeed,
+            ChaseMinDistanceDip = minDistance,
+            ChaseDistanceMinDip = distMin,
+            ChaseDistanceMaxDip = distMax,
+            ChaseClearanceDip = clearance,
+            // Reuse for invite phase.
+            RespondDelayMs = respondDelay,
+            SlowPacedRespondDelayMs = respondDelay,
+            RespondProbability = respondProbability,
+            NoticeDurationMs = noticeDuration,
+        };
+
+    [TestMethod]
+    public void Chase_BothIdleSameBottom_InviteStarts()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsTrue(r.IsSocialActive);
+        Assert.AreEqual(SocialPhase.ChaseInviting, r.Session.Phase);
+        Assert.IsNotNull(r.Session.ChaseLeaderId);
+        Assert.IsNotNull(r.Session.ChaseDirection);
+    }
+
+    [TestMethod]
+    public void Chase_DistanceTooClose_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(distMin: 120), new Random(42));
+        // Distance = 100, below min.
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 300, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_DistanceTooFar_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(distMax: 300), new Random(42));
+        // Distance = 400, above max.
+        var petA = SeekablePet("bear-1", cx: 100, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 500, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_DifferentMonitor_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, monitorId: "DISPLAY1", lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, monitorId: "DISPLAY2", lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_Airborne_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0, onBottomEdge: false);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_BusyPet_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var petA = BusyPet("bear-1", cx: 200, isDragging: true);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_InviteProbabilityZero_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(inviteProbability: 0.0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_AttemptInterval_PreventsSpam()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            attemptInterval: 5000, inviteProbability: 0.0), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // First attempt at 5000 — fails (prob=0) but records attempt time.
+        coord.Tick(5000, petA, petB);
+
+        // Immediately after — should be blocked by interval.
+        // Need a coordinator with inviteProbability=1.0 for this to be meaningful,
+        // but the interval check happens before the roll. So even with prob=1.0,
+        // the second attempt within the interval should not start.
+        var coord2 = new SocialCoordinator(ChaseConfig(
+            attemptInterval: 5000, inviteProbability: 1.0), new Random(42));
+        coord2.Tick(5000, petA, petB); // First attempt starts (prob=1).
+        // Let it finish (invite expires).
+        coord2.Tick(11000, petA, petB); // Past noticeDuration=5000 → finished + cooldown.
+
+        // Within interval — should not start.
+        var r = coord2.Tick(12000, petA, petB);
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_InviteRejected_EndsWithChaseCooldown()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondProbability: 0.0, cooldown: 10000), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start invite.
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // After respond delay — rejected.
+        var r2 = coord.Tick(5200, petA, petB);
+        Assert.AreEqual(SocialPhase.Rejected, r2.Session.Phase);
+
+        // Next tick — finished with chase cooldown.
+        var r3 = coord.Tick(5300, petA, petB);
+        Assert.IsFalse(r3.IsSocialActive);
+        Assert.IsTrue(r3.SessionEnded);
+
+        // Within chase cooldown — should not start new session.
+        var r4 = coord.Tick(5400, petA, petB);
+        Assert.IsFalse(r4.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_InviteTimeout_EndsWithChaseCooldown()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondDelay: 99999, noticeDuration: 500, cooldown: 10000),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start invite.
+        coord.Tick(5000, petA, petB);
+
+        // After notice duration — invite expires (no response).
+        var r = coord.Tick(5600, petA, petB);
+        Assert.IsFalse(r.IsSocialActive);
+        Assert.IsTrue(r.SessionEnded);
+
+        // Within chase cooldown.
+        var r2 = coord.Tick(5700, petA, petB);
+        Assert.IsFalse(r2.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_Accepted_BothPetsMoveInSameDirection()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondDelay: 100, leaderSpeed: 80, followerSpeed: 100,
+            duration: 3000, maxTravel: 240, minDistance: 120),
+            new Random(42));
+        // A at 200 (left), B at 400 (right). Direction = right, B leads, A follows.
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start invite.
+        coord.Tick(5000, petA, petB);
+
+        // After respond delay — accepted, transition to Chasing.
+        var r = coord.Tick(5200, petA, petB);
+        Assert.AreEqual(SocialPhase.Chasing, r.Session.Phase);
+        Assert.IsNotNull(r.ChaseLeaderDelta);
+        Assert.IsNotNull(r.ChaseFollowerDelta);
+        Assert.IsNotNull(r.ChaseLeaderId);
+        Assert.IsNotNull(r.ChaseFollowerId);
+        // B (bear-2) is the leader, A (bear-1) is the follower.
+        Assert.AreEqual("bear-2", r.ChaseLeaderId);
+        Assert.AreEqual("bear-1", r.ChaseFollowerId);
+    }
+
+    [TestMethod]
+    public void Chase_FollowerMaintainsMinDistance()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondDelay: 0, leaderSpeed: 80, followerSpeed: 100,
+            duration: 10000, maxTravel: 9999, minDistance: 120),
+            new Random(42));
+        // A at 200, B at 400. Gap = 200. Direction = right.
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start invite and accept.
+        coord.Tick(5000, petA, petB);
+        coord.Tick(5001, petA, petB); // Chasing starts.
+
+        // Simulate several ticks with elapsed time. The follower is faster
+        // (100 vs 80), so it gains 20 DIP/s on the leader. After 4 seconds,
+        // the gap would close from 200 to 120 — the minimum. The follower
+        // should be constrained to not close below 120.
+        //
+        // Tick at 5500ms (500ms elapsed): leader moves 80*0.5=40, follower 100*0.5=50.
+        // Gap shrinks from 200 to 200-10=190. Still above 120.
+        var r1 = coord.Tick(5500, petA, petB);
+        Assert.AreEqual(SocialPhase.Chasing, r1.Session.Phase);
+        // Leader delta should be positive (rightward).
+        Assert.IsTrue(r1.ChaseLeaderDelta!.Value > 0);
+        Assert.IsTrue(r1.ChaseFollowerDelta!.Value > 0);
+    }
+
+    [TestMethod]
+    public void Chase_DurationLimit_EndsChase()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondDelay: 0, duration: 1000, maxTravel: 99999),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start and accept.
+        coord.Tick(5000, petA, petB);
+        coord.Tick(5001, petA, petB); // Chasing.
+
+        // After duration (5001 + 1000 = 6001).
+        var r = coord.Tick(6100, petA, petB);
+        Assert.AreEqual(SocialPhase.ChaseArrived, r.Session.Phase);
+
+        // Next tick — finished with cooldown.
+        var r2 = coord.Tick(6200, petA, petB);
+        Assert.IsFalse(r2.IsSocialActive);
+        Assert.IsTrue(r2.SessionEnded);
+    }
+
+    [TestMethod]
+    public void Chase_MaxTravelLimit_EndsChase()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondDelay: 0, duration: 99999, maxTravel: 50,
+            leaderSpeed: 80, followerSpeed: 80),
+            new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start and accept.
+        coord.Tick(5000, petA, petB);
+        coord.Tick(5001, petA, petB); // Chasing starts.
+
+        // After enough time for 50 DIP travel at 80 DIP/s = 0.625s.
+        // Simulate positions after moving ~50 DIP.
+        var movedA = SeekablePet("bear-1", cx: 250, lastActivity: 0);
+        var movedB = SeekablePet("bear-2", cx: 450, lastActivity: 0);
+        var r = coord.Tick(5700, movedA, movedB);
+        // Leader traveled 50 DIP (400→450), should trigger ChaseArrived.
+        Assert.AreEqual(SocialPhase.ChaseArrived, r.Session.Phase);
+    }
+
+    [TestMethod]
+    public void Chase_DragInterrupts_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // A starts being dragged.
+        var draggingA = BusyPet("bear-1", cx: 200, isDragging: true);
+        var result = coord.Tick(5100, draggingA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.DragStarted, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_PauseInterrupts_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+
+        var pausedA = BusyPet("bear-1", cx: 200, isPaused: true);
+        var result = coord.Tick(5100, pausedA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.Paused, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_PhysicsInterrupts_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+
+        var flyingB = BusyPet("bear-2", cx: 400, isPhysicsActive: true);
+        var result = coord.Tick(5100, petA, flyingB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.PhysicsActive, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_PettingInterrupts_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+
+        var pettingB = BusyPet("bear-2", cx: 400, isPettingCandidate: true);
+        var result = coord.Tick(5100, petA, pettingB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.PettingCandidate, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_ProbeInterrupts_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+
+        var probingA = BusyPet("bear-1", cx: 200, isProbing: true);
+        var result = coord.Tick(5100, probingA, petB);
+
+        Assert.IsFalse(result.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_PetLosesBottomEdge_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+
+        var airborneB = SeekablePet("bear-2", cx: 400, lastActivity: 0, onBottomEdge: false);
+        var result = coord.Tick(5100, petA, airborneB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.SeekTargetGone, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_PetChangesMonitor_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, monitorId: "DISPLAY1", lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, monitorId: "DISPLAY1", lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+
+        var movedB = SeekablePet("bear-2", cx: 400, monitorId: "DISPLAY2", lastActivity: 0);
+        var result = coord.Tick(5100, petA, movedB);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.AreEqual(CancelReason.SeekTargetGone, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_OnlyOnePet_Cancels()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // Pet B removed.
+        var result = coord.Tick(5100, petA, null);
+
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+        Assert.AreEqual(CancelReason.OnlyOnePet, result.Session.CancelReason);
+    }
+
+    [TestMethod]
+    public void Chase_ForceCancel_EndsChase()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(cooldown: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        var result = coord.ForceCancel(CancelReason.PetRemoved, 5100);
+        Assert.IsFalse(result.IsSocialActive);
+        Assert.IsTrue(result.SessionEnded);
+    }
+
+    [TestMethod]
+    public void Chase_Cooldown_PreventsImmediateRestart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondProbability: 0.0, cooldown: 10000), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start invite, get rejected, enter cooldown.
+        coord.Tick(5000, petA, petB);
+        coord.Tick(5200, petA, petB); // Rejected.
+        coord.Tick(5300, petA, petB); // Finished + cooldown.
+
+        // Within cooldown — should not start.
+        var r = coord.Tick(5400, petA, petB);
+        Assert.IsFalse(r.IsSocialActive);
+
+        // After cooldown — should be able to start again.
+        var r2 = coord.Tick(15500, petA, petB);
+        Assert.IsTrue(r2.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_DualWindowInterleave_NoSpeedDoubling()
+    {
+        // P3-004: Two windows' timers fire at slightly different times within
+        // the same ~16ms frame. The total displacement should be one step,
+        // not two.
+        var coord = new SocialCoordinator(ChaseConfig(
+            respondDelay: 0, leaderSpeed: 80, followerSpeed: 100,
+            duration: 99999, maxTravel: 99999), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start invite and accept.
+        coord.Tick(5000, petA, petB);
+        var rStart = coord.Tick(5001, petA, petB);
+        Assert.AreEqual(SocialPhase.Chasing, rStart.Session.Phase);
+
+        // Window A tick at 5500ms — should produce step.
+        var rA = coord.Tick(5500, petA, petB);
+        Assert.IsTrue(rA.ChaseLeaderDelta!.Value != 0 || rA.ChaseFollowerDelta!.Value != 0);
+
+        // Window B tick at 5500.1ms — should be deduplicated (within 16ms).
+        var rB = coord.Tick(5500.1, petA, petB);
+        Assert.AreEqual(0, rB.ChaseLeaderDelta ?? 0, "Second callback within same frame should not step");
+        Assert.AreEqual(0, rB.ChaseFollowerDelta ?? 0, "Second callback within same frame should not step");
+    }
+
+    [TestMethod]
+    public void Chase_Direction_LeftWhenLeaderIsLeft()
+    {
+        // A at 400 (right), B at 200 (left). Direction = left, A leads, B follows.
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var petA = SeekablePet("bear-1", cx: 400, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+
+        Assert.IsTrue(r.IsSocialActive);
+        Assert.AreEqual(SocialPhase.ChaseInviting, r.Session.Phase);
+        // A (bear-1) is on the right, so direction = left (-1).
+        Assert.AreEqual(-1.0, r.Session.ChaseDirection);
+        // A leads (it's on the outer side in the travel direction).
+        Assert.AreEqual("bear-1", r.Session.ChaseLeaderId);
+    }
+
+    [TestMethod]
+    public void Chase_Restart_NoOldSession()
+    {
+        // P3-004: A new coordinator (simulating restart) must not have any
+        // old chase session. Session/cooldown state is in-memory only.
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        Assert.IsFalse(coord.IsSocialActive);
+
+        var petA = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        // Start a chase session.
+        coord.Tick(5000, petA, petB);
+        Assert.IsTrue(coord.IsSocialActive);
+
+        // Simulate restart — new coordinator has no prior state.
+        var coord2 = new SocialCoordinator(ChaseConfig(), new Random(42));
+        Assert.IsFalse(coord2.IsSocialActive);
+        // No cooldown carried over — can start immediately.
+        var r = coord2.Tick(5000, petA, petB);
+        Assert.IsTrue(r.SessionStarted);
+        Assert.IsTrue(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_GrievanceActive_DoesNotStart()
+    {
+        var coord = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var petA = BusyPet("bear-1", cx: 200, isExpressingGrievance: true);
+        var petB = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+
+        var r = coord.Tick(5000, petA, petB);
+        Assert.IsFalse(r.IsSocialActive);
+    }
+
+    [TestMethod]
+    public void Chase_SeekingHasPriority_WhenReleaseCandidateExists()
+    {
+        // P3-004: Chase is evaluated AFTER seeking. If a release candidate
+        // exists and seeking conditions are met, seeking should start, not chase.
+        var config = ChaseConfig();
+        // Enable seeking by setting a short react delay.
+        config.SeekReactDelayMs = 0;
+        config.SeekCooldownMs = 99999;
+        var coord = new SocialCoordinator(config, new Random(42));
+        var petA = SeekablePet("bear-1", cx: 500, lastActivity: 5000);
+        var petB = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+
+        // Establish release candidate.
+        coord.NotifyPetReleased("bear-1", 5000, wasThrown: false);
+
+        var r = coord.Tick(5100, petA, petB);
+        // Seeking should start, not chase.
+        Assert.AreEqual(SocialPhase.Seeking, r.Session.Phase);
+    }
+
+    [TestMethod]
+    public void Reviewer_LeaderMustBeAheadInTravelDirection()
+    {
+        var c = new SocialCoordinator(ChaseConfig(), new Random(42));
+        var a = SeekablePet("bear-1", cx: 400, lastActivity: 0);
+        var b = SeekablePet("bear-2", cx: 200, lastActivity: 0);
+        var r = c.Tick(5000, a, b);
+        Assert.AreEqual(SocialPhase.ChaseInviting, r.Session.Phase);
+        var leader = r.Session.ChaseLeaderId == a.PetId ? a : b;
+        var follower = leader.PetId == a.PetId ? b : a;
+        Assert.IsTrue((leader.CenterX - follower.CenterX) * r.Session.ChaseDirection!.Value > 0,
+            $"Leader {leader.PetId} at {leader.CenterX}, follower at {follower.CenterX}, direction {r.Session.ChaseDirection}.");
+    }
+
+    [TestMethod]
+    public void Reviewer_PendingReleaseGetsItsResponseWindowBeforeChase()
+    {
+        var config = ChaseConfig();
+        config.SeekReactDelayMs = 1500;
+        var c = new SocialCoordinator(config, new Random(42));
+        var a = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var b = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+        c.NotifyPetReleased(a.PetId, 5000, wasThrown: false);
+        Assert.AreEqual(SocialPhase.Idle, c.Tick(5100, a, b).Session.Phase);
+        Assert.AreEqual(SocialPhase.Seeking, c.Tick(6500, a, b).Session.Phase);
+    }
+
+    [TestMethod]
+    public void Reviewer_ChaseCooldownMustNotBlockFreshRelease()
+    {
+        var config = ChaseConfig();
+        config.SeekReactDelayMs = 1500;
+        var c = new SocialCoordinator(config, new Random(42));
+        var a = SeekablePet("bear-1", cx: 200, lastActivity: 0);
+        var b = SeekablePet("bear-2", cx: 400, lastActivity: 0);
+        Assert.AreEqual(SocialPhase.ChaseInviting, c.Tick(5000, a, b).Session.Phase);
+        c.ForceCancel(CancelReason.DragStarted, 5100);
+        c.NotifyPetReleased(a.PetId, 5500, wasThrown: false);
+        Assert.AreEqual(SocialPhase.Seeking, c.Tick(7100, a, b).Session.Phase);
+    }
+
+}

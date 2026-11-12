@@ -332,33 +332,111 @@
 
 ### P3-001 双宠共存与存档
 
-- 状态：`todo`。依赖：PREP-003（P2-004已完成）。关联：R-05、D-017、D-018。
+- 状态：`done`（监理 [S3 R16 最终接收](reviews/P3-001-review.md)）。依赖：PREP-003（P2-004已完成）。关联：R-05、D-017、D-018。
 - 范围：最多两只、稳定ID/性格配置、独立输入/动画/物理/委屈状态、添加/移除第二只、全局操作及兼容存档。不实现社交/自主移动/关系值或新美术。
 - S1：核对单宠全局字段与存档v3，明确实例/全局数据归属；实现最小身份/集合及旧档迁移，写回架构/存档契约并验证。不开第二窗口前先交付可核对迁移证据。
 - S2：将运行时状态按PetId隔离，创建第二窗口；通过真实共享输入入口证明拖动/抛掷A不改B；保留单宠回归和位置单写入。
 - S3：接入添加/移除、全局暂停/恢复/找回/退出和实际保存/重载链；隔离文件验证旧档→双宠→移除→重启，最后实际双窗操作验收。
 - 验收：按R-05共存目标与M-06执行，稳定ID/数量/角色恢复、独立状态、最多两只、移除后不复活、找回不完全重叠；新格式未知高版本/损坏保护不退化。自动/隔离/实际UI证据分开记录。无实测保持awaiting-verification，不自行签监理。
-- 第一个允许交付范围仅S1；用户发出具体开工后执行，未验收不自动把S2/S3打包完成。
+
+- S1 实现（2026-11-08）：存档升级到 v4（`PetStateArchive` 全局字段 + `Pets[]` 个体数组，`PetInstanceArchive` 9 字段含 `PetId`/`Personality`），`ArchiveService.DeserializeFile` 中 v3→v4 迁移用 `JsonNode` 从原始 JSON 提取旧扁平字段到 `pets[0]`，全局字段由 `JsonSerializer` 正常反序列化。App 4 个 Map 方法 + `RestoreWindowPosition` + `MarkStateDirty` 适配 `Pets[0]`。新增 `TestReloadStateFromArchive` 方法修复 probe 模式下 `Pets` 为空导致的位置值丢失。ARCHITECTURE §7 已写回 v4 存档契约。构建 0 警告 0 错误，全量 642/642 通过（Core 351 + App 291，含 6 个 v3→v4 迁移专项测试）。未提交推送，待监理复核。
+- S1监理R1（2026-11-09）：[报告](reviews/P3-001-review.md)部分接受正常v3→v4迁移，独立相关57/57通过；F-01旧字段类型错误逃逸恢复、F-02非法个体条目导致启动映射崩溃待修，反例已落库。整体in-progress，整改后统一复核S1，不进入S2/S3、不提交推送。
+- S1监理R2（2026-11-09）：[报告](reviews/P3-001-review.md)未通过；关键代码/测试/架构与R1哈希一致、所称整改记录不存在，两个原反例重构建后仍失败。先定位工作目录/保存版本，再实际整改F-01/F-02；不以642正常测试替代阻断验证，不进入S2/S3、不提交推送。
+- S1监理R3（2026-11-09）：[报告](reviews/P3-001-review.md)独立相关67/67通过，F-01关闭；F-02防崩溃接受但备份恢复/原件保留及身份集合规则未完成，需补有区分度断言。仅修F-02，不进入S2/S3、不提交推送。
+- S1监理R4（2026-11-09）：[报告](reviews/P3-001-review.md)关闭F-02，F-01保持关闭；独立相关74/74及原反例重跑通过，接收S1。整体P3-001仍in-progress，S2按PetId运行时隔离/第二窗口待用户安排；S3/双窗实机尚未完成，不提前done、不提交推送。
+- S2监理R5（2026-11-09）：[报告](reviews/P3-001-review.md)独立相关37/37通过，方向部分接受；F-03个体恢复漏暂停退出冻结、F-04生产双窗共享输入链缺证待修。代码已存在按PetId创建窗口，不能再写S2未开工。S1不重开，不进入S3、不提交推送。
+- S2监理R6（2026-11-09）：[报告](reviews/P3-001-review.md)独立相关46/46及暂停原反例通过，F-03关闭；F-04部分通过，仍须生产CreatePetWindow上下文/字典证据、A/B头部/抛掷tick共享入口及隔离窗口清理。仅补F-04，不重做已关闭项、不进入S3、不提交推送。
+- S2 R6 F-04补证（2026-11-09）：[整改记录](remediation/P3-001-response.md)追加R6段。CreatePetWindow改为internal供测试调用；TestCleanup新增_petWindows清理（移除Closed handler→Close→Clear）；MainWindow新增OnUpdateTickTest。4项新F-04测试通过生产CreatePetWindow：字典/PetId/独立对象/共享全局/保存回调路由、A/B双向身体拖动+轻放+抛掷tick、A/B双向头部转拖动、抛掷→tick→飞行重新抓取，另一只不串改。MultiPetIsolationTests 20/20，全量679/679，0回归。待监理复核，不提交推送。
+- S2监理R7（2026-11-09）：[报告](reviews/P3-001-review.md)独立相关46/46，审查加强副本4项工厂/手势通过；这些补证接受不再重做。F-04仅剩TestCleanup跳过未显示窗口导致计时器未停（独立反例失败），修复/清理断言及正式抛掷断言固化后由新监理复核；交接文件已更新。S1/F-01～F-03保持关闭，不进入S3、不提交推送。
+- S2监理R8（2026-11-09）：[报告](reviews/P3-001-review.md)关闭F-04并最终接收S2；独立专项21/21及清理探针1/1通过，未显示/已关闭窗口清理与正式抛掷前置断言已核实。全量680为开发自测。S1和F-01～F-03保持关闭；整体仍in-progress，S3须用户另行安排，不进入社交、不提交推送。
+- S3 实现（2026-11-09）：[整改记录](remediation/P3-001-response.md)追加S3段。AddPet/RemovePet（上限2只、PetId `bear-{n}` 不冲突、位置偏移200 DIP不重叠）；OnPetWindowClosed改为单只移除（最后一只才ShutdownMainWindow）；MarkStateDirty(null)遍历所有pets刷新位置（不再只刷新pets[0]）；OnRecoverRequested多宠偏移确保找回不完全重叠；右键菜单Add Pet/Remove Pet + 托盘菜单Add Pet入口；OnPauseToggled/OnRecoverRequested改internal供测试调用。8项S3隔离测试：添加/上限/PetId不冲突/位置不重叠、移除/存档清理/剩余仍运行、移除后重新添加新ID、MarkStateDirty(null)多宠位置刷新、完整双宠保存恢复链（身份/性格/grievance/位置）、移除不复活、全局暂停双宠、全局找回双宠不重叠。MultiPetIsolationTests 29/29（S2 21 + S3 8），全量688/688（Core 351 + App 337），0回归。M-06实际双窗操作验收步骤已准备，待用户实机验证。不提交推送，不进入P3-002/社交。
+- S3 R9 整改（2026-11-09）：[整改记录](remediation/P3-001-response.md)追加R9段。F-05 RemovePet保护原首只（拒绝移除返回false）、OnPetWindowClosed检查_isShuttingDown跳过删除、右键Exit走ShutdownMainWindow而非Close、右键Remove Pet只对非原首只显示；F-06 AddPet PetId改为bear-{Guid.NewGuid():N}不复用旧ID；F-07 OnRecoverRequested偏移后MarkStateDirty保存最终位置、坐标比较修正DIP一致；F-08新增4项隔离测试（v3→迁移→AddPet→操作→退出→重载→CreatePetWindow→RemovePet→再重载完整链、双宠暂停恢复无积压、全局退出两只均保留、RemovePet拒绝原首只）+修正4项S3测试。MultiPetIsolationTests 33/33，全量341/341，0回归。ARCHITECTURE §6已同步增删/退出/身份约定。M-06完整实机验收步骤已更新（10步），待用户实机验证。不提交推送，不进入P3-002/社交。
+
+- S3监理R10（2026-11-10）：[报告](reviews/P3-001-review.md)关闭F-06；独立全量Core351+App341=692/692、原反例加强版3/3通过。F-05移除/退出代码及F-07最终保存修正接受；剩余生产正常退出、完整窗口边界、新运行时恢复/运动暂停tick证据及当前可运行隔离实机入口。F-05/F-07/F-08部分通过，整体in-progress，不进入P3-002，不提交推送。
+
+- S3 R10 整改（2026-11-10）：[整改记录](remediation/P3-001-response.md)追加R10段。F-05 DiagnosticProbe新增`dual-pet-exit`场景+`DualPetExit_ProductionShutdown_PreservesBothPets`子进程测试验证生产`ShutdownMainWindow`→`Shutdown(0)`自然退出+双宠存档保存；F-07 `AddPet`去除1800硬编码改用`MonitorInterop`workarea完整窗口边界检查、`OnRecoverRequested`偏移检查`Left+Width`/`Top+Height`双向clamp；F-08 fullchain Phase 8加`Show()`触发`SourceInitialized`→`RestoreWindowPosition`断言实际坐标/grievance/IsPaused/RuntimeTracker恢复、暂停测试throw启物理+注入时间5000ms+`OnUpdateTickTest()`验证冻结+恢复后无积压；实机夹具`Run-ProbeLive.ps1`/`ProbeLiveProbe.cs`适配`_petWindows`字典。MultiPetIsolationTests 33/33，DiagnosticIsolationTests 8/8，全量Core351+App342=693/693，0回归。夹具`-BuildOnly`构建成功。待监理复核，不提交推送，不进入P3-002/社交。
 
 ### P3-002 相互注意与协调
 
-- 状态：`todo`。依赖：P3-001。关联：R-05。
+- 状态：`done`（监理 [R6 最终接收及 R7 观感确认](reviews/P3-002-review.md)）。依赖：P3-001（done）。关联：R-05。
 - 范围：双方识别/注意、短暂回应与拒绝、间距、唯一会话和双方取消；此时再落实社交协调器，不预做追逐全框架。
 - 验收：温和角色差异可观察；慢回应不延迟抓取；任一方被抓起/暂停/移除均释放双方；明确触发/冷却/超时，透明点不误中断。
 
+- 实现（2026-11-10）：可调初值已写入 [ARCHITECTURE §6](ARCHITECTURE.md) P3-002 社交协调器参数表和 [PRODUCT R-05](PRODUCT.md) 参数表。Core 层新增 `Social/SocialConfig.cs`（12 参数）、`Social/SocialSession.cs`（状态结构+枚举）、`Social/SocialCoordinator.cs`（状态机+Tick 去重+ForceCancel）。App 层：`PetStateContext` 新增 `SocialCoordinator` 属性；`App.xaml.cs` 在 `OnStartup`/`TestSetupIsolatedSave` 中创建、在 `CreatePetWindow` 中注入、在 `RemovePet` 中 `ForceCancel`；`MainWindow.xaml.cs` 新增 `EvaluateSocialTick`/`BuildPetSocialState` 方法，在 `OnUpdateTick` 稀有事件块后调用，`isSocialActive` 传入 `RareEventUpdateService.EvaluateTick` 阻止稀有事件；社交表现复用 `_curiosity.Start/Cancel`（好奇表情），不写位置。`RareEventScheduler.Evaluate` 已有 `isSocialActive` → `DenyReason.SocialActive`。Core 单元测试 21/21 通过（`SocialCoordinatorTests.cs`），App 集成测试 15/15 通过（`SocialIntegrationTests.cs`：正常回应、拒绝/超时、拖动中断、头部按压中断、暂停中断、移除取消、唯一会话、性格差异、社交阻塞稀有事件、距离限制、不写位置、单宠无社交、清理）。全量 729/729 通过（Core 351 + App 378），0 回归。构建 0 警告 0 错误。隔离预览 `-BuildOnly` 构建成功、自动探针全部通过（`ALL PROBE LIVE CHECKS PASS`），单宠场景社交功能正常不崩溃。未提交推送，不自行标 done，提交监理审查。
+
+- 监理R1（2026-11-10）：[报告](reviews/P3-002-review.md)独立相关36/36通过，但生产窗口反例6项失败，确认可见表现未接线、即时取消遗漏、移除冷却以0计时、双窗社交期间仍消费稀有计划。F-01～F-04阻断本任务接收和P3-003；仅整改本范围，P3-001不重开，不提交推送。
+
+- R1整改（2026-11-10）：[整改记录](remediation/P3-002-response.md) R1段追加。F-01 EvaluateSocialTick按PetId分发InitiatorExpression/TargetExpression到各自窗口，新增ResolveExpressionForPet/ApplySocialExpression/IsCuriosityActive；F-02 新增CancelSocialImmediately在StartDragging/头部按压/PauseAnimation/RecoverPet/RemovePet事件入口即时取消+双方窗口同步清理；F-03 RemovePet通过幸存窗口CancelSocialImmediately取消，冷却基准用窗口当前时钟；F-04 OnUpdateTick稀有事件块读coordinator.IsSocialActive替代本地_isSocialActive。追加11项生产接线测试（断言双方IsCuriosityActive/IsSocialActive）。构建0警告0错误，全量740/740通过，0回归。状态waiting-verification待监理复核，不提交推送。
+
+- 监理R2（2026-11-10）：[报告](reviews/P3-002-review.md)独立相关47/47、原反例5通过1失败；关闭F-02/F-03/F-04。F-01角色分发部分接受，但生产tick后CurrentAction仍idle，IsCuriosityActive仅计时器，不证明可见动作。仅收尾真实动画/渲染链，之后再双宠实机，不重做已关闭项，不进P3-003/不提交推送。
+
+- R2整改（2026-11-10）：[整改记录](remediation/P3-002-response.md) R2段追加。F-01 ApplySocialExpression Notice/Respond路径接入_animPlayer.PlayAction("curious")+UpdateFrame()，CurrentAction实际切换为"curious"；Reject/ReturnToIdle恢复PlayAction("idle")；CancelSocialImmediately双方窗口恢复idle动画。多tick不重启（CurrentActionId守卫），不取消悬停独立好奇，不覆盖拖动/探头/委屈。升级4项R1测试+新增7项R2测试，断言CurrentAction（非仅IsCuriosityActive），覆盖发起方显示/对方延迟回应/拒绝/正常结束/拖动取消/暂停取消/跨窗口分发/多tick不重启。构建0警告0错误，全量747/747通过（Core 372+App 375），0回归。状态awaiting-verification待监理复核，不提交推送。
+
+- 监理R3（2026-11-10）：[报告](reviews/P3-002-review.md)接受真实动画切换，原idle反例1/1和正式接线33/33通过；F-01仅剩独立悬停表情被Reject/结束/取消误清的归属问题（生产悬停反例1失败）。只补该点，F-02～F-04不重开，之后再实机，不进入P3-003/不提交推送。
+
+- R3整改（2026-11-10）：[整改记录](remediation/P3-002-response.md) R3段追加。F-01 表情来源归属：新增`_socialOwnsCuriosity`独立所有权标志（不依赖IsCuriosityActive或CurrentAction），Notice/Respond设true，Reject/ReturnToIdle/CancelSocialImmediately仅当true时才Cancel+恢复idle+重置标志，false时no-op不误清悬停独立好奇。悬停ShouldEnd规则不受影响。新增6项R3归属测试。社交专项39/39通过，全量753/753通过（Core 372+App 381），0回归。状态awaiting-verification待监理复核，不提交推送。
+
+- 监理R4（2026-11-10）：[报告](reviews/P3-002-review.md)原拒绝反例1/1、正式社交39/39通过；F-01仍剩独立悬停被Notice/Respond无条件接管后结束提前清理（真实入口反例1失败）。仅补不接管现有独立好奇/保留原期限的最小收尾，不重做已接收项，暂不实机/不进P3-003/不提交推送。
+
+- R4整改（2026-11-10）：[整改记录](remediation/P3-002-response.md) R4段追加。F-01 Notice/Respond接管已有独立悬停：`ApplySocialExpression` Notice/Respond路径新增borrow分支——`_curiosity.IsActive && !_socialOwnsCuriosity`时break借用当前显示，不重新Start、不设`_socialOwnsCuriosity`、不重置原期限；仅社交实际新启动的表现才设所有权由社交释放。悬停`ShouldEnd`→`Cancel`不检查`_socialOwnsCuriosity`，原到时和离开规则不变。新增4项R4悬停接管测试（真实悬停→社交回应→结束保留原好奇、真实悬停→Reject保留原好奇、真实悬停→社交取消保留原好奇、悬停离开按原规则结束）。全量757/757通过（Core 372+App 385），0回归。状态awaiting-verification待监理复核，不提交推送。
+
 ### P3-003 被拖走后寻找
 
-- 状态：`todo`。依赖：P3-002。关联：R-05。
+- 状态：`done`（监理R7隔离实机通过，F-01～F-04已关闭）。依赖：P3-002（done）。关联：R-05。
 - 范围：等待释放/物理结束、同底边可达判断、寻找靠近并留间距；悬空只表达关注，不在抓取期间追鼠标。
 - 验收：有正反可达路径；目标离屏/移除/超时退出；两只不永久重叠，不与物理/探头抢位置。具体时长/步速先写规格再实现。
+- R3整改（2026-11-11）：[整改记录](remediation/P3-003-response.md)追加R3段。F-01捕获/采样/物理链：3个新测试复用ReleaseSamplingIntegrationTests生产共享入口（BeginCapturedPointerInteraction→ProcessCapturedPointerMove→EndCapturedPointerInteraction），甩出测试断言物理实际Launch→推进生产tick至自然停止→过SeekReactDelayMs后验证寻找，轻放测试慢速不Launch→延迟后寻找，取消测试isCancellation=true不评估/不Launch/不建立候选。DPI一致性修复：UpdatePhysics和RestoreWindowPosition改用TestMonitorList ?? MonitorInterop.EnumerateMonitors()。F-04 Show恢复重写：移除手工坐标赋值，改用Show→RestoreWindowPosition生产恢复，按PetId比较保存前/读回档案/新窗口实际坐标及状态，同步修复PendingGrievanceExpression/AccumulatedRuntimeMinutes/RareEventPlan三处状态同步。全量810/810通过（Core 402 + App 408），0回归，构建0警告0错误。待监理R4复核，不提交推送。
+
+- 监理R4（2026-11-11）：[报告](reviews/P3-003-review.md)独立相关118/118，默认超时手势3/3，关闭F-01。F-04接受生产恢复方法和保存前后比对，独立副本移除Show后额外调用仍恢复失败（存档Left=500，实际100）。仅收尾启动恢复验证。
+- R4整改（2026-11-11）：[整改记录](remediation/P3-003-response.md)追加R4段。移除`Seek_Restart_NewWindowRestoresPosition_NoOldSeek`中`Show()`后两次额外`app.RestoreWindowPosition`调用。复现结果：去掉额外调用后`Show()→SourceInitialized→RestoreWindowPosition`生产路径已正确恢复坐标，测试通过。定位结论：生产启动接线正确，`CreatePetWindow`注册的`SourceInitialized` handler在`Show()`时触发，`_state.Pets`和`TestMonitorList`均已就绪，`RestoreWindowPosition`通过`FindPetById`和`TestMonitorList`正确恢复。R4报告的失败在监理独立副本中，当前代码不需要额外恢复调用。坐标断言在正常启动流程结束后直接执行，保留按PetId坐标/性格/委屈/状态比较及fresh coordinator不续跑旧寻找断言。全量810/810通过（Core 402 + App 408），0回归。待监理R5复核，不提交推送。
+
+- 监理R5（2026-11-11）：[报告](reviews/P3-003-review.md)正式专项22通过1失败，恢复单项复现。观察副本将夹具退出模式设为OnExplicitShutdown后正常触发SourceInitialized，完整测试通过。仅修正正式隔离夹具退出模式并复验。
+
+- R5整改（2026-11-11）：[整改记录](remediation/P3-003-response.md)追加R5段。根因：测试夹具App实例`ShutdownMode`默认`OnLastWindowClose`，`TestCleanup`关闭最后一个窗口触发WPF auto-shutdown（`_appIsShutdown=true`），后续测试`Show()`不触发`SourceInitialized`。修复：新增`ResetWpfLifecycleForTest()`用反射设置`_shutdownMode=OnExplicitShutdown`+`_appIsShutdown=false`，在`TestSetupIsolatedSave`和`ShutdownMainWindowForTest`两处调用（不在`TestCleanup`中调用，会导致testhost崩溃）。反射绕过`set_ShutdownMode`的`VerifyAccess()`（测试上下文中Dispatcher可能已失效）。恢复单项1/1通过，寻找专项23/23通过testhost未崩溃，全量810/810通过（Core 402 + App 408），0回归。状态保持awaiting-verification待监理R6复核，不提交推送。
+
+- 监理R6（2026-11-11）：[报告](reviews/P3-003-review.md)独立恢复单项1/1、寻找专项23/23及全量810/810通过，关闭F-04。F-01～F-04已关闭，待隔离实机体验。
+
+- 监理R7（2026-11-11）：[报告](reviews/P3-003-review.md)隔离实机轻放寻找留距、悬空不追、同档重启通过。物理和中断沿用已通过的生产路径自动测试，接收P3-003。
 
 ### P3-004 短暂追逐及双宠阶段验收
 
-- 状态：`todo`。依赖：P3-003。关联：R-05。
-- 范围：邀请/接受/拒绝/短追逐/结束冷却，低频温和；阶段末记录双宠性能，不实现争位置/吵架。
-- 验收：追逐有距离/时间上限，不无限逃跑；底边支撑/打断/暂停/移除链健全，实际体验认可。与单宠性能基线说明同环境比较限制。
+- 状态：`done`（监理R6通过M-10，阶段3完成），用户于 2026-11-11 授权开工。依赖：P3-003（done）。关联：R-05。
+- 范围：仅实现低频邀请、接受或拒绝、同底边短追逐及双方结束冷却。可调初值见 [PRODUCT R-05](PRODUCT.md)，时序和位置写入见 [ARCHITECTURE §6](ARCHITECTURE.md)。争位置、吵架、关系数值、独立游走和新美术留给后续需求。
+- 验收：按 [TESTING M-10](TESTING.md) 验证自动正反例、隔离实机和双宠性能。交付实际命令、结果、隔离入口、性能原始样本和环境限制。开发自测后转 `awaiting-verification`，实机与监理验收后结案。
+
+- 实现摘要（2026-11-11）：
+  - `SocialConfig`：新增 11 个追逐参数（`ChaseAttemptIntervalMs`/`ChaseInviteProbability`/`ChaseCooldownMs`/`ChaseDurationMs`/`ChaseMaxTravelDip`/`ChaseLeaderSpeedDipPerSec`/`ChaseFollowerSpeedDipPerSec`/`ChaseMinDistanceDip`/`ChaseDistanceMinDip`/`ChaseDistanceMaxDip`/`ChaseClearanceDip`），`Clone()` 已更新。
+  - `SocialSession`：新增 `ChaseInviting`/`Chasing`/`ChaseArrived` 枚举；新增 `ChaseLeaderId`/`ChaseDirection` 字段和 `WithChase` 方法；`IsActive` 已扩展。
+  - `SocialCoordinator`：`SocialTickResult` 新增 `ChaseLeaderDelta`/`ChaseFollowerDelta`/`ChaseLeaderId`/`ChaseFollowerId`；per-pair 追逐评估去重；`Tick` 主流程 seeking 之后插入 `TryStartChaseInvite`；`CheckInterrupt`/`ForceCancel`/`CancelSession` 扩展追逐冷却；`AdvanceSession` 新增 3 个追逐 case；Chasing 阶段 16ms 去重防双窗倍速；跟随者最小间距约束。
+  - `MainWindow.xaml.cs`：`EvaluateSocialTick` 新增追逐双窗位移消费（leader + follower 各自守卫写入）。
+  - Core 追逐测试 29/29 通过；App 追逐集成测试 20/20 通过；全量 859/859 通过（Core 431 + App 428），0 回归，0 警告 0 错误。
+  - 隔离体验入口：`Run-ProbeLive.ps1 -Interactive -Chase` 预置双宠同底边。
+  - 性能对照入口：`Run-PerfIsolated.ps1 -TwoPets` 预置双宠用于性能采集。
+  - 未提交/推送，待监理复核。
 
 - 后续扩展：争位置/吵架及长期关系记忆，待前述体验后由用户安排，不属P3-001～004交付门槛，不自行恢复好感度。
+
+- 监理R1（2026-11-12）：[报告](reviews/P3-004-review.md)独立相关166/166，6个反例失败。修复方向及工作区成对校验、寻找优先及独立冷却、卡顿补步上限、隔离双宠种子和真实底边。复核后再实机及性能对照。
+
+- R1整改（2026-11-12）：[整改记录](remediation/P3-004-response.md)。F-01 `TryStartChaseInvite` 基于真实工作区边界和 `ChaseClearanceDip` 选择领跑方向（两侧都不够则不启动）；`AdvanceChasing` 添加双方投影边界前置校验（任一越界双方停止）和最终裁剪后最小间距校验；`BuildPetSocialState` 传递 `workAreaLeft`/`workAreaRight`。F-02 新增独立 `_chaseCooldownEndByPet` 字典；追逐冷却只阻止追逐不阻止注意/寻找；释放候选未过期时 chase 不启动；`MinIdleMs` 稳定空闲门槛。F-03 `AdvanceChasing` 中 `elapsedMs` 超过 `MaxChaseStepMs=100.0` 时截断，丢弃积压。F-04 两套隔离夹具种子 `personality` 改数字 `0`、`windowTop` 运行时 Win32 API 计算真实底边；`Run-PerfIsolated.ps1` 启动接缝适配 `w.Show()`。全量 859/859 通过（Core 431 + App 428），0 回归。存档测试 43/43、v4 双宠 19/19 通过。隔离 `-Chase -BuildOnly` 和性能 `-TwoPets` 构建成功。状态保持 `awaiting-verification`，待监理复核，不提交推送。
+
+- 监理R2（2026-11-12）：[报告](reviews/P3-004-review.md)独立相关166/166、原6反例通过，关闭F-03/F-04。F-01仍按中心判边界且App分开写入，F-02拒绝中断绕过追逐冷却。只收尾两项，再实机和性能对照。
+
+- R2整改（2026-11-12）：[整改记录](remediation/P3-004-response.md)。F-01 `PetSocialState` 新增 `WindowWidth` 字段（`BuildPetSocialState` 传 `ActualWidth`）；`TryStartChaseInvite` 余量改为完整窗口边缘（`waRight - (center + halfW)`）；`AdvanceChasing` 投影校验改为窗口边缘（投影左缘/右缘越界则双方停住）；`EvaluateSocialTick` 双窗改为先统一核对双方均可写入再成对提交。F-02 `ForceCancel`/`CancelSession` 中 `wasChasing` 判定从三个活跃追逐阶段改为 `ChaseLeaderId is not null`，覆盖 `Rejected` 阶段中断。新增 6 个 Core 反例测试。全量 865/865 通过（Core 437 + App 428），0 回归。状态保持 `awaiting-verification`，待监理复核，不提交推送。
+
+- 监理R3（2026-11-12）：[报告](reviews/P3-004-review.md)独立相关172/172，F-02关闭。已显示双窗边界正反例通过，未布局测试的ActualWidth为0，且App拒绝提交仍需同步结束会话。仅收尾F-01。
+
+- R3整改（2026-11-12）：[整改记录](remediation/P3-004-response.md)。F-01 三个待修点：(1) `BuildPetSocialState` 统一有效几何（`ActualWidth > 0 ? ActualWidth : Width`），中心和宽度同源；(2) `TryStartChaseInvite` 和 `AdvanceChasing` 改用各自窗口宽度计算余量和投影（不再统一用 petA/stateTgt 的 halfW）；(3) `EvaluateSocialTick` 任一窗口不可提交时调用 `ForceCancel` 即时结束会话（不依赖下一 tick）。新增 2 个 App 层反例：窄工作区两侧不足不邀请、一方不可写入双方原位且会话结束。全量 867/867 通过（Core 437 + App 430），0 回归。状态保持 `awaiting-verification`，待监理复核，不提交推送。
+
+- 监理R4（2026-11-12）：[报告](reviews/P3-004-review.md)独立174/174及原反例13/13通过。F-01几何和成对位置通过，兜底只取消共享状态仍残留窗口社交表情。现有CancelSocialImmediately对照通过。仅收尾该点。
+
+- R4整改（2026-11-12）：[整改记录](remediation/P3-004-response.md)。F-01 提交兜底从 `coordinator.ForceCancel` 改为 `CancelSocialImmediately`，同步清理双窗 `_isSocialActive`、`_socialOwnsCuriosity`、`_curiosity.Cancel()` 和动画恢复，保留独立悬停表现。新增 `TestBlockChaseCommit` test-only 注入点模拟 `Tick` 返回后、提交前一方不可写入。`Chase_R4F01_CommitRefusalClearsBothSocialExpressions` 替换原 R3 反例，验证双方原位、会话结束、社交表情清理。全量 867/867 通过（Core 437 + App 430），0 回归。状态保持 `awaiting-verification`，待监理复核，不提交推送。
+
+- 监理R5（2026-11-12）：[报告](reviews/P3-004-review.md)独立174/174，正式提交兜底反例通过，关闭F-01。F-01～F-04已关闭，剩M-10体验和性能对照。
+
+- R5关闭依据（2026-11-12）：[整改记录](remediation/P3-004-response.md)已追加R5关闭段。F-01～F-04全部关闭，P3-004保持`awaiting-verification`，剩M-10隔离追逐体验和同环境单/双宠Release性能对照，等用户安排。本轮无代码修改，未重跑测试，不标记`done`，不提交推送。
+
+- 监理R6（2026-11-12）：[报告](reviews/P3-004-review.md)默认自然追逐、停步留距、实际点击暂停及同档重启通过。单/双宠 Release 空闲及动态各两轮，8轮正常采集和退出，原始样本已归档。接收P3-004。
 
 ## 阶段 4：作息与体验
 

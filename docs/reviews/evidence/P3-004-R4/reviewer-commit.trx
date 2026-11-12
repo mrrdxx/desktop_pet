@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="95a09048-bca3-4086-83a4-5abdf82cd104" name="mrrdxx@毛茸茸的小熊 2026-11-12 15:16:19" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T15:16:19.4415749+08:00" queuing="2026-11-12T15:16:19.4415751+08:00" start="2026-11-12T15:16:17.5307722+08:00" finish="2026-11-12T15:16:19.4465874+08:00" />
+  <TestSettings name="default" id="c63f14ba-2106-4dc7-be3d-94eb7eebb7a9">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_15_16_19" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f7727432-5fd7-426c-9887-7a595129336c" testId="089fb331-cf05-b4c4-f952-a5aa0fe15fd3" testName="Reviewer_CommitRefusalClearsBothSocialExpressions" computerName="毛茸茸的小熊" duration="00:00:00.8345314" startTime="2026-11-12T15:16:18.3463612+08:00" endTime="2026-11-12T15:16:19.2757469+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7727432-5fd7-426c-9887-7a595129336c">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。Follower still owns social curiosity after the commit was rejected.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_CommitRefusalClearsBothSocialExpressions() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r4\guard-probe\Tests.cs:line 5217&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_CommitRefusalClearsBothSocialExpressions" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r4\guard-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="089fb331-cf05-b4c4-f952-a5aa0fe15fd3">
+      <Execution id="f7727432-5fd7-426c-9887-7a595129336c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r4\guard-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_CommitRefusalClearsBothSocialExpressions" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="089fb331-cf05-b4c4-f952-a5aa0fe15fd3" executionId="f7727432-5fd7-426c-9887-7a595129336c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

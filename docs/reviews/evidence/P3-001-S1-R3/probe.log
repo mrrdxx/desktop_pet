@@ -1,0 +1,2 @@
+legacy-wrong-type: load returned backup=True pets=1 left=321 grievance=67 corrupted=True
+null-pet: load returned backup=False pets=1 left=100 grievance=50 corrupted=False

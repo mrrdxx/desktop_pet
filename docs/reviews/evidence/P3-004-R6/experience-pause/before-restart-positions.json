@@ -1,0 +1,14 @@
+[
+  {
+    "petId": "bear-1",
+    "personality": 0,
+    "windowLeft": 964,
+    "windowTop": 898.6666666666666
+  },
+  {
+    "petId": "bear-2",
+    "personality": 1,
+    "windowLeft": 1084.6666666666665,
+    "windowTop": 898.6666666666666
+  }
+]

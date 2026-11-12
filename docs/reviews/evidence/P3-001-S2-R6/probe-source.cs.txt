@@ -1,0 +1,15 @@
+using System.Reflection;
+using DesktopPet.Core.Persistence;
+using DesktopPet.Core.Emotion;
+class Program {
+[STAThread] static void Main() {
+ var baseline=new DateTime(2026,11,8,12,0,0,DateTimeKind.Utc);var now=baseline.AddHours(12);
+ var pet=new PetInstanceArchive {PetId="bear-1",Grievance=90,LastDecayUtc=baseline.ToString("O")};
+ var state=new PetStateArchive {IsPaused=true,Pets=new(){pet}};
+ var flags=BindingFlags.Static|BindingFlags.NonPublic;
+ var legacy=((EmotionDecayAccumulator,GrievanceExpressionState,CornerTracker))typeof(DesktopPet.App.App).GetMethod("MapArchiveToEmotionObjects",flags)!.Invoke(null,new object[]{state,now})!;
+ var perPet=((EmotionDecayAccumulator,GrievanceExpressionState,CornerTracker))typeof(DesktopPet.App.App).GetMethod("MapArchiveToEmotionObjectsForPet",flags)!.Invoke(null,new object[]{pet,true,now})!;
+ legacy.Item1.AdvanceTo(now);perPet.Item1.AdvanceTo(now);
+ Console.WriteLine($"PAUSED_RESTORE expected=90 legacy={legacy.Item1.GrievanceInt} perPet={perPet.Item1.GrievanceInt} legacyBase={legacy.Item1.LastDecayUtc:O} perPetBase={perPet.Item1.LastDecayUtc:O}");
+}
+}

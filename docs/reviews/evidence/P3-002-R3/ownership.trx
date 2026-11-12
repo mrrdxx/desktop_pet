@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3481b7d7-7d11-4c8b-9dbe-7c0a22d9c53c" name="mrrdxx@毛茸茸的小熊 2026-11-10 13:50:58" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-10T13:50:58.7876784+08:00" queuing="2026-11-10T13:50:58.7876788+08:00" start="2026-11-10T13:50:56.8965380+08:00" finish="2026-11-10T13:50:58.7944895+08:00" />
+  <TestSettings name="default" id="30a1ffb6-b7bd-4a81-9602-02413353e514">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-10_13_50_58" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="ca20b4c1-19a1-4023-a5c5-666b99753089" testId="43593170-9682-2147-139a-2839deed912c" testName="Reviewer_SocialReject_MustPreserveIndependentTargetHover" computerName="毛茸茸的小熊" duration="00:00:00.8875072" startTime="2026-11-10T13:50:57.5597619+08:00" endTime="2026-11-10T13:50:58.5478039+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca20b4c1-19a1-4023-a5c5-666b99753089">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;curious&gt;，实际为: &lt;idle&gt;。Social reject must not cancel independent hover before its normal lifetime ends.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_SocialReject_MustPreserveIndependentTargetHover() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r3\ownership\SocialIntegrationTests.cs:line 1746&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_SocialReject_MustPreserveIndependentTargetHover" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-002-r3\ownership\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="43593170-9682-2147-139a-2839deed912c">
+      <Execution id="ca20b4c1-19a1-4023-a5c5-666b99753089" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r3\ownership\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_SocialReject_MustPreserveIndependentTargetHover" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="43593170-9682-2147-139a-2839deed912c" executionId="ca20b4c1-19a1-4023-a5c5-666b99753089" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

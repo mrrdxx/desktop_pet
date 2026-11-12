@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 4,
+  "lastSavedUtc": "2026-11-10T01:22:12.3932302Z",
+  "isPaused": false,
+  "accumulatedRuntimeMinutes": 0,
+  "rareEventPlan": null,
+  "pets": [
+    {
+      "petId": "bear-1",
+      "personality": 0,
+      "windowLeft": 150,
+      "windowTop": 120,
+      "savedDeviceName": null,
+      "grievance": 50,
+      "lastDecayUtc": "2026-11-10T01:22:12.3828408Z",
+      "pendingGrievanceExpression": false,
+      "grievanceExpressionDate": null
+    },
+    {
+      "petId": "bear-2",
+      "personality": 1,
+      "windowLeft": 350,
+      "windowTop": 220,
+      "savedDeviceName": null,
+      "grievance": 55,
+      "lastDecayUtc": "2026-11-10T01:22:12.3849229Z",
+      "pendingGrievanceExpression": false,
+      "grievanceExpressionDate": null
+    }
+  ]
+}

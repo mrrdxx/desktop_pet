@@ -1,0 +1,30 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\App.xaml.cs",
+    "Hash": "1DD3657EF661D2BB4982AEC73385B5D398E57B68898B987B082DB8D63D3D09D7"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "D3479FAFB79AC1DA4183BCB9EB491C047AE700B4B159CE4242EABFBCC45F0285"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Social\\SocialCoordinator.cs",
+    "Hash": "8F1DE56F9D45FEBDDE97E3BBBC3CEC2A17E173F9C11DE4D1D4C7F95C5BBE0C71"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Social\\SocialConfig.cs",
+    "Hash": "EB58E86FC80E3D41113C81AD52AE8489A60651CCFDF889721E8276ED3FCDD7B3"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\Integration\\Collect-Perf.ps1",
+    "Hash": "474C2D1A3501DE898251669264915AA174DC2E293E4113231BDFD9FD6248DD31"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\perf-baseline\\run-bb7ac89c\\isolated-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll",
+    "Hash": "287F9774B3496CB82BD3BD67F20DD55F46FBF3D3B60496856EB7B9B886C48E8E"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p3-004-m10\\control-app\\bin\\Release\\net10.0-windows\\DesktopPet.dll",
+    "Hash": "E8213F3B3C559C50B5C2E620AB9D063341C7297E8E471C4D49CF965E230D7B38"
+  }
+]

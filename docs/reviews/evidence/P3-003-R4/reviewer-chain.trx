@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="bd9045c3-1b36-4335-856a-b14914a5be37" name="mrrdxx@毛茸茸的小熊 2026-11-11 14:56:09" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-11T14:56:09.1347897+08:00" queuing="2026-11-11T14:56:09.1347902+08:00" start="2026-11-11T14:56:06.5380433+08:00" finish="2026-11-11T14:56:09.1451437+08:00" />
+  <TestSettings name="default" id="baf6c6f8-2b6e-4630-b762-a8645b119b83">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-11_14_56_09" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="785cb70e-b603-4038-85dd-e6186446f5d5" testId="467d1605-5315-7196-4a67-b990d81bbb1e" testName="Seek_CancelRelease_RealCaptureChain_NoSeeking" computerName="毛茸茸的小熊" duration="00:00:00.0228476" startTime="2026-11-11T14:56:08.8856058+08:00" endTime="2026-11-11T14:56:08.9170491+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="785cb70e-b603-4038-85dd-e6186446f5d5" />
+    <UnitTestResult executionId="bea8cc0d-11cf-4ba5-9c3a-147b6d34423b" testId="c2ab2d1c-2241-61c6-f1a8-24c5fd0de757" testName="Seek_ThrownRelease_RealCaptureChain_WaitsForPhysicsStop_ThenSeeks" computerName="毛茸茸的小熊" duration="00:00:00.0903505" startTime="2026-11-11T14:56:08.7559098+08:00" endTime="2026-11-11T14:56:08.8556693+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bea8cc0d-11cf-4ba5-9c3a-147b6d34423b" />
+    <UnitTestResult executionId="32380e78-bb15-42c2-82e2-c3d59741f4bf" testId="1266a602-c60c-6b51-612c-54ec33a0ad61" testName="Seek_Restart_NewWindowRestoresPosition_NoOldSeek" computerName="毛茸茸的小熊" duration="00:00:01.2824615" startTime="2026-11-11T14:56:07.3370725+08:00" endTime="2026-11-11T14:56:08.7484886+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32380e78-bb15-42c2-82e2-c3d59741f4bf">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。预期值 &lt;500&gt; 和实际值 &lt;100&gt; 之间的差不应大于 &lt;1&gt;。Pet A restored Left must match archived value (±1 DIP).</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Seek_Restart_NewWindowRestoresPosition_NoOldSeek() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r4\probe\SocialIntegrationTests.cs:line 3613&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bb48753a-2199-4a35-9318-fd26a85bfc2f" testId="7df8ac5e-045e-8f6e-2f9f-176f41d3d4a6" testName="Seek_GentleRelease_RealCaptureChain_SeeksAfterDelay" computerName="毛茸茸的小熊" duration="00:00:00.0214190" startTime="2026-11-11T14:56:08.8564152+08:00" endTime="2026-11-11T14:56:08.8852507+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bb48753a-2199-4a35-9318-fd26a85bfc2f" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Seek_GentleRelease_RealCaptureChain_SeeksAfterDelay" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r4\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="7df8ac5e-045e-8f6e-2f9f-176f41d3d4a6">
+      <Execution id="bb48753a-2199-4a35-9318-fd26a85bfc2f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r4\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_GentleRelease_RealCaptureChain_SeeksAfterDelay" />
+    </UnitTest>
+    <UnitTest name="Seek_Restart_NewWindowRestoresPosition_NoOldSeek" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r4\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="1266a602-c60c-6b51-612c-54ec33a0ad61">
+      <Execution id="32380e78-bb15-42c2-82e2-c3d59741f4bf" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r4\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_Restart_NewWindowRestoresPosition_NoOldSeek" />
+    </UnitTest>
+    <UnitTest name="Seek_CancelRelease_RealCaptureChain_NoSeeking" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r4\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="467d1605-5315-7196-4a67-b990d81bbb1e">
+      <Execution id="785cb70e-b603-4038-85dd-e6186446f5d5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r4\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_CancelRelease_RealCaptureChain_NoSeeking" />
+    </UnitTest>
+    <UnitTest name="Seek_ThrownRelease_RealCaptureChain_WaitsForPhysicsStop_ThenSeeks" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r4\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="c2ab2d1c-2241-61c6-f1a8-24c5fd0de757">
+      <Execution id="bea8cc0d-11cf-4ba5-9c3a-147b6d34423b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r4\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_ThrownRelease_RealCaptureChain_WaitsForPhysicsStop_ThenSeeks" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="467d1605-5315-7196-4a67-b990d81bbb1e" executionId="785cb70e-b603-4038-85dd-e6186446f5d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c2ab2d1c-2241-61c6-f1a8-24c5fd0de757" executionId="bea8cc0d-11cf-4ba5-9c3a-147b6d34423b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1266a602-c60c-6b51-612c-54ec33a0ad61" executionId="32380e78-bb15-42c2-82e2-c3d59741f4bf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7df8ac5e-045e-8f6e-2f9f-176f41d3d4a6" executionId="bb48753a-2199-4a35-9318-fd26a85bfc2f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="4" executed="4" passed="3" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

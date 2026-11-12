@@ -1,0 +1,875 @@
+using System.Reflection;
+using DesktopPet.App;
+using DesktopPet.App.Platform;
+using DesktopPet.App.Persistence;
+using DesktopPet.Core.Emotion;
+using DesktopPet.Core.Events;
+using DesktopPet.Core.Persistence;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P3-001-S2: Multi-pet isolation tests.
+///
+/// Verifies that dragging, throwing, or changing grievance on one pet
+/// does not affect the other pet's state. Each pet has independent
+/// emotion objects (EmotionDecayAccumulator, GrievanceExpressionState,
+/// CornerTracker) while rare-event objects remain shared/global.
+///
+/// These tests do NOT create real windows or require a display. They
+/// verify the isolation at the PetStateContext + MarkStateDirty routing
+/// level, which is the core S2 guarantee.
+/// </summary>
+[TestClass]
+public class MultiPetIsolationTests
+{
+    // ════════════════════════════════════════════════════════════════
+    // PetStateContext PetId routing
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Two PetStateContexts with different PetIds and different emotion
+    /// objects: changing grievance on A does not change B.
+    /// </summary>
+    [TestMethod]
+    public void S2_TwoContexts_DifferentPetIds_GrievanceIsolated()
+    {
+        var accA = new EmotionDecayAccumulator(50, DateTime.UtcNow);
+        var accB = new EmotionDecayAccumulator(50, DateTime.UtcNow);
+        var exprA = new GrievanceExpressionState();
+        var exprB = new GrievanceExpressionState();
+
+        var ctxA = new PetStateContext
+        {
+            PetId = "bear-1",
+            EmotionAccumulator = accA,
+            GrievanceExpression = exprA,
+        };
+        var ctxB = new PetStateContext
+        {
+            PetId = "bear-2",
+            EmotionAccumulator = accB,
+            GrievanceExpression = exprB,
+        };
+
+        // Simulate grievance increase on pet A (e.g. from dragging).
+        accA.AddGrievance(10);
+
+        Assert.AreEqual(60, accA.GrievanceInt, "Pet A grievance should increase.");
+        Assert.AreEqual(50, accB.GrievanceInt, "Pet B grievance must remain unchanged.");
+        Assert.AreNotSame(ctxA.EmotionAccumulator, ctxB.EmotionAccumulator,
+            "Each context must have its own EmotionAccumulator instance.");
+        Assert.AreNotSame(ctxA.GrievanceExpression, ctxB.GrievanceExpression,
+            "Each context must have its own GrievanceExpressionState instance.");
+    }
+
+    /// <summary>
+    /// Two PetStateContexts share the same RuntimeTracker and
+    /// RareEventScheduler (global objects).
+    /// </summary>
+    [TestMethod]
+    public void S2_TwoContexts_SharedGlobalObjects()
+    {
+        var tracker = new EffectiveRuntimeTracker();
+        var scheduler = new RareEventScheduler();
+
+        var ctxA = new PetStateContext
+        {
+            PetId = "bear-1",
+            RuntimeTracker = tracker,
+            RareEventScheduler = scheduler,
+        };
+        var ctxB = new PetStateContext
+        {
+            PetId = "bear-2",
+            RuntimeTracker = tracker,
+            RareEventScheduler = scheduler,
+        };
+
+        Assert.AreSame(ctxA.RuntimeTracker, ctxB.RuntimeTracker,
+            "RuntimeTracker must be the same instance (global).");
+        Assert.AreSame(ctxA.RareEventScheduler, ctxB.RareEventScheduler,
+            "RareEventScheduler must be the same instance (global).");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // MarkStateDirty routing by PetId
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// MarkStateDirty with a specific PetId routes to the correct
+    /// PetInstanceArchive, not pets[0].
+    /// </summary>
+    [TestMethod]
+    public void S2_MarkStateDirty_RoutesByPetId_ToCorrectArchive()
+    {
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+            new() { PetId = "bear-2", Grievance = 50, WindowLeft = 300, WindowTop = 300 },
+        };
+
+        // Simulate: pet B's grievance changes to 70.
+        var accB = new EmotionDecayAccumulator(70, DateTime.UtcNow);
+        var exprB = new GrievanceExpressionState();
+
+        // Use the per-pet mapping to write to bear-2's archive entry.
+        App.MapEmotionObjectsToArchive(state, state.Pets[1], accB, exprB);
+
+        Assert.AreEqual(70, state.Pets[1].Grievance,
+            "Pet B's grievance should be 70 in the archive.");
+        Assert.AreEqual(50, state.Pets[0].Grievance,
+            "Pet A's grievance must remain 50 — not affected by pet B's change.");
+    }
+
+    /// <summary>
+    /// FindPetById returns the correct pet, not just pets[0].
+    /// </summary>
+    [TestMethod]
+    public void S2_FindPetById_ReturnsCorrectPet()
+    {
+        // WPF only allows one Application instance per AppDomain.
+        // Reuse the existing instance if one was already created by a
+        // prior test; otherwise create a new one.
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        var createdNew = System.Windows.Application.Current == app;
+        try
+        {
+            if (createdNew)
+                app.TestSetupIsolatedSave(System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}"));
+            else
+            {
+                // Reuse existing instance — just set up isolated save state.
+                app.TestSetupIsolatedSave(System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}"));
+            }
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50 },
+                new() { PetId = "bear-2", Grievance = 60 },
+            };
+
+            var petA = app.FindPetById("bear-1");
+            var petB = app.FindPetById("bear-2");
+            var petNull = app.FindPetById("bear-999");
+
+            Assert.IsNotNull(petA, "Should find bear-1.");
+            Assert.AreEqual("bear-1", petA!.PetId);
+            Assert.AreEqual(50, petA.Grievance);
+
+            Assert.IsNotNull(petB, "Should find bear-2.");
+            Assert.AreEqual("bear-2", petB!.PetId);
+            Assert.AreEqual(60, petB.Grievance);
+
+            Assert.IsNull(petNull, "Non-existent PetId should return null.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// MarkStateDirty with petId="bear-2" writes position to bear-2's
+    /// archive entry, not bear-1's.
+    /// </summary>
+    [TestMethod]
+    public void S2_MarkStateDirty_PetBPosition_DoesNotOverwritePetA()
+    {
+        // WPF only allows one Application instance per AppDomain.
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", WindowLeft = 100, WindowTop = 100, Grievance = 50 },
+                new() { PetId = "bear-2", WindowLeft = 300, WindowTop = 300, Grievance = 50 },
+            };
+
+            // Simulate pet B being dragged to a new position.
+            // We can't create a real MainWindow in a unit test without a display,
+            // but we can verify that MarkStateDirty with petId="bear-2" does not
+            // touch bear-1's archive entry when bear-2's window is not found
+            // (position stays at archive value).
+            app.MarkStateDirty("bear-2");
+
+            // Pet A's position must be unchanged.
+            Assert.AreEqual(100, app.TestState!.Pets[0].WindowLeft,
+                "Pet A's WindowLeft must not be affected by pet B's MarkStateDirty.");
+            Assert.AreEqual(100, app.TestState.Pets[0].WindowTop,
+                "Pet A's WindowTop must not be affected by pet B's MarkStateDirty.");
+            Assert.AreEqual(50, app.TestState.Pets[0].Grievance,
+                "Pet A's Grievance must not be affected by pet B's MarkStateDirty.");
+
+            // Pet B's position should also be unchanged (no window to read from).
+            Assert.AreEqual(300, app.TestState.Pets[1].WindowLeft,
+                "Pet B's WindowLeft should remain at archive value (no window).");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Emotion mapping isolation
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// MapEmotionObjectsToArchive with a specific PetInstanceArchive
+    /// only writes to that pet, not pets[0].
+    /// </summary>
+    [TestMethod]
+    public void S2_MapEmotion_PerPet_OnlyWritesTargetPet()
+    {
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50, LastDecayUtc = "2026-01-01T00:00:00Z" },
+            new() { PetId = "bear-2", Grievance = 50, LastDecayUtc = "2026-01-01T00:00:00Z" },
+        };
+
+        // Pet B gets dragged → grievance increases.
+        var accB = new EmotionDecayAccumulator(65, DateTime.UtcNow);
+        var exprB = new GrievanceExpressionState();
+
+        App.MapEmotionObjectsToArchive(state, state.Pets[1], accB, exprB);
+
+        Assert.AreEqual(50, state.Pets[0].Grievance,
+            "Pet A grievance must remain 50.");
+        Assert.AreEqual(65, state.Pets[1].Grievance,
+            "Pet B grievance should be 65.");
+        Assert.AreEqual("2026-01-01T00:00:00Z", state.Pets[0].LastDecayUtc,
+            "Pet A's LastDecayUtc must remain unchanged.");
+    }
+
+    /// <summary>
+    /// The old single-pet MapEmotionObjectsToArchive overload still
+    /// writes to pets[0] for backward compatibility.
+    /// </summary>
+    [TestMethod]
+    public void S2_MapEmotion_LegacyOverload_StillWritesPets0()
+    {
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50 },
+            new() { PetId = "bear-2", Grievance = 50 },
+        };
+
+        var acc = new EmotionDecayAccumulator(80, DateTime.UtcNow);
+        var expr = new GrievanceExpressionState();
+
+        // Legacy overload — should write to pets[0] only.
+        App.MapEmotionObjectsToArchive(state, acc, expr);
+
+        Assert.AreEqual(80, state.Pets[0].Grievance,
+            "Pet A (pets[0]) grievance should be 80 from legacy mapping.");
+        Assert.AreEqual(50, state.Pets[1].Grievance,
+            "Pet B grievance must remain 50 — legacy mapping only touches pets[0].");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Archive v4 multi-pet round-trip
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// A v4 archive with two pets can be saved and reloaded with both
+    /// pets' independent state preserved.
+    /// </summary>
+    [TestMethod]
+    public void S2_TwoPets_ArchiveRoundTrip_PreservesIndependentState()
+    {
+        var dir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}");
+        var archive = new ArchiveService(dir);
+
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new()
+            {
+                PetId = "bear-1",
+                Personality = Personality.Proactive,
+                Grievance = 55,
+                WindowLeft = 100,
+                WindowTop = 100,
+                LastDecayUtc = "2026-11-09T00:00:00Z",
+            },
+            new()
+            {
+                PetId = "bear-2",
+                Personality = Personality.SlowPaced,
+                Grievance = 45,
+                WindowLeft = 400,
+                WindowTop = 200,
+                LastDecayUtc = "2026-11-09T01:00:00Z",
+            },
+        };
+
+        archive.SaveState(state);
+
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.AreEqual(2, loaded.Pets.Count, "Should have 2 pets after reload.");
+        Assert.AreEqual("bear-1", loaded.Pets[0].PetId);
+        Assert.AreEqual(Personality.Proactive, loaded.Pets[0].Personality);
+        Assert.AreEqual(55, loaded.Pets[0].Grievance);
+        Assert.AreEqual(100, loaded.Pets[0].WindowLeft);
+
+        Assert.AreEqual("bear-2", loaded.Pets[1].PetId);
+        Assert.AreEqual(Personality.SlowPaced, loaded.Pets[1].Personality);
+        Assert.AreEqual(45, loaded.Pets[1].Grievance);
+        Assert.AreEqual(400, loaded.Pets[1].WindowLeft);
+    }
+
+    /// <summary>
+    /// Modifying pet A's grievance and saving does not change pet B's
+    /// grievance in the archive.
+    /// </summary>
+    [TestMethod]
+    public void S2_SavePetA_GrievanceChange_PetB_UnaffectedInArchive()
+    {
+        var dir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}");
+        var archive = new ArchiveService(dir);
+
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50 },
+            new() { PetId = "bear-2", Grievance = 50 },
+        };
+
+        // Pet A's grievance increases (e.g. from being dragged roughly).
+        var accA = new EmotionDecayAccumulator(70, DateTime.UtcNow);
+        var exprA = new GrievanceExpressionState();
+        App.MapEmotionObjectsToArchive(state, state.Pets[0], accA, exprA);
+
+        archive.SaveState(state);
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.AreEqual(70, loaded.Pets[0].Grievance,
+            "Pet A grievance should be 70 after save/reload.");
+        Assert.AreEqual(50, loaded.Pets[1].Grievance,
+            "Pet B grievance must remain 50 — unaffected by pet A's change.");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // PetId in PetStateContext
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// PetStateContext.PetId is correctly set and accessible.
+    /// </summary>
+    [TestMethod]
+    public void S2_PetStateContext_PetId_SetAndAccessible()
+    {
+        var ctx = new PetStateContext { PetId = "bear-2" };
+        Assert.AreEqual("bear-2", ctx.PetId);
+
+        var ctxNull = new PetStateContext();
+        Assert.IsNull(ctxNull.PetId, "Default PetId should be null for backward compat.");
+    }
+
+    /// <summary>
+    /// MarkStateDirty callback receives the correct PetId from the context.
+    /// </summary>
+    [TestMethod]
+    public void S2_MarkStateDirty_Callback_ReceivesCorrectPetId()
+    {
+        string? receivedPetId = null;
+        var ctx = new PetStateContext
+        {
+            PetId = "bear-2",
+            MarkStateDirty = (id) => receivedPetId = id,
+        };
+
+        ctx.MarkStateDirty?.Invoke(ctx.PetId);
+
+        Assert.AreEqual("bear-2", receivedPetId,
+            "MarkStateDirty callback should receive the context's PetId.");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // P3-001-S2 R5 F-03: Unified per-pet restore semantics
+    // Verifies that MapArchiveToEmotionObjectsForPet (the entry point
+    // used by CreatePetWindow) applies the same pause-exit freeze
+    // semantics as the legacy MapArchiveToEmotionObjects.
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// F-03: When the app was paused at exit, the offline interval is
+    /// frozen — grievance must NOT decay. This tests the exact scenario
+    /// R5 identified: grievance=90, LastDecayUtc 12h ago, IsPaused=true.
+    /// The per-pet mapping (CreatePetWindow's entry point) must keep 90,
+    /// matching the legacy mapping.
+    /// </summary>
+    [TestMethod]
+    public void F03_PausedExit_12h_GrievanceFrozen()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+        var savedDecay = restoreUtc.AddHours(-12); // 12h before restore
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 90,
+            LastDecayUtc = savedDecay.ToString("o"),
+        };
+
+        // Per-pet entry point (used by CreatePetWindow) with isPaused=true.
+        var (acc, _, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: true, restoreUtc);
+
+        // AdvanceTo should see zero elapsed (reference was shifted to now).
+        var result = acc.AdvanceTo(restoreUtc);
+        Assert.AreEqual(90, result,
+            "Paused exit: grievance must stay 90 — offline gap is frozen.");
+    }
+
+    /// <summary>
+    /// F-03: When the app was NOT paused at exit, the offline interval
+    /// is normal decay. Grievance=90, 12h offline → half-life decay to ~70.
+    /// Both entry points must produce the same result.
+    /// </summary>
+    [TestMethod]
+    public void F03_NotPaused_12h_NormalDecay()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+        var savedDecay = restoreUtc.AddHours(-12);
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 90,
+            LastDecayUtc = savedDecay.ToString("o"),
+        };
+
+        // Per-pet entry point with isPaused=false.
+        var (accPerPet, _, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: false, restoreUtc);
+        var resultPerPet = accPerPet.AdvanceTo(restoreUtc);
+
+        // Legacy entry point (via state.IsPaused=false).
+        var state = new PetStateArchive { IsPaused = false };
+        state.Pets = new List<PetInstanceArchive> { pet };
+        var (accLegacy, _, _) = App.MapArchiveToEmotionObjects(state, restoreUtc);
+        var resultLegacy = accLegacy.AdvanceTo(restoreUtc);
+
+        // 12h half-life: 50 + (90-50)*0.5^1 = 50 + 20 = 70
+        Assert.AreEqual(70, resultPerPet,
+            "Not paused: 12h decay should reduce 90 to 70 (half-life).");
+        Assert.AreEqual(resultLegacy, resultPerPet,
+            "Both entry points must produce the same decay result.");
+    }
+
+    /// <summary>
+    /// F-03: Clock rollback protection — when utcNow is earlier than
+    /// saved LastDecayUtc, the reference must NOT move backward even
+    /// if isPaused=true. This preserves F-02's non-regression in
+    /// AdvanceTo.
+    /// </summary>
+    [TestMethod]
+    public void F03_ClockRollback_ReferenceNotMovedBackward()
+    {
+        var savedDecay = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+        var earlierUtc = savedDecay.AddHours(-1); // clock rolled back 1h
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 80,
+            LastDecayUtc = savedDecay.ToString("o"),
+        };
+
+        // isPaused=true but utcNow < lastDecayUtc → shift must NOT happen.
+        var (acc, _, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: true, earlierUtc);
+
+        // AdvanceTo with the same earlier time → zero elapsed, no decay.
+        var result = acc.AdvanceTo(earlierUtc);
+        Assert.AreEqual(80, result,
+            "Clock rollback: grievance must not change and reference must not move backward.");
+
+        // Later, when clock returns to past the original reference,
+        // only genuinely new time is decayed.
+        var laterUtc = savedDecay.AddHours(12);
+        var resultLater = acc.AdvanceTo(laterUtc);
+        // 12h decay from 80: 50 + (80-50)*0.5 = 50 + 15 = 65
+        Assert.AreEqual(65, resultLater,
+            "After rollback recovery: 12h from original reference should decay 80 to 65.");
+    }
+
+    /// <summary>
+    /// F-03: Two pets with different grievance and LastDecayUtc values
+    /// are restored independently. Pet A paused-exit (frozen), pet B
+    /// not paused (decays). Their values must not cross-contaminate.
+    /// </summary>
+    [TestMethod]
+    public void F03_TwoPets_IndependentRestore_PausedAndNotPaused()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+
+        var petA = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 90,
+            LastDecayUtc = restoreUtc.AddHours(-12).ToString("o"),
+        };
+        var petB = new PetInstanceArchive
+        {
+            PetId = "bear-2",
+            Grievance = 60,
+            LastDecayUtc = restoreUtc.AddHours(-6).ToString("o"),
+        };
+
+        // Pet A was paused at exit → frozen, grievance stays 90.
+        var (accA, _, _) = App.MapArchiveToEmotionObjectsForPet(petA, isPaused: true, restoreUtc);
+        // Pet B was not paused → normal decay.
+        var (accB, _, _) = App.MapArchiveToEmotionObjectsForPet(petB, isPaused: false, restoreUtc);
+
+        var resultA = accA.AdvanceTo(restoreUtc);
+        var resultB = accB.AdvanceTo(restoreUtc);
+
+        Assert.AreEqual(90, resultA,
+            "Pet A (paused exit): grievance must stay 90.");
+        // Pet B: 6h decay from 60: 50 + (60-50)*0.5^(6/12) = 50 + 10*0.7071 ≈ 57
+        Assert.AreEqual(57, resultB,
+            "Pet B (not paused): 6h decay from 60 should be ~57.");
+        Assert.AreNotEqual(resultA, resultB,
+            "Two pets must have independent grievance values after restore.");
+    }
+
+    /// <summary>
+    /// F-03: The legacy MapArchiveToEmotionObjects and the per-pet
+    /// MapArchiveToEmotionObjectsForPet produce identical results when
+    /// given the same pet data and pause state. This proves there is
+    /// one algorithm, not two.
+    /// </summary>
+    [TestMethod]
+    public void F03_LegacyAndPerPet_EntryPoints_ProduceSameResult()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 75,
+            LastDecayUtc = restoreUtc.AddHours(-18).ToString("o"),
+            PendingGrievanceExpression = true,
+            GrievanceExpressionDate = "2026-11-08",
+        };
+
+        // Legacy entry point.
+        var state = new PetStateArchive { IsPaused = true };
+        state.Pets = new List<PetInstanceArchive> { pet };
+        var (accLegacy, exprLegacy, _) = App.MapArchiveToEmotionObjects(state, restoreUtc);
+
+        // Per-pet entry point with same pause state.
+        var (accPerPet, exprPerPet, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: true, restoreUtc);
+
+        // Both should have the same grievance and lastDecayUtc.
+        Assert.AreEqual(accLegacy.GrievanceInt, accPerPet.GrievanceInt,
+            "Both entry points: same grievance.");
+        Assert.AreEqual(accLegacy.LastDecayUtc, accPerPet.LastDecayUtc,
+            "Both entry points: same LastDecayUtc (pause freeze applied identically).");
+        Assert.AreEqual(exprLegacy.IsPending, exprPerPet.IsPending,
+            "Both entry points: same expression pending state.");
+
+        // AdvanceTo should produce the same result.
+        var resultLegacy = accLegacy.AdvanceTo(restoreUtc);
+        var resultPerPet = accPerPet.AdvanceTo(restoreUtc);
+        Assert.AreEqual(resultLegacy, resultPerPet,
+            "Both entry points: same decay result after AdvanceTo.");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // P3-001-S2 R5 F-04: Real window shared-input isolation
+    // Verifies that two real MainWindow instances with independent
+    // StateContexts (created via the same production mapping used by
+    // CreatePetWindow) maintain isolation when driven through the
+    // shared gesture entry points (BeginCapturedPointerInteraction →
+    // ProcessCapturedPointerMove → EndCapturedPointerInteraction).
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// F-04: Dragging pet A's body through the shared gesture entry
+    /// moves window A but does NOT move window B. Both windows use
+    /// real MainWindow instances with StateContexts built from the
+    /// production per-pet mapping.
+    /// </summary>
+    [STATestMethod]
+    public void F04_DragPetA_WindowBPosition_Unchanged()
+    {
+        var wA = new MainWindow();
+        var wB = new MainWindow();
+        try
+        {
+            // Set up independent emotion objects via the production per-pet mapping.
+            var petA = new PetInstanceArchive { PetId = "bear-1", Grievance = 50 };
+            var petB = new PetInstanceArchive { PetId = "bear-2", Grievance = 50 };
+            var (accA, exprA, trackA) = App.MapArchiveToEmotionObjectsForPet(petA);
+            var (accB, exprB, trackB) = App.MapArchiveToEmotionObjectsForPet(petB);
+
+            wA.StateContext = new PetStateContext
+            {
+                PetId = "bear-1",
+                EmotionAccumulator = accA,
+                GrievanceExpression = exprA,
+                CornerTracking = trackA,
+            };
+            wB.StateContext = new PetStateContext
+            {
+                PetId = "bear-2",
+                EmotionAccumulator = accB,
+                GrievanceExpression = exprB,
+                CornerTracking = trackB,
+            };
+
+            // Record initial positions.
+            var leftA = wA.Left;
+            var topA = wA.Top;
+            var leftB = wB.Left;
+            var topB = wB.Top;
+
+            // Drive pet A: body press → drag → move → release.
+            double now = 0;
+            wA.TestGetElapsedMs = () => now;
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 65)),
+                "Body press on pet A should start a drag.");
+            Assert.IsTrue(wA.IsDragging, "Pet A should be dragging.");
+
+            // Move pet A to a new position.
+            now = 100;
+            wA.ProcessCapturedPointerMove(
+                new System.Windows.Point(75, 75),
+                new System.Windows.Point(wA.Left + 20, wA.Top + 20),
+                true, now);
+
+            // Pet A should have moved.
+            Assert.AreNotEqual(leftA, wA.Left,
+                "Pet A's Left should change after drag move.");
+            Assert.AreNotEqual(topA, wA.Top,
+                "Pet A's Top should change after drag move.");
+
+            // Pet B must NOT have moved.
+            Assert.AreEqual(leftB, wB.Left,
+                "Pet B's Left must not change when pet A is dragged.");
+            Assert.AreEqual(topB, wB.Top,
+                "Pet B's Top must not change when pet A is dragged.");
+
+            // Release pet A.
+            now = 200;
+            wA.EndCapturedPointerInteraction();
+            Assert.IsFalse(wA.IsDragging, "Pet A should not be dragging after release.");
+        }
+        finally
+        {
+            wA.Close();
+            wB.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-04: Grievance change on pet A (via emotion accumulator) does
+    /// not affect pet B's emotion accumulator. Both use real MainWindow
+    /// instances with independent StateContexts.
+    /// </summary>
+    [STATestMethod]
+    public void F04_GrievanceChange_PetA_DoesNotAffect_PetBEmotion()
+    {
+        var wA = new MainWindow();
+        var wB = new MainWindow();
+        try
+        {
+            var petA = new PetInstanceArchive { PetId = "bear-1", Grievance = 50 };
+            var petB = new PetInstanceArchive { PetId = "bear-2", Grievance = 50 };
+            var (accA, exprA, trackA) = App.MapArchiveToEmotionObjectsForPet(petA);
+            var (accB, exprB, trackB) = App.MapArchiveToEmotionObjectsForPet(petB);
+
+            wA.StateContext = new PetStateContext
+            {
+                PetId = "bear-1",
+                EmotionAccumulator = accA,
+                GrievanceExpression = exprA,
+                CornerTracking = trackA,
+            };
+            wB.StateContext = new PetStateContext
+            {
+                PetId = "bear-2",
+                EmotionAccumulator = accB,
+                GrievanceExpression = exprB,
+                CornerTracking = trackB,
+            };
+
+            // Both start at 50.
+            Assert.AreEqual(50, accA.GrievanceInt, "Pet A initial grievance.");
+            Assert.AreEqual(50, accB.GrievanceInt, "Pet B initial grievance.");
+
+            // Increase pet A's grievance (e.g. from corner stay or drag).
+            accA.AddGrievance(20);
+
+            Assert.AreEqual(70, accA.GrievanceInt,
+                "Pet A grievance should increase to 70.");
+            Assert.AreEqual(50, accB.GrievanceInt,
+                "Pet B grievance must remain 50 — independent emotion objects.");
+
+            // Verify the accumulators are truly separate instances.
+            Assert.AreNotSame(accA, accB,
+                "Each window must have its own EmotionDecayAccumulator instance.");
+            Assert.AreNotSame(exprA, exprB,
+                "Each window must have its own GrievanceExpressionState instance.");
+        }
+        finally
+        {
+            wA.Close();
+            wB.Close();
+        }
+    }
+
+    /// <summary>
+    /// F-04: MarkStateDirty with PetId routes to the correct pet's
+    /// archive entry when real windows are registered. Dragging pet B
+    /// and calling MarkStateDirty("bear-2") must not overwrite pet A's
+    /// archive position or grievance.
+    /// </summary>
+    [STATestMethod]
+    public void F04_MarkStateDirty_PetB_RoutesCorrectly_WithRealWindows()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04Test_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Grievance = 50, WindowLeft = 300, WindowTop = 300 },
+            };
+
+            // Create real windows with StateContexts and register them.
+            var wA = new MainWindow();
+            var wB = new MainWindow();
+            var petA = app.TestState!.Pets[0];
+            var petB = app.TestState.Pets[1];
+            var (accA, exprA, trackA) = App.MapArchiveToEmotionObjectsForPet(petA);
+            var (accB, exprB, trackB) = App.MapArchiveToEmotionObjectsForPet(petB);
+
+            wA.StateContext = new PetStateContext
+            {
+                PetId = "bear-1",
+                EmotionAccumulator = accA,
+                GrievanceExpression = exprA,
+                CornerTracking = trackA,
+                MarkStateDirty = app.MarkStateDirty,
+            };
+            wB.StateContext = new PetStateContext
+            {
+                PetId = "bear-2",
+                EmotionAccumulator = accB,
+                GrievanceExpression = exprB,
+                CornerTracking = trackB,
+                MarkStateDirty = app.MarkStateDirty,
+            };
+
+            app.TestSetMainWindow(wA);
+            app.TestSetMainWindow(wB);
+
+            // Change pet B's grievance and mark dirty with bear-2.
+            accB.AddGrievance(25);
+            app.MarkStateDirty("bear-2");
+
+            // Pet A's archive entry must be unchanged.
+            Assert.AreEqual(50, app.TestState!.Pets[0].Grievance,
+                "Pet A's archive grievance must remain 50.");
+            Assert.AreEqual(100, app.TestState.Pets[0].WindowLeft,
+                "Pet A's archive WindowLeft must remain 100.");
+
+            // Pet B's archive entry should reflect the grievance change.
+            Assert.AreEqual(75, app.TestState.Pets[1].Grievance,
+                "Pet B's archive grievance should be 75 after MarkStateDirty.");
+
+            wA.Close();
+            wB.Close();
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// F-04: Two windows with independent StateContexts share the same
+    /// global objects (RuntimeTracker, RareEventScheduler) when injected
+    /// from the same App instance, proving the global/shared model.
+    /// </summary>
+    [STATestMethod]
+    public void F04_TwoWindows_SharedGlobalObjects_FromSameApp()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04Test_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50 },
+                new() { PetId = "bear-2", Grievance = 50 },
+            };
+
+            var wA = new MainWindow();
+            var wB = new MainWindow();
+            var petA = app.TestState!.Pets[0];
+            var petB = app.TestState.Pets[1];
+            var (accA, exprA, trackA) = App.MapArchiveToEmotionObjectsForPet(petA);
+            var (accB, exprB, trackB) = App.MapArchiveToEmotionObjectsForPet(petB);
+
+            // Inject the SAME global objects from App into both windows.
+            wA.StateContext = new PetStateContext
+            {
+                PetId = "bear-1",
+                EmotionAccumulator = accA,
+                GrievanceExpression = exprA,
+                CornerTracking = trackA,
+                RuntimeTracker = app.RuntimeTracker,
+                RareEventScheduler = app.RareEventScheduler,
+                MarkStateDirty = app.MarkStateDirty,
+            };
+            wB.StateContext = new PetStateContext
+            {
+                PetId = "bear-2",
+                EmotionAccumulator = accB,
+                GrievanceExpression = exprB,
+                CornerTracking = trackB,
+                RuntimeTracker = app.RuntimeTracker,
+                RareEventScheduler = app.RareEventScheduler,
+                MarkStateDirty = app.MarkStateDirty,
+            };
+
+            // Global objects must be the same instance.
+            Assert.AreSame(wA.StateContext.RuntimeTracker, wB.StateContext.RuntimeTracker,
+                "RuntimeTracker must be shared (global) across both windows.");
+            Assert.AreSame(wA.StateContext.RareEventScheduler, wB.StateContext.RareEventScheduler,
+                "RareEventScheduler must be shared (global) across both windows.");
+
+            // Per-pet objects must be different instances.
+            Assert.AreNotSame(wA.StateContext.EmotionAccumulator, wB.StateContext.EmotionAccumulator,
+                "EmotionAccumulator must be independent per pet.");
+
+            wA.Close();
+            wB.Close();
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+}

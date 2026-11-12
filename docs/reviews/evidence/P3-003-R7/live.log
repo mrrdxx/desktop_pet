@@ -1,0 +1,4 @@
+2026-11-11T18:05:24.4368936+08:00 [DRIVER] RESTART using existing suiteRoot=C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-74b4005b dataDir=C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-74b4005b\data
+2026-11-11T18:05:24.5579027+08:00 [DRIVER] RESTART_PROCESS_STARTED pid=83892
+2026-11-11T18:07:21.8259215+08:00 [DRIVER] RESTART using existing suiteRoot=C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-74b4005b dataDir=C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-74b4005b\data
+2026-11-11T18:07:21.8684160+08:00 [DRIVER] RESTART_PROCESS_STARTED pid=88388

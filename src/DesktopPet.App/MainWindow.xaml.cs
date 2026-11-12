@@ -14,6 +14,8 @@ using DesktopPet.Core.Events;
 using DesktopPet.Core.Geometry;
 using DesktopPet.Core.Input;
 using DesktopPet.Core.Physics;
+using DesktopPet.Core.Persistence;
+using DesktopPet.Core.Social;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
 using MediaColor = System.Windows.Media.Color;
@@ -109,6 +111,11 @@ public partial class MainWindow : System.Windows.Window
     internal Func<(int x, int y)>? TestGetCursorPos;
     internal Func<double>? TestGetElapsedMs;
 
+    // P3-002 F-01 R3: Test-only read accessor for the social curiosity
+    // ownership flag. Lets tests verify that Reject/ReturnToIdle only
+    // releases social-owned curiosity, not independent hover curiosity.
+    internal bool TestSocialOwnsCuriosity => _socialOwnsCuriosity;
+
     // G-03 R4: Test injection point for controlled UTC time source.
     // When non-null, OnUpdateTick uses this instead of DateTime.UtcNow
     // so tests can use a single consistent time base for both monotonic
@@ -127,6 +134,36 @@ public partial class MainWindow : System.Windows.Window
     // When non-null, OnUpdateTick uses these instead of App.Current.
     internal EffectiveRuntimeTracker? TestRuntimeTracker;
     internal RareEventScheduler? TestRareEventScheduler;
+
+    // P3-002: Test injection point for social coordinator.
+    internal SocialCoordinator? TestSocialCoordinator;
+
+    // P3-004 R4 F-01: Test-only flag to simulate a window becoming
+    // non-writable between coordinator.Tick (which returned chase deltas)
+    // and the App-layer commit guard. When true, _isPhysicsActive is
+    // temporarily set before the leaderCanWrite/followerCanWrite checks
+    // so the commit refusal path is exercised. No production code sets this.
+    internal bool TestBlockChaseCommit;
+
+    // P3-002: Tracks the last non-idle activity timestamp for social idle detection.
+    // Updated when drag ends, physics stops, probe ends, or grievance ends.
+    private double _lastSocialActivityMs;
+
+    // P3-002: True when a social session is currently active for this pet.
+    // Set by the social tick evaluation in OnUpdateTick. When true, blocks
+    // rare-event Evaluate (via isSocialActive parameter).
+    private bool _isSocialActive;
+
+    // P3-002 F-01 R3: Ownership flag — true only when the current curiosity
+    // expression was started by a social session (Notice/Respond), not by
+    // independent user hover. This lets Reject/ReturnToIdle/CancelSocialImmediately
+    // release only social-owned curiosity without clearing a still-valid hover
+    // curiosity. Cannot use _curiosity.IsActive or CurrentAction to determine
+    // ownership because both are identical regardless of source.
+    private bool _socialOwnsCuriosity;
+
+    // P3-002: Tracks busy→idle transition to measure continuous idle time.
+    private bool _wasSocialBusy = true;
 
     // PREP-002: Explicit state context supplied by App in production.
     // When non-null, OnUpdateTick and other methods read shared state objects
@@ -263,6 +300,81 @@ public partial class MainWindow : System.Windows.Window
         _updateTimer.Start();
     }
 
+    // P3-001 F-08 R14: Personality-based visual identification badge.
+    // The badge is a small program-drawn shape overlaid on the pet window
+    // so two pets with identical bear assets can be visually distinguished.
+    // Proactive = blue circle (bottom-right), SlowPaced = warm orange triangle.
+    // The badge does not affect hit-testing, window size, foot points, or
+    // drag/physics behavior — it is purely visual, drawn on BadgeCanvas
+    // which has IsHitTestVisible=False.
+    private Personality _personality = Personality.Proactive;
+
+    /// <summary>
+    /// P3-001 F-08 R14: Gets or sets the personality used for the visual
+    /// identification badge. Must be set before the window is shown for
+    /// the badge to appear on the first frame. App.CreatePetWindow sets
+    /// this from the PetInstanceArchive before Show().
+    /// </summary>
+    public Personality Personality
+    {
+        get => _personality;
+        set
+        {
+            _personality = value;
+            ApplyPersonalityBadge();
+        }
+    }
+
+    /// <summary>
+    /// P3-001 F-08 R14: Draw the personality badge on BadgeCanvas.
+    /// Proactive: a small blue circle in the bottom-right corner.
+    /// SlowPaced: a small warm-orange triangle in the bottom-right corner.
+    /// Both are semi-transparent (~80% opacity) and ~14 DIP in size,
+    /// positioned at (98, 98)–(112, 112) so they don't obscure the bear's
+    /// face or body center. The badge is purely decorative.
+    /// </summary>
+    private void ApplyPersonalityBadge()
+    {
+        BadgeCanvas.Children.Clear();
+
+        const double badgeSize = 14.0;
+        const double badgeLeft = 98.0;
+        const double badgeTop = 98.0;
+
+        if (_personality == Personality.SlowPaced)
+        {
+            // Warm orange triangle.
+            var triangle = new System.Windows.Shapes.Polygon
+            {
+                Points = new PointCollection
+                {
+                    new(badgeLeft + badgeSize / 2, badgeTop),                         // top center
+                    new(badgeLeft, badgeTop + badgeSize),                             // bottom left
+                    new(badgeLeft + badgeSize, badgeTop + badgeSize),                 // bottom right
+                },
+                Fill = new SolidColorBrush(MediaColor.FromArgb(0xCC, 0xE8, 0x8B, 0x3A)),
+                Stroke = new SolidColorBrush(MediaColor.FromArgb(0x99, 0xFF, 0xFF, 0xFF)),
+                StrokeThickness = 0.75,
+            };
+            BadgeCanvas.Children.Add(triangle);
+        }
+        else
+        {
+            // Blue circle.
+            var circle = new System.Windows.Shapes.Ellipse
+            {
+                Width = badgeSize,
+                Height = badgeSize,
+                Fill = new SolidColorBrush(MediaColor.FromArgb(0xCC, 0x3A, 0x7C, 0xE8)),
+                Stroke = new SolidColorBrush(MediaColor.FromArgb(0x99, 0xFF, 0xFF, 0xFF)),
+                StrokeThickness = 0.75,
+            };
+            Canvas.SetLeft(circle, badgeLeft);
+            Canvas.SetTop(circle, badgeTop);
+            BadgeCanvas.Children.Add(circle);
+        }
+    }
+
     // PREP-002: Centralised save-dirty notification. Replaces the scattered
     // "Application.Current is App app → app.MarkStateDirty()" pattern.
     // Priority: StateContext.MarkStateDirty (production, explicitly injected
@@ -270,10 +382,14 @@ public partial class MainWindow : System.Windows.Window
     // parameterless constructor without StateContext).
     private void NotifyStateDirty()
     {
+        // P3-001-S2: Pass the PetId from StateContext so App can route
+        // the save-dirty notification to the correct PetInstanceArchive.
+        // Null PetId falls back to "save all pets" for backward compatibility.
+        var petId = StateContext?.PetId;
         if (StateContext?.MarkStateDirty is not null)
-            StateContext.MarkStateDirty.Invoke();
+            StateContext.MarkStateDirty.Invoke(petId);
         else if (System.Windows.Application.Current is App app)
-            app.MarkStateDirty();
+            app.MarkStateDirty(petId);
     }
 
     // PREP-002 F-01: Per-object three-tier resolution helpers.
@@ -534,6 +650,8 @@ public partial class MainWindow : System.Windows.Window
     private bool _isContextMenuOpen;
     private const uint MenuIdExit = 1;
     private const uint MenuIdRecover = 2;
+    private const uint MenuIdAddPet = 3;
+    private const uint MenuIdRemovePet = 4;
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -609,6 +727,29 @@ public partial class MainWindow : System.Windows.Window
                 return;
             }
 
+            // P3-001-S3: Add second pet.
+            if (!AppendMenu(menu, 0, (UIntPtr)MenuIdAddPet, "Add Pet"))
+            {
+                System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                return;
+            }
+            // F-05 R9: Remove Pet only available for the second (non-original) pet.
+            if (System.Windows.Application.Current is App app)
+            {
+                var currentPetId = StateContext?.PetId;
+                var state = app.TestState;
+                if (state?.Pets is not null && state.Pets.Count > 0 &&
+                    state.Pets[0] is { } firstPet &&
+                    firstPet.PetId != currentPetId)
+                {
+                    if (!AppendMenu(menu, 0, (UIntPtr)MenuIdRemovePet, "Remove Pet"))
+                    {
+                        System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                        return;
+                    }
+                }
+            }
+
             if (!AppendMenu(menu, 0, (UIntPtr)MenuIdExit, "Exit"))
             {
                 System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
@@ -658,9 +799,30 @@ public partial class MainWindow : System.Windows.Window
         }
 
         if (command == MenuIdExit)
-            Dispatcher.BeginInvoke(new Action(Close));
+            // F-05 R9: Exit is always a global app exit, not a per-pet removal.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                    app.ShutdownMainWindow();
+            }));
         else if (command == MenuIdRecover)
             Dispatcher.BeginInvoke(new Action(RecoverPet));
+        else if (command == MenuIdAddPet)
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                    app.AddPet();
+            }));
+        else if (command == MenuIdRemovePet)
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                {
+                    var petId = StateContext?.PetId;
+                    if (!string.IsNullOrEmpty(petId))
+                        app.RemovePet(petId);
+                }
+            }));
     }
 
     /// <summary>
@@ -865,6 +1027,18 @@ public partial class MainWindow : System.Windows.Window
         {
             var today = DateTime.Now.ToString("yyyy-MM-dd");
 
+            // F-04 R1: Read the AUTHORITATIVE shared social state from the
+            // global coordinator BEFORE rare-event Evaluate, not the local
+            // _isSocialActive flag which is only updated by EvaluateSocialTick
+            // (which runs AFTER this block). When window A starts a social
+            // session, window B's _isSocialActive is still false until B's
+            // own EvaluateSocialTick runs — but B's rare-event block fires
+            // first and could consume the plan. Reading coordinator.IsSocialActive
+            // ensures all windows see the shared session state immediately.
+            var sharedSocialCoordinator = Resolve(
+                TestSocialCoordinator, StateContext?.SocialCoordinator, a => a.SocialCoordinator);
+            var authoritativeSocialActive = sharedSocialCoordinator?.IsSocialActive ?? false;
+
             var rareResult = RareEventUpdateService.EvaluateTick(
                 runtimeTracker,
                 rareScheduler,
@@ -872,7 +1046,8 @@ public partial class MainWindow : System.Windows.Window
                 today,
                 isDragging: _isDragging,
                 isExpressingGrievance: _isExpressingGrievance,
-                isPhysicsActive: _isPhysicsActive);
+                isPhysicsActive: _isPhysicsActive,
+                isSocialActive: authoritativeSocialActive);
 
             // F-08: The service signals StateChanged for new plan or consumed.
             // Additionally compare against cached values to detect cross-day
@@ -918,7 +1093,463 @@ public partial class MainWindow : System.Windows.Window
             }
         }
 
+        // P3-002: Social coordinator — mutual-notice between pets.
+        // Runs after rare events (social blocks rare-event Evaluate) and before
+        // UpdateFrame. The coordinator is global (shared across windows); each
+        // window's tick feeds both pets' states. Deduplication in the coordinator
+        // ensures only one evaluation per nowMs.
+        EvaluateSocialTick(nowMs);
+
         UpdateFrame();
+    }
+
+    /// <summary>
+    /// P3-002: Evaluate the social coordinator tick for mutual-notice.
+    /// Collects this pet's and the other pet's social state, calls the
+    /// global SocialCoordinator, and applies expression results.
+    /// Does NOT write position — social notice only switches expression.
+    /// </summary>
+    private void EvaluateSocialTick(double nowMs)
+    {
+        var coordinator = Resolve(
+            TestSocialCoordinator, StateContext?.SocialCoordinator, a => a.SocialCoordinator);
+
+        if (coordinator is null)
+        {
+            _isSocialActive = false;
+            return;
+        }
+
+        // Build this pet's social state.
+        var myPetId = StateContext?.PetId ?? "bear-1";
+        var myState = BuildPetSocialState(myPetId, nowMs);
+
+        // Find the other pet's window.
+        MainWindow? otherWindow = null;
+        PetSocialState? otherState = null;
+        if (System.Windows.Application.Current is App app)
+        {
+            foreach (var w in app.AllPetWindows)
+            {
+                var otherPetId = w.StateContext?.PetId;
+                if (otherPetId is null || otherPetId == myPetId)
+                    continue;
+                otherWindow = w;
+                otherState = w.BuildPetSocialState(otherPetId, nowMs);
+                break;
+            }
+        }
+
+        var result = coordinator.Tick(nowMs, myState, otherState);
+        _isSocialActive = result.IsSocialActive;
+
+        // F-01 R1: Apply expression results based on this window's role in
+        // the session (initiator vs target). The coordinator returns both
+        // InitiatorExpression and TargetExpression — we must dispatch the
+        // correct one to each window, not just unconditionally Start/Cancel
+        // curiosity on whichever window happens to call Tick first.
+        //
+        // Map expressions to visible behavior using the existing curiosity
+        // system (no new art required). Notice/Respond → curious look;
+        // Reject/ReturnToIdle → cancel curious and return to idle.
+        //
+        // We must NOT cancel curiosity that was independently started by the
+        // user's hover interaction. Only cancel when the social session is
+        // the one that started it (SessionStarted or active session with this
+        // pet as participant).
+        var myExpression = ResolveExpressionForPet(myPetId, result);
+
+        if (myExpression is not null)
+        {
+            ApplySocialExpression(myExpression.Value, nowMs);
+        }
+
+        // F-01 R1: Also apply the expression to the OTHER window so both pets
+        // show their respective roles (initiator notices, target responds/rejects).
+        // This ensures the target pet's window gets its expression even if its
+        // own Tick call is deduplicated (same nowMs).
+        if (otherWindow is not null)
+        {
+            var otherExpression = ResolveExpressionForPet(otherWindow.StateContext?.PetId ?? "", result);
+            if (otherExpression is not null)
+            {
+                otherWindow.ApplySocialExpression(otherExpression.Value, nowMs);
+            }
+        }
+
+        // P3-003: Apply seeking step — move the seeker's window Left along
+        // the bottom edge. Only the seeker window writes position; the target
+        // stays put. Position write is guarded: no drag, no physics, no
+        // petting, no pause, no probe (coordinator already checks these but
+        // we double-guard at the write site per ARCHITECTURE single-writer rule).
+        if (result.SeekStepDelta is not null && result.SeekerId is not null)
+        {
+            var seekerWindow = result.SeekerId == myPetId
+                ? this
+                : (otherWindow?.StateContext?.PetId == result.SeekerId ? otherWindow : null);
+
+            if (seekerWindow is not null &&
+                !seekerWindow._isDragging &&
+                !seekerWindow._isPhysicsActive &&
+                !seekerWindow._isPettingCandidate &&
+                !seekerWindow._isAppPaused &&
+                !seekerWindow._isProbing)
+            {
+                var delta = result.SeekStepDelta.Value;
+                if (delta != 0)
+                {
+                    seekerWindow.Left += delta;
+                    seekerWindow.NotifyStateDirty();
+                }
+            }
+        }
+
+        // P3-004: Apply chase step — move BOTH the leader's and follower's
+        // windows along the bottom edge. Both windows write position
+        // simultaneously. P3-004 R2 F-01: Before applying either delta,
+        // verify BOTH windows can accept the write (not dragging, not in
+        // physics, not petting, not paused, not probing). If either window
+        // cannot accept, BOTH skip — no single-sided writes. The coordinator
+        // will cancel on the next tick via CheckInterrupt.
+        if (result.ChaseLeaderDelta is not null && result.ChaseLeaderId is not null &&
+            result.ChaseFollowerDelta is not null && result.ChaseFollowerId is not null)
+        {
+            var leaderWindow = result.ChaseLeaderId == myPetId
+                ? this
+                : (otherWindow?.StateContext?.PetId == result.ChaseLeaderId ? otherWindow : null);
+
+            var followerWindow = result.ChaseFollowerId == myPetId
+                ? this
+                : (otherWindow?.StateContext?.PetId == result.ChaseFollowerId ? otherWindow : null);
+
+            // P3-004 R2 F-01: Check BOTH windows before writing either.
+            // If either cannot accept, neither writes — paired commit.
+            // P3-004 R4 F-01: TestBlockChaseCommit simulates a window
+            // becoming non-writable after Tick returned chase deltas.
+            if (TestBlockChaseCommit) _isPhysicsActive = true;
+            var leaderCanWrite = leaderWindow is not null &&
+                !leaderWindow._isDragging &&
+                !leaderWindow._isPhysicsActive &&
+                !leaderWindow._isPettingCandidate &&
+                !leaderWindow._isAppPaused &&
+                !leaderWindow._isProbing;
+
+            var followerCanWrite = followerWindow is not null &&
+                !followerWindow._isDragging &&
+                !followerWindow._isPhysicsActive &&
+                !followerWindow._isPettingCandidate &&
+                !followerWindow._isAppPaused &&
+                !followerWindow._isProbing;
+
+            if (leaderCanWrite && followerCanWrite)
+            {
+                var leaderDelta = result.ChaseLeaderDelta.Value;
+                if (leaderDelta != 0)
+                {
+                    leaderWindow!.Left += leaderDelta;
+                    leaderWindow.NotifyStateDirty();
+                }
+
+                var followerDelta = result.ChaseFollowerDelta.Value;
+                if (followerDelta != 0)
+                {
+                    followerWindow!.Left += followerDelta;
+                    followerWindow.NotifyStateDirty();
+                }
+            }
+            else
+            {
+                // P3-004 R4 F-01: If either window cannot accept the write,
+                // both pets keep their current position and the chase session
+                // ends immediately. Reuse CancelSocialImmediately so that
+                // both windows' social state (_isSocialActive) and social-
+                // owned curiosity expression are cleaned up synchronously,
+                // while independent hover curiosity is preserved.
+                CancelSocialImmediately(CancelReason.Paused, nowMs);
+            }
+        }
+
+        // Track idle start: when transitioning from busy to idle, record
+        // the current time so MinIdleMs can measure continuous idle.
+        var isBusy = _isDragging || _isPettingCandidate || _isPhysicsActive ||
+                     _isExpressingGrievance || _isProbing || _isAppPaused;
+        if (isBusy)
+        {
+            _wasSocialBusy = true;
+        }
+        else if (_wasSocialBusy)
+        {
+            // Just transitioned from busy to idle — record the moment.
+            _lastSocialActivityMs = nowMs;
+            _wasSocialBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// F-01 R1: Resolve which expression applies to a specific pet based on
+    /// its role in the current session (initiator or target).
+    /// </summary>
+    private SocialExpression? ResolveExpressionForPet(string petId, SocialTickResult result)
+    {
+        if (!result.IsSocialActive && !result.SessionEnded)
+            return null;
+
+        // Session just ended — both pets return to idle.
+        if (result.SessionEnded)
+            return SocialExpression.ReturnToIdle;
+
+        // Active session — dispatch by role.
+        var session = result.Session;
+        if (session.InitiatorId == petId)
+            return result.InitiatorExpression;
+        if (session.TargetId == petId)
+            return result.TargetExpression;
+
+        return null;
+    }
+
+    /// <summary>
+    /// F-01 R1: Apply a social expression to this window's visible behavior.
+    /// Uses the existing curiosity system (Start/Cancel) to show a curious
+    /// look for Notice/Respond, and returns to idle for Reject/ReturnToIdle.
+    /// Does NOT write position. Does NOT cancel user-triggered hover curiosity
+    /// unless the social session is ending.
+    /// </summary>
+    internal void ApplySocialExpression(SocialExpression expression, double nowMs)
+    {
+        switch (expression)
+        {
+            case SocialExpression.Notice:
+            case SocialExpression.Respond:
+                // F-01 R2: Show curious look via the actual animation channel,
+                // not just the curiosity timer. Only switch if not busy with
+                // higher-priority user interaction, grievance, or probe
+                // (probe already plays "curious" and owns position).
+                if (!_isProbing && !_isExpressingGrievance && !_isDragging && !_isPettingCandidate)
+                {
+                    // F-01 R4: If there is already an active curiosity that is
+                    // NOT owned by social (i.e. independent hover triggered it),
+                    // social borrows the existing display — do NOT re-Start
+                    // (which would reset the timer/期限), do NOT set social
+                    // ownership, do NOT PlayAction (already "curious"). The
+                    // original hover's ShouldEnd/leave rule continues to apply
+                    // and will clean up at the original deadline. Only when
+                    // social actually starts a NEW curiosity does it take
+                    // ownership and become responsible for releasing it.
+                    if (_curiosity.IsActive && !_socialOwnsCuriosity)
+                    {
+                        // Independent hover owns the current curiosity.
+                        // Social borrows the visible "curious" display but
+                        // leaves the timer and ownership untouched.
+                        break;
+                    }
+
+                    _curiosity.Start(nowMs);
+                    // F-01 R3: Mark that this curiosity is owned by the social
+                    // session, not by independent hover. Only social-owned
+                    // curiosity is released on Reject/ReturnToIdle.
+                    _socialOwnsCuriosity = true;
+                    // Avoid restarting the same animation every tick — only
+                    // switch when the current action is not already "curious".
+                    if (_animPlayer.CurrentActionId != "curious")
+                    {
+                        _animPlayer.PlayAction("curious");
+                        UpdateFrame();
+                    }
+                }
+                break;
+
+            case SocialExpression.Reject:
+            case SocialExpression.ReturnToIdle:
+                // F-01 R3: End social-triggered curiosity and restore the
+                // actual animation to idle — but ONLY when the social session
+                // owns the current curiosity. If the curiosity was started
+                // independently by user hover (_socialOwnsCuriosity == false),
+                // do NOT cancel it; the hover's own ShouldEnd rule still
+                // applies and will clean up normally. This prevents Reject
+                // from clearing a still-valid independent hover expression.
+                if (_socialOwnsCuriosity)
+                {
+                    _curiosity.Cancel();
+                    _socialOwnsCuriosity = false;
+                    // Restore idle animation only if we were showing "curious"
+                    // (i.e. social was the owner). Don't override drag, probe,
+                    // or grievance which have their own action ownership.
+                    if (_animPlayer.CurrentActionId == "curious" &&
+                        !_isDragging && !_isProbing && !_isExpressingGrievance)
+                    {
+                        _animPlayer.PlayAction("idle");
+                        UpdateFrame();
+                    }
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// F-02 R1: Immediately cancel any active social session from an event
+    /// entry point (drag start, head press, pause, recover, remove, physics).
+    /// This does NOT depend on the next OnUpdateTick — the timer may be
+    /// stopped (pause) or the coordinator may not get another tick for this
+    /// window. ForceCancel on the shared coordinator ensures both pets are
+    /// released, and both windows' expressions are cleared synchronously.
+    /// 
+    /// Called from production event entry points: StartDragging,
+    /// BeginCapturedPointerInteraction (head press), PauseAnimation,
+    /// RecoverPet, and App.OnPauseToggled/OnRecoverRequested/RemovePet.
+    /// </summary>
+    internal void CancelSocialImmediately(CancelReason reason, double nowMs)
+    {
+        var coordinator = Resolve(
+            TestSocialCoordinator, StateContext?.SocialCoordinator, a => a.SocialCoordinator);
+        if (coordinator is null)
+            return;
+
+        // Only cancel if there's an active session — ForceCancel returns Idle
+        // when no session is active, which is harmless but we avoid unnecessary
+        // cooldown starts.
+        if (!coordinator.IsSocialActive)
+            return;
+
+        coordinator.ForceCancel(reason, nowMs);
+
+        // Clear this window's social expression immediately.
+        _isSocialActive = false;
+        // F-01 R3: Only cancel curiosity if the social session owns it.
+        // If the current curiosity was started by independent user hover
+        // (_socialOwnsCuriosity == false), leave it intact — the hover's
+        // own ShouldEnd rule will clean up normally.
+        if (_socialOwnsCuriosity)
+        {
+            _curiosity.Cancel();
+            _socialOwnsCuriosity = false;
+            // F-01 R2: Restore the actual animation to idle so the visible
+            // expression matches the cancelled state. Only restore if social
+            // was showing "curious" — don't override drag, probe, or grievance.
+            if (_animPlayer.CurrentActionId == "curious" &&
+                !_isDragging && !_isProbing && !_isExpressingGrievance)
+            {
+                _animPlayer.PlayAction("idle");
+                UpdateFrame();
+            }
+        }
+
+        // F-02 R1: Also clear the OTHER window's expression so both pets
+        // are released synchronously, not waiting for the other's tick.
+        if (System.Windows.Application.Current is App app)
+        {
+            var myPetId = StateContext?.PetId ?? "bear-1";
+            foreach (var w in app.AllPetWindows)
+            {
+                var otherPetId = w.StateContext?.PetId;
+                if (otherPetId is null || otherPetId == myPetId)
+                    continue;
+                w._isSocialActive = false;
+                // F-01 R3: Only cancel the other window's curiosity if the
+                // social session owns it. Don't clear independent hover curiosity.
+                if (w._socialOwnsCuriosity)
+                {
+                    w._curiosity.Cancel();
+                    w._socialOwnsCuriosity = false;
+                    // F-01 R2: Restore other window's animation to idle too.
+                    if (w._animPlayer.CurrentActionId == "curious" &&
+                        !w._isDragging && !w._isProbing && !w._isExpressingGrievance)
+                    {
+                        w._animPlayer.PlayAction("idle");
+                        w.UpdateFrame();
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// P3-002: Build the social state snapshot for this window's pet.
+    /// Center is in DIP screen coordinates (Left + Width/2, Top + Height/2).
+    /// When busy, lastActivityMs = nowMs so idle detection requires the
+    /// busy state to clear and MinIdleMs to elapse.
+    /// P3-003: Also reports MonitorId, BottomEdgeY, and IsOnBottomEdge
+    /// for seeking reachability checks.
+    /// </summary>
+    internal PetSocialState BuildPetSocialState(string petId, double nowMs)
+    {
+        var personality = Personality;
+        // P3-004 R3 F-01: Use the same effective geometry for both center
+        // and width. When the window has not been laid out yet (ActualWidth
+        // is 0, e.g. never shown), fall back to the configured Width/Height
+        // so that clearance checks use the real window extent instead of 0.
+        var effectiveWidth = ActualWidth > 0 ? ActualWidth : Width;
+        var effectiveHeight = ActualHeight > 0 ? ActualHeight : Height;
+        var centerX = Left + effectiveWidth / 2.0;
+        var centerY = Top + effectiveHeight / 2.0;
+
+        var isBusy = _isDragging || _isPettingCandidate || _isPhysicsActive ||
+                     _isExpressingGrievance || _isProbing || _isAppPaused;
+
+        // P3-003: Determine monitor and bottom-edge status.
+        string? monitorId = null;
+        double bottomEdgeY = 0;
+        var isOnBottomEdge = false;
+        // P3-004: Work area bounds in DIP for chase clearance checks.
+        double? workAreaLeft = null;
+        double? workAreaRight = null;
+
+        if (!_isPhysicsActive && !_isDragging)
+        {
+            var monitors = TestMonitorList ?? MonitorInterop.EnumerateMonitors();
+            if (monitors.Count > 0)
+            {
+                var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+                var foot = CoordinateTransform.WindowTopLeftToFootCenter(
+                    Left, Top, Width, Height, dpiX, dpiY);
+                // P3-003 R1 F-03: Use FindMonitor only — NOT FindNearestMonitor.
+                // If the pet is off-screen or in a gap, monitorId stays null,
+                // which makes SameMonitor return false and prevents seeking
+                // an unreachable target. FindNearestMonitor is only for
+                // position recovery (ClampToWorkArea), not for proving
+                // reachability.
+                var monitor = MonitorLocator.FindMonitor(monitors, foot.FootCenterX, foot.FootCenterY);
+                if (monitor is not null)
+                {
+                    var mon = monitor.Value;
+                    monitorId = mon.DeviceName;
+
+                    // Bottom edge Y in DIP: convert work area bottom from physical px to DIP.
+                    var waBottomPx = mon.WorkArea.Bounds.Bottom;
+                    bottomEdgeY = waBottomPx / dpiY - effectiveHeight / 2.0;
+
+                    // P3-004: Work area left/right in DIP for chase clearance.
+                    workAreaLeft = mon.WorkArea.Bounds.Left / dpiX;
+                    workAreaRight = mon.WorkArea.Bounds.Right / dpiX;
+
+                    // Pet is on the bottom edge if its center Y is within tolerance
+                    // of the bottom-edge center Y (i.e. foot is at or near wa.Bottom).
+                    var footBottomDiffPx = Math.Abs(waBottomPx - foot.FootCenterY);
+                    // Tolerance: 2 DIP in physical pixels.
+                    isOnBottomEdge = footBottomDiffPx <= 2 * dpiY;
+                }
+            }
+        }
+
+        return new PetSocialState(
+            petId,
+            personality,
+            centerX,
+            centerY,
+            isDragging: _isDragging,
+            isPettingCandidate: _isPettingCandidate,
+            isPhysicsActive: _isPhysicsActive,
+            isExpressingGrievance: _isExpressingGrievance,
+            isProbing: _isProbing,
+            isPaused: _isAppPaused,
+            lastActivityMs: isBusy ? nowMs : _lastSocialActivityMs,
+            monitorId: monitorId,
+            bottomEdgeY: bottomEdgeY,
+            isOnBottomEdge: isOnBottomEdge,
+            workAreaLeft: workAreaLeft,
+            workAreaRight: workAreaRight,
+            windowWidth: effectiveWidth);
     }
 
     /// <summary>
@@ -1093,6 +1724,9 @@ public partial class MainWindow : System.Windows.Window
             // does CancelProbeForDrag fire.  If the user releases without
             // exceeding the slop, EndPetting runs and the probe continues
             // its remaining lifetime, eventually restoring the original position.
+            // F-02 R1: Head press immediately cancels social session — don't
+            // wait for the next tick to detect petting candidate.
+            CancelSocialImmediately(CancelReason.PettingCandidate, _pointerPressTimeMs);
             _isPettingCandidate = true;
             _pettingLastPos = imagePoint;
             _hoverDetector.Reset();
@@ -1115,6 +1749,11 @@ public partial class MainWindow : System.Windows.Window
 
     private void StartDragging()
     {
+        // F-02 R1: Immediately cancel any active social session when the user
+        // starts dragging — don't wait for the next tick.
+        var dragNowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        CancelSocialImmediately(CancelReason.DragStarted, dragNowMs);
+
         // F-10: Only a real drag takeover cancels the probe without restore.
         // This covers body-press-immediate-drag and head-press-convert-to-drag.
         CancelProbeForDrag();
@@ -1512,6 +2151,24 @@ public partial class MainWindow : System.Windows.Window
         // P0-004: Mark state dirty so position is persisted.
         NotifyStateDirty();
 
+        // P3-003 R1 F-01: Notify the social coordinator that this pet was
+        // released from a user drag. This is the ONLY trigger for seeking —
+        // spontaneous idle cannot start a seeking session. Only call on
+        // normal release (not cancellation paths like menu/capture loss).
+        if (wasDragging && !isCancellation)
+        {
+            var coordinator = Resolve(
+                TestSocialCoordinator, StateContext?.SocialCoordinator, a => a.SocialCoordinator);
+            if (coordinator is not null)
+            {
+                var releaseMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+                coordinator.NotifyPetReleased(
+                    StateContext?.PetId ?? "bear-1",
+                    releaseMs,
+                    wasThrown: _lastReleaseResult.ShouldThrow);
+            }
+        }
+
         // Input and position stop immediately. Only the face settles briefly.
         _animPlayer.PlayAction("idle");
         if (wasDragging && !_isContextMenuOpen)
@@ -1532,6 +2189,13 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     private void UpdatePhysics(double nowMs)
     {
+        // P3-003 R1 F-01: If the simulator was never launched (e.g. test
+        // sets _isPhysicsActive=true directly without a real throw), do
+        // nothing — don't write Left/Top from a zero-initialized state.
+        // In production, EndDrag always Launches before setting the flag.
+        if (!_physicsSimulator.IsLaunched)
+            return;
+
         var elapsedMs = nowMs - _lastPhysicsUpdateMs;
         _lastPhysicsUpdateMs = nowMs;
 
@@ -1550,7 +2214,11 @@ public partial class MainWindow : System.Windows.Window
         }
 
         // Convert physics foot-center (physical px) → DIP Left/Top.
-        var monitors = MonitorInterop.EnumerateMonitors();
+        // P3-003 R3 F-01: Use TestMonitorList when available (same as
+        // BuildWorkArea) so test-injected monitors with controlled DPI
+        // are used for coordinate conversion, keeping physics and
+        // position recovery consistent in the test environment.
+        var monitors = TestMonitorList ?? MonitorInterop.EnumerateMonitors();
         if (monitors.Count > 0)
         {
             var monitor = MonitorLocator.FindMonitor(monitors, result.State.X, result.State.Y)
@@ -1763,7 +2431,7 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     private void ClampWindowToWorkArea()
     {
-        var monitors = MonitorInterop.EnumerateMonitors();
+        var monitors = TestMonitorList ?? MonitorInterop.EnumerateMonitors();
         if (monitors.Count == 0)
             return;
 
@@ -1819,6 +2487,10 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     public void RecoverPet()
     {
+        // F-02 R1: Immediately cancel any active social session on recover.
+        var recoverNowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        CancelSocialImmediately(CancelReason.RecoverRequested, recoverNowMs);
+
         var monitors = MonitorInterop.EnumerateMonitors();
         if (monitors.Count == 0)
             return;
@@ -1847,6 +2519,12 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     public void PauseAnimation()
     {
+        // F-02 R1: Immediately cancel any active social session on pause.
+        // The timer is about to stop, so no further tick will fire to cancel
+        // the session through the normal coordinator.Tick path.
+        CancelSocialImmediately(CancelReason.Paused,
+            TestGetElapsedMs?.Invoke() ?? GetElapsedMs());
+
         _isAppPaused = true;
         _updateTimer.Stop();
         _animPlayer.Pause();
@@ -1971,6 +2649,13 @@ public partial class MainWindow : System.Windows.Window
     public string CurrentAction => _animPlayer.CurrentActionId;
 
     /// <summary>
+    /// P3-002 R1: Internal accessor for curiosity active state (for testing).
+    /// Used to verify that social expressions are actually applied to the
+    /// correct window's visible behavior, not just coordinator state.
+    /// </summary>
+    internal bool IsCuriosityActive => _curiosity.IsActive;
+
+    /// <summary>
     /// P1-004: Public accessor for the probe (peek) active state (for testing).
     /// </summary>
     public bool IsProbing => _isProbing;
@@ -2093,6 +2778,12 @@ public partial class MainWindow : System.Windows.Window
     public bool IsPhysicsActive => _isPhysicsActive;
 
     /// <summary>
+    /// P3-003 R1 F-01: Test-only setter to simulate physics being active
+    /// (e.g. after a throw) without going through the full drag→throw chain.
+    /// </summary>
+    internal void TestSetPhysicsActive(bool value) => _isPhysicsActive = value;
+
+    /// <summary>
     /// P2-003 S2: True if the physics simulator has been launched and not
     /// yet Reset. Distinct from IsPhysicsActive: IsLaunched remains true
     /// even after resting, until Reset is called.
@@ -2116,6 +2807,60 @@ public partial class MainWindow : System.Windows.Window
     /// True while the native context menu is open; hover detection is skipped.
     /// </summary>
     public bool IsContextMenuOpen => _isContextMenuOpen;
+
+    /// <summary>
+    /// P3-002: Public accessor for the social-active flag (for testing/diagnostics).
+    /// True while a mutual-notice social session is active for this pet.
+    /// When true, rare-event Evaluate is blocked (via isSocialActive parameter).
+    /// </summary>
+    public bool IsSocialActive => _isSocialActive;
+
+    /// <summary>
+    /// P3-001-S2 R6 F-04: Test-only entry to drive a single OnUpdateTick
+    /// without relying on the DispatcherTimer. This lets tests verify
+    /// physics tick behavior with injected clock values.
+    /// </summary>
+    internal void OnUpdateTickTest()
+    {
+        OnUpdateTick(null, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// P3-003 R2 F-01: Test-only entry to simulate a production drag-release
+    /// through the real EndDrag code path. Sets _isDragging=true (as
+    /// StartDragging would), optionally moves the window to a new position
+    /// (as MouseMove would), then calls EndDrag(isCancellation=false) which
+    /// is the production release path that calls NotifyPetReleased.
+    /// This does NOT use TestSetPhysicsActive — it goes through the real
+    /// EndDrag → EvaluateRelease → NotifyPetReleased chain.
+    /// </summary>
+    internal void TestSimulateDragRelease(double newLeft, double newTop)
+    {
+        _isDragging = true;
+        Left = newLeft;
+        Top = newTop;
+        EndDrag(isCancellation: false);
+    }
+
+    /// <summary>
+    /// P3-003 R2 F-01: Test-only entry to simulate a CANCELLED drag
+    /// (menu/capture loss/closing). Calls EndDrag(isCancellation: true)
+    /// which must NOT call NotifyPetReleased — no seek candidate is
+    /// established from a cancelled release.
+    /// </summary>
+    internal void TestSimulateDragCancel()
+    {
+        _isDragging = true;
+        EndDrag(isCancellation: true);
+    }
+
+    /// <summary>
+    /// P3-001-S2 R7 F-04: Test-only accessor to verify that the update
+    /// timer has been stopped after window close. The timer is started
+    /// in the constructor and stopped in OnClosed; tests need to confirm
+    /// that TestCleanup actually stops it for unshown windows.
+    /// </summary>
+    internal bool IsUpdateTimerEnabled => _updateTimer.IsEnabled;
 
     protected override void OnClosed(EventArgs e)
     {

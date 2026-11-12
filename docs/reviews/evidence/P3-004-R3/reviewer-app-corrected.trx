@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="6473f44e-d918-418f-a55d-7a63141c4b4b" name="mrrdxx@毛茸茸的小熊 2026-11-12 14:37:59" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T14:37:59.8791536+08:00" queuing="2026-11-12T14:37:59.8791538+08:00" start="2026-11-12T14:37:58.2382687+08:00" finish="2026-11-12T14:37:59.8843850+08:00" />
+  <TestSettings name="default" id="a193508c-885c-400d-8f3a-2963a8e3abc0">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_14_37_59" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="ef601a5a-c652-4a0a-bc6b-7ad88c545193" testId="27a1d03b-23f3-7ca7-8833-c027be35e058" testName="Reviewer_ChosenDirectionMustStopBothBeforeWindowEdge" computerName="毛茸茸的小熊" duration="00:00:00.0084056" startTime="2026-11-12T14:37:59.4502637+08:00" endTime="2026-11-12T14:37:59.4618638+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ef601a5a-c652-4a0a-bc6b-7ad88c545193">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue 失败。Lead window right edge is 1922, work area right is 1920.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_ChosenDirectionMustStopBothBeforeWindowEdge() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\Tests.cs:line 5183&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="debbd0b6-7d13-47da-a3ce-5caedbbdedf4" testId="e8f5bbfb-4aa5-d052-fa59-7f3e85456e84" testName="Reviewer_Shown_FullWidthClearanceMustBeUsedAtInvite" computerName="毛茸茸的小熊" duration="00:00:00.1954523" startTime="2026-11-12T14:37:59.4670041+08:00" endTime="2026-11-12T14:37:59.6642324+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="debbd0b6-7d13-47da-a3ce-5caedbbdedf4">
+      <Output>
+        <StdOut>Before Show: ActualWidth=0/0, Width=120/120&#xD;
+After Show: ActualWidth=120/120, Left=60/260, Top=700/700&#xD;
+DPI=1.5/1.5 A=120, W=120, B=320, W=120, Area=0/460</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3ddd6948-ddc7-4aef-a9f6-dae1bc977ac7" testId="2ae0c5c7-1586-2687-8d22-7fc1604ca1b0" testName="Reviewer_PerfSeedLoadsTwoPets" computerName="毛茸茸的小熊" duration="00:00:00.0026975" startTime="2026-11-12T14:37:59.4619248+08:00" endTime="2026-11-12T14:37:59.4669394+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ddd6948-ddc7-4aef-a9f6-dae1bc977ac7" />
+    <UnitTestResult executionId="32215229-c645-4683-a1bf-a568f672ec34" testId="30ca7384-09f5-3a49-2f0d-0e6cc99c386d" testName="Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop" computerName="毛茸茸的小熊" duration="00:00:00.0156957" startTime="2026-11-12T14:37:59.3977141+08:00" endTime="2026-11-12T14:37:59.4157153+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32215229-c645-4683-a1bf-a568f672ec34" />
+    <UnitTestResult executionId="c55ba8d9-e6c6-43e1-9724-a27b9a1e7c92" testId="9827c685-d8df-5933-01fd-17ea610ae387" testName="Reviewer_Shown_ChosenDirectionMustStopBothBeforeWindowEdge" computerName="毛茸茸的小熊" duration="00:00:00.0535857" startTime="2026-11-12T14:37:59.6645218+08:00" endTime="2026-11-12T14:37:59.7205918+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c55ba8d9-e6c6-43e1-9724-a27b9a1e7c92">
+      <Output>
+        <StdOut>Before Show: ActualWidth=0/0, Width=120/120&#xD;
+After Show: ActualWidth=120/120, Left=1450/1650, Top=700/700&#xD;
+DPI=1.5/1.5 A=1510, W=120, B=1710, W=120, Area=1350/1920</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="04489198-c796-456e-a428-322a635fc74c" testId="dc29b962-c851-8a97-cfb8-3f97863a5fd9" testName="Reviewer_ChaseFixtureSeedLoadsTwoPets" computerName="毛茸茸的小熊" duration="00:00:00.0077408" startTime="2026-11-12T14:37:59.4161815+08:00" endTime="2026-11-12T14:37:59.4258419+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="04489198-c796-456e-a428-322a635fc74c" />
+    <UnitTestResult executionId="96d38f5c-4365-4d06-8ba2-28d35af85fe2" testId="ca9552a1-44bb-f41f-edb5-b92d66a85300" testName="Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection" computerName="毛茸茸的小熊" duration="00:00:00.3870297" startTime="2026-11-12T14:37:58.9310900+08:00" endTime="2026-11-12T14:37:59.3935862+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="96d38f5c-4365-4d06-8ba2-28d35af85fe2" />
+    <UnitTestResult executionId="125ba140-ba71-4b90-83b7-b91c755d1ccb" testId="8f691c1d-c6b0-6da5-084e-6045adffd62b" testName="Reviewer_FullWidthClearanceMustBeUsedAtInvite" computerName="毛茸茸的小熊" duration="00:00:00.0219354" startTime="2026-11-12T14:37:59.4259105+08:00" endTime="2026-11-12T14:37:59.4501075+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="125ba140-ba71-4b90-83b7-b91c755d1ccb">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;Idle&gt;，实际为: &lt;ChaseInviting&gt;。Full-window left and right clearance are 60 and 80 DIP, below 120.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_FullWidthClearanceMustBeUsedAtInvite() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\Tests.cs:line 5156&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_PerfSeedLoadsTwoPets" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="2ae0c5c7-1586-2687-8d22-7fc1604ca1b0">
+      <Execution id="3ddd6948-ddc7-4aef-a9f6-dae1bc977ac7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_PerfSeedLoadsTwoPets" />
+    </UnitTest>
+    <UnitTest name="Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="30ca7384-09f5-3a49-2f0d-0e6cc99c386d">
+      <Execution id="32215229-c645-4683-a1bf-a568f672ec34" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop" />
+    </UnitTest>
+    <UnitTest name="Reviewer_FullWidthClearanceMustBeUsedAtInvite" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="8f691c1d-c6b0-6da5-084e-6045adffd62b">
+      <Execution id="125ba140-ba71-4b90-83b7-b91c755d1ccb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_FullWidthClearanceMustBeUsedAtInvite" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Shown_FullWidthClearanceMustBeUsedAtInvite" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="e8f5bbfb-4aa5-d052-fa59-7f3e85456e84">
+      <Execution id="debbd0b6-7d13-47da-a3ce-5caedbbdedf4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_Shown_FullWidthClearanceMustBeUsedAtInvite" />
+    </UnitTest>
+    <UnitTest name="Reviewer_ChaseFixtureSeedLoadsTwoPets" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="dc29b962-c851-8a97-cfb8-3f97863a5fd9">
+      <Execution id="04489198-c796-456e-a428-322a635fc74c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_ChaseFixtureSeedLoadsTwoPets" />
+    </UnitTest>
+    <UnitTest name="Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="ca9552a1-44bb-f41f-edb5-b92d66a85300">
+      <Execution id="96d38f5c-4365-4d06-8ba2-28d35af85fe2" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Shown_ChosenDirectionMustStopBothBeforeWindowEdge" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="9827c685-d8df-5933-01fd-17ea610ae387">
+      <Execution id="c55ba8d9-e6c6-43e1-9724-a27b9a1e7c92" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_Shown_ChosenDirectionMustStopBothBeforeWindowEdge" />
+    </UnitTest>
+    <UnitTest name="Reviewer_ChosenDirectionMustStopBothBeforeWindowEdge" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r3\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="27a1d03b-23f3-7ca7-8833-c027be35e058">
+      <Execution id="ef601a5a-c652-4a0a-bc6b-7ad88c545193" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r3\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_ChosenDirectionMustStopBothBeforeWindowEdge" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="27a1d03b-23f3-7ca7-8833-c027be35e058" executionId="ef601a5a-c652-4a0a-bc6b-7ad88c545193" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e8f5bbfb-4aa5-d052-fa59-7f3e85456e84" executionId="debbd0b6-7d13-47da-a3ce-5caedbbdedf4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2ae0c5c7-1586-2687-8d22-7fc1604ca1b0" executionId="3ddd6948-ddc7-4aef-a9f6-dae1bc977ac7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="30ca7384-09f5-3a49-2f0d-0e6cc99c386d" executionId="32215229-c645-4683-a1bf-a568f672ec34" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9827c685-d8df-5933-01fd-17ea610ae387" executionId="c55ba8d9-e6c6-43e1-9724-a27b9a1e7c92" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dc29b962-c851-8a97-cfb8-3f97863a5fd9" executionId="04489198-c796-456e-a428-322a635fc74c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ca9552a1-44bb-f41f-edb5-b92d66a85300" executionId="96d38f5c-4365-4d06-8ba2-28d35af85fe2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f691c1d-c6b0-6da5-084e-6045adffd62b" executionId="125ba140-ba71-4b90-83b7-b91c755d1ccb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="8" executed="8" passed="6" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

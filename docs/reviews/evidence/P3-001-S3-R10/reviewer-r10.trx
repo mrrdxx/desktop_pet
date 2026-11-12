@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="dfa57691-d4f4-42d9-af50-9a8dcc59ba64" name="mrrdxx@毛茸茸的小熊 2026-11-10 00:26:28" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-10T00:26:28.5759868+08:00" queuing="2026-11-10T00:26:28.5759873+08:00" start="2026-11-10T00:26:26.5639617+08:00" finish="2026-11-10T00:26:28.7695354+08:00" />
+  <TestSettings name="default" id="7dc32ba7-6457-4502-adc1-6248d80763e6">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-10_00_26_28" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="d5c860b1-f20e-49b9-b9b2-5990becd4584" testId="ce97670f-6608-91cf-5186-11d54d1a72c9" testName="Reviewer_Recover_MustCaptureOffsetPosition" computerName="毛茸茸的小熊" duration="00:00:00.0470892" startTime="2026-11-10T00:26:28.5485238+08:00" endTime="2026-11-10T00:26:28.6046994+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d5c860b1-f20e-49b9-b9b2-5990becd4584" />
+    <UnitTestResult executionId="eeb7d6c0-5954-4142-865b-0a1b54eaee3b" testId="5eae9d7e-8f60-6065-4fb2-a04f5353b3c0" testName="Reviewer_Readd_MustNotReuseRemovedId" computerName="毛茸茸的小熊" duration="00:00:01.2546050" startTime="2026-11-10T00:26:27.1296095+08:00" endTime="2026-11-10T00:26:28.4750089+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eeb7d6c0-5954-4142-865b-0a1b54eaee3b" />
+    <UnitTestResult executionId="7ba1b490-4f6e-4c33-bc0b-c4c66aacb1e3" testId="c9661b26-b487-a51a-8872-38e360278f22" testName="Reviewer_RemoveFirst_MustRetainOriginalPet" computerName="毛茸茸的小熊" duration="00:00:00.0241773" startTime="2026-11-10T00:26:28.5158635+08:00" endTime="2026-11-10T00:26:28.5478589+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ba1b490-4f6e-4c33-bc0b-c4c66aacb1e3" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_Recover_MustCaptureOffsetPosition" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s3-r10\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="ce97670f-6608-91cf-5186-11d54d1a72c9">
+      <Execution id="d5c860b1-f20e-49b9-b9b2-5990becd4584" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s3-r10\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="ReviewerS3Tests" name="Reviewer_Recover_MustCaptureOffsetPosition" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Readd_MustNotReuseRemovedId" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s3-r10\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="5eae9d7e-8f60-6065-4fb2-a04f5353b3c0">
+      <Execution id="eeb7d6c0-5954-4142-865b-0a1b54eaee3b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s3-r10\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="ReviewerS3Tests" name="Reviewer_Readd_MustNotReuseRemovedId" />
+    </UnitTest>
+    <UnitTest name="Reviewer_RemoveFirst_MustRetainOriginalPet" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-001-s3-r10\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="c9661b26-b487-a51a-8872-38e360278f22">
+      <Execution id="7ba1b490-4f6e-4c33-bc0b-c4c66aacb1e3" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-001-s3-r10\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="ReviewerS3Tests" name="Reviewer_RemoveFirst_MustRetainOriginalPet" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="ce97670f-6608-91cf-5186-11d54d1a72c9" executionId="d5c860b1-f20e-49b9-b9b2-5990becd4584" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5eae9d7e-8f60-6065-4fb2-a04f5353b3c0" executionId="eeb7d6c0-5954-4142-865b-0a1b54eaee3b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9661b26-b487-a51a-8872-38e360278f22" executionId="7ba1b490-4f6e-4c33-bc0b-c4c66aacb1e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

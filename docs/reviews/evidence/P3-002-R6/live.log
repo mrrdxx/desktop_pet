@@ -1,0 +1,3 @@
+2026-11-10T16:17:19.1105072+08:00 [DRIVER] RESTART using existing suiteRoot=C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-8abfdfca dataDir=C:\Users\mrrdxx\Desktop\pet\artifacts\probe-live\run-8abfdfca\data
+2026-11-10T16:17:19.2044858+08:00 [DRIVER] RESTART_PROCESS_STARTED pid=104508
+2026-11-10T16:27:19.2345096+08:00 [DRIVER] RESTART_TIMEOUT pid=104508 exceeded 600000ms; killing.

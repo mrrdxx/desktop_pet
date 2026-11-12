@@ -38,14 +38,14 @@ public partial class App
     { if (!ok) _probeLiveFailures++; ProbeLiveLog($"{(ok ? "PASS" : "FAIL")} {message}"); }
     private static T ProbeField<T>(object instance, string name) =>
         (T)instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(instance)!;
-    private Image ProbeLiveImage => (Image)_mainWindow!.FindName("PetImage");
+    private Image ProbeLiveImage => (Image)_petWindows.Values.First().FindName("PetImage");
 
     // F-11: Probe mode — "auto" (tray exit after checks) or "interactive" (window stays open).
     private static string ProbeMode => Environment.GetEnvironmentVariable("DESKTOPPET_PROBE_MODE") ?? "auto";
 
     private void ProbeLogState(string tag)
     {
-        var w = _mainWindow!;
+        var w = _petWindows.Values.First();
         var hwnd = new System.Windows.Interop.WindowInteropHelper(w).Handle;
         uint dpi = hwnd != IntPtr.Zero ? LiveInput.GetDpiForWindow(hwnd) : 0;
         double dpiScale = dpi / 96.0;
@@ -63,7 +63,7 @@ public partial class App
 
     private void ProbeLogMonitor()
     {
-        var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow!).Handle;
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(_petWindows.Values.First()).Handle;
         var (scaleX, scaleY) = MonitorInterop.GetWindowDpiScale(hwnd);
         ProbeLiveLog($"HWND_DPI scale=({scaleX:F4},{scaleY:F4})");
 
@@ -138,7 +138,7 @@ public partial class App
         // The probe's StartProbe will record _probeOriginalLeft/Top from this
         // position and restore to it.
 
-        var w = _mainWindow!;
+        var w = _petWindows.Values.First();
         var hwnd = new System.Windows.Interop.WindowInteropHelper(w).Handle;
 
         // Record baseline state and all monitor geometry before any tick.

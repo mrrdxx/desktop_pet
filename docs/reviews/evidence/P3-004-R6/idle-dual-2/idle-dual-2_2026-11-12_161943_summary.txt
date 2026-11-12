@@ -1,0 +1,19 @@
+﻿=== PREP-003 性能基线摘要: idle-dual-2 ===
+PID: 61004
+采样数: 296
+首末有效区间: 300.016 秒 (首 elapsed=0.009s, 末 elapsed=300.025s)
+脚本总耗时: 300.042 秒
+CPU 累计差: 3422 ms
+单核 CPU 占比: 1.14%
+逻辑核数: 24
+归一化 CPU 占比 (单核%/逻辑核数): 0.0475%
+公式: cpuPercent = (cpuDelta_ms / (elapsedDelta_s * 1000)) * 100; normalized = cpuPercent / logicalCores
+工作集: 首样本 123.41 MB -> 末样本 138.95 MB (差 15.54 MB)
+私有内存: 首样本 61.83 MB -> 末样本 74.31 MB (差 12.48 MB)
+句柄: 首样本 735 -> 末样本 726 (差 -9)
+线程: 首样本 25 -> 末样本 17 (差 -8)
+进程退出: False
+身份变更: False
+终点样本: True
+采样错误: 0
+退出码: 0 (COMPLETED)

@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="afdba189-25ee-438e-b01e-d6b7f7c803c9" name="mrrdxx@毛茸茸的小熊 2026-11-11 15:18:02" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-11T15:18:02.2570847+08:00" queuing="2026-11-11T15:18:02.2570850+08:00" start="2026-11-11T15:17:56.9053966+08:00" finish="2026-11-11T15:18:03.0835634+08:00" />
+  <TestSettings name="default" id="754cdc40-9785-4ab6-a7f8-91c1a3b0d95d">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-11_15_18_02" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c29b5d22-6546-418c-a2e3-3e9f567eb5de" testId="467d1605-5315-7196-4a67-b990d81bbb1e" testName="Seek_CancelRelease_RealCaptureChain_NoSeeking" computerName="毛茸茸的小熊" duration="00:00:00.0154624" startTime="2026-11-11T15:18:02.8964996+08:00" endTime="2026-11-11T15:18:02.9171049+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c29b5d22-6546-418c-a2e3-3e9f567eb5de" />
+    <UnitTestResult executionId="39c2c0ba-1bca-4111-a16f-21782e885c87" testId="56e692ed-1303-6f28-fac7-ab7c1500ca30" testName="Seek_ArrivesAndStops_LeavesGap" computerName="毛茸茸的小熊" duration="00:00:00.0172662" startTime="2026-11-11T15:18:02.2551140+08:00" endTime="2026-11-11T15:18:02.2762186+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39c2c0ba-1bca-4111-a16f-21782e885c87" />
+    <UnitTestResult executionId="91e30881-2cb2-419c-919a-8edb9dcfa557" testId="fdbfab47-6bdb-36df-9d9e-2d7a7f99b34c" testName="Seek_SaveDuringSeek_RestartDoesNotResumeOldSeek" computerName="毛茸茸的小熊" duration="00:00:00.0256652" startTime="2026-11-11T15:18:02.4584906+08:00" endTime="2026-11-11T15:18:02.4871307+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="91e30881-2cb2-419c-919a-8edb9dcfa557" />
+    <UnitTestResult executionId="2921e0af-88bf-4549-b3b1-462e174e2f3b" testId="a3bea815-ea67-b72b-8f57-89dadeae1c35" testName="Seek_Cooldown_PreventsImmediateRestart" computerName="毛茸茸的小熊" duration="00:00:00.0079948" startTime="2026-11-11T15:18:02.3695822+08:00" endTime="2026-11-11T15:18:02.3803866+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2921e0af-88bf-4549-b3b1-462e174e2f3b" />
+    <UnitTestResult executionId="16dc7874-c965-47c1-9e24-ded893608750" testId="b8fe4cd1-4939-af0c-8a68-a2a0b9aea167" testName="Seek_DualWindowTick_SpeedNotDoubled" computerName="毛茸茸的小熊" duration="00:00:00.0192546" startTime="2026-11-11T15:18:02.5218276+08:00" endTime="2026-11-11T15:18:02.5465677+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="16dc7874-c965-47c1-9e24-ded893608750" />
+    <UnitTestResult executionId="78724c38-bbf0-4211-808d-abb9fb086c7d" testId="bb93a731-f148-9c0a-8caa-7cd88635274e" testName="Seek_ThrownRelease_WaitsForPhysicsStop" computerName="毛茸茸的小熊" duration="00:00:00.0169418" startTime="2026-11-11T15:18:02.4977756+08:00" endTime="2026-11-11T15:18:02.5217295+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="78724c38-bbf0-4211-808d-abb9fb086c7d" />
+    <UnitTestResult executionId="c0331ddb-c6d0-4dee-a05f-3e6b2d50710c" testId="3573db8b-de83-75f7-ab07-b99ac20c22a1" testName="Seek_PetsNotOnBottom_DoesNotStart" computerName="毛茸茸的小熊" duration="00:00:00.0082657" startTime="2026-11-11T15:18:02.3804401+08:00" endTime="2026-11-11T15:18:02.3920168+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c0331ddb-c6d0-4dee-a05f-3e6b2d50710c" />
+    <UnitTestResult executionId="0a424ef1-b8a4-4bdb-a195-b8d4e88b8cda" testId="8b4fe3c5-897f-f5df-e56f-da1446206872" testName="Seek_ProductionDragRelease_TriggersSeeking" computerName="毛茸茸的小熊" duration="00:00:00.0348706" startTime="2026-11-11T15:18:02.5813044+08:00" endTime="2026-11-11T15:18:02.6202617+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0a424ef1-b8a4-4bdb-a195-b8d4e88b8cda" />
+    <UnitTestResult executionId="0abaaa3b-516f-4adc-b421-d5736925535d" testId="a8912e0f-ba49-9e43-94f4-2baff0e63021" testName="Seek_SeekerLosesSupport_CancelsImmediately" computerName="毛茸茸的小熊" duration="00:00:00.0135666" startTime="2026-11-11T15:18:02.5466495+08:00" endTime="2026-11-11T15:18:02.5647445+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0abaaa3b-516f-4adc-b421-d5736925535d" />
+    <UnitTestResult executionId="d49f7a04-a2a8-4fc3-9a7f-7376d88b3dff" testId="443154af-d072-20c6-15d6-18b758968f0d" testName="Seek_CancelledRelease_NoCandidate" computerName="毛茸茸的小熊" duration="00:00:00.0106537" startTime="2026-11-11T15:18:02.6420129+08:00" endTime="2026-11-11T15:18:02.6569072+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d49f7a04-a2a8-4fc3-9a7f-7376d88b3dff" />
+    <UnitTestResult executionId="2bb8efa8-ceb7-4484-b634-c09b13be60c3" testId="dd8d8d59-25d9-8a4e-506a-00daf49c5e3f" testName="Seek_PauseInterrupts_CancelsImmediately" computerName="毛茸茸的小熊" duration="00:00:00.0315600" startTime="2026-11-11T15:18:02.3176642+08:00" endTime="2026-11-11T15:18:02.3523217+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2bb8efa8-ceb7-4484-b634-c09b13be60c3" />
+    <UnitTestResult executionId="e3b0ef45-bd6f-453f-9e27-2e7dc44b5272" testId="e3d986f2-1902-023a-616d-6c93ccbd9c60" testName="Seek_BothOnBottom_SeekerActuallyMoves" computerName="毛茸茸的小熊" duration="00:00:01.0906791" startTime="2026-11-11T15:17:58.1639035+08:00" endTime="2026-11-11T15:18:02.2293034+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3b0ef45-bd6f-453f-9e27-2e7dc44b5272" />
+    <UnitTestResult executionId="6f9bbc17-c03b-4909-bc0a-0ba82d29f586" testId="67f195c9-5656-0bac-cfc8-1a0adc053022" testName="Seek_TargetDoesNotMove" computerName="毛茸茸的小熊" duration="00:00:00.0124025" startTime="2026-11-11T15:18:02.2387009+08:00" endTime="2026-11-11T15:18:02.2544533+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f9bbc17-c03b-4909-bc0a-0ba82d29f586" />
+    <UnitTestResult executionId="7ec5b16d-10be-4759-b83a-12e8792408bd" testId="1266a602-c60c-6b51-612c-54ec33a0ad61" testName="Seek_Restart_NewWindowRestoresPosition_NoOldSeek" computerName="毛茸茸的小熊" duration="00:00:00.1861470" startTime="2026-11-11T15:18:02.6605318+08:00" endTime="2026-11-11T15:18:02.8509900+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ec5b16d-10be-4759-b83a-12e8792408bd">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。预期值 &lt;500&gt; 和实际值 &lt;100&gt; 之间的差不应大于 &lt;1&gt;。Pet A restored Left must match archived value (±1 DIP).</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Seek_Restart_NewWindowRestoresPosition_NoOldSeek() in C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\SocialIntegrationTests.cs:line 3610&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="417db782-7a5c-41d8-b7db-734d6d3f2258" testId="4d9fe7ec-9f59-5be6-4a2c-97c2c0db68a3" testName="Seek_AfterCooldown_CanRestart" computerName="毛茸茸的小熊" duration="00:00:00.0370691" startTime="2026-11-11T15:18:02.4137842+08:00" endTime="2026-11-11T15:18:02.4551540+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="417db782-7a5c-41d8-b7db-734d6d3f2258" />
+    <UnitTestResult executionId="701a0650-d5b0-4600-bcdd-d000597173a1" testId="ab4e2cd6-7fdd-72eb-0a41-ad54a107fb79" testName="Seek_AirborneRelease_CandidateExpires_NotSeekLater" computerName="毛茸茸的小熊" duration="00:00:00.0138580" startTime="2026-11-11T15:18:02.6203438+08:00" endTime="2026-11-11T15:18:02.6418922+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="701a0650-d5b0-4600-bcdd-d000597173a1" />
+    <UnitTestResult executionId="2414026f-fedf-42a5-8cee-6580a3476f2a" testId="7df8ac5e-045e-8f6e-2f9f-176f41d3d4a6" testName="Seek_GentleRelease_RealCaptureChain_SeeksAfterDelay" computerName="毛茸茸的小熊" duration="00:00:00.0164398" startTime="2026-11-11T15:18:02.8751445+08:00" endTime="2026-11-11T15:18:02.8963741+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2414026f-fedf-42a5-8cee-6580a3476f2a" />
+    <UnitTestResult executionId="339b6b5f-8e2c-41e8-b5e1-f20521302134" testId="51d3f8a6-804e-52f7-84e4-9262058ced50" testName="Seek_DragInterrupts_CancelsImmediately" computerName="毛茸茸的小熊" duration="00:00:00.0369211" startTime="2026-11-11T15:18:02.2765842+08:00" endTime="2026-11-11T15:18:02.3175410+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="339b6b5f-8e2c-41e8-b5e1-f20521302134" />
+    <UnitTestResult executionId="adbc40df-894e-49bf-92e0-e064a92c3721" testId="36464584-5464-96b1-8715-16af670c4785" testName="Seek_NoRelease_NoSpontaneousSeek" computerName="毛茸茸的小熊" duration="00:00:00.0081586" startTime="2026-11-11T15:18:02.4871912+08:00" endTime="2026-11-11T15:18:02.4977248+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="adbc40df-894e-49bf-92e0-e064a92c3721" />
+    <UnitTestResult executionId="545c1ebc-6efa-43e9-8b47-51a15da600c4" testId="059fc304-05f5-eb0a-f967-888f82c6c522" testName="Seek_TargetOffScreen_CancelsImmediately" computerName="毛茸茸的小熊" duration="00:00:00.0123958" startTime="2026-11-11T15:18:02.5648355+08:00" endTime="2026-11-11T15:18:02.5812292+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="545c1ebc-6efa-43e9-8b47-51a15da600c4" />
+    <UnitTestResult executionId="d9e67144-bad0-4f9a-9046-f3ad26e07a28" testId="72becd3f-cfad-bfcf-2ff8-4a2253f076a8" testName="Seek_WithinReactDelay_DoesNotStart" computerName="毛茸茸的小熊" duration="00:00:00.0179024" startTime="2026-11-11T15:18:02.3920946+08:00" endTime="2026-11-11T15:18:02.4137008+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9e67144-bad0-4f9a-9046-f3ad26e07a28" />
+    <UnitTestResult executionId="d7d0357e-8c5b-4388-bd37-1bdd983379a0" testId="c2ab2d1c-2241-61c6-f1a8-24c5fd0de757" testName="Seek_ThrownRelease_RealCaptureChain_WaitsForPhysicsStop_ThenSeeks" computerName="毛茸茸的小熊" duration="00:00:00.0196335" startTime="2026-11-11T15:18:02.8514328+08:00" endTime="2026-11-11T15:18:02.8750677+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d7d0357e-8c5b-4388-bd37-1bdd983379a0" />
+    <UnitTestResult executionId="5d3753e9-4f74-4289-a62f-6fcfe817a4c6" testId="0f228581-7af4-7320-2932-6057bbd62299" testName="Seek_PetRemoval_CancelsImmediately" computerName="毛茸茸的小熊" duration="00:00:00.0140306" startTime="2026-11-11T15:18:02.3523855+08:00" endTime="2026-11-11T15:18:02.3695283+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d3753e9-4f74-4289-a62f-6fcfe817a4c6" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Seek_ProductionDragRelease_TriggersSeeking" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="8b4fe3c5-897f-f5df-e56f-da1446206872">
+      <Execution id="0a424ef1-b8a4-4bdb-a195-b8d4e88b8cda" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_ProductionDragRelease_TriggersSeeking" />
+    </UnitTest>
+    <UnitTest name="Seek_PetsNotOnBottom_DoesNotStart" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="3573db8b-de83-75f7-ab07-b99ac20c22a1">
+      <Execution id="c0331ddb-c6d0-4dee-a05f-3e6b2d50710c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_PetsNotOnBottom_DoesNotStart" />
+    </UnitTest>
+    <UnitTest name="Seek_DragInterrupts_CancelsImmediately" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="51d3f8a6-804e-52f7-84e4-9262058ced50">
+      <Execution id="339b6b5f-8e2c-41e8-b5e1-f20521302134" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_DragInterrupts_CancelsImmediately" />
+    </UnitTest>
+    <UnitTest name="Seek_ThrownRelease_WaitsForPhysicsStop" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="bb93a731-f148-9c0a-8caa-7cd88635274e">
+      <Execution id="78724c38-bbf0-4211-808d-abb9fb086c7d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_ThrownRelease_WaitsForPhysicsStop" />
+    </UnitTest>
+    <UnitTest name="Seek_PauseInterrupts_CancelsImmediately" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="dd8d8d59-25d9-8a4e-506a-00daf49c5e3f">
+      <Execution id="2bb8efa8-ceb7-4484-b634-c09b13be60c3" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_PauseInterrupts_CancelsImmediately" />
+    </UnitTest>
+    <UnitTest name="Seek_GentleRelease_RealCaptureChain_SeeksAfterDelay" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="7df8ac5e-045e-8f6e-2f9f-176f41d3d4a6">
+      <Execution id="2414026f-fedf-42a5-8cee-6580a3476f2a" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_GentleRelease_RealCaptureChain_SeeksAfterDelay" />
+    </UnitTest>
+    <UnitTest name="Seek_PetRemoval_CancelsImmediately" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="0f228581-7af4-7320-2932-6057bbd62299">
+      <Execution id="5d3753e9-4f74-4289-a62f-6fcfe817a4c6" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_PetRemoval_CancelsImmediately" />
+    </UnitTest>
+    <UnitTest name="Seek_WithinReactDelay_DoesNotStart" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="72becd3f-cfad-bfcf-2ff8-4a2253f076a8">
+      <Execution id="d9e67144-bad0-4f9a-9046-f3ad26e07a28" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_WithinReactDelay_DoesNotStart" />
+    </UnitTest>
+    <UnitTest name="Seek_DualWindowTick_SpeedNotDoubled" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="b8fe4cd1-4939-af0c-8a68-a2a0b9aea167">
+      <Execution id="16dc7874-c965-47c1-9e24-ded893608750" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_DualWindowTick_SpeedNotDoubled" />
+    </UnitTest>
+    <UnitTest name="Seek_SeekerLosesSupport_CancelsImmediately" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="a8912e0f-ba49-9e43-94f4-2baff0e63021">
+      <Execution id="0abaaa3b-516f-4adc-b421-d5736925535d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_SeekerLosesSupport_CancelsImmediately" />
+    </UnitTest>
+    <UnitTest name="Seek_TargetOffScreen_CancelsImmediately" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="059fc304-05f5-eb0a-f967-888f82c6c522">
+      <Execution id="545c1ebc-6efa-43e9-8b47-51a15da600c4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_TargetOffScreen_CancelsImmediately" />
+    </UnitTest>
+    <UnitTest name="Seek_CancelRelease_RealCaptureChain_NoSeeking" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="467d1605-5315-7196-4a67-b990d81bbb1e">
+      <Execution id="c29b5d22-6546-418c-a2e3-3e9f567eb5de" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_CancelRelease_RealCaptureChain_NoSeeking" />
+    </UnitTest>
+    <UnitTest name="Seek_SaveDuringSeek_RestartDoesNotResumeOldSeek" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="fdbfab47-6bdb-36df-9d9e-2d7a7f99b34c">
+      <Execution id="91e30881-2cb2-419c-919a-8edb9dcfa557" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_SaveDuringSeek_RestartDoesNotResumeOldSeek" />
+    </UnitTest>
+    <UnitTest name="Seek_AirborneRelease_CandidateExpires_NotSeekLater" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="ab4e2cd6-7fdd-72eb-0a41-ad54a107fb79">
+      <Execution id="701a0650-d5b0-4600-bcdd-d000597173a1" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_AirborneRelease_CandidateExpires_NotSeekLater" />
+    </UnitTest>
+    <UnitTest name="Seek_ArrivesAndStops_LeavesGap" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="56e692ed-1303-6f28-fac7-ab7c1500ca30">
+      <Execution id="39c2c0ba-1bca-4111-a16f-21782e885c87" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_ArrivesAndStops_LeavesGap" />
+    </UnitTest>
+    <UnitTest name="Seek_AfterCooldown_CanRestart" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="4d9fe7ec-9f59-5be6-4a2c-97c2c0db68a3">
+      <Execution id="417db782-7a5c-41d8-b7db-734d6d3f2258" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_AfterCooldown_CanRestart" />
+    </UnitTest>
+    <UnitTest name="Seek_Cooldown_PreventsImmediateRestart" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="a3bea815-ea67-b72b-8f57-89dadeae1c35">
+      <Execution id="2921e0af-88bf-4549-b3b1-462e174e2f3b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_Cooldown_PreventsImmediateRestart" />
+    </UnitTest>
+    <UnitTest name="Seek_ThrownRelease_RealCaptureChain_WaitsForPhysicsStop_ThenSeeks" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="c2ab2d1c-2241-61c6-f1a8-24c5fd0de757">
+      <Execution id="d7d0357e-8c5b-4388-bd37-1bdd983379a0" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_ThrownRelease_RealCaptureChain_WaitsForPhysicsStop_ThenSeeks" />
+    </UnitTest>
+    <UnitTest name="Seek_TargetDoesNotMove" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="67f195c9-5656-0bac-cfc8-1a0adc053022">
+      <Execution id="6f9bbc17-c03b-4909-bc0a-0ba82d29f586" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_TargetDoesNotMove" />
+    </UnitTest>
+    <UnitTest name="Seek_CancelledRelease_NoCandidate" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="443154af-d072-20c6-15d6-18b758968f0d">
+      <Execution id="d49f7a04-a2a8-4fc3-9a7f-7376d88b3dff" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_CancelledRelease_NoCandidate" />
+    </UnitTest>
+    <UnitTest name="Seek_Restart_NewWindowRestoresPosition_NoOldSeek" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="1266a602-c60c-6b51-612c-54ec33a0ad61">
+      <Execution id="7ec5b16d-10be-4759-b83a-12e8792408bd" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_Restart_NewWindowRestoresPosition_NoOldSeek" />
+    </UnitTest>
+    <UnitTest name="Seek_NoRelease_NoSpontaneousSeek" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="36464584-5464-96b1-8715-16af670c4785">
+      <Execution id="adbc40df-894e-49bf-92e0-e064a92c3721" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_NoRelease_NoSpontaneousSeek" />
+    </UnitTest>
+    <UnitTest name="Seek_BothOnBottom_SeekerActuallyMoves" storage="c:\users\mrrdxx\desktop\pet\tests\desktoppet.app.tests\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="e3d986f2-1902-023a-616d-6c93ccbd9c60">
+      <Execution id="e3b0ef45-bd6f-453f-9e27-2e7dc44b5272" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\tests\DesktopPet.App.Tests\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Seek_BothOnBottom_SeekerActuallyMoves" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="467d1605-5315-7196-4a67-b990d81bbb1e" executionId="c29b5d22-6546-418c-a2e3-3e9f567eb5de" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56e692ed-1303-6f28-fac7-ab7c1500ca30" executionId="39c2c0ba-1bca-4111-a16f-21782e885c87" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fdbfab47-6bdb-36df-9d9e-2d7a7f99b34c" executionId="91e30881-2cb2-419c-919a-8edb9dcfa557" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a3bea815-ea67-b72b-8f57-89dadeae1c35" executionId="2921e0af-88bf-4549-b3b1-462e174e2f3b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b8fe4cd1-4939-af0c-8a68-a2a0b9aea167" executionId="16dc7874-c965-47c1-9e24-ded893608750" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb93a731-f148-9c0a-8caa-7cd88635274e" executionId="78724c38-bbf0-4211-808d-abb9fb086c7d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3573db8b-de83-75f7-ab07-b99ac20c22a1" executionId="c0331ddb-c6d0-4dee-a05f-3e6b2d50710c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8b4fe3c5-897f-f5df-e56f-da1446206872" executionId="0a424ef1-b8a4-4bdb-a195-b8d4e88b8cda" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a8912e0f-ba49-9e43-94f4-2baff0e63021" executionId="0abaaa3b-516f-4adc-b421-d5736925535d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="443154af-d072-20c6-15d6-18b758968f0d" executionId="d49f7a04-a2a8-4fc3-9a7f-7376d88b3dff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dd8d8d59-25d9-8a4e-506a-00daf49c5e3f" executionId="2bb8efa8-ceb7-4484-b634-c09b13be60c3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e3d986f2-1902-023a-616d-6c93ccbd9c60" executionId="e3b0ef45-bd6f-453f-9e27-2e7dc44b5272" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67f195c9-5656-0bac-cfc8-1a0adc053022" executionId="6f9bbc17-c03b-4909-bc0a-0ba82d29f586" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1266a602-c60c-6b51-612c-54ec33a0ad61" executionId="7ec5b16d-10be-4759-b83a-12e8792408bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4d9fe7ec-9f59-5be6-4a2c-97c2c0db68a3" executionId="417db782-7a5c-41d8-b7db-734d6d3f2258" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab4e2cd6-7fdd-72eb-0a41-ad54a107fb79" executionId="701a0650-d5b0-4600-bcdd-d000597173a1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7df8ac5e-045e-8f6e-2f9f-176f41d3d4a6" executionId="2414026f-fedf-42a5-8cee-6580a3476f2a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="51d3f8a6-804e-52f7-84e4-9262058ced50" executionId="339b6b5f-8e2c-41e8-b5e1-f20521302134" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36464584-5464-96b1-8715-16af670c4785" executionId="adbc40df-894e-49bf-92e0-e064a92c3721" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="059fc304-05f5-eb0a-f967-888f82c6c522" executionId="545c1ebc-6efa-43e9-8b47-51a15da600c4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="72becd3f-cfad-bfcf-2ff8-4a2253f076a8" executionId="d9e67144-bad0-4f9a-9046-f3ad26e07a28" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c2ab2d1c-2241-61c6-f1a8-24c5fd0de757" executionId="d7d0357e-8c5b-4388-bd37-1bdd983379a0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0f228581-7af4-7320-2932-6057bbd62299" executionId="5d3753e9-4f74-4289-a62f-6fcfe817a4c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="23" executed="23" passed="22" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

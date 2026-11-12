@@ -23,6 +23,9 @@ public sealed class TrayService : IDisposable
     /// <summary>Raised when the user clicks Exit.</summary>
     public event EventHandler? ExitRequested;
 
+    /// <summary>P3-001-S3: Raised when the user clicks Add Pet.</summary>
+    public event EventHandler? AddPetRequested;
+
     public TrayService()
     {
         _notifyIcon = new NotifyIcon
@@ -41,6 +44,9 @@ public sealed class TrayService : IDisposable
         menu.Items.Add(_pauseItem);
 
         menu.Items.Add(new ToolStripSeparator());
+
+        // P3-001-S3: Add second pet.
+        menu.Items.Add("Add Pet", null, OnAddPetClicked);
 
         menu.Items.Add("Recover", null, OnRecoverClicked);
         menu.Items.Add("Exit", null, OnExitClicked);
@@ -72,6 +78,11 @@ public sealed class TrayService : IDisposable
     private void OnRecoverClicked(object? sender, EventArgs e)
     {
         RecoverRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnAddPetClicked(object? sender, EventArgs e)
+    {
+        AddPetRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnExitClicked(object? sender, EventArgs e)

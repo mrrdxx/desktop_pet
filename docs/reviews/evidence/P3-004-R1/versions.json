@@ -1,0 +1,34 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Social\\SocialCoordinator.cs",
+    "Hash": "5EEFF2BCC77B1712AFBC92AC61D155807383C092488134C5E9E53D4E3E2CB6C9"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Social\\SocialSession.cs",
+    "Hash": "085EE85E56CD7FE57A113182C1B2D342F4AE92783CE03910EE27B836EFCDC8F6"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Social\\SocialConfig.cs",
+    "Hash": "EB58E86FC80E3D41113C81AD52AE8489A60651CCFDF889721E8276ED3FCDD7B3"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "408D99E6A66011E0CE234E11DE941335A906240743B75F1E954D56BA93AB32F2"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.Core.Tests\\SocialCoordinatorTests.cs",
+    "Hash": "7E9443D8A678461290BED5533F3BAD175F711FF24ED8AA9C325A5EDB87CFD24A"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.App.Tests\\SocialIntegrationTests.cs",
+    "Hash": "208A37DF1F0FCAD967554D1C6EE51C37E0033D20008252B3CF94AB84C6633E62"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\Integration\\Run-ProbeLive.ps1",
+    "Hash": "3F523295070069A6192D3CBEF842608F8F3B0EE3E54E67B42E389131199D6260"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\Integration\\Run-PerfIsolated.ps1",
+    "Hash": "1D6ABA460F44A33B4F76813AEF3CABF5F3F4EECB616E914681CBA759D03A911D"
+  }
+]

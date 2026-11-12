@@ -1,0 +1,27 @@
+{
+  "src/DesktopPet.App/Persistence/ArchiveService.cs": {
+    "R1": "80b547daa462618eb5441c7acdc44dc852b9d75ab34640792e02ff092db56a60",
+    "R2": "80b547daa462618eb5441c7acdc44dc852b9d75ab34640792e02ff092db56a60",
+    "unchanged": true
+  },
+  "src/DesktopPet.Core/Persistence/PetStateArchive.cs": {
+    "R1": "70e7be509936bcf3a1d84a42ca90a1a14b4b191596d553e37c0c32caa134ba74",
+    "R2": "70e7be509936bcf3a1d84a42ca90a1a14b4b191596d553e37c0c32caa134ba74",
+    "unchanged": true
+  },
+  "src/DesktopPet.App/App.xaml.cs": {
+    "R1": "7e4c504fb045c26cda466fb0690d24cf65a34caad6edd1a99395a079192a318d",
+    "R2": "7e4c504fb045c26cda466fb0690d24cf65a34caad6edd1a99395a079192a318d",
+    "unchanged": true
+  },
+  "tests/DesktopPet.App.Tests/ArchiveServiceTests.cs": {
+    "R1": "629f78fe09081911cd6d7644773bf78ddc45e9c93360b290572434138fcfa76a",
+    "R2": "629f78fe09081911cd6d7644773bf78ddc45e9c93360b290572434138fcfa76a",
+    "unchanged": true
+  },
+  "docs/ARCHITECTURE.md": {
+    "R1": "afca6c0d25f9a5dc24c531e3b25de96e5b6ee0fa295f3dc9c87313de8dd5bf9c",
+    "R2": "afca6c0d25f9a5dc24c531e3b25de96e5b6ee0fa295f3dc9c87313de8dd5bf9c",
+    "unchanged": true
+  }
+}

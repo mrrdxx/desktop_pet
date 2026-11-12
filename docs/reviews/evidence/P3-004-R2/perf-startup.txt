@@ -1,0 +1,2 @@
+bear-1 Left=200.00 Top=898.67 Bottom=True Monitor=\\.\DISPLAY1 Visible=True
+bear-2 Left=400.00 Top=898.67 Bottom=True Monitor=\\.\DISPLAY1 Visible=True

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="428c840e-ec38-4f27-9d10-6696b34443c6" name="mrrdxx@毛茸茸的小熊 2026-11-12 11:19:05" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T11:19:05.9738199+08:00" queuing="2026-11-12T11:19:05.9738204+08:00" start="2026-11-12T11:19:04.1045241+08:00" finish="2026-11-12T11:19:05.9843112+08:00" />
+  <TestSettings name="default" id="84503294-745d-485e-abcf-b04258f0a4c7">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_11_19_05" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f84a24cf-d4ee-4eea-bb84-6d04715ca055" testId="dc29b962-c851-8a97-cfb8-3f97863a5fd9" testName="Reviewer_ChaseFixtureSeedLoadsTwoPets" computerName="毛茸茸的小熊" duration="00:00:00.0233309" startTime="2026-11-12T11:19:05.6719223+08:00" endTime="2026-11-12T11:19:05.7018618+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f84a24cf-d4ee-4eea-bb84-6d04715ca055">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Warning: 0 : Corrupted JSON in C:\Users\mrrdxx\AppData\Local\Temp\ChaseSeed_4c3deed120d44f62b6005c7a19e345d8\state.json: The JSON value could not be converted to DesktopPet.Core.Persistence.Personality. Path: $.pets[0].personality | LineNumber: 8 | BytePositionInLine: 32.</StdOut>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;2&gt;，实际为: &lt;1&gt;。The -Chase seed must deserialize through the production archive loader.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_ChaseFixtureSeedLoadsTwoPets() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r1\app-probe\Tests.cs:line 5137&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c6ee5d0d-8d88-465f-9fdd-2755d5bb8612" testId="ca9552a1-44bb-f41f-edb5-b92d66a85300" testName="Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection" computerName="毛茸茸的小熊" duration="00:00:00.7509845" startTime="2026-11-12T11:19:04.8098331+08:00" endTime="2026-11-12T11:19:05.6369462+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c6ee5d0d-8d88-465f-9fdd-2755d5bb8612">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;-1&gt;，实际为: &lt;1&gt;。Rightward leader window has only 5 DIP clearance.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r1\app-probe\Tests.cs:line 5098&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7ad9da55-159d-4f70-bd46-096e096d84c3" testId="30ca7384-09f5-3a49-2f0d-0e6cc99c386d" testName="Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop" computerName="毛茸茸的小熊" duration="00:00:00.0251590" startTime="2026-11-12T11:19:05.6417163+08:00" endTime="2026-11-12T11:19:05.6713802+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ad9da55-159d-4f70-bd46-096e096d84c3">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue 失败。Full windows must stay inside the work area: A=1640.00, B=1802.00, B.Right=1922.00.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r1\app-probe\Tests.cs:line 5122&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r1\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="30ca7384-09f5-3a49-2f0d-0e6cc99c386d">
+      <Execution id="7ad9da55-159d-4f70-bd46-096e096d84c3" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r1\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_LeaderMustNotLeaveFullWorkAreaAndPairMustStop" />
+    </UnitTest>
+    <UnitTest name="Reviewer_ChaseFixtureSeedLoadsTwoPets" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r1\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="dc29b962-c851-8a97-cfb8-3f97863a5fd9">
+      <Execution id="f84a24cf-d4ee-4eea-bb84-6d04715ca055" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r1\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_ChaseFixtureSeedLoadsTwoPets" />
+    </UnitTest>
+    <UnitTest name="Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r1\app-probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="ca9552a1-44bb-f41f-edb5-b92d66a85300">
+      <Execution id="c6ee5d0d-8d88-465f-9fdd-2755d5bb8612" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r1\app-probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_TooLittleForwardClearanceMustNotInviteThatDirection" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="dc29b962-c851-8a97-cfb8-3f97863a5fd9" executionId="f84a24cf-d4ee-4eea-bb84-6d04715ca055" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ca9552a1-44bb-f41f-edb5-b92d66a85300" executionId="c6ee5d0d-8d88-465f-9fdd-2755d5bb8612" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="30ca7384-09f5-3a49-2f0d-0e6cc99c386d" executionId="7ad9da55-159d-4f70-bd46-096e096d84c3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="3" executed="3" passed="0" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

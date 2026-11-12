@@ -1,0 +1,47 @@
+diff --git a/artifacts/perf-baseline/run-bb7ac89c/isolated-app/App.xaml.cs b/artifacts/p3-004-m10/control-app/App.xaml.cs
+index 44962a5..1b65bea 100644
+--- a/artifacts/perf-baseline/run-bb7ac89c/isolated-app/App.xaml.cs
++++ b/artifacts/p3-004-m10/control-app/App.xaml.cs
+@@ -600,6 +600,37 @@ public partial class App : System.Windows.Application
+         ReviewTick();
+         reviewTimer.Tick += (_, _) => ReviewTick();
+         reviewTimer.Start();
++        var reviewButtons = new System.Windows.Controls.StackPanel
++        {
++            Margin = new Thickness(12),
++            Orientation = System.Windows.Controls.Orientation.Horizontal,
++        };
++        void AddReviewButton(string label, Action action)
++        {
++            var button = new System.Windows.Controls.Button
++            {
++                Content = label, Width = 75, Height = 38, Margin = new Thickness(3),
++            };
++            button.Click += (_, _) =>
++            {
++                File.AppendAllText(reviewLog,
++                    $"INPUT {DateTimeOffset.Now:O} ms={reviewClock.ElapsedMilliseconds} {label} prior={SocialCoordinator!.CurrentSession.Phase}{Environment.NewLine}");
++                action();
++                ReviewTick();
++            };
++            reviewButtons.Children.Add(button);
++        }
++        AddReviewButton("Pause", () => OnPauseToggled(null, true));
++        AddReviewButton("Resume", () => OnPauseToggled(null, false));
++        AddReviewButton("Exit", ShutdownMainWindow);
++        var reviewControls = new Window
++        {
++            Title = "P3-004 isolated controls", Width = 280, Height = 110,
++            Left = 1100, Top = 100, Topmost = true,
++            WindowStartupLocation = WindowStartupLocation.Manual,
++            Content = reviewButtons,
++        };
++        reviewControls.Show();
+ 
+         if (stateUnknown || settingsUnknown)
+             _tray.ShowReadOnlyArchiveNotice();
+@@ -1288,3 +1319,4 @@ public partial class App : System.Windows.Application
+ }
+ 
+ 
++

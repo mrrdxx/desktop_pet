@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="d220b55b-899d-43f7-b159-c4f230be5deb" name="mrrdxx@毛茸茸的小熊 2026-11-10 12:56:45" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-10T12:56:45.5357520+08:00" queuing="2026-11-10T12:56:45.5357523+08:00" start="2026-11-10T12:56:43.6228210+08:00" finish="2026-11-10T12:56:45.5429948+08:00" />
+  <TestSettings name="default" id="a9cb4aaf-2f75-45f8-b9f7-8068973c3ed8">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-10_12_56_45" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="85c75ebc-1195-43cb-a193-c32038beae94" testId="44b13987-2d99-ae9b-cb40-efd9a0524864" testName="Reviewer_GlobalPause_CancelsWithoutManuallyTickingStoppedTimers" computerName="毛茸茸的小熊" duration="00:00:00.0219600" startTime="2026-11-10T12:56:45.0912443+08:00" endTime="2026-11-10T12:56:45.1216836+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="85c75ebc-1195-43cb-a193-c32038beae94">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。Pause stops all timers; cancellation must occur in production event.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_GlobalPause_CancelsWithoutManuallyTickingStoppedTimers() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\SocialIntegrationTests.cs:line 854&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="831de94c-5fdc-449d-bf33-5f06d6264d97" testId="66dca4d8-cd46-ca6b-1ea6-54ef16acd1d4" testName="Reviewer_HeadPress_CancelsBeforeReturning" computerName="毛茸茸的小熊" duration="00:00:00.0201671" startTime="2026-11-10T12:56:45.1727801+08:00" endTime="2026-11-10T12:56:45.2025310+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="831de94c-5fdc-449d-bf33-5f06d6264d97">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。Grab cancellation cannot wait for a later tick.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_HeadPress_CancelsBeforeReturning() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\SocialIntegrationTests.cs:line 872&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4450d43e-0526-4caf-b927-a4b0b1895302" testId="223ef778-e021-9fd0-840a-97086f6791fc" testName="Reviewer_SocialNotice_MustActuallyDisplayCurious" computerName="毛茸茸的小熊" duration="00:00:00.8045475" startTime="2026-11-10T12:56:44.2029224+08:00" endTime="2026-11-10T12:56:45.0875694+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4450d43e-0526-4caf-b927-a4b0b1895302">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;curious&gt;，实际为: &lt;idle&gt;。Initiator must display social notice, not just set a private timer.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_SocialNotice_MustActuallyDisplayCurious() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\SocialIntegrationTests.cs:line 845&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="31a813cd-d00e-4403-b99e-13e38c4b7608" testId="6877beba-2e06-ad72-d28c-a748f1c57cb4" testName="Reviewer_GlobalRecover_CancelsSession" computerName="毛茸茸的小熊" duration="00:00:00.0390782" startTime="2026-11-10T12:56:45.1224513+08:00" endTime="2026-11-10T12:56:45.1726965+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="31a813cd-d00e-4403-b99e-13e38c4b7608">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。Recover must end shared social ownership.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_GlobalRecover_CancelsSession() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\SocialIntegrationTests.cs:line 863&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b446736b-45b5-4040-a550-b96f66a98aff" testId="f71c06a7-aef7-bb53-b69a-d9af5900ee13" testName="Reviewer_RemoveReadd_UsesCurrentClockForCooldown" computerName="毛茸茸的小熊" duration="00:00:00.1097486" startTime="2026-11-10T12:56:45.2027143+08:00" endTime="2026-11-10T12:56:45.3230193+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b446736b-45b5-4040-a550-b96f66a98aff">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。Survivor must remain in cooldown from removal time, not time zero.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_RemoveReadd_UsesCurrentClockForCooldown() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\SocialIntegrationTests.cs:line 883&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_HeadPress_CancelsBeforeReturning" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-002-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="66dca4d8-cd46-ca6b-1ea6-54ef16acd1d4">
+      <Execution id="831de94c-5fdc-449d-bf33-5f06d6264d97" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_HeadPress_CancelsBeforeReturning" />
+    </UnitTest>
+    <UnitTest name="Reviewer_SocialNotice_MustActuallyDisplayCurious" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-002-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="223ef778-e021-9fd0-840a-97086f6791fc">
+      <Execution id="4450d43e-0526-4caf-b927-a4b0b1895302" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_SocialNotice_MustActuallyDisplayCurious" />
+    </UnitTest>
+    <UnitTest name="Reviewer_GlobalRecover_CancelsSession" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-002-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="6877beba-2e06-ad72-d28c-a748f1c57cb4">
+      <Execution id="31a813cd-d00e-4403-b99e-13e38c4b7608" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_GlobalRecover_CancelsSession" />
+    </UnitTest>
+    <UnitTest name="Reviewer_RemoveReadd_UsesCurrentClockForCooldown" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-002-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="f71c06a7-aef7-bb53-b69a-d9af5900ee13">
+      <Execution id="b446736b-45b5-4040-a550-b96f66a98aff" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_RemoveReadd_UsesCurrentClockForCooldown" />
+    </UnitTest>
+    <UnitTest name="Reviewer_GlobalPause_CancelsWithoutManuallyTickingStoppedTimers" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-002-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="44b13987-2d99-ae9b-cb40-efd9a0524864">
+      <Execution id="85c75ebc-1195-43cb-a193-c32038beae94" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-002-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_GlobalPause_CancelsWithoutManuallyTickingStoppedTimers" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="44b13987-2d99-ae9b-cb40-efd9a0524864" executionId="85c75ebc-1195-43cb-a193-c32038beae94" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="66dca4d8-cd46-ca6b-1ea6-54ef16acd1d4" executionId="831de94c-5fdc-449d-bf33-5f06d6264d97" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="223ef778-e021-9fd0-840a-97086f6791fc" executionId="4450d43e-0526-4caf-b927-a4b0b1895302" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6877beba-2e06-ad72-d28c-a748f1c57cb4" executionId="31a813cd-d00e-4403-b99e-13e38c4b7608" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f71c06a7-aef7-bb53-b69a-d9af5900ee13" executionId="b446736b-45b5-4040-a550-b96f66a98aff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="0" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

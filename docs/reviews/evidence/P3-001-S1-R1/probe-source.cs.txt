@@ -1,0 +1,16 @@
+using DesktopPet.App.Persistence;
+using System.Reflection;
+using System.IO;
+class Program {
+[STAThread] static void Main() {
+ foreach(var scenario in new[]{"legacy-wrong-type","null-pet"}) {
+ var dir=Path.Combine(Path.GetTempPath(),"DesktopPetReview-"+Guid.NewGuid());Directory.CreateDirectory(dir);
+ var json=scenario=="legacy-wrong-type"?"""{"schemaVersion":3,"windowLeft":"oops","grievance":65}""":"""{"schemaVersion":4,"pets":[null]}""";
+ File.WriteAllText(Path.Combine(dir,"state.json"),json);
+ File.WriteAllText(Path.Combine(dir,"state.json.bak"),"""{"schemaVersion":3,"windowLeft":321,"grievance":67}""");
+ try {var service=new ArchiveService(dir);var (state,backup,unknown)=service.LoadState();Console.WriteLine($"{scenario}: load returned backup={backup} pets={state.Pets.Count}");
+ if(scenario=="null-pet") typeof(DesktopPet.App.App).GetMethod("MapArchiveToEmotionObjects",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,new object?[]{state,DateTime.UtcNow});
+ }catch(Exception ex){Console.WriteLine($"{scenario}: THREW {(ex.InnerException??ex).GetType().Name}: {(ex.InnerException??ex).Message}; backupExists={File.Exists(Path.Combine(dir,"state.json.bak"))} corruptedExists={File.Exists(Path.Combine(dir,"state.json.corrupted"))}");}
+ }
+}
+}

@@ -1,0 +1,8 @@
+{
+  "scenario": "dual-pet-exit",
+  "exitCode": 0,
+  "message": "dual-pet-exit: ShutdownMainWindow returned without process exit (unexpected).",
+  "logDirectory": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p3-001-s3-r11\\exit-check\\dual-pet-exit\\logs",
+  "logFiles": [],
+  "logContent": ""
+}

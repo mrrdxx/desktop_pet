@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 4,
+  "lastSavedUtc": "2026-11-10T02:59:17.8354719Z",
+  "isPaused": false,
+  "accumulatedRuntimeMinutes": 156.23062269333326,
+  "rareEventPlan": {
+    "localDate": "2026-11-10",
+    "triggerDelayMinutes": 20,
+    "triggerRoll": 0,
+    "consumed": true,
+    "accumulatedBaselineMinutes": 0
+  },
+  "pets": [
+    {
+      "petId": "bear-1",
+      "personality": 0,
+      "windowLeft": 114,
+      "windowTop": 74.66666666666667,
+      "savedDeviceName": "\\\\.\\DISPLAY1",
+      "grievance": 50,
+      "lastDecayUtc": "2026-11-10T02:59:17.8174796Z",
+      "pendingGrievanceExpression": false,
+      "grievanceExpressionDate": null
+    }
+  ]
+}

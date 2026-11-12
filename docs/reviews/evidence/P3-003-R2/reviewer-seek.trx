@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="192dea71-b356-4596-8bee-8e797b7dfc01" name="mrrdxx@毛茸茸的小熊 2026-11-10 23:28:26" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-10T23:28:26.5502301+08:00" queuing="2026-11-10T23:28:26.5502305+08:00" start="2026-11-10T23:28:24.7284194+08:00" finish="2026-11-10T23:28:26.5566849+08:00" />
+  <TestSettings name="default" id="cfdcefba-5aa5-4fca-b1a3-06592eacdc8b">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-10_23_28_26" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="d8ebdbed-a03e-40d0-a91a-33aa47e2b0d2" testId="872c43ff-37f6-c4d7-561b-57c6fa688bbe" testName="Reviewer_IdleStartupWithoutDrag_MustNotStartSeeking" computerName="毛茸茸的小熊" duration="00:00:00.0291769" startTime="2026-11-10T23:28:26.1974337+08:00" endTime="2026-11-10T23:28:26.2330985+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d8ebdbed-a03e-40d0-a91a-33aa47e2b0d2" />
+    <UnitTestResult executionId="bcf8f0dc-e33a-4241-92bd-f156dd8db8fe" testId="2ece20e3-5497-104c-5ca0-ffa2d22fb7d5" testName="Reviewer_DualTimers_MustNotDoubleSeekSpeed" computerName="毛茸茸的小熊" duration="00:00:00.0245540" startTime="2026-11-10T23:28:26.3011195+08:00" endTime="2026-11-10T23:28:26.3353375+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bcf8f0dc-e33a-4241-92bd-f156dd8db8fe" />
+    <UnitTestResult executionId="7ea2c0ff-4e3e-4d78-a69a-69a3e1cc2f84" testId="3c9fa0ba-18a5-1ca0-528a-3ebfa34c1e69" testName="Reviewer_OffscreenTarget_IsNotOnReachableBottom" computerName="毛茸茸的小熊" duration="00:00:00.0273007" startTime="2026-11-10T23:28:26.2641447+08:00" endTime="2026-11-10T23:28:26.3010487+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ea2c0ff-4e3e-4d78-a69a-69a3e1cc2f84" />
+    <UnitTestResult executionId="0c8d5af8-fab2-4a33-a6a5-c4ced234eefa" testId="daad7046-fb68-581f-621b-32ee425a35fc" testName="Reviewer_UnreachableReleaseMustExpire_NotSeekOneMinuteLater" computerName="毛茸茸的小熊" duration="00:00:00.7714938" startTime="2026-11-10T23:28:25.3404944+08:00" endTime="2026-11-10T23:28:26.1928303+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c8d5af8-fab2-4a33-a6a5-c4ced234eefa">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreNotEqual 失败。应为: &lt;Seeking&gt; 以外的任意值，实际为: &lt;Seeking&gt;。An unreachable old release must expire instead of seeking after 60 seconds without a new release.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.SocialIntegrationTests.Reviewer_UnreachableReleaseMustExpire_NotSeekOneMinuteLater() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r2\probe\SocialIntegrationTests.cs:line 3221&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3e3d015f-9238-4466-9b5e-0c82f8212923" testId="30b94c8a-6b58-8d24-bb64-bc51096a8a27" testName="Reviewer_SeekingSeekerLosesBottomSupport_MustStop" computerName="毛茸茸的小熊" duration="00:00:00.0207668" startTime="2026-11-10T23:28:26.2336560+08:00" endTime="2026-11-10T23:28:26.2637772+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3e3d015f-9238-4466-9b5e-0c82f8212923" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_OffscreenTarget_IsNotOnReachableBottom" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="3c9fa0ba-18a5-1ca0-528a-3ebfa34c1e69">
+      <Execution id="7ea2c0ff-4e3e-4d78-a69a-69a3e1cc2f84" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_OffscreenTarget_IsNotOnReachableBottom" />
+    </UnitTest>
+    <UnitTest name="Reviewer_DualTimers_MustNotDoubleSeekSpeed" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="2ece20e3-5497-104c-5ca0-ffa2d22fb7d5">
+      <Execution id="bcf8f0dc-e33a-4241-92bd-f156dd8db8fe" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_DualTimers_MustNotDoubleSeekSpeed" />
+    </UnitTest>
+    <UnitTest name="Reviewer_IdleStartupWithoutDrag_MustNotStartSeeking" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="872c43ff-37f6-c4d7-561b-57c6fa688bbe">
+      <Execution id="d8ebdbed-a03e-40d0-a91a-33aa47e2b0d2" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_IdleStartupWithoutDrag_MustNotStartSeeking" />
+    </UnitTest>
+    <UnitTest name="Reviewer_SeekingSeekerLosesBottomSupport_MustStop" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="30b94c8a-6b58-8d24-bb64-bc51096a8a27">
+      <Execution id="3e3d015f-9238-4466-9b5e-0c82f8212923" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_SeekingSeekerLosesBottomSupport_MustStop" />
+    </UnitTest>
+    <UnitTest name="Reviewer_UnreachableReleaseMustExpire_NotSeekOneMinuteLater" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-003-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="daad7046-fb68-581f-621b-32ee425a35fc">
+      <Execution id="0c8d5af8-fab2-4a33-a6a5-c4ced234eefa" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-003-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.SocialIntegrationTests" name="Reviewer_UnreachableReleaseMustExpire_NotSeekOneMinuteLater" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="872c43ff-37f6-c4d7-561b-57c6fa688bbe" executionId="d8ebdbed-a03e-40d0-a91a-33aa47e2b0d2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2ece20e3-5497-104c-5ca0-ffa2d22fb7d5" executionId="bcf8f0dc-e33a-4241-92bd-f156dd8db8fe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c9fa0ba-18a5-1ca0-528a-3ebfa34c1e69" executionId="7ea2c0ff-4e3e-4d78-a69a-69a3e1cc2f84" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="daad7046-fb68-581f-621b-32ee425a35fc" executionId="0c8d5af8-fab2-4a33-a6a5-c4ced234eefa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="30b94c8a-6b58-8d24-bb64-bc51096a8a27" executionId="3e3d015f-9238-4466-9b5e-0c82f8212923" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="4" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

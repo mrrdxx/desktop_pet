@@ -1,0 +1,87 @@
+diff --git a/src/DesktopPet.App/App.xaml.cs b/artifacts/perf-baseline/run-bb7ac89c/isolated-app/App.xaml.cs
+index a29b664..44962a5 100644
+--- a/src/DesktopPet.App/App.xaml.cs
++++ b/artifacts/perf-baseline/run-bb7ac89c/isolated-app/App.xaml.cs
+@@ -474,7 +474,7 @@ public partial class App : System.Windows.Application
+         }
+ 
+         // Load archives.
+-        _archive = new ArchiveService();
++        _archive = new ArchiveService(Environment.GetEnvironmentVariable("DESKTOPPET_VALIDATION_DIR") ?? throw new InvalidOperationException("Test directory required"));
+         _saveCoordinator = new SaveCoordinator(_archive);
+ 
+         var (state, stateFromBackup, stateUnknown) = _archive.LoadState();
+@@ -497,7 +497,20 @@ public partial class App : System.Windows.Application
+         RareEventScheduler = rareScheduler;
+ 
+         // P3-002: Create the social coordinator for mutual-notice sessions.
+-        SocialCoordinator = new SocialCoordinator();
++        if (Environment.GetEnvironmentVariable("PET_M10_FORCE") == "1")
++        {
++            SocialCoordinator = new SocialCoordinator(new SocialConfig
++            {
++                NoticeProbability = 0,
++                SlowPacedNoticeProbability = 0,
++                ChaseAttemptIntervalMs = 1000,
++                ChaseInviteProbability = 1,
++                ChaseCooldownMs = 7000,
++                RespondProbability = 1,
++            });
++        }
++        else
++            SocialCoordinator = new SocialCoordinator();
+ 
+         if (stateFromBackup)
+             System.Diagnostics.Trace.TraceInformation("State restored from backup.");
+@@ -549,6 +562,45 @@ public partial class App : System.Windows.Application
+ 
+         foreach (var w in _petWindows.Values)
+             w.Show();
++        var reviewData = Environment.GetEnvironmentVariable("DESKTOPPET_VALIDATION_DIR")!;
++        var reviewClock = System.Diagnostics.Stopwatch.StartNew();
++        var reviewLog = Path.Combine(reviewData, "motion.log");
++        var reviewStop = Path.Combine(reviewData, "stop.request");
++        var reviewFull = Environment.GetEnvironmentVariable("PET_M10_FULL") == "1";
++        File.AppendAllText(reviewLog, $"START {DateTimeOffset.Now:O} pid={Environment.ProcessId} force={Environment.GetEnvironmentVariable("PET_M10_FORCE")}{Environment.NewLine}");
++        foreach (var pair in _petWindows)
++        {
++            var w = pair.Value;
++            var reviewSnapshot = w.BuildPetSocialState(pair.Key, 0);
++            var dpi = MonitorInterop.GetWindowDpiScale(new System.Windows.Interop.WindowInteropHelper(w).Handle);
++            File.AppendAllText(reviewLog, $"WINDOW {pair.Key} bottom={reviewSnapshot.IsOnBottomEdge} monitor={reviewSnapshot.MonitorId} dpi={dpi} visible={w.IsVisible}{Environment.NewLine}");
++        }
++        string prior = "";
++        var reviewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(reviewFull ? 40 : 100) };
++        void ReviewTick()
++        {
++            var session = SocialCoordinator!.CurrentSession;
++            var status = $"phase={session.Phase} leader={session.ChaseLeaderId} direction={session.ChaseDirection} " +
++                string.Join(" | ", _petWindows.Select(kv =>
++                    FormattableString.Invariant($"{kv.Key}:drag={kv.Value.IsDragging} physics={kv.Value.IsPhysicsActive} paused={kv.Value.IsAppPaused}")));
++            var positions = string.Join(" | ", _petWindows.Select(kv =>
++                FormattableString.Invariant($"{kv.Key}:x={kv.Value.Left:F2},y={kv.Value.Top:F2}")));
++            var key = reviewFull ? status + positions : status;
++            if (key != prior)
++            {
++                prior = key;
++                File.AppendAllText(reviewLog, $"{DateTimeOffset.Now:O} ms={reviewClock.ElapsedMilliseconds} {status} {positions}{Environment.NewLine}");
++            }
++            if (File.Exists(reviewStop))
++            {
++                reviewTimer.Stop();
++                ShutdownMainWindow();
++            }
++        }
++        ReviewTick();
++        reviewTimer.Tick += (_, _) => ReviewTick();
++        reviewTimer.Start();
++
+         if (stateUnknown || settingsUnknown)
+             _tray.ShowReadOnlyArchiveNotice();
+     }
+@@ -1234,3 +1286,5 @@ public partial class App : System.Windows.Application
+         base.OnExit(e);
+     }
+ }
++
++

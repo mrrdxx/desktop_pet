@@ -1,0 +1,70 @@
+diff --git a/src/DesktopPet.App/App.xaml.cs b/artifacts/probe-live/run-74b4005b/isolated-app/App.xaml.cs
+index a29b664..a45cfcd 100644
+--- a/src/DesktopPet.App/App.xaml.cs
++++ b/artifacts/probe-live/run-74b4005b/isolated-app/App.xaml.cs
+@@ -474,7 +474,7 @@ public partial class App : System.Windows.Application
+         }
+ 
+         // Load archives.
+-        _archive = new ArchiveService();
++        _archive = new ArchiveService(Environment.GetEnvironmentVariable("DESKTOPPET_VALIDATION_DIR") ?? throw new InvalidOperationException("Test directory required"));
+         _saveCoordinator = new SaveCoordinator(_archive);
+ 
+         var (state, stateFromBackup, stateUnknown) = _archive.LoadState();
+@@ -532,6 +532,22 @@ public partial class App : System.Windows.Application
+         // S2 scope: we create windows for all pets in the archive but do
+         // NOT implement add/remove UI or social behavior. The archive may
+         // contain 1 or 2 pets (max 2 enforced by S1 migration).
++        var reviewDirectory = Environment.GetEnvironmentVariable("DESKTOPPET_VALIDATION_DIR")!;
++        var reviewMarker = Path.Combine(reviewDirectory, "seed-bottom-once");
++        if (File.Exists(reviewMarker))
++        {
++            File.Delete(reviewMarker);
++            var monitor = DesktopPet.Core.Geometry.MonitorLocator.FindPrimaryMonitor(MonitorInterop.EnumerateMonitors());
++            var bounds = monitor.WorkArea.Bounds;
++            var top = bounds.Bottom / monitor.DpiScaleY - 120;
++            var left = bounds.Left / monitor.DpiScaleX + 300;
++            _state.Pets = new List<PetInstanceArchive>
++            {
++                new() { PetId = "bear-1", WindowLeft = left + 380, WindowTop = top, SavedDeviceName = monitor.DeviceName },
++                new() { PetId = "bear-2", WindowLeft = left, WindowTop = top, SavedDeviceName = monitor.DeviceName, Personality = Personality.SlowPaced },
++            };
++        }
++
+         EnsurePetListForWindows();
+         foreach (var pet in _state.Pets)
+         {
+@@ -549,6 +565,27 @@ public partial class App : System.Windows.Application
+ 
+         foreach (var w in _petWindows.Values)
+             w.Show();
++        var reviewClock = System.Diagnostics.Stopwatch.StartNew();
++        var reviewLog = Path.Combine(reviewDirectory, "review-motion.log");
++        File.AppendAllText(reviewLog, $"START pid={Environment.ProcessId}{Environment.NewLine}");
++        string reviewLast = "";
++        void ObserveReviewState()
++        {
++            var summary = string.Join(" | ", _petWindows.Select(kv =>
++            {
++                var w = kv.Value;
++                var snapshot = w.BuildPetSocialState(kv.Key, reviewClock.Elapsed.TotalMilliseconds);
++                return FormattableString.Invariant($"{kv.Key}:xy={w.Left:F2},{w.Top:F2} drag={w.IsDragging} physics={w.IsPhysicsActive} bottom={snapshot.IsOnBottomEdge}");
++            })) + $" phase={SocialCoordinator?.CurrentSession.Phase}";
++            if (summary == reviewLast) return;
++            reviewLast = summary;
++            File.AppendAllText(reviewLog, $"{reviewClock.ElapsedMilliseconds} {summary}{Environment.NewLine}");
++        }
++        ObserveReviewState();
++        var reviewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(20) };
++        reviewTimer.Tick += (_, _) => ObserveReviewState();
++        reviewTimer.Start();
++
+         if (stateUnknown || settingsUnknown)
+             _tray.ShowReadOnlyArchiveNotice();
+     }
+@@ -1234,3 +1271,5 @@ public partial class App : System.Windows.Application
+         base.OnExit(e);
+     }
+ }
++
++

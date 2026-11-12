@@ -1,0 +1,7 @@
+{
+  "src/DesktopPet.App/Persistence/ArchiveService.cs": "ee737b7fd50043f7bb12c5abbbdcef088785535c96ee11e9af3685795158d48f",
+  "src/DesktopPet.App/App.xaml.cs": "59c688d89d9331e5665c63fa0f795d1d850c173ea3d1b0541a855f13659e73a4",
+  "src/DesktopPet.Core/Persistence/PetStateArchive.cs": "70e7be509936bcf3a1d84a42ca90a1a14b4b191596d553e37c0c32caa134ba74",
+  "tests/DesktopPet.App.Tests/ArchiveServiceTests.cs": "33132e08e659f4617886bfb14e23c84fa5cc20cd25ab1f8a4333f1066b1ae57c",
+  "docs/ARCHITECTURE.md": "25a483f0fa9509d8825b19dab53cb17afc88a013b17c692431631e21d8d24f2d"
+}

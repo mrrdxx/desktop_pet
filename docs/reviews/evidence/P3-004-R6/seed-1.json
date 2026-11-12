@@ -1,0 +1,21 @@
+{
+  "pets": [
+    {
+      "windowLeft": 200,
+      "petId": "bear-1",
+      "grievance": 50,
+      "personality": 0,
+      "windowTop": 899.0
+    }
+  ],
+  "accumulatedRuntimeMinutes": 0,
+  "rareEventPlan": {
+    "triggerRoll": 0.0,
+    "localDate": "2026-11-12",
+    "accumulatedBaselineMinutes": 0.0,
+    "triggerDelayMinutes": 20,
+    "consumed": true
+  },
+  "isPaused": false,
+  "schemaVersion": 4
+}

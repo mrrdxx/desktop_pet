@@ -30,5 +30,12 @@
                 <TranslateTransform x:Name="FrameOffsetTransform" X="0" Y="0" />
             </Image.RenderTransform>
         </Image>
+        <!-- P3-001 F-08 R14: Lightweight personality badge overlay for visual
+             identification. Program-drawn shapes, no new art assets.
+             IsHitTestVisible=False so the badge never intercepts mouse input. -->
+        <Canvas x:Name="BadgeCanvas"
+                Width="120"
+                Height="120"
+                IsHitTestVisible="False" />
     </Canvas>
 </Window>

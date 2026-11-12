@@ -9,7 +9,7 @@ namespace DesktopPet.App.Tests;
 public class ArchiveVersionProtectionTests
 {
     private string _directory = null!;
-    private const string FutureState = "{\"schemaVersion\":99,\"windowLeft\":{\"newFormat\":1},\"futurePayload\":42}";
+    private const string FutureState = "{\"schemaVersion\":99,\"isPaused\":false,\"pets\":[{\"petId\":\"bear-1\",\"windowLeft\":{\"newFormat\":1}}],\"futurePayload\":42}";
     private const string FutureSettings = "{\"schemaVersion\":99,\"animationSpeed\":{\"newFormat\":2},\"futurePayload\":77}";
 
     [TestInitialize]
@@ -35,8 +35,10 @@ public class ArchiveVersionProtectionTests
         Assert.IsFalse(File.Exists(archive.StateFilePath + ".corrupted"));
         using (var saves = new SaveCoordinator(archive))
         {
-            // Simulate normal shutdown with a replacement v1 state snapshot.
-            saves.MarkStateDirty(new PetStateArchive { WindowLeft = 350, WindowTop = 260 });
+            // Simulate normal shutdown with a replacement v4 state snapshot.
+            var replacement = new PetStateArchive();
+            replacement.Pets.Add(new PetInstanceArchive { WindowLeft = 350, WindowTop = 260 });
+            saves.MarkStateDirty(replacement);
         }
         Assert.AreEqual(FutureState, File.ReadAllText(archive.StateFilePath));
         Assert.IsFalse(File.Exists(archive.StateBackupPath));
@@ -80,10 +82,10 @@ public class ArchiveVersionProtectionTests
     public void EditingCompatibleFutureDtoVersionDoesNotDisableFileProtection()
     {
         var archive = new ArchiveService(_directory);
-        const string original = "{\"schemaVersion\":99,\"windowLeft\":500,\"futurePayload\":42}";
+        const string original = "{\"schemaVersion\":99,\"pets\":[{\"petId\":\"bear-1\",\"windowLeft\":500}],\"futurePayload\":42}";
         File.WriteAllText(archive.StateFilePath, original);
         var loaded = archive.LoadState();
-        Assert.AreEqual(500, loaded.State.WindowLeft, 0.001);
+        Assert.AreEqual(500, loaded.State.Pets[0].WindowLeft, 0.001);
         loaded.State.SchemaVersion = 1;
         archive.SaveState(loaded.State);
         Assert.AreEqual(original, File.ReadAllText(archive.StateFilePath));
@@ -114,8 +116,10 @@ public class ArchiveVersionProtectionTests
         {
             File.WriteAllText(archive.SettingsFilePath, FutureSettings);
             archive.LoadSettings();
-            archive.SaveState(new PetStateArchive { WindowLeft = 420 });
-            Assert.AreEqual(420, archive.LoadState().State.WindowLeft, 0.001);
+            var state = new PetStateArchive();
+            state.Pets.Add(new PetInstanceArchive { WindowLeft = 420 });
+            archive.SaveState(state);
+            Assert.AreEqual(420, archive.LoadState().State.Pets[0].WindowLeft, 0.001);
             Assert.AreEqual(FutureSettings, File.ReadAllText(archive.SettingsFilePath));
         }
         else

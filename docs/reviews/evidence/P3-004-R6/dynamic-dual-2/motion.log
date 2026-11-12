@@ -1,0 +1,14 @@
+START 2026-11-12T16:39:27.2021413+08:00 pid=57788 force=0
+WINDOW bear-1 bottom=True monitor=\\.\DISPLAY1 dpi=(1.5, 1.5) visible=True
+WINDOW bear-2 bottom=True monitor=\\.\DISPLAY1 dpi=(1.5, 1.5) visible=True
+2026-11-12T16:39:27.2082688+08:00 ms=6 phase=Idle leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=200.00,y=898.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:06.7273615+08:00 ms=39524 phase=Noticing leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=898.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:08.8007852+08:00 ms=41597 phase=Responding leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=898.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:11.3083483+08:00 ms=44104 phase=Idle leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=898.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:26.3089385+08:00 ms=59104 phase=Noticing leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:28.3945501+08:00 ms=61190 phase=Idle leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:51.4212042+08:00 ms=84216 phase=Noticing leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:40:53.3897949+08:00 ms=86185 phase=Idle leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:41:32.5835937+08:00 ms=125377 phase=Noticing leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:41:34.5510284+08:00 ms=127344 phase=Responding leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67
+2026-11-12T16:41:37.0897526+08:00 ms=129883 phase=Idle leader= direction= bear-1:drag=False physics=False paused=False | bear-2:drag=False physics=False paused=False bear-1:x=230.00,y=828.67 | bear-2:x=400.00,y=898.67

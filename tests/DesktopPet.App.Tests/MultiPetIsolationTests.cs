@@ -1,0 +1,1886 @@
+using System.Reflection;
+using DesktopPet.App;
+using DesktopPet.App.Platform;
+using DesktopPet.App.Persistence;
+using DesktopPet.Core.Emotion;
+using DesktopPet.Core.Events;
+using DesktopPet.Core.Persistence;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P3-001-S2: Multi-pet isolation tests.
+///
+/// Verifies that dragging, throwing, or changing grievance on one pet
+/// does not affect the other pet's state. Each pet has independent
+/// emotion objects (EmotionDecayAccumulator, GrievanceExpressionState,
+/// CornerTracker) while rare-event objects remain shared/global.
+///
+/// These tests do NOT create real windows or require a display. They
+/// verify the isolation at the PetStateContext + MarkStateDirty routing
+/// level, which is the core S2 guarantee.
+/// </summary>
+[TestClass]
+public class MultiPetIsolationTests
+{
+    // ════════════════════════════════════════════════════════════════
+    // PetStateContext PetId routing
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Two PetStateContexts with different PetIds and different emotion
+    /// objects: changing grievance on A does not change B.
+    /// </summary>
+    [TestMethod]
+    public void S2_TwoContexts_DifferentPetIds_GrievanceIsolated()
+    {
+        var accA = new EmotionDecayAccumulator(50, DateTime.UtcNow);
+        var accB = new EmotionDecayAccumulator(50, DateTime.UtcNow);
+        var exprA = new GrievanceExpressionState();
+        var exprB = new GrievanceExpressionState();
+
+        var ctxA = new PetStateContext
+        {
+            PetId = "bear-1",
+            EmotionAccumulator = accA,
+            GrievanceExpression = exprA,
+        };
+        var ctxB = new PetStateContext
+        {
+            PetId = "bear-2",
+            EmotionAccumulator = accB,
+            GrievanceExpression = exprB,
+        };
+
+        // Simulate grievance increase on pet A (e.g. from dragging).
+        accA.AddGrievance(10);
+
+        Assert.AreEqual(60, accA.GrievanceInt, "Pet A grievance should increase.");
+        Assert.AreEqual(50, accB.GrievanceInt, "Pet B grievance must remain unchanged.");
+        Assert.AreNotSame(ctxA.EmotionAccumulator, ctxB.EmotionAccumulator,
+            "Each context must have its own EmotionAccumulator instance.");
+        Assert.AreNotSame(ctxA.GrievanceExpression, ctxB.GrievanceExpression,
+            "Each context must have its own GrievanceExpressionState instance.");
+    }
+
+    /// <summary>
+    /// Two PetStateContexts share the same RuntimeTracker and
+    /// RareEventScheduler (global objects).
+    /// </summary>
+    [TestMethod]
+    public void S2_TwoContexts_SharedGlobalObjects()
+    {
+        var tracker = new EffectiveRuntimeTracker();
+        var scheduler = new RareEventScheduler();
+
+        var ctxA = new PetStateContext
+        {
+            PetId = "bear-1",
+            RuntimeTracker = tracker,
+            RareEventScheduler = scheduler,
+        };
+        var ctxB = new PetStateContext
+        {
+            PetId = "bear-2",
+            RuntimeTracker = tracker,
+            RareEventScheduler = scheduler,
+        };
+
+        Assert.AreSame(ctxA.RuntimeTracker, ctxB.RuntimeTracker,
+            "RuntimeTracker must be the same instance (global).");
+        Assert.AreSame(ctxA.RareEventScheduler, ctxB.RareEventScheduler,
+            "RareEventScheduler must be the same instance (global).");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // MarkStateDirty routing by PetId
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// MarkStateDirty with a specific PetId routes to the correct
+    /// PetInstanceArchive, not pets[0].
+    /// </summary>
+    [TestMethod]
+    public void S2_MarkStateDirty_RoutesByPetId_ToCorrectArchive()
+    {
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+            new() { PetId = "bear-2", Grievance = 50, WindowLeft = 300, WindowTop = 300 },
+        };
+
+        // Simulate: pet B's grievance changes to 70.
+        var accB = new EmotionDecayAccumulator(70, DateTime.UtcNow);
+        var exprB = new GrievanceExpressionState();
+
+        // Use the per-pet mapping to write to bear-2's archive entry.
+        App.MapEmotionObjectsToArchive(state, state.Pets[1], accB, exprB);
+
+        Assert.AreEqual(70, state.Pets[1].Grievance,
+            "Pet B's grievance should be 70 in the archive.");
+        Assert.AreEqual(50, state.Pets[0].Grievance,
+            "Pet A's grievance must remain 50 — not affected by pet B's change.");
+    }
+
+    /// <summary>
+    /// FindPetById returns the correct pet, not just pets[0].
+    /// </summary>
+    [TestMethod]
+    public void S2_FindPetById_ReturnsCorrectPet()
+    {
+        // WPF only allows one Application instance per AppDomain.
+        // Reuse the existing instance if one was already created by a
+        // prior test; otherwise create a new one.
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        var createdNew = System.Windows.Application.Current == app;
+        try
+        {
+            if (createdNew)
+                app.TestSetupIsolatedSave(System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}"));
+            else
+            {
+                // Reuse existing instance — just set up isolated save state.
+                app.TestSetupIsolatedSave(System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}"));
+            }
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50 },
+                new() { PetId = "bear-2", Grievance = 60 },
+            };
+
+            var petA = app.FindPetById("bear-1");
+            var petB = app.FindPetById("bear-2");
+            var petNull = app.FindPetById("bear-999");
+
+            Assert.IsNotNull(petA, "Should find bear-1.");
+            Assert.AreEqual("bear-1", petA!.PetId);
+            Assert.AreEqual(50, petA.Grievance);
+
+            Assert.IsNotNull(petB, "Should find bear-2.");
+            Assert.AreEqual("bear-2", petB!.PetId);
+            Assert.AreEqual(60, petB.Grievance);
+
+            Assert.IsNull(petNull, "Non-existent PetId should return null.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// MarkStateDirty with petId="bear-2" writes position to bear-2's
+    /// archive entry, not bear-1's.
+    /// </summary>
+    [TestMethod]
+    public void S2_MarkStateDirty_PetBPosition_DoesNotOverwritePetA()
+    {
+        // WPF only allows one Application instance per AppDomain.
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", WindowLeft = 100, WindowTop = 100, Grievance = 50 },
+                new() { PetId = "bear-2", WindowLeft = 300, WindowTop = 300, Grievance = 50 },
+            };
+
+            // Simulate pet B being dragged to a new position.
+            // We can't create a real MainWindow in a unit test without a display,
+            // but we can verify that MarkStateDirty with petId="bear-2" does not
+            // touch bear-1's archive entry when bear-2's window is not found
+            // (position stays at archive value).
+            app.MarkStateDirty("bear-2");
+
+            // Pet A's position must be unchanged.
+            Assert.AreEqual(100, app.TestState!.Pets[0].WindowLeft,
+                "Pet A's WindowLeft must not be affected by pet B's MarkStateDirty.");
+            Assert.AreEqual(100, app.TestState.Pets[0].WindowTop,
+                "Pet A's WindowTop must not be affected by pet B's MarkStateDirty.");
+            Assert.AreEqual(50, app.TestState.Pets[0].Grievance,
+                "Pet A's Grievance must not be affected by pet B's MarkStateDirty.");
+
+            // Pet B's position should also be unchanged (no window to read from).
+            Assert.AreEqual(300, app.TestState.Pets[1].WindowLeft,
+                "Pet B's WindowLeft should remain at archive value (no window).");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Emotion mapping isolation
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// MapEmotionObjectsToArchive with a specific PetInstanceArchive
+    /// only writes to that pet, not pets[0].
+    /// </summary>
+    [TestMethod]
+    public void S2_MapEmotion_PerPet_OnlyWritesTargetPet()
+    {
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50, LastDecayUtc = "2026-01-01T00:00:00Z" },
+            new() { PetId = "bear-2", Grievance = 50, LastDecayUtc = "2026-01-01T00:00:00Z" },
+        };
+
+        // Pet B gets dragged → grievance increases.
+        var accB = new EmotionDecayAccumulator(65, DateTime.UtcNow);
+        var exprB = new GrievanceExpressionState();
+
+        App.MapEmotionObjectsToArchive(state, state.Pets[1], accB, exprB);
+
+        Assert.AreEqual(50, state.Pets[0].Grievance,
+            "Pet A grievance must remain 50.");
+        Assert.AreEqual(65, state.Pets[1].Grievance,
+            "Pet B grievance should be 65.");
+        Assert.AreEqual("2026-01-01T00:00:00Z", state.Pets[0].LastDecayUtc,
+            "Pet A's LastDecayUtc must remain unchanged.");
+    }
+
+    /// <summary>
+    /// The old single-pet MapEmotionObjectsToArchive overload still
+    /// writes to pets[0] for backward compatibility.
+    /// </summary>
+    [TestMethod]
+    public void S2_MapEmotion_LegacyOverload_StillWritesPets0()
+    {
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50 },
+            new() { PetId = "bear-2", Grievance = 50 },
+        };
+
+        var acc = new EmotionDecayAccumulator(80, DateTime.UtcNow);
+        var expr = new GrievanceExpressionState();
+
+        // Legacy overload — should write to pets[0] only.
+        App.MapEmotionObjectsToArchive(state, acc, expr);
+
+        Assert.AreEqual(80, state.Pets[0].Grievance,
+            "Pet A (pets[0]) grievance should be 80 from legacy mapping.");
+        Assert.AreEqual(50, state.Pets[1].Grievance,
+            "Pet B grievance must remain 50 — legacy mapping only touches pets[0].");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Archive v4 multi-pet round-trip
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// A v4 archive with two pets can be saved and reloaded with both
+    /// pets' independent state preserved.
+    /// </summary>
+    [TestMethod]
+    public void S2_TwoPets_ArchiveRoundTrip_PreservesIndependentState()
+    {
+        var dir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}");
+        var archive = new ArchiveService(dir);
+
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new()
+            {
+                PetId = "bear-1",
+                Personality = Personality.Proactive,
+                Grievance = 55,
+                WindowLeft = 100,
+                WindowTop = 100,
+                LastDecayUtc = "2026-11-09T00:00:00Z",
+            },
+            new()
+            {
+                PetId = "bear-2",
+                Personality = Personality.SlowPaced,
+                Grievance = 45,
+                WindowLeft = 400,
+                WindowTop = 200,
+                LastDecayUtc = "2026-11-09T01:00:00Z",
+            },
+        };
+
+        archive.SaveState(state);
+
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.AreEqual(2, loaded.Pets.Count, "Should have 2 pets after reload.");
+        Assert.AreEqual("bear-1", loaded.Pets[0].PetId);
+        Assert.AreEqual(Personality.Proactive, loaded.Pets[0].Personality);
+        Assert.AreEqual(55, loaded.Pets[0].Grievance);
+        Assert.AreEqual(100, loaded.Pets[0].WindowLeft);
+
+        Assert.AreEqual("bear-2", loaded.Pets[1].PetId);
+        Assert.AreEqual(Personality.SlowPaced, loaded.Pets[1].Personality);
+        Assert.AreEqual(45, loaded.Pets[1].Grievance);
+        Assert.AreEqual(400, loaded.Pets[1].WindowLeft);
+    }
+
+    /// <summary>
+    /// Modifying pet A's grievance and saving does not change pet B's
+    /// grievance in the archive.
+    /// </summary>
+    [TestMethod]
+    public void S2_SavePetA_GrievanceChange_PetB_UnaffectedInArchive()
+    {
+        var dir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), $"S2Test_{Guid.NewGuid():N}");
+        var archive = new ArchiveService(dir);
+
+        var state = new PetStateArchive();
+        state.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Grievance = 50 },
+            new() { PetId = "bear-2", Grievance = 50 },
+        };
+
+        // Pet A's grievance increases (e.g. from being dragged roughly).
+        var accA = new EmotionDecayAccumulator(70, DateTime.UtcNow);
+        var exprA = new GrievanceExpressionState();
+        App.MapEmotionObjectsToArchive(state, state.Pets[0], accA, exprA);
+
+        archive.SaveState(state);
+        var (loaded, _, _) = archive.LoadState();
+
+        Assert.AreEqual(70, loaded.Pets[0].Grievance,
+            "Pet A grievance should be 70 after save/reload.");
+        Assert.AreEqual(50, loaded.Pets[1].Grievance,
+            "Pet B grievance must remain 50 — unaffected by pet A's change.");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // PetId in PetStateContext
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// PetStateContext.PetId is correctly set and accessible.
+    /// </summary>
+    [TestMethod]
+    public void S2_PetStateContext_PetId_SetAndAccessible()
+    {
+        var ctx = new PetStateContext { PetId = "bear-2" };
+        Assert.AreEqual("bear-2", ctx.PetId);
+
+        var ctxNull = new PetStateContext();
+        Assert.IsNull(ctxNull.PetId, "Default PetId should be null for backward compat.");
+    }
+
+    /// <summary>
+    /// MarkStateDirty callback receives the correct PetId from the context.
+    /// </summary>
+    [TestMethod]
+    public void S2_MarkStateDirty_Callback_ReceivesCorrectPetId()
+    {
+        string? receivedPetId = null;
+        var ctx = new PetStateContext
+        {
+            PetId = "bear-2",
+            MarkStateDirty = (id) => receivedPetId = id,
+        };
+
+        ctx.MarkStateDirty?.Invoke(ctx.PetId);
+
+        Assert.AreEqual("bear-2", receivedPetId,
+            "MarkStateDirty callback should receive the context's PetId.");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // P3-001-S2 R5 F-03: Unified per-pet restore semantics
+    // Verifies that MapArchiveToEmotionObjectsForPet (the entry point
+    // used by CreatePetWindow) applies the same pause-exit freeze
+    // semantics as the legacy MapArchiveToEmotionObjects.
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// F-03: When the app was paused at exit, the offline interval is
+    /// frozen — grievance must NOT decay. This tests the exact scenario
+    /// R5 identified: grievance=90, LastDecayUtc 12h ago, IsPaused=true.
+    /// The per-pet mapping (CreatePetWindow's entry point) must keep 90,
+    /// matching the legacy mapping.
+    /// </summary>
+    [TestMethod]
+    public void F03_PausedExit_12h_GrievanceFrozen()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+        var savedDecay = restoreUtc.AddHours(-12); // 12h before restore
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 90,
+            LastDecayUtc = savedDecay.ToString("o"),
+        };
+
+        // Per-pet entry point (used by CreatePetWindow) with isPaused=true.
+        var (acc, _, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: true, restoreUtc);
+
+        // AdvanceTo should see zero elapsed (reference was shifted to now).
+        var result = acc.AdvanceTo(restoreUtc);
+        Assert.AreEqual(90, result,
+            "Paused exit: grievance must stay 90 — offline gap is frozen.");
+    }
+
+    /// <summary>
+    /// F-03: When the app was NOT paused at exit, the offline interval
+    /// is normal decay. Grievance=90, 12h offline → half-life decay to ~70.
+    /// Both entry points must produce the same result.
+    /// </summary>
+    [TestMethod]
+    public void F03_NotPaused_12h_NormalDecay()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+        var savedDecay = restoreUtc.AddHours(-12);
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 90,
+            LastDecayUtc = savedDecay.ToString("o"),
+        };
+
+        // Per-pet entry point with isPaused=false.
+        var (accPerPet, _, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: false, restoreUtc);
+        var resultPerPet = accPerPet.AdvanceTo(restoreUtc);
+
+        // Legacy entry point (via state.IsPaused=false).
+        var state = new PetStateArchive { IsPaused = false };
+        state.Pets = new List<PetInstanceArchive> { pet };
+        var (accLegacy, _, _) = App.MapArchiveToEmotionObjects(state, restoreUtc);
+        var resultLegacy = accLegacy.AdvanceTo(restoreUtc);
+
+        // 12h half-life: 50 + (90-50)*0.5^1 = 50 + 20 = 70
+        Assert.AreEqual(70, resultPerPet,
+            "Not paused: 12h decay should reduce 90 to 70 (half-life).");
+        Assert.AreEqual(resultLegacy, resultPerPet,
+            "Both entry points must produce the same decay result.");
+    }
+
+    /// <summary>
+    /// F-03: Clock rollback protection — when utcNow is earlier than
+    /// saved LastDecayUtc, the reference must NOT move backward even
+    /// if isPaused=true. This preserves F-02's non-regression in
+    /// AdvanceTo.
+    /// </summary>
+    [TestMethod]
+    public void F03_ClockRollback_ReferenceNotMovedBackward()
+    {
+        var savedDecay = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+        var earlierUtc = savedDecay.AddHours(-1); // clock rolled back 1h
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 80,
+            LastDecayUtc = savedDecay.ToString("o"),
+        };
+
+        // isPaused=true but utcNow < lastDecayUtc → shift must NOT happen.
+        var (acc, _, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: true, earlierUtc);
+
+        // AdvanceTo with the same earlier time → zero elapsed, no decay.
+        var result = acc.AdvanceTo(earlierUtc);
+        Assert.AreEqual(80, result,
+            "Clock rollback: grievance must not change and reference must not move backward.");
+
+        // Later, when clock returns to past the original reference,
+        // only genuinely new time is decayed.
+        var laterUtc = savedDecay.AddHours(12);
+        var resultLater = acc.AdvanceTo(laterUtc);
+        // 12h decay from 80: 50 + (80-50)*0.5 = 50 + 15 = 65
+        Assert.AreEqual(65, resultLater,
+            "After rollback recovery: 12h from original reference should decay 80 to 65.");
+    }
+
+    /// <summary>
+    /// F-03: Two pets with different grievance and LastDecayUtc values
+    /// are restored independently. Pet A paused-exit (frozen), pet B
+    /// not paused (decays). Their values must not cross-contaminate.
+    /// </summary>
+    [TestMethod]
+    public void F03_TwoPets_IndependentRestore_PausedAndNotPaused()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+
+        var petA = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 90,
+            LastDecayUtc = restoreUtc.AddHours(-12).ToString("o"),
+        };
+        var petB = new PetInstanceArchive
+        {
+            PetId = "bear-2",
+            Grievance = 60,
+            LastDecayUtc = restoreUtc.AddHours(-6).ToString("o"),
+        };
+
+        // Pet A was paused at exit → frozen, grievance stays 90.
+        var (accA, _, _) = App.MapArchiveToEmotionObjectsForPet(petA, isPaused: true, restoreUtc);
+        // Pet B was not paused → normal decay.
+        var (accB, _, _) = App.MapArchiveToEmotionObjectsForPet(petB, isPaused: false, restoreUtc);
+
+        var resultA = accA.AdvanceTo(restoreUtc);
+        var resultB = accB.AdvanceTo(restoreUtc);
+
+        Assert.AreEqual(90, resultA,
+            "Pet A (paused exit): grievance must stay 90.");
+        // Pet B: 6h decay from 60: 50 + (60-50)*0.5^(6/12) = 50 + 10*0.7071 ≈ 57
+        Assert.AreEqual(57, resultB,
+            "Pet B (not paused): 6h decay from 60 should be ~57.");
+        Assert.AreNotEqual(resultA, resultB,
+            "Two pets must have independent grievance values after restore.");
+    }
+
+    /// <summary>
+    /// F-03: The legacy MapArchiveToEmotionObjects and the per-pet
+    /// MapArchiveToEmotionObjectsForPet produce identical results when
+    /// given the same pet data and pause state. This proves there is
+    /// one algorithm, not two.
+    /// </summary>
+    [TestMethod]
+    public void F03_LegacyAndPerPet_EntryPoints_ProduceSameResult()
+    {
+        var restoreUtc = new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc);
+
+        var pet = new PetInstanceArchive
+        {
+            PetId = "bear-1",
+            Grievance = 75,
+            LastDecayUtc = restoreUtc.AddHours(-18).ToString("o"),
+            PendingGrievanceExpression = true,
+            GrievanceExpressionDate = "2026-11-08",
+        };
+
+        // Legacy entry point.
+        var state = new PetStateArchive { IsPaused = true };
+        state.Pets = new List<PetInstanceArchive> { pet };
+        var (accLegacy, exprLegacy, _) = App.MapArchiveToEmotionObjects(state, restoreUtc);
+
+        // Per-pet entry point with same pause state.
+        var (accPerPet, exprPerPet, _) = App.MapArchiveToEmotionObjectsForPet(pet, isPaused: true, restoreUtc);
+
+        // Both should have the same grievance and lastDecayUtc.
+        Assert.AreEqual(accLegacy.GrievanceInt, accPerPet.GrievanceInt,
+            "Both entry points: same grievance.");
+        Assert.AreEqual(accLegacy.LastDecayUtc, accPerPet.LastDecayUtc,
+            "Both entry points: same LastDecayUtc (pause freeze applied identically).");
+        Assert.AreEqual(exprLegacy.IsPending, exprPerPet.IsPending,
+            "Both entry points: same expression pending state.");
+
+        // AdvanceTo should produce the same result.
+        var resultLegacy = accLegacy.AdvanceTo(restoreUtc);
+        var resultPerPet = accPerPet.AdvanceTo(restoreUtc);
+        Assert.AreEqual(resultLegacy, resultPerPet,
+            "Both entry points: same decay result after AdvanceTo.");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // P3-001-S2 R6 F-04: Production CreatePetWindow isolation
+    // Verifies that the production CreatePetWindow factory correctly
+    // creates, injects, and registers two MainWindow instances with
+    // independent per-pet objects and shared global objects, and that
+    // A/B bidirectional body/head drag, gentle release, throw→physics
+    // tick, and re-grab through the shared gesture entry points do not
+    // cross-contaminate the other pet's state.
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// F-04 R6: Call the production CreatePetWindow factory for two pets
+    /// and verify the dictionary contains both windows with correct PetIds,
+    /// independent per-pet emotion objects, shared global objects, and a
+    /// working save callback.
+    /// </summary>
+    [STATestMethod]
+    public void F04_CreatePetWindow_TwoPets_DictionaryAndContextCorrect()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04R6_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            // Call the production factory for both pets.
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            // Dictionary must contain both windows keyed by PetId.
+            var wA = app.FindWindowByPetId("bear-1");
+            var wB = app.FindWindowByPetId("bear-2");
+            Assert.IsNotNull(wA, "Window for bear-1 must be registered.");
+            Assert.IsNotNull(wB, "Window for bear-2 must be registered.");
+            Assert.AreNotSame(wA, wB, "Two windows must be different instances.");
+
+            // PetIds in StateContext must match.
+            Assert.AreEqual("bear-1", wA!.StateContext!.PetId);
+            Assert.AreEqual("bear-2", wB!.StateContext!.PetId);
+
+            // Per-pet emotion objects must be independent (different instances).
+            Assert.AreNotSame(wA.StateContext.EmotionAccumulator, wB.StateContext!.EmotionAccumulator,
+                "EmotionAccumulator must be independent per pet.");
+            Assert.AreNotSame(wA.StateContext.GrievanceExpression, wB.StateContext.GrievanceExpression,
+                "GrievanceExpressionState must be independent per pet.");
+            Assert.AreNotSame(wA.StateContext.CornerTracking, wB.StateContext.CornerTracking,
+                "CornerTracker must be independent per pet.");
+
+            // Global objects must be shared (same instance).
+            Assert.AreSame(wA.StateContext.RuntimeTracker, wB.StateContext.RuntimeTracker,
+                "RuntimeTracker must be shared (global).");
+            Assert.AreSame(wA.StateContext.RareEventScheduler, wB.StateContext.RareEventScheduler,
+                "RareEventScheduler must be shared (global).");
+
+            // Save callback must exist and route by PetId.
+            Assert.IsNotNull(wA.StateContext.MarkStateDirty, "Window A must have a save callback.");
+            Assert.IsNotNull(wB.StateContext.MarkStateDirty, "Window B must have a save callback.");
+            // Both callbacks route to the same App.MarkStateDirty method;
+            // verify functional equivalence rather than delegate identity
+            // (C# creates a new delegate instance per method reference).
+
+            // Verify the callback routes correctly: change B's grievance and save.
+            wB.StateContext.EmotionAccumulator!.AddGrievance(20);
+            app.MarkStateDirty("bear-2");
+            Assert.AreEqual(50, app.TestState!.Pets[0].Grievance,
+                "Pet A's archive grievance must remain 50 after pet B's save.");
+            Assert.AreEqual(75, app.TestState.Pets[1].Grievance,
+                "Pet B's archive grievance should be 75 after MarkStateDirty.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// F-04 R6: Drag pet A's body through the shared gesture entry, then
+    /// throw → physics tick. Pet B's position/physics/action must not
+    /// change. Then drag pet B and confirm A is unaffected (bidirectional).
+    /// </summary>
+    [STATestMethod]
+    public void F04_BodyDrag_AB_Bidirectional_OtherUnchanged()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04R6_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Grievance = 50, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+
+            // Inject a controlled clock for both windows.
+            double now = 0;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // --- Drag A body → move → throw → physics tick ---
+            var leftA0 = wA.Left;
+            var topA0 = wA.Top;
+            var leftB0 = wB.Left;
+            var topB0 = wB.Top;
+
+            // Body press on A (point 60,65 is in the body zone).
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 65)),
+                "Body press on pet A should start a drag.");
+            Assert.IsTrue(wA.IsDragging, "Pet A should be dragging.");
+
+            // Fast move to generate throw velocity.
+            now = 50;
+            wA.ProcessCapturedPointerMove(
+                new System.Windows.Point(75, 75),
+                new System.Windows.Point(wA.Left + 30, wA.Top + 30),
+                true, now);
+
+            Assert.AreNotEqual(leftA0, wA.Left, "Pet A should have moved.");
+            Assert.AreEqual(leftB0, wB.Left, "Pet B Left must not change when A is dragged.");
+            Assert.AreEqual(topB0, wB.Top, "Pet B Top must not change when A is dragged.");
+
+            // Release with throw velocity (fast release).
+            now = 60;
+            wA.EndCapturedPointerInteraction();
+            Assert.IsFalse(wA.IsDragging, "Pet A should not be dragging after release.");
+
+            // P3-001-S2 R7 F-04: Physics must be active after a throw —
+            // assert explicitly instead of silently skipping.
+            Assert.IsTrue(wA.IsPhysicsActive,
+                "Pet A physics must be active after a throw release.");
+            now = 100;
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(wA.IsPhysicsActive || wA.Left != leftA0,
+                "Pet A physics tick should have effect (either still active or moved).");
+            Assert.IsFalse(wB.IsPhysicsActive,
+                "Pet B must not have physics active from pet A's throw.");
+
+            // --- Drag B body → confirm A unaffected ---
+            var leftA1 = wA.Left;
+            var topA1 = wA.Top;
+
+            Assert.IsTrue(wB.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wB.Left + 60, wB.Top + 65)),
+                "Body press on pet B should start a drag.");
+            Assert.IsTrue(wB.IsDragging, "Pet B should be dragging.");
+
+            now = 150;
+            wB.ProcessCapturedPointerMove(
+                new System.Windows.Point(70, 70),
+                new System.Windows.Point(wB.Left + 25, wB.Top + 25),
+                true, now);
+
+            Assert.AreNotEqual(leftB0, wB.Left, "Pet B should have moved.");
+            Assert.AreEqual(leftA1, wA.Left, "Pet A Left must not change when B is dragged.");
+            Assert.AreEqual(topA1, wA.Top, "Pet A Top must not change when B is dragged.");
+
+            // Gentle release B (slow move → no throw).
+            now = 300;
+            wB.ProcessCapturedPointerMove(
+                new System.Windows.Point(71, 71),
+                new System.Windows.Point(wB.Left + 1, wB.Top + 1),
+                true, now);
+            now = 310;
+            wB.EndCapturedPointerInteraction();
+            Assert.IsFalse(wB.IsDragging, "Pet B should not be dragging after release.");
+            Assert.IsFalse(wB.IsPhysicsActive,
+                "Pet B should not have physics active after gentle release.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// F-04 R6: Head press → convert to drag on pet A through the shared
+    /// gesture entry. Pet B's position must not change. Then verify the
+    /// same for pet B head drag (bidirectional head).
+    /// </summary>
+    [STATestMethod]
+    public void F04_HeadDrag_AB_Bidirectional_OtherUnchanged()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04R6_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Grievance = 50, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+
+            double now = 0;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // --- Head press on A → convert to drag ---
+            var leftA0 = wA.Left;
+            var topA0 = wA.Top;
+            var leftB0 = wB.Left;
+            var topB0 = wB.Top;
+
+            // Head zone is upper 1/3; point (60, 20) is in the head area.
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 20),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 20)),
+                "Head press on pet A should be accepted.");
+            Assert.IsTrue(wA.IsPettingCandidate, "Pet A should be in petting candidate state.");
+
+            // Move beyond slop to convert to drag.
+            now = 50;
+            wA.ProcessCapturedPointerMove(
+                new System.Windows.Point(60, 20),
+                new System.Windows.Point(wA.Left + 20, wA.Top + 20),
+                true, now);
+
+            Assert.IsTrue(wA.IsDragging, "Pet A head press should convert to drag.");
+            Assert.AreNotEqual(leftA0, wA.Left, "Pet A should have moved after head drag.");
+            Assert.AreEqual(leftB0, wB.Left, "Pet B Left must not change during A head drag.");
+            Assert.AreEqual(topB0, wB.Top, "Pet B Top must not change during A head drag.");
+
+            // Release A.
+            now = 60;
+            wA.EndCapturedPointerInteraction();
+            Assert.IsFalse(wA.IsDragging, "Pet A should not be dragging after release.");
+
+            // --- Head press on B → convert to drag ---
+            var leftA1 = wA.Left;
+            var topA1 = wA.Top;
+
+            Assert.IsTrue(wB.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 20),
+                new System.Windows.Point(wB.Left + 60, wB.Top + 20)),
+                "Head press on pet B should be accepted.");
+
+            now = 100;
+            wB.ProcessCapturedPointerMove(
+                new System.Windows.Point(60, 20),
+                new System.Windows.Point(wB.Left + 20, wB.Top + 20),
+                true, now);
+
+            Assert.IsTrue(wB.IsDragging, "Pet B head press should convert to drag.");
+            Assert.AreNotEqual(leftB0, wB.Left, "Pet B should have moved after head drag.");
+            Assert.AreEqual(leftA1, wA.Left, "Pet A Left must not change during B head drag.");
+            Assert.AreEqual(topA1, wA.Top, "Pet A Top must not change during B head drag.");
+
+            now = 110;
+            wB.EndCapturedPointerInteraction();
+            Assert.IsFalse(wB.IsDragging, "Pet B should not be dragging after release.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// F-04 R6: Throw pet A → physics tick → re-grab A mid-flight. Pet B
+    /// must remain unaffected throughout. Re-grab should stop A's physics
+    /// without anchor jump.
+    /// </summary>
+    [STATestMethod]
+    public void F04_ThrowA_PhysicsTick_Regrab_BUnchanged()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04R6_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Grievance = 50, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+
+            double now = 0;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            var leftB0 = wB.Left;
+            var topB0 = wB.Top;
+
+            // Body press on A.
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 65)),
+                "Body press on pet A should start a drag.");
+
+            // Fast move for throw velocity.
+            now = 30;
+            wA.ProcessCapturedPointerMove(
+                new System.Windows.Point(80, 80),
+                new System.Windows.Point(wA.Left + 40, wA.Top + 40),
+                true, now);
+
+            // Release → throw.
+            now = 40;
+            wA.EndCapturedPointerInteraction();
+            Assert.IsFalse(wA.IsDragging, "Pet A should not be dragging after release.");
+
+            // P3-001-S2 R7 F-04: Physics must be active after a throw —
+            // assert explicitly instead of silently skipping.
+            Assert.IsTrue(wA.IsPhysicsActive,
+                "Pet A physics must be active after a throw release.");
+            var leftA_afterThrow = wA.Left;
+
+            now = 80;
+            wA.OnUpdateTickTest();
+
+            // B must not have physics or position change.
+            Assert.IsFalse(wB.IsPhysicsActive,
+                "Pet B must not have physics active from A's throw.");
+            Assert.AreEqual(leftB0, wB.Left,
+                "Pet B Left must not change from A's physics tick.");
+            Assert.AreEqual(topB0, wB.Top,
+                "Pet B Top must not change from A's physics tick.");
+
+            // Re-grab A mid-flight.
+            var leftA_beforeRegrab = wA.Left;
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 65)),
+                "Re-grab on pet A should start a drag.");
+            Assert.IsTrue(wA.IsDragging, "Pet A should be dragging after re-grab.");
+            Assert.IsFalse(wA.IsPhysicsActive,
+                "Pet A physics must stop after re-grab.");
+
+            // Re-grab should not cause anchor jump: position should be
+            // close to where it was (the grab offset preserves anchor).
+            Assert.IsTrue(Math.Abs(wA.Left - leftA_beforeRegrab) < 5.0,
+                "Pet A should not jump significantly on re-grab.");
+
+            // B must still be unchanged.
+            Assert.AreEqual(leftB0, wB.Left,
+                "Pet B Left must remain unchanged throughout.");
+            Assert.AreEqual(topB0, wB.Top,
+                "Pet B Top must remain unchanged throughout.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// P3-001-S2 R7 F-04: Cleanup regression — TestCleanup must stop the
+    /// update timer for windows created by the production factory that
+    /// were never Show()n. CreatePetWindow constructs MainWindow which
+    /// starts _updateTimer in the constructor; TestCleanup must Close()
+    /// the window (triggering OnClosed → _updateTimer.Stop()) even when
+    /// the window is not visible, and clear the dictionary.
+    ///
+    /// This test mirrors the reviewer's cleanup counter-example: if
+    /// TestCleanup only closes visible windows, the timer keeps running.
+    /// The test also ensures its own cleanup on failure.
+    /// </summary>
+    [STATestMethod]
+    public void F04_Cleanup_UnshownWindow_StopsTimer()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        MainWindow? wA = null;
+        MainWindow? wB = null;
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F04R7_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            // Create windows via the production factory but do NOT Show them.
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            wA = app.FindWindowByPetId("bear-1");
+            wB = app.FindWindowByPetId("bear-2");
+            Assert.IsNotNull(wA, "Window for bear-1 must be registered.");
+            Assert.IsNotNull(wB, "Window for bear-2 must be registered.");
+
+            // Neither window should be visible (we never called Show).
+            Assert.IsFalse(wA!.IsVisible, "Window A should not be visible.");
+            Assert.IsFalse(wB!.IsVisible, "Window B should not be visible.");
+
+            // The update timer must be running (started in constructor).
+            Assert.IsTrue(wA.IsUpdateTimerEnabled,
+                "Window A update timer must be running after construction.");
+            Assert.IsTrue(wB.IsUpdateTimerEnabled,
+                "Window B update timer must be running after construction.");
+
+            // Call TestCleanup — this must Close() both windows and clear
+            // the dictionary, stopping all timers.
+            app.TestCleanup();
+
+            // Dictionary must be empty.
+            Assert.IsNull(app.FindWindowByPetId("bear-1"),
+                "Dictionary must not contain bear-1 after cleanup.");
+            Assert.IsNull(app.FindWindowByPetId("bear-2"),
+                "Dictionary must not contain bear-2 after cleanup.");
+
+            // All self-created windows' update timers must be stopped.
+            Assert.IsFalse(wA.IsUpdateTimerEnabled,
+                "Window A update timer must be stopped after TestCleanup.");
+            Assert.IsFalse(wB.IsUpdateTimerEnabled,
+                "Window B update timer must be stopped after TestCleanup.");
+        }
+        finally
+        {
+            // Ensure cleanup even if an assertion fails mid-test.
+            // TestCleanup is idempotent: Close() on an already-closed
+            // window is a no-op, and Clear() on an empty dictionary is safe.
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // P3-001-S3: Add/Remove, global operations, full save/restore
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// S3: AddPet creates a second pet with a unique PetId, legal
+    /// position that doesn't overlap the first, and SlowPaced personality.
+    /// Adding a third pet is rejected (max 2).
+    /// </summary>
+    [STATestMethod]
+    public void S3_AddPet_SecondPet_UniqueID_NoOverlap_MaxTwo()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            var wA = app.FindWindowByPetId("bear-1");
+            Assert.IsNotNull(wA, "First pet window must exist.");
+
+            // Add a second pet.
+            Assert.IsTrue(app.AddPet(), "AddPet should succeed when only 1 pet exists.");
+
+            // F-06 R9: New pet gets a GUID-based ID, not a reused bear-{n}.
+            var petBArchive = app.TestState!.Pets.FirstOrDefault(p => p?.PetId != "bear-1");
+            Assert.IsNotNull(petBArchive, "Second pet must exist in state archive.");
+            var newPetId = petBArchive!.PetId;
+            Assert.IsTrue(newPetId.StartsWith("bear-"), "PetId must start with 'bear-'.");
+            Assert.AreNotEqual("bear-1", newPetId, "Second pet must not reuse bear-1's ID.");
+            Assert.IsTrue(newPetId.Length > "bear-1".Length,
+                "F-06 R9: New PetId must be GUID-based, not a short sequential ID.");
+
+            var wB = app.FindWindowByPetId(newPetId);
+            Assert.IsNotNull(wB, "Second pet window must be registered after AddPet.");
+            Assert.AreNotSame(wA, wB, "Two pet windows must be different instances.");
+            Assert.AreEqual(newPetId, wB!.StateContext!.PetId,
+                "Second pet must have the generated PetId.");
+            Assert.AreEqual(Personality.SlowPaced, petBArchive.Personality,
+                "Second pet should have SlowPaced personality.");
+
+            // Position should not fully overlap the first pet.
+            Assert.IsFalse(wA!.Left == wB.Left && wA.Top == wB.Top,
+                "Second pet position must not fully overlap the first.");
+
+            // State archive must contain 2 pets.
+            Assert.AreEqual(2, app.TestState!.Pets.Count,
+                "State archive must contain 2 pets after AddPet.");
+
+            // Adding a third pet should fail (max 2).
+            Assert.IsFalse(app.AddPet(),
+                "AddPet should fail when 2 pets already exist (max 2).");
+            Assert.AreEqual(2, app.TestState.Pets.Count,
+                "Pet count must remain 2 after rejected AddPet.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3 F-05 R9: RemovePet removes the second (non-original) pet's
+    /// window and archive entry. The remaining original pet is still
+    /// operational. Removing the original first pet is rejected.
+    /// </summary>
+    [STATestMethod]
+    public void S3_RemovePet_WindowClosed_ArchiveRemoved_RemainingOperational()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            Assert.AreEqual(2, app.TestState.Pets.Count, "Should start with 2 pets.");
+            Assert.IsNotNull(app.FindWindowByPetId("bear-2"), "bear-2 window must exist before removal.");
+
+            // F-05 R9: Removing the original first pet must be rejected.
+            Assert.IsFalse(app.RemovePet("bear-1"),
+                "F-05 R9: RemovePet must reject removing the original first pet.");
+            Assert.AreEqual(2, app.TestState.Pets.Count,
+                "Pet count must remain 2 after rejected removal of original.");
+            Assert.IsNotNull(app.FindWindowByPetId("bear-1"),
+                "Original pet window must still exist after rejected removal.");
+
+            // Remove the second pet (non-original) — should succeed.
+            Assert.IsTrue(app.RemovePet("bear-2"),
+                "RemovePet should succeed for the second (non-original) pet.");
+
+            // Window should be gone from the dictionary.
+            Assert.IsNull(app.FindWindowByPetId("bear-2"),
+                "bear-2 window must be removed from dictionary after RemovePet.");
+
+            // Archive should no longer contain bear-2.
+            Assert.AreEqual(1, app.TestState.Pets.Count,
+                "Archive should contain 1 pet after removal.");
+            Assert.AreEqual("bear-1", app.TestState.Pets[0].PetId,
+                "Remaining pet should be bear-1.");
+
+            // First pet should still be operational (timer still running).
+            var wA = app.FindWindowByPetId("bear-1");
+            Assert.IsNotNull(wA, "First pet window must still exist after removing second.");
+            Assert.IsTrue(wA!.IsUpdateTimerEnabled,
+                "Remaining pet timer should still be running after removing the other pet.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3 F-06 R9: After removing a pet, re-adding uses a new GUID-based
+    /// ID that doesn't collide with the remaining pet's ID and doesn't
+    /// reuse the removed pet's ID.
+    /// </summary>
+    [STATestMethod]
+    public void S3_RemoveThenReadd_NewStableID_NoCollision()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            // Remove bear-2.
+            app.RemovePet("bear-2");
+            Assert.AreEqual(1, app.TestState.Pets.Count, "Should have 1 pet after removal.");
+
+            // F-06 R9: Re-add — new ID must not reuse "bear-2" or collide with "bear-1".
+            Assert.IsTrue(app.AddPet(), "Re-add should succeed.");
+            var newPetArchive = app.TestState!.Pets.FirstOrDefault(p => p?.PetId != "bear-1");
+            Assert.IsNotNull(newPetArchive, "Re-added pet must exist in archive.");
+            var newPetId = newPetArchive!.PetId;
+            Assert.AreNotEqual("bear-2", newPetId,
+                "F-06 R9: Re-added pet must NOT reuse the removed pet's ID 'bear-2'.");
+            Assert.AreNotEqual("bear-1", newPetId,
+                "Re-added pet must not collide with bear-1's ID.");
+            Assert.IsTrue(newPetId.Length > "bear-2".Length,
+                "F-06 R9: New PetId must be GUID-based, not a short sequential ID.");
+
+            var wB = app.FindWindowByPetId(newPetId);
+            Assert.IsNotNull(wB, "Re-added pet window must be registered.");
+            Assert.AreNotSame(app.FindWindowByPetId("bear-1"), wB,
+                "Re-added pet must be a different instance from bear-1.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3: MarkStateDirty(null) refreshes positions for ALL pets, not
+    /// just pets[0]. This is critical for correct multi-pet saving on
+    /// pause and exit.
+    /// </summary>
+    [STATestMethod]
+    public void S3_MarkStateDirty_Null_RefreshesAllPetPositions()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+
+            // Move both windows to new positions.
+            wA.Left = 500;
+            wA.Top = 400;
+            wB.Left = 700;
+            wB.Top = 600;
+
+            // Call MarkStateDirty with null (as OnPauseToggled/FlushFinalState do).
+            app.MarkStateDirty(null);
+
+            // Both pets' archive positions should be updated.
+            var petA = app.TestState!.Pets.FirstOrDefault(p => p?.PetId == "bear-1");
+            var petB = app.TestState.Pets.FirstOrDefault(p => p?.PetId == "bear-2");
+            Assert.IsNotNull(petA, "Pet A must exist in archive.");
+            Assert.IsNotNull(petB, "Pet B must exist in archive.");
+            Assert.AreEqual(500, petA!.WindowLeft, "Pet A archive Left must be refreshed.");
+            Assert.AreEqual(400, petA.WindowTop, "Pet A archive Top must be refreshed.");
+            Assert.AreEqual(700, petB!.WindowLeft, "Pet B archive Left must be refreshed.");
+            Assert.AreEqual(600, petB.WindowTop, "Pet B archive Top must be refreshed.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3: Full save/restore chain — create two pets via production
+    /// factory, modify their state, save via FlushFinalState, reload
+    /// from the same archive directory, and verify both pets' identity,
+    /// personality, and state are preserved.
+    /// </summary>
+    [STATestMethod]
+    public void S3_FullChain_TwoPets_Save_Restore_IdentityAndStatePreserved()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        string? dir = null;
+        try
+        {
+            dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            // Modify both pets' grievance through their emotion objects.
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+            wA.StateContext!.EmotionAccumulator!.AddGrievance(10);
+            wB.StateContext!.EmotionAccumulator!.AddGrievance(20);
+
+            // Move both windows.
+            wA.Left = 150;
+            wA.Top = 120;
+            wB.Left = 350;
+            wB.Top = 220;
+
+            // Flush final state (simulates normal exit save).
+            app.FlushFinalState();
+
+            // Reload from the same archive directory using a fresh ArchiveService.
+            app.TestCleanup();
+            var archive = new ArchiveService(dir);
+            var (loadedState, fromBackup, isUnknown) = archive.LoadState();
+
+            // Verify both pets are preserved.
+            Assert.IsFalse(isUnknown, "Loaded state should not be unknown version.");
+            Assert.AreEqual(2, loadedState.Pets.Count, "Reloaded state must have 2 pets.");
+
+            var loadedA = loadedState.Pets.FirstOrDefault(p => p?.PetId == "bear-1");
+            var loadedB = loadedState.Pets.FirstOrDefault(p => p?.PetId == "bear-2");
+            Assert.IsNotNull(loadedA, "Pet A (bear-1) must exist in reloaded state.");
+            Assert.IsNotNull(loadedB, "Pet B (bear-2) must exist in reloaded state.");
+
+            // Verify identity and personality preserved.
+            Assert.AreEqual(Personality.Proactive, loadedA!.Personality,
+                "Pet A personality must be preserved.");
+            Assert.AreEqual(Personality.SlowPaced, loadedB!.Personality,
+                "Pet B personality must be preserved.");
+
+            // Verify grievance preserved (A: 50+10=60, B: 55+20=75).
+            Assert.AreEqual(60, loadedA.Grievance,
+                "Pet A grievance must be preserved after save/reload.");
+            Assert.AreEqual(75, loadedB.Grievance,
+                "Pet B grievance must be preserved after save/reload.");
+
+            // Verify positions preserved.
+            Assert.AreEqual(150, loadedA.WindowLeft,
+                "Pet A position must be preserved after save/reload.");
+            Assert.AreEqual(350, loadedB.WindowLeft,
+                "Pet B position must be preserved after save/reload.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3: After removing a pet and saving, reloading the archive should
+    /// not resurrect the removed pet. Only the remaining pet exists.
+    /// </summary>
+    [STATestMethod]
+    public void S3_RemovePet_Save_Restore_NoResurrection()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        string? dir = null;
+        try
+        {
+            dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            // Remove bear-2 and flush.
+            app.RemovePet("bear-2");
+            app.FlushFinalState();
+
+            // Reload from the same archive.
+            app.TestCleanup();
+            var archive = new ArchiveService(dir);
+            var (loadedState, _, _) = archive.LoadState();
+
+            // Only bear-1 should exist; bear-2 must not resurrect.
+            Assert.AreEqual(1, loadedState.Pets.Count,
+                "Reloaded state must have only 1 pet after removal.");
+            Assert.AreEqual("bear-1", loadedState.Pets[0].PetId,
+                "Remaining pet must be bear-1.");
+            Assert.IsFalse(loadedState.Pets.Any(p => p?.PetId == "bear-2"),
+                "Removed pet bear-2 must not resurrect after save/reload.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3: Global pause covers both pets — both windows' animations
+    /// are paused and the state IsPaused flag is set.
+    /// </summary>
+    [STATestMethod]
+    public void S3_GlobalPause_BothPetsPaused()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            // Simulate pause via the tray event.
+            app.OnPauseToggled(null, true);
+
+            Assert.IsTrue(app.TestState!.IsPaused, "State IsPaused must be true after pause.");
+            // Both windows should have paused animation players.
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+            Assert.IsTrue(wA.IsPlayerPaused, "Pet A animation must be paused.");
+            Assert.IsTrue(wB.IsPlayerPaused, "Pet B animation must be paused.");
+
+            // Resume.
+            app.OnPauseToggled(null, false);
+            Assert.IsFalse(app.TestState.IsPaused, "State IsPaused must be false after resume.");
+            Assert.IsFalse(wA.IsPlayerPaused, "Pet A animation must be resumed.");
+            Assert.IsFalse(wB.IsPlayerPaused, "Pet B animation must be resumed.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// S3 F-07 R9: Global recover covers both pets — both windows are
+    /// moved to a visible position on the primary monitor, positions
+    /// don't fully overlap, and the final positions (including offsets)
+    /// are saved to the archive.
+    /// </summary>
+    [STATestMethod]
+    public void S3_GlobalRecover_BothPetsVisible()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"S3_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+
+            // Move both windows off-screen (negative position).
+            wA.Left = -9999;
+            wA.Top = -9999;
+            wB.Left = -9999;
+            wB.Top = -9999;
+
+            // Simulate recover via the tray event.
+            app.OnRecoverRequested(null, EventArgs.Empty);
+
+            // Both windows should be back on a visible work area.
+            var monitors = MonitorInterop.EnumerateMonitors();
+            if (monitors.Count > 0)
+            {
+                var primary = DesktopPet.Core.Geometry.MonitorLocator.FindPrimaryMonitor(monitors);
+                // F-07 R9: Use consistent DIP coordinates for comparison.
+                var waLeftDip = primary.WorkArea.Bounds.Left / primary.DpiScaleX;
+                var waRightDip = primary.WorkArea.Bounds.Right / primary.DpiScaleX;
+                Assert.IsTrue(wA.Left >= waLeftDip && wA.Left < waRightDip,
+                    "Pet A must be recovered to primary monitor work area (DIP).");
+                Assert.IsTrue(wB.Left >= waLeftDip && wB.Left < waRightDip,
+                    "Pet B must be recovered to primary monitor work area (DIP).");
+                // Recovered positions should not fully overlap.
+                Assert.IsFalse(wA.Left == wB.Left && wA.Top == wB.Top,
+                    "Recovered positions must not fully overlap.");
+
+                // F-07 R9: The final positions (including offsets) must be
+                // saved to the archive, not just the pre-offset positions.
+                var petA = app.TestState!.Pets.FirstOrDefault(p => p?.PetId == "bear-1");
+                var petB = app.TestState.Pets.FirstOrDefault(p => p?.PetId == "bear-2");
+                Assert.IsNotNull(petA, "Pet A must exist in archive after recover.");
+                Assert.IsNotNull(petB, "Pet B must exist in archive after recover.");
+                Assert.AreEqual(wA.Left, petA!.WindowLeft, 0.1,
+                    "F-07 R9: Pet A archive position must match final window position after recover.");
+                Assert.AreEqual(wB.Left, petB!.WindowLeft, 0.1,
+                    "F-07 R9: Pet B archive position must match final window position (including offset) after recover.");
+            }
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // F-08 R9: Complete production restore/exit chain evidence
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// F-08 R9: Complete production chain — isolated v3 archive →
+    /// production load/migrate → AddPet → modify both pets →
+    /// production normal exit/save → new runtime restore via
+    /// CreatePetWindow → verify identity/personality/position/emotion.
+    /// </summary>
+    [STATestMethod]
+    public void F08_FullChain_V3Migrate_AddPet_Operate_Exit_Restore()
+    {
+        // Phase 1: Write an isolated v3 archive (single pet, flat fields).
+        var dir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), $"F08_{Guid.NewGuid():N}");
+        var v3Json = @"{""schemaVersion"":3,""windowLeft"":150,""windowTop"":120,""grievance"":60,""isPaused"":false,""accumulatedRuntimeMinutes"":10.0}";
+        System.IO.Directory.CreateDirectory(dir);
+        System.IO.File.WriteAllText(System.IO.Path.Combine(dir, "state.json"), v3Json);
+
+        // Phase 2: Production load via ArchiveService (v3→v4 migration).
+        var archive = new ArchiveService(dir);
+        var (loadedState, fromBackup, isUnknown) = archive.LoadState();
+        Assert.IsFalse(isUnknown, "v3 archive should not be unknown version.");
+        Assert.AreEqual(1, loadedState.Pets.Count, "v3 migration should produce 1 pet.");
+        Assert.AreEqual("bear-1", loadedState.Pets[0]!.PetId, "Migrated pet should have bear-1 ID.");
+        Assert.AreEqual(150, loadedState.Pets[0]!.WindowLeft, "Migrated windowLeft must match v3 source.");
+        Assert.AreEqual(60, loadedState.Pets[0]!.Grievance, "Migrated grievance must match v3 source.");
+
+        // Phase 3: Set up App with the loaded state, create window, add second pet.
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            app.TestSetupIsolatedSave(dir, loadedState);
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+
+            // Add a second pet via production AddPet.
+            Assert.IsTrue(app.AddPet(), "AddPet should succeed with 1 existing pet.");
+            Assert.AreEqual(2, app.TestState!.Pets.Count, "State must have 2 pets after AddPet.");
+
+            // F-06 R9: Second pet must have a GUID-based ID, not bear-2.
+            var secondPetId = app.TestState.Pets[1]!.PetId;
+            Assert.AreNotEqual("bear-1", secondPetId, "Second pet must not collide with bear-1.");
+            Assert.AreNotEqual("bear-2", secondPetId, "F-06 R9: Second pet must not reuse sequential bear-2.");
+            Assert.IsTrue(secondPetId.Length > 6, "F-06 R9: Second pet ID must be GUID-based.");
+
+            // Phase 4: Modify both pets' state through production emotion objects.
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId(secondPetId)!;
+            wA.StateContext!.EmotionAccumulator!.AddGrievance(10);
+            wB.StateContext!.EmotionAccumulator!.AddGrievance(20);
+            wA.Left = 200;
+            wA.Top = 180;
+            wB.Left = 400;
+            wB.Top = 280;
+
+            // Phase 5: Production normal exit/save via FlushFinalState.
+            app.FlushFinalState();
+
+            // Phase 6: Reload from the same archive directory.
+            app.TestCleanup();
+            var archive2 = new ArchiveService(dir);
+            var (restoredState, _, _) = archive2.LoadState();
+
+            // Phase 7: Verify both pets' identity, personality, position, emotion.
+            Assert.AreEqual(2, restoredState.Pets.Count, "Restored state must have 2 pets.");
+            var restoredA = restoredState.Pets.FirstOrDefault(p => p?.PetId == "bear-1");
+            var restoredB = restoredState.Pets.FirstOrDefault(p => p?.PetId == secondPetId);
+            Assert.IsNotNull(restoredA, "Original pet bear-1 must be preserved.");
+            Assert.IsNotNull(restoredB, "Second pet must be preserved with same GUID ID.");
+            Assert.AreEqual(Personality.Proactive, restoredA!.Personality, "Pet A personality must be preserved.");
+            Assert.AreEqual(Personality.SlowPaced, restoredB!.Personality, "Pet B personality must be preserved.");
+            Assert.AreEqual(70, restoredA.Grievance, "Pet A grievance must be 60+10=70 after save/reload.");
+            Assert.AreEqual(70, restoredB.Grievance, "Pet B grievance must be 50+20=70 after save/reload.");
+            Assert.AreEqual(200, restoredA.WindowLeft, "Pet A position must be preserved.");
+            Assert.AreEqual(400, restoredB.WindowLeft, "Pet B position must be preserved.");
+
+            // Phase 8: Restore into new runtime via production CreatePetWindow.
+            // F-08 R10: Show() the windows to trigger SourceInitialized →
+            // RestoreWindowPosition, then verify actual Left/Top and
+            // context emotion state — not just non-null window and PetId.
+            app.TestSetupIsolatedSave(dir, restoredState);
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+            var newWA = app.FindWindowByPetId("bear-1")!;
+            var newWB = app.FindWindowByPetId(secondPetId)!;
+            Assert.IsNotNull(newWA, "New runtime must create window for bear-1.");
+            Assert.IsNotNull(newWB, "New runtime must create window for second pet.");
+
+            // F-08 R10: Show() triggers SourceInitialized → RestoreWindowPosition,
+            // which applies the real production position recovery (monitor
+            // validation, work-area clamping). Without Show(), the window
+            // stays at constructor default (0,0) and RestoreWindowPosition
+            // is never called.
+            newWA.Show();
+            newWB.Show();
+
+            Assert.AreEqual("bear-1", newWA.StateContext!.PetId, "New runtime pet A must have bear-1 ID.");
+            Assert.AreEqual(secondPetId, newWB.StateContext!.PetId, "New runtime pet B must have same GUID ID.");
+
+            // F-08 R10: Verify actual restored Left/Top are not the constructor
+            // default (0,0) — RestoreWindowPosition must have applied the
+            // archived coordinates with work-area validation.
+            Assert.AreNotEqual(0, newWA.Left, "Pet A restored Left must not be constructor default 0.");
+            Assert.AreNotEqual(0, newWA.Top, "Pet A restored Top must not be constructor default 0.");
+            Assert.AreNotEqual(0, newWB.Left, "Pet B restored Left must not be constructor default 0.");
+            Assert.AreNotEqual(0, newWB.Top, "Pet B restored Top must not be constructor default 0.");
+
+            // F-08 R10: Verify restored positions match the archived values
+            // (within work-area clamping tolerance). The archived values were
+            // 200/180 for pet A and 400/280 for pet B.
+            Assert.AreEqual(restoredA.WindowLeft, newWA.Left, 1.0,
+                "Pet A restored Left must match archived value (±1 DIP for work-area clamp).");
+            Assert.AreEqual(restoredA.WindowTop, newWA.Top, 1.0,
+                "Pet A restored Top must match archived value (±1 DIP).");
+            Assert.AreEqual(restoredB.WindowLeft, newWB.Left, 1.0,
+                "Pet B restored Left must match archived value (±1 DIP).");
+            Assert.AreEqual(restoredB.WindowTop, newWB.Top, 1.0,
+                "Pet B restored Top must match archived value (±1 DIP).");
+
+            // F-08 R10: Verify context emotion state was restored via the
+            // production MapArchiveToEmotionObjectsForPet path.
+            Assert.AreEqual(70, newWA.StateContext!.EmotionAccumulator!.GrievanceInt,
+                "Pet A restored grievance must be 70 (60+10 saved).");
+            Assert.AreEqual(70, newWB.StateContext!.EmotionAccumulator!.GrievanceInt,
+                "Pet B restored grievance must be 70 (50+20 saved).");
+
+            // F-08 R10: Verify global state fields were restored.
+            Assert.IsFalse(app.TestState!.IsPaused,
+                "Global IsPaused must be false (was not paused at save time).");
+            Assert.IsNotNull(app.RuntimeTracker,
+                "Global RuntimeTracker must be restored.");
+            Assert.IsNotNull(app.RareEventScheduler,
+                "Global RareEventScheduler must be restored.");
+
+            // Phase 9: RemovePet → save → reload → no resurrection.
+            Assert.IsTrue(app.RemovePet(secondPetId), "RemovePet should succeed for second pet.");
+            Assert.AreEqual(1, app.TestState!.Pets.Count, "Only 1 pet should remain after removal.");
+            app.FlushFinalState();
+            app.TestCleanup();
+
+            var archive3 = new ArchiveService(dir);
+            var (finalState, _, _) = archive3.LoadState();
+            Assert.AreEqual(1, finalState.Pets.Count, "Final reload must have 1 pet.");
+            Assert.AreEqual("bear-1", finalState.Pets[0]!.PetId, "Remaining pet must be bear-1.");
+            Assert.IsFalse(finalState.Pets.Any(p => p?.PetId == secondPetId),
+                "Removed pet must not resurrect after save/reload.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// F-08 R10: Global pause during dual-pet physics freezes both
+    /// pets' animation with no accumulation; resume continues without
+    /// backlog. R10 strengthens this test beyond flag checks: it
+    /// actually starts physics on pet A via a throw, then while
+    /// paused injects elapsed time and calls OnUpdateTickTest() to
+    /// prove the physics branch does NOT advance position. After
+    /// resume, the first tick continues without accumulated movement.
+    /// </summary>
+    [STATestMethod]
+    public void F08_GlobalPause_DualPet_NoAccumulation()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F08_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+
+            // Inject a controlled clock for both windows.
+            double now = 0;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // --- Throw pet A to start physics ---
+            // Body press (60,65 is in body zone).
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 65)),
+                "Body press on pet A should start a drag.");
+
+            // Fast move to generate throw velocity.
+            now = 50;
+            wA.ProcessCapturedPointerMove(
+                new System.Windows.Point(75, 75),
+                new System.Windows.Point(wA.Left + 30, wA.Top + 30),
+                true, now);
+
+            // Release with throw velocity.
+            now = 60;
+            wA.EndCapturedPointerInteraction();
+            Assert.IsTrue(wA.IsPhysicsActive,
+                "Pet A physics must be active after throw release.");
+
+            // Let physics advance one tick to confirm it is moving.
+            now = 100;
+            wA.OnUpdateTickTest();
+            var leftAPhysics = wA.Left;
+            var topAPhysics = wA.Top;
+
+            // Record grievance before pause.
+            var grievanceABefore = wA.StateContext!.EmotionAccumulator!.GrievanceInt;
+            var grievanceBBefore = wB.StateContext!.EmotionAccumulator!.GrievanceInt;
+
+            // --- Pause both pets ---
+            app.OnPauseToggled(null, true);
+            Assert.IsTrue(wA.IsPlayerPaused, "Pet A must be paused.");
+            Assert.IsTrue(wB.IsPlayerPaused, "Pet B must be paused.");
+            Assert.IsTrue(app.TestState!.IsPaused, "State IsPaused must be true.");
+
+            // While paused, inject a large time advance and call tick.
+            // The physics branch guards against _isAppPaused, so position
+            // must NOT change even though OnUpdateTick is called directly.
+            now = 5000;
+            wA.OnUpdateTickTest();
+            Assert.AreEqual(leftAPhysics, wA.Left,
+                "Pet A Left must not change during paused tick (physics frozen).");
+            Assert.AreEqual(topAPhysics, wA.Top,
+                "Pet A Top must not change during paused tick (physics frozen).");
+            Assert.IsTrue(wA.IsPhysicsActive,
+                "Pet A physics flag must remain true during pause (frozen, not cleared).");
+
+            // Grievance must not decay during paused tick.
+            Assert.AreEqual(grievanceABefore, wA.StateContext!.EmotionAccumulator!.GrievanceInt,
+                "Pet A grievance must not change during paused tick.");
+            Assert.AreEqual(grievanceBBefore, wB.StateContext!.EmotionAccumulator!.GrievanceInt,
+                "Pet B grievance must not change during paused tick.");
+
+            // --- Resume ---
+            app.OnPauseToggled(null, false);
+            Assert.IsFalse(wA.IsPlayerPaused, "Pet A must be resumed.");
+            Assert.IsFalse(wB.IsPlayerPaused, "Pet B must be resumed.");
+            Assert.IsFalse(app.TestState.IsPaused, "State IsPaused must be false after resume.");
+
+            // After resume, the first tick should continue physics with no
+            // accumulated backlog — the position changes by a normal single-tick
+            // step, not a giant jump from the 4900ms gap.
+            // R11 F-08: Strengthened per监理 R11 — advance 20ms (not 10ms) so
+            // the physics step (1000/60 ≈ 16.7ms) actually executes, and use
+            // two-axis AND (both axes must be < 100, not just one). Also
+            // assert that at least one axis actually moved (delta > 0) to
+            // confirm physics is still active after resume.
+            now = 5020;
+            wA.OnUpdateTickTest();
+            var leftAfterResume = wA.Left;
+            var topAfterResume = wA.Top;
+
+            // R11 F-08: Assert actual movement — at least one axis must have
+            // changed, proving physics is still active after resume.
+            var deltaLeft = System.Math.Abs(leftAfterResume - leftAPhysics);
+            var deltaTop = System.Math.Abs(topAfterResume - topAPhysics);
+            Assert.IsTrue(deltaLeft > 0 || deltaTop > 0,
+                "Post-resume tick must actually move the pet (physics still active). " +
+                $"deltaLeft={deltaLeft}, deltaTop={deltaTop}.");
+
+            // R11 F-08: Two-axis AND — both axes must be < 100 DIP. The
+            // previous OR check would pass even if one axis jumped 4900 DIP
+            // as long as the other stayed still.
+            Assert.IsTrue(deltaLeft < 100 && deltaTop < 100,
+                "Post-resume tick must not accumulate paused time into a huge position jump " +
+                $"(deltaLeft={deltaLeft}, deltaTop={deltaTop}). Both axes must be < 100.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// F-08 R10: Global exit (ShutdownMainWindow) preserves the full pet
+    /// collection in the archive. Both pets' state is saved, and
+    /// reloading produces the same count, IDs, and positions. No pet
+    /// is accidentally removed by the exit path.
+    ///
+    /// R10: This in-process test uses ShutdownMainWindowForTest (which
+    /// skips Shutdown(0) to avoid terminating the test process). The
+    /// production exit path (including Shutdown(0) and natural process
+    /// exit) is verified by the subprocess test
+    /// DiagnosticIsolationTests.DualPetExit_ProductionShutdown_PreservesBothPets,
+    /// which runs DiagnosticProbe's dual-pet-exit scenario and confirms
+    /// exit code 0 + both pets preserved in state.json.
+    /// </summary>
+    [STATestMethod]
+    public void F08_GlobalExit_BothPetsPreserved_NoAccidentalRemoval()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        string? dir = null;
+        try
+        {
+            dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F08_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+
+            // Modify positions to verify they are saved on exit.
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+            wA.Left = 250;
+            wA.Top = 200;
+            wB.Left = 450;
+            wB.Top = 300;
+
+            // F-05 R9: Simulate global exit via ShutdownMainWindowForTest.
+            // This should save BOTH pets, not remove either one.
+            // (Uses the test hook that skips Shutdown(0) to avoid
+            // terminating the test process.)
+            app.ShutdownMainWindowForTest();
+
+            // Reload from the archive — both pets must be preserved.
+            var archive = new ArchiveService(dir);
+            var (restoredState, _, _) = archive.LoadState();
+            Assert.AreEqual(2, restoredState.Pets.Count,
+                "F-05/F-08 R9: Global exit must preserve both pets, not remove either.");
+            Assert.AreEqual("bear-1", restoredState.Pets[0]!.PetId, "First pet must be bear-1.");
+            Assert.AreEqual("bear-2", restoredState.Pets[1]!.PetId, "Second pet must be bear-2.");
+            Assert.AreEqual(250, restoredState.Pets[0]!.WindowLeft, "Pet A position must be saved on exit.");
+            Assert.AreEqual(450, restoredState.Pets[1]!.WindowLeft, "Pet B position must be saved on exit.");
+            Assert.AreEqual(50, restoredState.Pets[0]!.Grievance, "Pet A grievance must be preserved.");
+            Assert.AreEqual(55, restoredState.Pets[1]!.Grievance, "Pet B grievance must be preserved.");
+        }
+        finally
+        {
+            // TestCleanup is safe even after ShutdownMainWindow (which sets
+            // _isShuttingDown and disposes coordinator). The cleanup just
+            // closes remaining windows and clears references.
+            try { app.TestCleanup(); } catch { /* already cleaned by shutdown */ }
+        }
+    }
+
+    /// <summary>
+    /// F-05 R9: RemovePet rejects the original first pet even when it's
+    /// the only pet (single-pet scenario). The original pet can only be
+    /// removed via global exit, not via RemovePet.
+    /// </summary>
+    [STATestMethod]
+    public void F05_RemovePet_RejectsOriginalFirstPet_SinglePet()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"F05_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+
+            // F-05 R9: Removing the original first (and only) pet must fail.
+            Assert.IsFalse(app.RemovePet("bear-1"),
+                "F-05 R9: RemovePet must reject the original first pet even when it's the only pet.");
+            Assert.AreEqual(1, app.TestState.Pets.Count,
+                "Pet count must remain 1 after rejected removal.");
+            Assert.IsNotNull(app.FindWindowByPetId("bear-1"),
+                "Original pet window must still exist after rejected removal.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+}

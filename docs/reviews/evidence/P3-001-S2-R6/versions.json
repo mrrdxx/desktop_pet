@@ -1,0 +1,5 @@
+{
+  "src/DesktopPet.App/App.xaml.cs": "1f0fd7d06fbeaec67191a32c5cd3c02ac807dcd1c6fd3f52d5f9ea896ce89918",
+  "tests/DesktopPet.App.Tests/MultiPetIsolationTests.cs": "a6d19372c6798e47c4a300a54fdb0f334816d4377b7c911e540a623ce4a1cc04",
+  "docs/ARCHITECTURE.md": "52922dd86fa66a2b6a09819a1c384958d66bdd0517f92c766d2f16a2977ff18b"
+}

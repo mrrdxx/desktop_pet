@@ -1,0 +1,23 @@
+{
+  "same": true,
+  "before": [
+    {
+      "File": "state.json",
+      "Hash": "C77B5968162F6E1DB113C6973DE5D6C4E262DD94B39CD41A7338D2B54B9E26CC"
+    },
+    {
+      "File": "state.json.bak",
+      "Hash": "FB8F0D1B9247915186458F6CDC2748DE4F1F103B3E99137A34611867FA3FCA2D"
+    }
+  ],
+  "after": [
+    {
+      "File": "state.json",
+      "Hash": "C77B5968162F6E1DB113C6973DE5D6C4E262DD94B39CD41A7338D2B54B9E26CC"
+    },
+    {
+      "File": "state.json.bak",
+      "Hash": "FB8F0D1B9247915186458F6CDC2748DE4F1F103B3E99137A34611867FA3FCA2D"
+    }
+  ]
+}

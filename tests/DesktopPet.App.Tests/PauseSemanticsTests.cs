@@ -759,14 +759,17 @@ public class PauseSemanticsTests
             var savedState = new PetStateArchive
             {
                 SchemaVersion = 2,
+                IsPaused = true // Saved while paused
+            };
+            savedState.Pets.Add(new PetInstanceArchive
+            {
                 Grievance = acc1.GrievanceInt,
                 LastDecayUtc = acc1.LastDecayUtc.ToString("O"),
                 PendingGrievanceExpression = false,
                 GrievanceExpressionDate = null,
-                IsPaused = true, // Saved while paused
                 WindowLeft = 100,
                 WindowTop = 100
-            };
+            });
 
             var archive = new ArchiveService(tempDir);
             archive.SaveState(savedState);
@@ -935,14 +938,17 @@ public class PauseSemanticsTests
             var savedState = new PetStateArchive
             {
                 SchemaVersion = 2,
+                IsPaused = false // NOT paused — normal exit
+            };
+            savedState.Pets.Add(new PetInstanceArchive
+            {
                 Grievance = acc1.GrievanceInt,
                 LastDecayUtc = acc1.LastDecayUtc.ToString("O"),
                 PendingGrievanceExpression = false,
                 GrievanceExpressionDate = null,
-                IsPaused = false, // NOT paused — normal exit
                 WindowLeft = 100,
                 WindowTop = 100
-            };
+            });
 
             var archive = new ArchiveService(tempDir);
             archive.SaveState(savedState);
@@ -1032,14 +1038,17 @@ public class PauseSemanticsTests
         var savedState = new PetStateArchive
         {
             SchemaVersion = 2,
+            IsPaused = true
+        };
+        savedState.Pets.Add(new PetInstanceArchive
+        {
             Grievance = savedGrievance,
             LastDecayUtc = savedBaseUtc.ToString("O"),
             PendingGrievanceExpression = false,
             GrievanceExpressionDate = null,
-            IsPaused = true,
             WindowLeft = 100,
             WindowTop = 100
-        };
+        });
 
         // ── Restore: clock rolled back 12h → restoreUtcNow = 00:00 ──
         var restoreUtcNow = savedBaseUtc.AddHours(-12); // 2026-10-24T00:00:00Z

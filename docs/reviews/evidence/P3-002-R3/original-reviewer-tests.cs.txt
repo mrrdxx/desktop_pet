@@ -1,0 +1,900 @@
+using DesktopPet.App;
+using DesktopPet.App.Platform;
+using DesktopPet.Core.Persistence;
+using DesktopPet.Core.Social;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P3-002: App-level social integration tests.
+///
+/// Verifies that the production CreatePetWindow + OnUpdateTick pipeline
+/// correctly drives the SocialCoordinator for mutual-notice sessions
+/// between two pets. Tests cover:
+///   - Normal notice → respond flow
+///   - Reject / timeout cancellation
+///   - Drag interrupts social session (user input priority)
+///   - Pause interrupts social session
+///   - Pet removal cancels social session
+///   - Social does not delay user grab (head/body press works during social)
+///   - Only one session at a time
+///   - Social blocks rare-event Evaluate (isSocialActive propagation)
+///
+/// These tests use the production factory (CreatePetWindow) and the
+/// test-only OnUpdateTickTest entry point with injected clocks, following
+/// the MultiPetIsolationTests pattern.
+/// </summary>
+[TestClass]
+public class SocialIntegrationTests
+{
+    /// <summary>
+    /// Helper: set up two pets via the production factory with close
+    /// positions and controlled clocks. Returns (app, wA, wB).
+    /// Both pets are Proactive for predictable social initiation.
+    /// </summary>
+    private static (App app, MainWindow wA, MainWindow wB) SetupTwoPets(
+        double leftA = 100, double topA = 100,
+        double leftB = 200, double topB = 100)
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        var dir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), $"Social_{Guid.NewGuid():N}");
+        app.TestSetupIsolatedSave(dir);
+        app.TestState!.Pets = new List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = leftA, WindowTop = topA },
+            new() { PetId = "bear-2", Personality = Personality.Proactive, Grievance = 50, WindowLeft = leftB, WindowTop = topB },
+        };
+
+        app.CreatePetWindow(app.TestState!.Pets[0]);
+        app.CreatePetWindow(app.TestState.Pets[1]);
+        var wA = app.FindWindowByPetId("bear-1")!;
+        var wB = app.FindWindowByPetId("bear-2")!;
+
+        // Set controlled positions (CreatePetWindow may use defaults).
+        wA.Left = leftA;
+        wA.Top = topA;
+        wB.Left = leftB;
+        wB.Top = topB;
+
+        return (app, wA, wB);
+    }
+
+    /// <summary>
+    /// Helper: inject a social coordinator with a high-notice-probability
+    /// config and a seeded random so that notice always triggers.
+    /// </summary>
+    private static SocialCoordinator InjectDeterministicSocial(
+        MainWindow wA, MainWindow wB, App app,
+        double noticeProbability = 1.0,
+        double respondProbability = 1.0,
+        double respondDelayMs = 100,
+        double noticeDurationMs = 5000,
+        double respondDurationMs = 500,
+        double minIdleMs = 0,
+        double noticeIntervalMs = 0,
+        double cooldownMs = 100000,
+        double sessionTimeoutMs = 10000)
+    {
+        var config = new SocialConfig
+        {
+            NoticeProbability = noticeProbability,
+            SlowPacedNoticeProbability = noticeProbability,
+            RespondProbability = respondProbability,
+            RespondDelayMs = respondDelayMs,
+            SlowPacedRespondDelayMs = respondDelayMs,
+            NoticeDurationMs = noticeDurationMs,
+            RespondDurationMs = respondDurationMs,
+            MinIdleMs = minIdleMs,
+            NoticeIntervalMs = noticeIntervalMs,
+            CooldownMs = cooldownMs,
+            SessionTimeoutMs = sessionTimeoutMs,
+            NoticeDistanceMaxDip = 1000,
+        };
+        var coordinator = new SocialCoordinator(config, new Random(42));
+        app.SocialCoordinator = coordinator;
+
+        // Re-inject into both windows' StateContext.
+        wA.StateContext = new PetStateContext
+        {
+            PetId = wA.StateContext!.PetId,
+            EmotionAccumulator = wA.StateContext.EmotionAccumulator,
+            CornerTracking = wA.StateContext.CornerTracking,
+            GrievanceExpression = wA.StateContext.GrievanceExpression,
+            RuntimeTracker = wA.StateContext.RuntimeTracker,
+            RareEventScheduler = wA.StateContext.RareEventScheduler,
+            SocialCoordinator = coordinator,
+            MarkStateDirty = wA.StateContext.MarkStateDirty,
+        };
+        wB.StateContext = new PetStateContext
+        {
+            PetId = wB.StateContext!.PetId,
+            EmotionAccumulator = wB.StateContext.EmotionAccumulator,
+            CornerTracking = wB.StateContext.CornerTracking,
+            GrievanceExpression = wB.StateContext.GrievanceExpression,
+            RuntimeTracker = wB.StateContext.RuntimeTracker,
+            RareEventScheduler = wB.StateContext.RareEventScheduler,
+            SocialCoordinator = coordinator,
+            MarkStateDirty = wB.StateContext.MarkStateDirty,
+        };
+
+        return coordinator;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Normal notice → respond flow
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Two idle pets within notice distance: OnUpdateTick should start
+    /// a social session (IsSocialActive becomes true).
+    /// </summary>
+    [STATestMethod]
+    public void Social_NormalNotice_SessionStarts()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // First tick: should start a noticing session.
+            wA.OnUpdateTickTest();
+
+            Assert.IsTrue(coordinator.IsSocialActive,
+                "Social session should be active after first tick.");
+            Assert.IsTrue(wA.IsSocialActive || wB.IsSocialActive,
+                "At least one pet should report IsSocialActive.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// After notice starts and the respond delay elapses, the session
+    /// should transition to Responding phase, then finish and enter
+    /// cooldown (IsSocialActive becomes false).
+    /// </summary>
+    [STATestMethod]
+    public void Social_NormalFlow_Notice_Respond_Finish_Cooldown()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 100,
+                respondDurationMs: 500,
+                noticeDurationMs: 5000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start noticing.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive,
+                "Session should be active (Noticing).");
+            Assert.AreEqual(SocialPhase.Noticing, coordinator.CurrentSession.Phase,
+                "Should be in Noticing phase.");
+
+            // Advance past respond delay → should transition to Responding.
+            now = 1200;
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive,
+                "Session should be active (Responding).");
+            Assert.AreEqual(SocialPhase.Responding, coordinator.CurrentSession.Phase,
+                "Should be in Responding phase after respond delay.");
+
+            // Advance past respond duration → session should finish.
+            now = 1800;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Session should be finished (not active).");
+
+            // Cooldown should prevent a new session.
+            now = 2000;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Cooldown should prevent a new session.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Reject / timeout
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// When RespondProbability is 0, the target rejects the notice.
+    /// The session goes through Rejected → Finished and both pets
+    /// enter cooldown.
+    /// </summary>
+    [STATestMethod]
+    public void Social_Reject_TargetRejects_SessionEnds()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondProbability: 0.0,
+                respondDelayMs: 100,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start noticing.
+            wA.OnUpdateTickTest();
+            Assert.AreEqual(SocialPhase.Noticing, coordinator.CurrentSession.Phase,
+                "Should be in Noticing phase.");
+
+            // Advance past respond delay → should transition to Rejected.
+            now = 1200;
+            wA.OnUpdateTickTest();
+            Assert.AreEqual(SocialPhase.Rejected, coordinator.CurrentSession.Phase,
+                "Should be in Rejected phase after respond delay with prob=0.");
+
+            // Next tick: Rejected phase ends immediately → Finished.
+            now = 1250;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Session should end after reject (not active).");
+
+            // Cooldown should prevent immediate restart.
+            now = 1300;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Cooldown should prevent restart after reject.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// When the noticing phase exceeds NoticeDurationMs without a response
+    /// (respond delay never reached because it's set higher), the session
+    /// finishes as a timeout-equivalent.
+    /// </summary>
+    [STATestMethod]
+    public void Social_NoticeDurationExceeded_SessionEndsWithoutResponse()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 10000,
+                noticeDurationMs: 500,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start noticing.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Should be in Noticing.");
+
+            // Advance past notice duration (but before respond delay).
+            now = 1600;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Session should end when NoticeDuration is exceeded.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Drag interrupts social (user input priority)
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// When a drag starts on either pet during an active social session,
+    /// the session is cancelled immediately. The next tick should not
+    /// show social active.
+    /// </summary>
+    [STATestMethod]
+    public void Social_DragInterrupts_SessionCancelled()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 1000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should start.");
+
+            // Start dragging pet A — this should cancel the social session.
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 65),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 65)),
+                "Body press on pet A should start a drag.");
+            Assert.IsTrue(wA.IsDragging, "Pet A should be dragging.");
+
+            // Next tick: social should be cancelled because drag is active.
+            now = 1050;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Social session must be cancelled when drag starts.");
+
+            // Release the drag.
+            now = 1060;
+            wA.EndCapturedPointerInteraction();
+            Assert.IsFalse(wA.IsDragging, "Pet A should not be dragging after release.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    /// <summary>
+    /// Social does not delay user grab: a head press (petting candidate)
+    /// during a social session cancels the session and the head press
+    /// is accepted immediately. The social layer never blocks input.
+    /// </summary>
+    [STATestMethod]
+    public void Social_DoesNotDelayHeadPress_HeadPressCancelsSocial()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 5000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should start.");
+
+            // Head press during social — must be accepted immediately.
+            Assert.IsTrue(wA.BeginCapturedPointerInteraction(
+                new System.Windows.Point(60, 20),
+                new System.Windows.Point(wA.Left + 60, wA.Top + 20)),
+                "Head press during social must be accepted.");
+            Assert.IsTrue(wA.IsPettingCandidate,
+                "Pet A should be in petting candidate state during social.");
+
+            // Next tick: social cancelled because petting candidate is active.
+            now = 1050;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Social must be cancelled when head press (petting candidate) starts.");
+
+            // Release.
+            now = 1060;
+            wA.EndCapturedPointerInteraction();
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Pause interrupts social
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// When the app is paused during an active social session, the next
+    /// tick should cancel the social session (paused pets don't socialize).
+    /// </summary>
+    [STATestMethod]
+    public void Social_PauseInterrupts_SessionCancelled()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 5000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should start.");
+
+            // Pause the app.
+            app.OnPauseToggled(null, true);
+            Assert.IsTrue(app.TestState!.IsPaused, "App should be paused.");
+
+            // Next tick: social should be cancelled because pause is active.
+            now = 1050;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Social session must be cancelled when app is paused.");
+
+            // Resume.
+            app.OnPauseToggled(null, false);
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Pet removal cancels social
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Removing a pet during an active social session cancels the session
+    /// via ForceCancel. The remaining pet's IsSocialActive should be false
+    /// on the next tick.
+    /// </summary>
+    [STATestMethod]
+    public void Social_PetRemovalCancels_RemainingPetNotSocial()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 5000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should start.");
+
+            // Remove pet B (non-original, can be removed).
+            Assert.IsTrue(app.RemovePet("bear-2"),
+                "RemovePet should succeed for bear-2.");
+
+            // ForceCancel is called in RemovePet — session should be cancelled.
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Social session must be cancelled after pet removal.");
+
+            // Next tick on remaining pet A: only one pet, no social.
+            now = 1050;
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Remaining single pet should not have active social.");
+            Assert.IsFalse(wA.IsSocialActive,
+                "Pet A IsSocialActive should be false after other pet removed.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Only one session at a time
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Multiple ticks during an active session should not start a second
+    /// session. The coordinator maintains exactly one session.
+    /// </summary>
+    [STATestMethod]
+    public void Social_OnlyOneSession_MultipleTicksDoNotStartSecond()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 1000,
+                respondDurationMs: 2000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            var sessionId = coordinator.CurrentSession.SessionId;
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should start.");
+            Assert.IsFalse(string.IsNullOrEmpty(sessionId), "Session ID should be set.");
+
+            // Multiple ticks during the active session — session ID must not change.
+            now = 1100;
+            wA.OnUpdateTickTest();
+            Assert.AreEqual(sessionId, coordinator.CurrentSession.SessionId,
+                "Session ID must not change during active session.");
+
+            now = 1200;
+            wB.OnUpdateTickTest(); // Tick from the other window.
+            Assert.AreEqual(sessionId, coordinator.CurrentSession.SessionId,
+                "Session ID must not change when ticked from other window.");
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should still be active.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Personality difference: SlowPaced has lower notice probability
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// A SlowPaced pet with SlowPacedNoticeProbability=0 should never
+    /// initiate a notice. When paired with a Proactive pet that has
+    /// NoticeProbability=1.0, the Proactive pet is always the initiator.
+    /// </summary>
+    [STATestMethod]
+    public void Social_SlowPacedNeverInitiates_ProactiveIsInitiator()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"Social_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+                new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 50, WindowLeft = 200, WindowTop = 100 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            app.CreatePetWindow(app.TestState.Pets[1]);
+            var wA = app.FindWindowByPetId("bear-1")!;
+            var wB = app.FindWindowByPetId("bear-2")!;
+            wA.Left = 100; wA.Top = 100;
+            wB.Left = 200; wB.Top = 100;
+
+            // Proactive=1.0, SlowPaced=0.0 — only bear-1 can initiate.
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                noticeProbability: 1.0,
+                respondDelayMs: 5000,
+                cooldownMs: 100000);
+
+            // Override config to set SlowPacedNoticeProbability separately.
+            coordinator.Config.SlowPacedNoticeProbability = 0.0;
+            coordinator.Config.NoticeProbability = 1.0;
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Tick from B's window first — B is SlowPaced, should NOT initiate.
+            wB.OnUpdateTickTest();
+
+            // The coordinator deduplicates by nowMs, so the first tick from
+            // B already processed. If B could initiate, it would have. But
+            // B is SlowPaced with prob=0, so it can't. The session should
+            // not start from B.
+            // However, since both A and B are tried in TryStartSession,
+            // A (Proactive) will be tried first and should initiate.
+            // The initiator should be bear-1 (Proactive).
+            Assert.IsTrue(coordinator.IsSocialActive,
+                "Session should start (Proactive pet initiates).");
+            Assert.AreEqual("bear-1", coordinator.CurrentSession.InitiatorId,
+                "Initiator must be bear-1 (Proactive), not bear-2 (SlowPaced).");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Social blocks rare-event Evaluate
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// When a social session is active, IsSocialActive is true and
+    /// RareEventUpdateService receives isSocialActive=true, which causes
+    /// Evaluate to deny with SocialActive. This is verified at the
+    /// MainWindow level: after a social session starts, IsSocialActive
+    /// is true.
+    /// </summary>
+    [STATestMethod]
+    public void Social_ActiveSession_BlocksRareEventEvaluate()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 5000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Before social: IsSocialActive should be false.
+            Assert.IsFalse(wA.IsSocialActive, "IsSocialActive should be false before social.");
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(wA.IsSocialActive,
+                "IsSocialActive should be true during social session — this blocks rare events.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Distance check: too far → no session
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// When two pets are too far apart (beyond NoticeDistanceMaxDip),
+    /// no social session should start.
+    /// </summary>
+    [STATestMethod]
+    public void Social_TooFar_NoSession()
+    {
+        var (app, wA, wB) = SetupTwoPets(leftA: 100, topA: 100, leftB: 2000, topB: 100);
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                noticeProbability: 1.0,
+                cooldownMs: 100000);
+            // Override distance in config.
+            coordinator.Config.NoticeDistanceMaxDip = 600;
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "No social session should start when pets are too far apart.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Social does not write position
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// During a social session, neither pet's window position should
+    /// change. Social only switches expression; position is not written.
+    /// </summary>
+    [STATestMethod]
+    public void Social_DoesNotWritePosition()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 100,
+                respondDurationMs: 500,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            var leftA0 = wA.Left;
+            var topA0 = wA.Top;
+            var leftB0 = wB.Left;
+            var topB0 = wB.Top;
+
+            // Start social and advance through the full session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should start.");
+
+            now = 1200; // Past respond delay.
+            wA.OnUpdateTickTest();
+
+            now = 1800; // Past respond duration.
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive, "Session should end.");
+
+            // Positions must not have changed.
+            Assert.AreEqual(leftA0, wA.Left, 0.01,
+                "Pet A Left must not change during social.");
+            Assert.AreEqual(topA0, wA.Top, 0.01,
+                "Pet A Top must not change during social.");
+            Assert.AreEqual(leftB0, wB.Left, 0.01,
+                "Pet B Left must not change during social.");
+            Assert.AreEqual(topB0, wB.Top, 0.01,
+                "Pet B Top must not change during social.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Single pet: no social
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// With only one pet, no social session can start. OnUpdateTick
+    /// should complete without error and IsSocialActive stays false.
+    /// </summary>
+    [STATestMethod]
+    public void Social_SinglePet_NoSession()
+    {
+        var app = (App?)System.Windows.Application.Current ?? new App();
+        try
+        {
+            var dir = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), $"Social_{Guid.NewGuid():N}");
+            app.TestSetupIsolatedSave(dir);
+            app.TestState!.Pets = new List<PetInstanceArchive>
+            {
+                new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+            };
+
+            app.CreatePetWindow(app.TestState!.Pets[0]);
+            var wA = app.FindWindowByPetId("bear-1")!;
+            wA.Left = 100; wA.Top = 100;
+
+            var coordinator = new SocialCoordinator(new SocialConfig
+            {
+                NoticeProbability = 1.0,
+                MinIdleMs = 0,
+                NoticeIntervalMs = 0,
+            }, new Random(42));
+            app.SocialCoordinator = coordinator;
+            wA.StateContext = new PetStateContext
+            {
+                PetId = wA.StateContext!.PetId,
+                EmotionAccumulator = wA.StateContext.EmotionAccumulator,
+                CornerTracking = wA.StateContext.CornerTracking,
+                GrievanceExpression = wA.StateContext.GrievanceExpression,
+                RuntimeTracker = wA.StateContext.RuntimeTracker,
+                RareEventScheduler = wA.StateContext.RareEventScheduler,
+                SocialCoordinator = coordinator,
+                MarkStateDirty = wA.StateContext.MarkStateDirty,
+            };
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+
+            wA.OnUpdateTickTest();
+            Assert.IsFalse(coordinator.IsSocialActive,
+                "Single pet should not have active social.");
+            Assert.IsFalse(wA.IsSocialActive,
+                "Single pet IsSocialActive should be false.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Cleanup regression
+    // ════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// TestCleanup must stop the update timer for windows created by the
+    /// production factory during social tests, even if a social session
+    /// was active when cleanup was called.
+    /// </summary>
+    [STATestMethod]
+    public void Social_Cleanup_StopsTimersEvenWithActiveSession()
+    {
+        var (app, wA, wB) = SetupTwoPets();
+        MainWindow? wACapture = wA;
+        MainWindow? wBCapture = wB;
+        try
+        {
+            var coordinator = InjectDeterministicSocial(wA, wB, app,
+                respondDelayMs: 5000,
+                cooldownMs: 100000);
+
+            double now = 1000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // Start a social session.
+            wA.OnUpdateTickTest();
+            Assert.IsTrue(coordinator.IsSocialActive, "Session should be active.");
+
+            // Call TestCleanup while session is active.
+            app.TestCleanup();
+
+            // Timers must be stopped.
+            Assert.IsFalse(wACapture!.IsUpdateTimerEnabled,
+                "Window A timer must be stopped after TestCleanup with active social.");
+            Assert.IsFalse(wBCapture!.IsUpdateTimerEnabled,
+                "Window B timer must be stopped after TestCleanup with active social.");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+    [STATestMethod]
+    public void Reviewer_SocialNotice_MustActuallyDisplayCurious() {
+        var(app,a,b)=SetupTwoPets();try {
+            var c=InjectDeterministicSocial(a,b,app,respondDelayMs:2000);
+            double now=1000;a.TestGetElapsedMs=()=>now;b.TestGetElapsedMs=()=>now;
+            a.OnUpdateTickTest();Assert.IsTrue(c.IsSocialActive);
+            now=1050;a.OnUpdateTickTest();
+            Assert.AreEqual("curious",a.CurrentAction,"Initiator must display social notice, not just set a private timer.");
+        } finally {app.TestCleanup();}
+    }
+    [STATestMethod]
+    public void Reviewer_GlobalPause_CancelsWithoutManuallyTickingStoppedTimers() {
+        var(app,a,b)=SetupTwoPets();try {
+            var c=InjectDeterministicSocial(a,b,app);double now=1000;a.TestGetElapsedMs=()=>now;b.TestGetElapsedMs=()=>now;
+            a.OnUpdateTickTest();Assert.IsTrue(c.IsSocialActive);
+            app.OnPauseToggled(null,true);
+            Assert.IsFalse(c.IsSocialActive,"Pause stops all timers; cancellation must occur in production event.");
+        } finally {app.TestCleanup();}
+    }
+    [STATestMethod]
+    public void Reviewer_GlobalRecover_CancelsSession() {
+        var(app,a,b)=SetupTwoPets();try {
+            var c=InjectDeterministicSocial(a,b,app);double now=1000;a.TestGetElapsedMs=()=>now;b.TestGetElapsedMs=()=>now;
+            a.OnUpdateTickTest();Assert.IsTrue(c.IsSocialActive);
+            app.OnRecoverRequested(null,EventArgs.Empty);
+            Assert.IsFalse(c.IsSocialActive,"Recover must end shared social ownership.");
+        } finally {app.TestCleanup();}
+    }
+    [STATestMethod]
+    public void Reviewer_HeadPress_CancelsBeforeReturning() {
+        var(app,a,b)=SetupTwoPets();try {
+            var c=InjectDeterministicSocial(a,b,app);double now=1000;a.TestGetElapsedMs=()=>now;b.TestGetElapsedMs=()=>now;
+            a.OnUpdateTickTest();Assert.IsTrue(c.IsSocialActive);
+            Assert.IsTrue(a.BeginCapturedPointerInteraction(new System.Windows.Point(60,20),new System.Windows.Point(a.Left+60,a.Top+20)));
+            Assert.IsFalse(c.IsSocialActive,"Grab cancellation cannot wait for a later tick.");
+        } finally {app.TestCleanup();}
+    }
+    [STATestMethod]
+    public void Reviewer_RemoveReadd_UsesCurrentClockForCooldown() {
+        var(app,a,b)=SetupTwoPets();try {
+            var c=InjectDeterministicSocial(a,b,app,cooldownMs:15000,respondDelayMs:2000);
+            double now=100000;a.TestGetElapsedMs=()=>now;b.TestGetElapsedMs=()=>now;
+            a.OnUpdateTickTest();Assert.IsTrue(c.IsSocialActive);
+            Assert.IsTrue(app.RemovePet("bear-2"));Assert.IsTrue(app.AddPet());
+            now=100001;a.OnUpdateTickTest();
+            Assert.IsFalse(c.IsSocialActive,"Survivor must remain in cooldown from removal time, not time zero.");
+        } finally {app.TestCleanup();}
+    }
+    [STATestMethod]
+    public void Reviewer_SecondWindow_MustNotConsumeRarePlanDuringSharedSocial() {
+        var(app,a,b)=SetupTwoPets();try {
+            var c=InjectDeterministicSocial(a,b,app,respondDelayMs:2000);
+            double now=1000;a.TestGetElapsedMs=()=>now;b.TestGetElapsedMs=()=>now;
+            a.OnUpdateTickTest();Assert.IsTrue(c.IsSocialActive);
+            b.StateContext!.RuntimeTracker!.Restore(150);
+            b.StateContext.RareEventScheduler!.RestorePlan(new DesktopPet.Core.Events.RareEventPlan {
+                LocalDate=DateTime.Now.ToString("yyyy-MM-dd"),TriggerDelayMinutes=20,TriggerRoll=0,Consumed=false,AccumulatedBaselineMinutes=0
+            });
+            now=1001;b.OnUpdateTickTest();
+            Assert.IsFalse(b.StateContext.RareEventScheduler.CurrentPlan!.Consumed,"Other window must observe shared active session before rare-event evaluation.");
+        } finally {app.TestCleanup();}
+    }
+}

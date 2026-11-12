@@ -1,36 +1,22 @@
-﻿# 当前状态
+# 当前状态
 
-更新时间：2026-11-08（Asia/Shanghai）。任务状态唯一出处为 [TASKS](TASKS.md)。
+更新时间：2026-11-12（Asia/Shanghai）。任务状态唯一出处为[TASKS](TASKS.md)。
 
 ## 当前接手任务
 
-PREP-003 [监理R4](reviews/PREP-003-review.md)最终接收，F-01关闭；任务状态见[TASKS](TASKS.md)。PREP-001～003已完成，P3-001-S1等待用户安排，尚未开工。
+P3-004 短暂追逐及双宠阶段验收经[监理R6](reviews/P3-004-review.md)通过，TASKS 已标 done。P3-001～P3-004 均已完成。
 
 ## 本轮完成与验证
 
-- 独立核对四轮CSV/metadata/摘要：PID与完整隔离Release DLL绑定、ENDPOINT、9列状态、无采样错误和exit0均一致；有效区间300.554/300.090/120.704/120.608秒。
-- 独立CPU复算：空闲0.9772%/0.5522%，动态3.9874%/2.8240%（单核），与报告一致。当前关键源码与Release副本一致。
-- 重跑原终点故障注入仅使用审查副本：exit3、SAMPLE_ERROR列正确、sampleErrors=1，误报完成已修复。未改产品、未重跑全套产品测试。
-- 稳定原始数据/元数据/独立复算/版本摘要见[最终证据](reviews/evidence/PREP-003-final-R4/)，基线见[性能报告](history/PREP-003-perf-baseline.md)。
+- 监理代测 M-10。默认双宠两轮空闲样本观察到3次自然追逐，原地邀请、同向短跑、停步留距通过。
+- 在隔离控制窗实际点击暂停，双宠同回调停止。恢复后按新邀请流程启动；同档正常重启恢复两只的身份及位置，未续跑旧追逐。移动窗口按压因工具几何校验未完成，暂停使用生产入口。
+- 单宠/双宠同一 Release 二进制，空闲5分钟、动态2分钟各两轮，8轮完成且正常退出。空闲单核CPU单宠0.77～0.89%、双宠1.09～1.14%；动态两组区间重叠。动态样本仅轻放拖动，未触发抛掷或追逐。
+- [R6原始证据](reviews/evidence/P3-004-R6/)含CSV、汇总、日志、隔离脚本和源码摘要。正式存档哈希一致。R5独立相关174/174沿用。
 
-## 限制与下一步
+## 下一步
 
-- 用户动态输入与采集后退出为执行方报告，次数未计数；首实例采集后意外退出原因未独立确认。采集器exit0不等于目标应用正常退出码；100%环境DPI非HWND实测。
-- 正式存档未变仅保留隔离路径静态核对/执行方报告，无本轮前后快照；多屏/混合DPI/ART历史限制保留。短时性能不证明无泄漏或性能提升。
-- 开发AI仅向[整改记录](remediation/PREP-003-response.md)追加R4关闭依据，不重复整改或测试；P3-001-S1等待用户安排。PREP-001～003已提交推送，不改变验收结论。
+- 阶段4处于需求讨论。用户已确认休息提醒要有清楚的动作、无弹窗，见 [PRODUCT R-06](PRODUCT.md#r-06-作息与休息反馈阶段-4)。具体动作和跳过方式待定，开发尚未开工。开发整改记录可引用R6作为P3-004关闭依据。
 
-## 工作区与接续
+## 工作区
 
-- PREP-001～003 Git收尾完成：5个提交按逻辑分组推送至 origin/main，本地HEAD d6b3fc7 与远端一致。
-  - `9c5f44d` feat(PREP-001): 异常诊断代码与测试
-  - `cc95e82` refactor(PREP-002): 共享时钟/状态上下文/稀有事件服务
-  - `426963e` feat(PREP-003): 性能采集脚本与Release基线报告
-  - `e9f1481` docs: 架构/产品/测试/任务/整改记录同步
-  - `d6b3fc7` docs(reviews): 监理报告与审查证据
-- 排除项：`.temp/`（空临时文件）、artifacts/（.gitignore排除，早期验证脚本仅存本机）。
-- 已排除（.gitignore）：bin/obj/artifacts/.codefree/。artifacts/ 早期验证脚本和临时附件仅存本机。
-
-## 主要入口
-
-- [实机夹具](../tests/Integration/Run-ProbeLive.ps1)、[ART-003交接](handoffs/ART-003-drag-feedback.md)、[温和表情预览](design/images/bear-drag-feedback-preview.png)、[素材/提示词](../assets/art/bear-v1/drag-source.md)、[当前资源](../assets/pets/bear/README.md)。
-- [ART-002交接](handoffs/ART-002-natural-expressions.md)、[头部修复](handoffs/INPUT-002-head-drag-fix.md)、[删除功能](handoffs/INPUT-001-remove-mouse-fright.md)、[Git纪律](GIT_WORKFLOW.md)、[审查规则](REVIEW_PROCESS.md)。
+- 按用户授权在 main 本地存档阶段 3 的源码、测试、文档和留存证据。验收依据见 R6，本次存档沿用原验证结果。临时文件与生成的测试输出留在本机。[Git纪律](GIT_WORKFLOW.md)、[审查规则](REVIEW_PROCESS.md)。

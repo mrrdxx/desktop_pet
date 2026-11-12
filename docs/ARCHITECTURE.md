@@ -174,29 +174,94 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - App负责实例增删、全局托盘操作与保存协调；只抽取当前双宠所需职责，不建立插件系统/通用实体框架。托盘Pause/Resume/Recover/Exit作用于全部现存宠物；单宠右键原有含义保留，避免删除错误目标。
 - 个体状态与全局暂停/设置/稀有每日计划分开；后者沿用全应用共享额度，不能复制一份计划给每只宠物以增加彩蛋次数。存档集合布局/版本号在P3-001-S1核实当前v3后写回本节，现有格式尚不修改。
 - 兼容迁移须保留单宠旧字段到第一只稳定实体，不复制旧状态给新增实体；旧无性格存档的首只默认稍主动，第二只慢半拍，角色与ID绑定。移除第二只须取消相关活动并释放窗口/引用，下一次新增不复用旧ID。
-- 后续社交协调器管理唯一共享会话，持会话ID/参与者/阶段/截止/取消原因；角色只提交位置意图，沿用单一位置所有权规则。用户实体抓取（含头部候选）立即优先，任一参与者中断须释放双方；首步不提前生成会话框架。
-- 主动移动先用已有工作区/窗口合法边界和物理静止状态判断底边支撑，同显示器同活动面才可达；悬空轻放不会因社交启动被下拉。具体容差/速度在相应任务规定，不复用图像透明底边测量来暗改坐标模型。
-- 性格是稳定行为配置，影响社交发起/回应，不阻塞Dispatcher线程或用户输入；不预写关系数值/对用户亲近度。规则唯一出处为[PRODUCT R-05](PRODUCT.md)。
+- **P3-001-S3 已实现约定**（R9 整改后）：
+  - **身份生成**：`AddPet` 新 PetId 使用 `bear-{Guid.NewGuid():N}` 格式，不复用已删除的序号 ID。存活个体已有 ID 不变。原首只始终为 `bear-1`（迁移或默认创建）。
+  - **移除语义**：`RemovePet` 拒绝移除原首只（`Pets[0]`），只允许移除第二只。右键 "Remove Pet" 只对非原首只显示。移除第二只后释放窗口/计时器/输入引用，存档中该个体被删除，不复活。
+  - **退出语义**：右键 "Exit" 和托盘 "Exit" 调用 `ShutdownMainWindow`（全局退出），保存现有全部集合后关闭所有窗口并退出。全局退出过程中 `_isShuttingDown` 标志阻止 `OnPetWindowClosed` 误删个体。原首只窗口意外关闭（如 Alt+F4）也走全局退出，不删个体。
+  - **找回保存**：`OnRecoverRequested` 在所有 `RecoverPet()` 和第二只偏移完成后调用 `MarkStateDirty()` 保存最终位置（含偏移），存档位置 = 窗口最终位置。
+  - **窗口边界约束**（R10 整改后）：`AddPet` 新宠物位置和 `OnRecoverRequested` 偏移后位置均检查完整窗口边界（`Left + Width`、`Top + Height`）在主显示器 workarea 内，使用 `MonitorInterop.EnumerateMonitors` + `FindPrimaryMonitor` 获取 workarea DIP。偏移超出时双向 clamp 到 workarea 边缘，不依赖硬编码屏幕宽度。
+  - **尚未实现**：自主移动、寻找、追逐、关系值/亲近度。社交协调器（P3-002 相互注意）边界如下。
+- **P3-002 社交协调器约定**（相互注意，不含寻找/追逐/自主移动）：
+  - 社交协调器是 App 级全局对象（类比 `RuntimeTracker`/`RareEventScheduler`），管理唯一共享会话，持会话 ID/参与者(PetId A, PetId B)/阶段/截止时间/取消原因。同时仅一个双方共享会话。
+  - 会话状态机：`Idle → Noticing(发起方看向对方) → Responding(对方回应) / Rejected(对方拒绝) → Finished → Cooldown(双方各自冷却)`。超时或打断时直接转 `Cancelled → Cooldown`。
+  - **P3-002 不移动位置**：相互注意只切换动画/表情表现（看向、疑惑、回应），不提交位置意图、不改窗口 `Left/Top`。寻找/追逐/自主移动属于 P3-003/004，不在本轮实现。
+  - 角色只提交表现意图（动画切换），不直接写 WPF `Left/Top` 或 Core 坐标。用户实体抓取（含头部候选）立即优先，任一参与者中断须释放双方。
+  - 社交活跃时 `isSocialActive=true` 传入 `RareEventUpdateService.EvaluateTick`，阻止稀有事件触发（计划保留不消费）。
+  - 中断条件：任一方被实际抓取（含头部候选 `_isPettingCandidate`）、暂停、移除、找回或进入物理（`_isPhysicsActive`）时，立即中断当前会话并释放双方，不从旧阶段续演。
+  - 性格影响：`Proactive` 发起概率更高、回应延迟更短；`SlowPaced` 发起概率更低、回应延迟更长。慢回应只影响社交，不延迟用户抓取/拖动/暂停/退出。
+  - 性格是稳定行为配置，影响社交发起/回应，不阻塞 Dispatcher 线程或用户输入；不预写关系数值/对用户亲近度。规则唯一出处为[PRODUCT R-05](PRODUCT.md)。
+- **P3-002 可调初值**（调试初值，可在手感校准后调整）：
+
+  | 参数 | 初值 | 含义 |
+  |------|------|------|
+  | NoticeIntervalMs | 8000 | 空闲时两次发起注意尝试的最小间隔（每只独立计时） |
+  | NoticeProbability | 0.15 | Proactive 每个评估窗口发起注意的概率 |
+  | SlowPacedNoticeProbability | 0.05 | SlowPaced 发起注意的概率 |
+  | NoticeDistanceMaxDip | 600 | 两只宠物中心距离在此范围内才可发起注意（DIP） |
+  | NoticeDurationMs | 3000 | Noticing 阶段持续时间上限，超时自动结束 |
+  | RespondDelayMs | 800 | Proactive 回应延迟 |
+  | SlowPacedRespondDelayMs | 2000 | SlowPaced 回应延迟（性格差异可观察） |
+  | RespondDurationMs | 2500 | Responding 阶段持续时间上限 |
+  | RespondProbability | 0.6 | 对方收到注意后回应的概率（拒绝则 1-概率） |
+  | CooldownMs | 15000 | 会话结束后双方各自冷却时间，冷却中不参与新会话 |
+  | SessionTimeoutMs | 8000 | 整个会话从 Noticing 起的总超时，超时直接取消 |
+  | MinIdleMs | 3000 | 发起前双方须连续空闲至少此时间（无拖动/物理/探头/委屈/暂停） |
+
+  以上参数标为调试初值，待实机手感校准后可调整；初值写入 PRODUCT R-05 对应段落。
+
+- **P3-003 寻找约定**（被拖走后寻找，不含追逐/自主移动）：
+  - 寻找是社交协调器的扩展阶段，复用唯一共享会话。会话状态机扩展：`Idle → Noticing → Responding / Rejected → Finished → Cooldown` 之外，寻找在 P3-002 会话结束后或独立触发：`Idle → Seeking(寻找方沿底边靠近) → Arrived(到达留距) / Cancelled → Cooldown`。同时仅一个双方共享会话，寻找与相互注意不并发。
+  - **寻找写位置**：与 P3-002 不写位置不同，寻找阶段寻找方沿底边移动 `Left`（水平方向），不写 `Top`（垂直固定在底边）。位置写入在 `OnUpdateTick` 中独立守卫分支，与物理/拖动/探头互斥：`_isSeeking && !_isDragging && !_isPhysicsActive && !_isPettingCandidate && !_isAppPaused`。寻找方窗口 `Left` 由社交协调器输出步进意图驱动，每 tick 移动 `SeekStepDip`，到达 `SeekStopDistanceDip` 间距或 `SeekMaxDistanceDip`/`SeekTimeoutMs` 上限后停止。
+  - **触发条件**：A 被拖动时 B 不追鼠标（`CancelSocialImmediately(DragStarted)` 已覆盖）。A 释放后等待 `SeekReactDelayMs`，再评估：双方须空闲、稳定（无物理/拖动/探头/委屈/暂停）、处于同一显示器同一底边活动面（`|centerY_A - centerY_B| ≤ SeekBottomToleranceDip` 且同一 monitor）。A 仍悬空（轻放半空，`Top` 不在底边）或不同活动面时只表达关注，不移动。
+  - **物理停止等待**：A 被甩出时 `_isPhysicsActive=true`，B 等待 `IsResting` 后才开始寻找。物理活跃期间 `IsBusy=true` 阻止寻找触发。
+  - **中断条件**：任一方被实际抓取（含头部候选）、暂停、移除、找回或进入物理时，立即中断寻找并释放双方，不从旧阶段续演。目标消失（移除/离屏）、超时退出。寻找途中位置变化按既有保存规则处理，重启不续跑旧寻找。
+  - **不永久重叠**：到达后保持 `SeekStopDistanceDip` 间距，不继续逼近。寻找方不与物理/探头抢位置——物理活跃或探头期间不写位置。
+  - **P3-003 可调初值**（调试初值，可在手感校准后调整）：
+
+  | 参数 | 初值 | 含义 |
+  |------|------|------|
+  | SeekReactDelayMs | 1500 | A 释放后 B 等待反应延迟，过后才评估是否寻找 |
+  | SeekStepDip | 4 | 寻找方每个 tick 沿底边移动的步距（DIP，~30FPS） |
+  | SeekStopDistanceDip | 120 | 寻找方到达目标附近后保持的最小间距（中心距，DIP） |
+  | SeekMaxDistanceDip | 1200 | 寻找方愿意沿底边移动的最大距离（DIP），超过则放弃 |
+  | SeekTimeoutMs | 20000 | 寻找阶段总超时，超时直接结束 |
+  | SeekCooldownMs | 20000 | 寻找结束后双方各自冷却时间 |
+  | SeekBottomToleranceDip | 8 | 判定双方在同一底边活动面的垂直容差（DIP） |
+
+  以上参数标为调试初值，待实机手感校准后可调整；初值写入 PRODUCT R-05 对应段落。
+
+- **P3-004 追逐约定（已实现，待实机验收）**
+  - 扩展现有 `SocialCoordinator` 的唯一共享会话。邀请、等待回应、接受后追逐、拒绝或中断后冷却均由同一协调器处理。有效释放候选保留 P3-003 的处理机会。追逐邀请只在协调器空闲且无更高优先级活动时评估。邀请概率按双宠对和单调时间去重，追逐冷却与已有注意、寻找冷却各按自身约定管理。行为初值见 PRODUCT R-05。
+  - 复用寻找的活动面判定和 App 位置应用边界。Core 从同一对窗口快照计算双方水平位移，App 同步核对双方 `PetId`、支撑、忙碌状态和完整窗口工作区边界，再一次消费这对位置意图。任何一方无法应用则结束会话。两窗更新使用共享单调时间预算，限制卡顿后补步，暂停/恢复时丢弃积压。位置写入沿用现有受守卫的 App 更新入口和按 PetId 标脏路径。
+  - 拖动（含头部候选）、暂停、找回、移除、物理、探头及支撑失效均释放双方。社交持有位置期间使用共享会话状态阻止稀有事件开始。会话、评估时间和冷却仅在内存，重启从既有存档恢复身份与位置。
 
 ## 7. 时间和存档
 
 - 默认目录：`%LOCALAPPDATA%\DesktopPet\`，不向源码目录或安装目录写用户状态。
 - `settings.json` 保存设置；`state.json` 保存宠物、情绪、事件与位置；未来习惯数据单独存储。
-- 每份文件带整数 `schemaVersion`。阶段 0 为 v1，实际结构如下：
+- 每份文件带整数 `schemaVersion`。当前 state.json 为 v4，settings.json 为 v1，实际结构如下：
 
-  **state.json v3**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
-  - `schemaVersion` (int, 默认 3)：模式版本号。v1 文件读取时情绪字段回退默认值；v1/v2 文件读取时稀有事件字段回退默认值。
+  **state.json v4**（`PetStateArchive`，`src/DesktopPet.Core/Persistence/PetStateArchive.cs`）：
+
+  v4 将 v3 的扁平 per-pet 字段拆分到 `pets[]` 个体数组，全局/会话级字段保留在根。单宠 S1 阶段仅 `pets[0]`。
+
+  全局字段（根级）：
+  - `schemaVersion` (int, 默认 4)：模式版本号。
+  - `lastSavedUtc` (string|null)：上次保存的 UTC 时间戳（ISO 8601 round-trip 格式）。
+  - `isPaused` (bool, 默认 false)：是否处于暂停状态（主动行为停止）。全局：暂停适用于进程内所有宠物。
+  - `accumulatedRuntimeMinutes` (double, 默认 0)：有效运行时间累计（会话级，单调时间源）。全局：与稀有事件计划绑定，稀有事件是全局共享额度。v1/v2 缺失时默认 0；v3 已有字段保留，不因迁移重置。
+  - `rareEventPlan` (object|null)：每日稀有事件计划快照（`RareEventPlanSnapshot`）。全局：稀有事件使用共享额度，非 per-pet。v1/v2 缺失时默认 null；v3 已有字段保留。子字段：`localDate` (string|null)、`triggerDelayMinutes` (int)、`triggerRoll` (double)、`consumed` (bool)、`accumulatedBaselineMinutes` (double)。
+
+  个体字段（`pets[]` 数组，每只 `PetInstanceArchive`）：
+  - `petId` (string, 默认 "bear-1")：稳定宠物标识，格式 "bear-{n}"。
+  - `personality` (enum, 默认 Proactive)：性格原型。`Proactive`(0)=稍主动，`SlowPaced`(1)=慢半拍。旧档迁移首只默认 Proactive。
   - `windowLeft` (double, 默认 100)：窗口左上角 X，WPF DIP 坐标。
   - `windowTop` (double, 默认 100)：窗口左上角 Y，WPF DIP 坐标。
-  - `savedDeviceName` (string|null)：上次保存时宠物所在显示器设备名，用于恢复时检测显示器是否仍存在。
-  - `lastSavedUtc` (string|null)：上次保存的 UTC 时间戳（ISO 8601 round-trip 格式）。
-  - `isPaused` (bool, 默认 false)：是否处于暂停状态（主动行为停止）。
+  - `savedDeviceName` (string|null)：上次保存时宠物所在显示器设备名。
   - `grievance` (int, 默认 50)：委屈值（0-100，中性 50）。v1 回退 50。
   - `lastDecayUtc` (string|null)：上次衰减计算基准时间（UTC ISO 8601）。v1 回退为 `lastSavedUtc`。
   - `pendingGrievanceExpression` (bool, 默认 false)：是否有待执行的委屈表达。v1 回退 false。
   - `grievanceExpressionDate` (string|null)：标记待表达的本地日期（yyyy-MM-dd）。v1 回退 null。
-  - `accumulatedRuntimeMinutes` (double, 默认 0)：有效运行时间累计（会话级，单调时间源）。v1/v2 回退 0。
-  - `rareEventPlan` (object|null)：每日稀有事件计划快照（`RareEventPlanSnapshot`）。v1/v2 回退 null。子字段：`localDate` (string|null)、`triggerDelayMinutes` (int)、`triggerRoll` (double)、`consumed` (bool)、`accumulatedBaselineMinutes` (double)。
 
   **settings.json v1**（`PetSettingsArchive`，同文件）：
   - `schemaVersion` (int, 默认 1)：模式版本号。
@@ -209,6 +274,20 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
   - `schemaVersion` 高于当前版本时建立该文件独立的只读保护；兼容字段尽力读取，类型不兼容则以默认运行数据继续，原未来版本文件不能归类为损坏。state/settings 的保护互不影响；正常自动保存会检查标记、DTO 和磁盘版本，避免替换对象或新建服务后降级。启动时发出托盘只读提示。
   - v1 → v2 升级：情绪字段（`grievance`、`lastDecayUtc`、`pendingGrievanceExpression`、`grievanceExpressionDate`）回退默认值；`lastDecayUtc` 回退为 `lastSavedUtc`。
   - v1/v2 → v3 升级：稀有事件字段（`accumulatedRuntimeMinutes`、`rareEventPlan`）回退默认值（0/null），不影响已有情绪字段。
+  - v3 → v4 升级：per-pet 扁平字段（`windowLeft`/`windowTop`/`savedDeviceName`/`grievance`/`lastDecayUtc`/`pendingGrievanceExpression`/`grievanceExpressionDate`）从根级提取到 `pets[0]`；全局字段（`isPaused`/`accumulatedRuntimeMinutes`/`rareEventPlan`/`lastSavedUtc`）保留在根。旧档首只 `petId="bear-1"`、`personality=Proactive`。不复制旧状态给新增实体。v1 的 `lastDecayUtc` 回退为 `lastSavedUtc` 在此阶段一并处理。迁移在 `ArchiveService.DeserializeFile` 中用 `JsonNode` 从原始 JSON 逐字段提取，`JsonSerializer` 正常反序列化全局字段到 v4 root。
+  - F-01 迁移类型错误恢复：v3→v4 迁移逐字段用类型检查读取（`ReadOrThrow<T>`）。缺失字段（null JsonNode）用默认值；已有字段类型不匹配（如 `windowLeft:"oops"`）抛 `InvalidOperationException`，`DeserializeFile` 将其归类为损坏，走既有损坏保护及备份/默认回退，不静默丢数据。`DeserializeFile` 的 catch 覆盖 `JsonException`/`IOException`/`InvalidOperationException`。
+  - F-02 v4 个体结构与身份校验：已知 v4 文件在 `DeserializeFile` 反序列化后经 `ValidatePets` 校验个体数组。以下情况归类为损坏（走既有损坏保护：保留 `.corrupted` → 优先有效备份 → 无备份默认值），不静默过滤或丢条目：
+    - `pets[]` 含 null 条目（如 JSON `"pets":[null]`）。
+    - `petId` 为空或空白。
+    - 重复 `petId`（每只宠物必须有唯一稳定 ID）。
+    - `personality` 值不在已知枚举范围（`Proactive`=0, `SlowPaced`=1）。
+    - `pets[]` 数量超过上限 2（R-05 最多两只）。
+    - `pets` 为 null 或空数组不视为损坏，由 `EnsureDefaultPetList` 创建默认首只（fresh-archive 场景）。
+    - 混合 null/有效条目同样归类为损坏，不静默丢弃 null 后保留有效条目——整个文件走备份恢复，避免覆盖唯一恢复来源。
+    - 未知高版本只读文件不经过 `ValidatePets`（未来格式不按当前 v4 规则判定损坏），兼容运行数据应能安全映射。
+    - `MapArchiveToEmotionObjects`/`MapEmotionObjectsToArchive`/`RestoreWindowPosition`/`MarkStateDirty` 对 `Pets[0]` 保留 null 防御。
+  - F-03 统一个体恢复语义：`MapArchiveToEmotionObjects`（旧入口）委托到 `MapArchiveToEmotionObjectsForPet`（`CreatePetWindow` 入口），只有一套恢复算法。暂停退出时 `isPaused=true` 且 `utcNow > lastDecayUtc` → 前移基准到 now（冻结离线间隔）；未暂停时保留旧基准（正常离线衰减）。时钟回拨（`utcNow ≤ lastDecayUtc`）不前移基准，保留 `AdvanceTo` 非负保护。两只各自 `grievance`/`lastDecayUtc` 独立恢复，不串改。
+  - F-04 双宠窗口隔离：`CreatePetWindow` 为每只宠物创建独立 `MainWindow`，用 `MapArchiveToEmotionObjectsForPet` 构造独立 `EmotionDecayAccumulator`/`GrievanceExpressionState`/`CornerTracker`，注册到 `_petWindows` 字典（key=PetId）。稀有事件对象（`RuntimeTracker`/`RareEventScheduler`）全局共享，同一实例注入所有窗口。`MarkStateDirty(petId)` 按 PetId 路由到正确 `PetInstanceArchive`，从对应窗口读位置/情绪；跨线程访问窗口属性时用 `Dispatcher.CheckAccess()` 保护。
   - F-06 稀有事件恢复约定：恢复时 `EffectiveRuntimeTracker.Restore` 仅恢复累计总量，不恢复活跃引用；调用方须调 `StartActivePeriod` 建立新单调基准，离线间隔不计有效运行时间。`RareEventScheduler.RestorePlan` 仅接受 `IsValid` 通过的快照，非法计划被拒绝且不影响已有计划。基准大于累计等不一致数据不崩溃，Evaluate 用差值评估自然得到 DelayNotReached。
   - 安全写入：先写 `*.tmp` → 旧文件移为 `*.bak` → `*.tmp` 移为正式文件。不先删正式文件。
 - 先写同目录临时文件，完成序列化与关闭后再替换正式文件，保留上次有效备份；不能先删正式文件再写。

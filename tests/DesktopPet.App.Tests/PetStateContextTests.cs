@@ -112,7 +112,7 @@ public class PetStateContextTests
                 GrievanceExpression = grievanceExpr,
                 RuntimeTracker = tracker,
                 RareEventScheduler = scheduler,
-                MarkStateDirty = () => dirtyCount++,
+                MarkStateDirty = (_) => dirtyCount++,
             };
 
             // Tick at 60000ms = 1 monotonic minute → tracker accumulates 1 min.
@@ -160,7 +160,7 @@ public class PetStateContextTests
             {
                 RuntimeTracker = contextTracker,
                 RareEventScheduler = contextScheduler,
-                MarkStateDirty = () => { },
+                MarkStateDirty = (_) => { },
             };
             // Override only the tracker — scheduler must still come from context.
             window.TestRuntimeTracker = testTracker;
@@ -208,7 +208,7 @@ public class PetStateContextTests
                 EmotionAccumulator = new EmotionDecayAccumulator(50, DateTime.UtcNow),
                 CornerTracking = contextCorner,
                 GrievanceExpression = contextGrievance,
-                MarkStateDirty = () => dirtyCount++,
+                MarkStateDirty = (_) => dirtyCount++,
             };
             // Override only emotion — corner and grievance must come from context.
             window.TestEmotionAccumulator = testEmotion;
@@ -276,7 +276,7 @@ public class PetStateContextTests
             {
                 EmotionAccumulator = contextEmotion,
                 GrievanceExpression = new GrievanceExpressionState(),
-                MarkStateDirty = () => dirtyCount++,
+                MarkStateDirty = (_) => dirtyCount++,
             };
             // Override only grievance — emotion must come from context.
             window.TestGrievanceExpression = testGrievance;
@@ -326,7 +326,7 @@ public class PetStateContextTests
             window.StateContext = new PetStateContext
             {
                 RuntimeTracker = tracker,
-                MarkStateDirty = () => { },
+                MarkStateDirty = (_) => { },
             };
 
             // Advance to 1 minute.
@@ -370,7 +370,7 @@ public class PetStateContextTests
                 RuntimeTracker = tracker,
                 EmotionAccumulator = new EmotionDecayAccumulator(50, DateTime.UtcNow),
                 CornerTracking = new CornerTracker(),
-                MarkStateDirty = () => { },
+                MarkStateDirty = (_) => { },
             };
 
             // Advance and pause.

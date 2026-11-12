@@ -1,0 +1,11 @@
+{
+  "head": "a0f84f9684c49611188deb6d02f1581a26d41a75",
+  "uncommitted": true,
+  "sha256": {
+    "src/DesktopPet.App/Persistence/ArchiveService.cs": "80b547daa462618eb5441c7acdc44dc852b9d75ab34640792e02ff092db56a60",
+    "src/DesktopPet.Core/Persistence/PetStateArchive.cs": "70e7be509936bcf3a1d84a42ca90a1a14b4b191596d553e37c0c32caa134ba74",
+    "src/DesktopPet.App/App.xaml.cs": "7e4c504fb045c26cda466fb0690d24cf65a34caad6edd1a99395a079192a318d",
+    "tests/DesktopPet.App.Tests/ArchiveServiceTests.cs": "629f78fe09081911cd6d7644773bf78ddc45e9c93360b290572434138fcfa76a",
+    "docs/ARCHITECTURE.md": "afca6c0d25f9a5dc24c531e3b25de96e5b6ee0fa295f3dc9c87313de8dd5bf9c"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 4,
+  "accumulatedRuntimeMinutes": 150.0,
+  "pets": [
+    {
+      "grievance": 50,
+      "windowLeft": 200,
+      "petId": "bear-1",
+      "personality": "Proactive",
+      "windowTop": 700
+    },
+    {
+      "grievance": 50,
+      "windowLeft": 400,
+      "petId": "bear-2",
+      "personality": "Proactive",
+      "windowTop": 700
+    }
+  ],
+  "isPaused": false,
+  "rareEventPlan": {
+    "localDate": "2026-11-12",
+    "consumed": false,
+    "accumulatedBaselineMinutes": 0.0,
+    "triggerDelayMinutes": 20,
+    "triggerRoll": 0.0
+  }
+}

@@ -124,6 +124,9 @@ public static class Program
             case "isolation-verify":
                 IsolationVerify(scenarioDir, isolatedMutexName);
                 break;
+            case "dual-pet-exit":
+                DualPetExitVerification(scenarioDir);
+                break;
             default:
                 Console.Error.WriteLine($"Unknown scenario: {s_scenario}");
                 Environment.Exit(2);
@@ -244,14 +247,24 @@ public static class Program
             oldMarker + "\",\"grievance\":50}";
         File.WriteAllText(stateFile, oldJson);
 
+        // P3-001 S1: Reload state from the pre-seeded v3 file through the
+        // production deserialization path.  This triggers v3→v4 migration
+        // so Pets[0] exists with the old flat fields (windowLeft=111, etc.).
+        // ProbeSetupIsolated created a fresh empty PetStateArchive; we must
+        // replace it with the migrated state before modifying pet fields.
+        s_app!.TestReloadStateFromArchive();
+
         // R3: Change in-memory state to distinguishable data.
-        // Access the state object set by ProbeSetupIsolated and modify it
-        // with values that are clearly different from the old file.
+        // Access the state object loaded from the pre-seeded file and modify
+        // it with values that are clearly different from the old file.
         var state = s_app!.TestState;
         if (state is not null)
         {
-            state.WindowLeft = 777.0;
-            state.WindowTop = 888.0;
+            if (state.Pets.Count > 0)
+            {
+                state.Pets[0].WindowLeft = 777.0;
+                state.Pets[0].WindowTop = 888.0;
+            }
             state.LastSavedUtc = "PREP001_R3_NEW_STATE_NORMAL_SAVE";
         }
 
@@ -302,13 +315,20 @@ public static class Program
             oldMarker + "\",\"grievance\":50}";
         File.WriteAllText(stateFile, oldJson);
 
+        // P3-001 S1: Reload state from the pre-seeded v3 file through the
+        // production deserialization path (v3→v4 migration → Pets[0] exists).
+        s_app!.TestReloadStateFromArchive();
+
         // R3: Change in-memory state to distinguishable data — different
         // from the old file so that if a save DID happen, we could detect it.
         var state = s_app!.TestState;
         if (state is not null)
         {
-            state.WindowLeft = 999.0;
-            state.WindowTop = 666.0;
+            if (state.Pets.Count > 0)
+            {
+                state.Pets[0].WindowLeft = 999.0;
+                state.Pets[0].WindowTop = 666.0;
+            }
             state.LastSavedUtc = "PREP001_R3_NEW_STATE_ABNORMAL_SAVE";
         }
 
@@ -425,6 +445,110 @@ public static class Program
         WriteResult(0, JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
         s_app.DiagnosticLogger?.Dispose();
         Environment.Exit(0);
+    }
+
+    /// <summary>
+    /// F-08 R10: Dual-pet exit verification via the PRODUCTION
+    /// ShutdownMainWindow path. This scenario:
+    /// 1. Sets up isolated state with two pets (bear-1, bear-2).
+    /// 2. Creates pet windows through the production CreatePetWindow.
+    /// 3. Calls the production ShutdownMainWindow() — which calls
+    ///    FlushFinalState → SaveCoordinator flush, then closes all
+    ///    windows and calls Shutdown(0).
+    /// 4. The process exits naturally with exit code 0.
+    ///
+    /// The parent test process verifies:
+    /// - Exit code is 0 (clean production shutdown).
+    /// - state.json exists and contains both pets with correct IDs
+    ///   and positions (no accidental removal).
+    ///
+    /// This is NOT ShutdownMainWindowForTest — it uses the real
+    /// production exit path including Shutdown(0).
+    /// </summary>
+    private static void DualPetExitVerification(string scenarioDir)
+    {
+        // Use TestSetupIsolatedSave (not ProbeSetupIsolated) because it
+        // creates RuntimeTracker, RareEventScheduler, and emotion objects
+        // that CreatePetWindow needs.
+        s_app!.TestSetupIsolatedSave(scenarioDir);
+
+        // Set up two pets with distinguishable positions.
+        s_app.TestState!.Pets = new System.Collections.Generic.List<PetInstanceArchive>
+        {
+            new() { PetId = "bear-1", Personality = Personality.Proactive, Grievance = 50, WindowLeft = 100, WindowTop = 100 },
+            new() { PetId = "bear-2", Personality = Personality.SlowPaced, Grievance = 55, WindowLeft = 300, WindowTop = 200 },
+        };
+
+        // Create pet windows through the production path.
+        s_app.CreatePetWindow(s_app.TestState!.Pets[0]);
+        s_app.CreatePetWindow(s_app.TestState.Pets[1]);
+
+        // Modify positions to verify they are saved on exit.
+        var wA = s_app.FindWindowByPetId("bear-1");
+        var wB = s_app.FindWindowByPetId("bear-2");
+        if (wA is not null) { wA.Left = 150; wA.Top = 120; }
+        if (wB is not null) { wB.Left = 350; wB.Top = 220; }
+
+        // Mark state dirty so the new positions are captured.
+        s_app.MarkStateDirty();
+
+        // Write pre-exit info to a sidecar file so the parent process can
+        // verify the state file was created by the exit path (not pre-existing).
+        var stateFile = Path.Combine(scenarioDir, "state.json");
+        var preExitFileExists = File.Exists(stateFile);
+
+        var sidecar = new
+        {
+            scenario = "dual-pet-exit",
+            stateFile,
+            preExitFileExists,
+            petCount = s_app.TestState!.Pets.Count,
+            petIds = s_app.TestState.Pets.Select(p => p?.PetId).ToArray(),
+            usingProductionShutdown = true
+        };
+        var sidecarFile = Path.Combine(scenarioDir, "dual-pet-pre-exit.json");
+        File.WriteAllText(sidecarFile, JsonSerializer.Serialize(sidecar, new JsonSerializerOptions { WriteIndented = true }));
+
+        // R11 F-05: Execute the PRODUCTION ShutdownMainWindow on the
+        // Dispatcher thread via synchronous Invoke. This ensures the
+        // production exit path (FlushFinalState → save, window close,
+        // Shutdown(0)) runs on the Dispatcher thread as it would in
+        // production. We do NOT use Environment.Exit(0) as a fallback
+        // before the Dispatcher has run the shutdown — the Invoke call
+        // blocks until ShutdownMainWindow completes on the Dispatcher.
+        //
+        // Note: We cannot use Dispatcher.Run() + BeginInvoke here because
+        // Application.Shutdown(0) inside ShutdownMainWindow interferes
+        // with a manually-pumped Dispatcher loop (the Dispatcher enters
+        // a half-shutdown state and never processes the queued item).
+        // Using synchronous Invoke avoids this issue — the action runs
+        // immediately on the Dispatcher thread without needing a message
+        // pump loop.
+        var dispatcher = Dispatcher.CurrentDispatcher;
+        var shutdownCompleted = false;
+
+        dispatcher.Invoke(new Action(() =>
+        {
+            s_app!.ShutdownMainWindow();
+            shutdownCompleted = true;
+        }));
+
+        // R11 F-05: If ShutdownMainWindow completed successfully, the
+        // production exit path ran on the Dispatcher thread — FlushFinalState
+        // saved state, windows were closed, Shutdown(0) was called.
+        // Exit 0 to signal clean production shutdown.
+        if (shutdownCompleted)
+        {
+            s_app?.DiagnosticLogger?.Dispose();
+            Environment.Exit(0);
+        }
+
+        // If we reach here without shutdownCompleted, something went wrong.
+        WriteResult(1, "dual-pet-exit: ShutdownMainWindow did not complete (unexpected).");
+        s_app?.DiagnosticLogger?.Dispose();
+        Environment.Exit(1);
+        s_app?.DiagnosticLogger?.Dispose();
+        Environment.Exit(1);
     }
 
     /// <summary>

@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="2d46adec-b0e7-4214-bb52-b03ae4109126" name="mrrdxx@毛茸茸的小熊 2026-11-12 13:14:41" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T13:14:41.4774033+08:00" queuing="2026-11-12T13:14:41.4774041+08:00" start="2026-11-12T13:14:40.5161398+08:00" finish="2026-11-12T13:14:41.4841852+08:00" />
+  <TestSettings name="default" id="e655111b-ed14-41b9-b0fb-6719467cee4c">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_13_14_41" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="9f17b56e-ff60-4ad0-9013-c27c80b71e5d" testId="40d960bc-999c-51dd-495e-4481d69dfcb6" testName="Reviewer_ChaseCooldownMustNotBlockFreshRelease" computerName="毛茸茸的小熊" duration="00:00:00.0012755" startTime="2026-11-12T13:14:41.3294052+08:00" endTime="2026-11-12T13:14:41.3308054+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9f17b56e-ff60-4ad0-9013-c27c80b71e5d" />
+    <UnitTestResult executionId="9967b3aa-b621-45d5-8379-bb991d504eb4" testId="36580c15-ba76-f33e-d022-d1ec8f6ea94d" testName="Reviewer_CancelDuringChaseRejectionMustKeepChaseCooldown" computerName="毛茸茸的小熊" duration="00:00:00.0242164" startTime="2026-11-12T13:14:41.3355988+08:00" endTime="2026-11-12T13:14:41.3611879+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9967b3aa-b621-45d5-8379-bb991d504eb4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;Idle&gt;，实际为: &lt;ChaseInviting&gt;。</Message>
+          <StackTrace>   at DesktopPet.Core.Tests.SocialCoordinatorTests.Reviewer_CancelDuringChaseRejectionMustKeepChaseCooldown() in C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r2\core-probe\Tests.cs:line 1977&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="10b52a5a-9f4c-474b-8fab-d97fe8cd2c40" testId="fa7bd5ef-a83a-3268-6a11-13895a6ffbe7" testName="Reviewer_PendingReleaseGetsItsResponseWindowBeforeChase" computerName="毛茸茸的小熊" duration="00:00:00.0005656" startTime="2026-11-12T13:14:41.3281497+08:00" endTime="2026-11-12T13:14:41.3289910+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10b52a5a-9f4c-474b-8fab-d97fe8cd2c40" />
+    <UnitTestResult executionId="bfe8360f-1560-48e6-9ed9-2dce9045fffc" testId="7408c7c1-bf65-d8ba-c9e1-3e227156c747" testName="Reviewer_LongGapOnlyConsumes100MsAndNoBacklog" computerName="毛茸茸的小熊" duration="00:00:00.0044694" startTime="2026-11-12T13:14:41.3308666+08:00" endTime="2026-11-12T13:14:41.3355190+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bfe8360f-1560-48e6-9ed9-2dce9045fffc" />
+    <UnitTestResult executionId="25280755-7c20-4cef-9e4a-2222eb470817" testId="608c5077-ab43-7e9c-7440-c14ea0b3f289" testName="Reviewer_LeaderMustBeAheadInTravelDirection" computerName="毛茸茸的小熊" duration="00:00:00.0942620" startTime="2026-11-12T13:14:41.2094837+08:00" endTime="2026-11-12T13:14:41.3238964+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="25280755-7c20-4cef-9e4a-2222eb470817" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_ChaseCooldownMustNotBlockFreshRelease" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r2\core-probe\bin\debug\net10.0\review.dll" id="40d960bc-999c-51dd-495e-4481d69dfcb6">
+      <Execution id="9f17b56e-ff60-4ad0-9013-c27c80b71e5d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r2\core-probe\bin\Debug\net10.0\Review.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.SocialCoordinatorTests" name="Reviewer_ChaseCooldownMustNotBlockFreshRelease" />
+    </UnitTest>
+    <UnitTest name="Reviewer_LongGapOnlyConsumes100MsAndNoBacklog" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r2\core-probe\bin\debug\net10.0\review.dll" id="7408c7c1-bf65-d8ba-c9e1-3e227156c747">
+      <Execution id="bfe8360f-1560-48e6-9ed9-2dce9045fffc" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r2\core-probe\bin\Debug\net10.0\Review.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.SocialCoordinatorTests" name="Reviewer_LongGapOnlyConsumes100MsAndNoBacklog" />
+    </UnitTest>
+    <UnitTest name="Reviewer_LeaderMustBeAheadInTravelDirection" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r2\core-probe\bin\debug\net10.0\review.dll" id="608c5077-ab43-7e9c-7440-c14ea0b3f289">
+      <Execution id="25280755-7c20-4cef-9e4a-2222eb470817" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r2\core-probe\bin\Debug\net10.0\Review.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.SocialCoordinatorTests" name="Reviewer_LeaderMustBeAheadInTravelDirection" />
+    </UnitTest>
+    <UnitTest name="Reviewer_CancelDuringChaseRejectionMustKeepChaseCooldown" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r2\core-probe\bin\debug\net10.0\review.dll" id="36580c15-ba76-f33e-d022-d1ec8f6ea94d">
+      <Execution id="9967b3aa-b621-45d5-8379-bb991d504eb4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r2\core-probe\bin\Debug\net10.0\Review.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.SocialCoordinatorTests" name="Reviewer_CancelDuringChaseRejectionMustKeepChaseCooldown" />
+    </UnitTest>
+    <UnitTest name="Reviewer_PendingReleaseGetsItsResponseWindowBeforeChase" storage="c:\users\mrrdxx\desktop\pet\artifacts\p3-004-r2\core-probe\bin\debug\net10.0\review.dll" id="fa7bd5ef-a83a-3268-6a11-13895a6ffbe7">
+      <Execution id="10b52a5a-9f4c-474b-8fab-d97fe8cd2c40" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p3-004-r2\core-probe\bin\Debug\net10.0\Review.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.SocialCoordinatorTests" name="Reviewer_PendingReleaseGetsItsResponseWindowBeforeChase" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="40d960bc-999c-51dd-495e-4481d69dfcb6" executionId="9f17b56e-ff60-4ad0-9013-c27c80b71e5d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36580c15-ba76-f33e-d022-d1ec8f6ea94d" executionId="9967b3aa-b621-45d5-8379-bb991d504eb4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fa7bd5ef-a83a-3268-6a11-13895a6ffbe7" executionId="10b52a5a-9f4c-474b-8fab-d97fe8cd2c40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7408c7c1-bf65-d8ba-c9e1-3e227156c747" executionId="bfe8360f-1560-48e6-9ed9-2dce9045fffc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="608c5077-ab43-7e9c-7440-c14ea0b3f289" executionId="25280755-7c20-4cef-9e4a-2222eb470817" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="4" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

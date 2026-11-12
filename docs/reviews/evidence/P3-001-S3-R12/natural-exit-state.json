@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 4,
+  "lastSavedUtc": "2026-11-10T02:46:17.4555350Z",
+  "isPaused": false,
+  "accumulatedRuntimeMinutes": 0,
+  "rareEventPlan": {
+    "localDate": "2026-11-10",
+    "triggerDelayMinutes": 89,
+    "triggerRoll": 0.26980825435500255,
+    "consumed": false,
+    "accumulatedBaselineMinutes": 0
+  },
+  "pets": [
+    {
+      "petId": "bear-1",
+      "personality": 0,
+      "windowLeft": 150,
+      "windowTop": 120,
+      "savedDeviceName": "\\\\.\\DISPLAY1",
+      "grievance": 61,
+      "lastDecayUtc": "2026-11-10T02:46:17.4464570Z",
+      "pendingGrievanceExpression": false,
+      "grievanceExpressionDate": null
+    },
+    {
+      "petId": "bear-2",
+      "personality": 0,
+      "windowLeft": 350,
+      "windowTop": 220,
+      "savedDeviceName": "\\\\.\\DISPLAY1",
+      "grievance": 72,
+      "lastDecayUtc": "2026-11-10T02:46:17.4185387Z",
+      "pendingGrievanceExpression": false,
+      "grievanceExpressionDate": null
+    }
+  ]
+}

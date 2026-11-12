@@ -8,6 +8,7 @@ using DesktopPet.App.Persistence;
 using DesktopPet.Core.Emotion;
 using DesktopPet.Core.Events;
 using DesktopPet.Core.Persistence;
+using DesktopPet.Core.Social;
 
 namespace DesktopPet.App;
 
@@ -22,7 +23,10 @@ public partial class App : System.Windows.Application
     private TrayService? _tray;
     private ArchiveService? _archive;
     private SaveCoordinator? _saveCoordinator;
-    private MainWindow? _mainWindow;
+
+    // P3-001-S2: Multi-window management. Each pet has its own MainWindow,
+    // keyed by PetId. The old single _mainWindow field is replaced.
+    private readonly Dictionary<string, MainWindow> _petWindows = new();
     private PetStateArchive? _state;
     private PetSettingsArchive? _settings;
     private bool _isPaused;
@@ -67,6 +71,10 @@ public partial class App : System.Windows.Application
     // RareEventScheduler manages the daily plan and trigger evaluation.
     internal EffectiveRuntimeTracker? RuntimeTracker { get; private set; }
     internal RareEventScheduler? RareEventScheduler { get; private set; }
+
+    // P3-002: Social coordinator for mutual-notice between pets.
+    // Global — manages the single shared social session.
+    internal SocialCoordinator? SocialCoordinator { get; set; }
 
     /// <summary>
     /// PREP-001 R2 F-02: Isolated startup for diagnostic probes.
@@ -147,6 +155,8 @@ public partial class App : System.Windows.Application
         _isShuttingDown = false;
         RuntimeTracker = tracker ?? new EffectiveRuntimeTracker();
         RareEventScheduler = scheduler ?? new RareEventScheduler();
+        // P3-002: Create a fresh social coordinator for each isolated test.
+        SocialCoordinator = new SocialCoordinator();
         EmotionAccumulator ??= new EmotionDecayAccumulator(50, DateTime.UtcNow);
         GrievanceExpression ??= new GrievanceExpressionState();
         CornerTracking ??= new CornerTracker();
@@ -158,6 +168,48 @@ public partial class App : System.Windows.Application
             var logDir = Path.Combine(isolatedDir, "logs");
             DiagnosticLogger = new DiagnosticLogger(logDir);
         }
+
+        // P3-003 R5 F-04: Reset WPF internal lifecycle fields so the
+        // reused App instance behaves like a fresh App for each test.
+        // When tests run in batch, a previous test's TestCleanup may
+        // have closed the last window while _shutdownMode was still
+        // OnLastWindowClose (the WPF default), triggering WPF
+        // auto-shutdown and setting _appIsShutdown=true. Subsequent
+        // CreatePetWindow + Show() will not receive SourceInitialized
+        // because the App thinks it is already shutting down.
+        // We use reflection (same approach as ShutdownMainWindowForTest)
+        // to set both fields without triggering VerifyAccess.
+        ResetWpfLifecycleForTest();
+    }
+
+    /// <summary>
+    /// P3-003 R5 F-04: Reset WPF-internal lifecycle fields via reflection
+    /// so a reused App instance behaves like a fresh App. This bypasses
+    /// the VerifyAccess check in the ShutdownMode property setter and
+    /// clears the _appIsShutdown flag that WPF sets during auto-shutdown.
+    /// </summary>
+    private void ResetWpfLifecycleForTest()
+    {
+        var appType = typeof(System.Windows.Application);
+        try
+        {
+            var modeField = appType.GetField(
+                "_shutdownMode",
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic);
+            modeField?.SetValue(this, System.Windows.ShutdownMode.OnExplicitShutdown);
+        }
+        catch { /* best-effort; field name stable since .NET 3.0 */ }
+
+        try
+        {
+            var shutdownField = appType.GetField(
+                "_appIsShutdown",
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic);
+            shutdownField?.SetValue(this, false);
+        }
+        catch { /* best-effort */ }
     }
 
     /// <summary>
@@ -166,6 +218,38 @@ public partial class App : System.Windows.Application
     /// </summary>
     internal void TestCleanup()
     {
+        // P3-001-S2 R7 F-04: Close and unregister all pet windows created
+        // during the test, including windows that were never Show()n.
+        // CreatePetWindow constructs MainWindow which starts _updateTimer
+        // in the constructor; Clear() alone does not trigger OnClosed, so
+        // the timer would keep running. We must explicitly Close() every
+        // window on the current Dispatcher — IsVisible is NOT a guard.
+        //
+        // OnPetWindowClosed is detached first to prevent
+        // OnPetWindowClosed → ShutdownMainWindow from disrupting the test
+        // session. Windows on other Dispatchers are left for their owning
+        // test's finally block; we only drop the dictionary references.
+        //
+        // P3-003 R5 F-04: _shutdownMode is set to OnExplicitShutdown by
+        // TestSetupIsolatedSave at the start of each test, so closing
+        // windows here should not trigger auto-shutdown in normal cases.
+        // We do NOT call ResetWpfLifecycleForTest here because resetting
+        // _appIsShutdown=false while the Dispatcher may be in a stale
+        // state can cause testhost to crash when Close() interacts with
+        // WPF internals. If auto-shutdown does occur, the next test's
+        // TestSetupIsolatedSave will reset _appIsShutdown=false.
+        foreach (var w in _petWindows.Values.ToList())
+        {
+            if (w.Dispatcher.CheckAccess())
+            {
+                w.Closed -= OnPetWindowClosed;
+                // Close even if not visible — OnClosed stops _updateTimer.
+                // Close() is safe on an already-closed window (no-op).
+                w.Close();
+            }
+        }
+        _petWindows.Clear();
+
         _saveCoordinator?.Dispose();
         _saveCoordinator = null;
         _archive = null;
@@ -183,8 +267,53 @@ public partial class App : System.Windows.Application
     /// exercise the real FlushFinalState → MarkStateDirty → SaveCoordinator
     /// chain and the real RestoreWindowPosition recovery entry point,
     /// without re-implementing save/restore logic.
+    /// P3-001-S2: Now registers the window in the multi-pet dictionary
+    /// using the window's StateContext.PetId (or "bear-1" default).
     /// </summary>
-    internal void TestSetMainWindow(MainWindow w) => _mainWindow = w;
+    internal void TestSetMainWindow(MainWindow w)
+    {
+        var petId = w.StateContext?.PetId ?? "bear-1";
+        _petWindows[petId] = w;
+    }
+
+    /// <summary>
+    /// P3-001-S2: Find a PetInstanceArchive by PetId. Returns null if not
+    /// found or state is null.
+    /// </summary>
+    internal PetInstanceArchive? FindPetById(string? petId)
+    {
+        if (_state?.Pets is null || string.IsNullOrEmpty(petId))
+            return null;
+        foreach (var p in _state.Pets)
+        {
+            if (p is not null && p.PetId == petId)
+                return p;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// P3-001-S2: Find the MainWindow associated with a PetId.
+    /// Returns null if not found.
+    /// </summary>
+    internal MainWindow? FindWindowByPetId(string? petId)
+    {
+        if (string.IsNullOrEmpty(petId))
+            return _petWindows.Count > 0 ? _petWindows.First().Value : null;
+        return _petWindows.TryGetValue(petId, out var w) ? w : null;
+    }
+
+    /// <summary>
+    /// P3-001-S2: Enumerate all active pet windows. Used by pause/recover/
+    /// exit/flush to iterate over every pet.
+    /// </summary>
+    internal IEnumerable<MainWindow> AllPetWindows => _petWindows.Values;
+
+    /// <summary>
+    /// P3-001-S2: Compatibility accessor for tests that expect a single
+    /// MainWindow. Returns the first window or null.
+    /// </summary>
+    internal new MainWindow? MainWindow => _petWindows.Count > 0 ? _petWindows.First().Value : null;
 
     /// <summary>
     /// P2-003 S3 R6 F-08: Test-only accessor for the isolated state object
@@ -193,56 +322,74 @@ public partial class App : System.Windows.Application
     internal PetStateArchive? TestState => _state;
 
     /// <summary>
+    /// P3-001 S1: Test/probe-only — reloads _state from the isolated
+    /// ArchiveService, triggering v3→v4 migration if the on-disk file
+    /// is a pre-v4 archive.  This allows probes to pre-seed a state
+    /// file and then load it through the production deserialization
+    /// path before modifying in-memory fields.
+    /// </summary>
+    internal void TestReloadStateFromArchive()
+    {
+        if (_archive is null) return;
+        var (state, _, _) = _archive.LoadState();
+        _state = state;
+    }
+
+    /// <summary>
     /// F-05: Production mapping from PetStateArchive to emotion objects.
     /// This is the same logic used in OnStartup, extracted so tests can
     /// verify the real load→map→save→reload chain without copying code.
+    /// P3-001-S2 R5 F-03: Now delegates to the shared per-pet mapping so
+    /// there is exactly one restore algorithm, not two.
     /// </summary>
     internal static (EmotionDecayAccumulator acc, GrievanceExpressionState expr, CornerTracker tracker)
         MapArchiveToEmotionObjects(PetStateArchive state, DateTime? restoreUtcNow = null)
     {
-        var utcNow = restoreUtcNow ?? DateTime.UtcNow;
+        // v4: per-pet emotion fields live on pets[0] (single-pet S1 scope).
+        // F-02 R1: Defensive null check — EnsureDefaultPetList in ArchiveService
+        // filters null entries, but mapping should not crash if called with
+        // a state that bypassed that path (e.g. test construction).
+        var pet = state.Pets is not null && state.Pets.Count > 0 && state.Pets[0] is not null
+            ? state.Pets[0]
+            : new PetInstanceArchive();
 
-        var lastDecayUtc = DateTime.TryParse(state.LastDecayUtc, null,
-            System.Globalization.DateTimeStyles.RoundtripKind, out var parsedDecay)
-            ? DateTime.SpecifyKind(parsedDecay, DateTimeKind.Utc)
-            : utcNow;
-
-        // F-06: When the app was paused when it exited, the offline interval
-        // between save and restart is a frozen period — "暂停时段不计入衰减"
-        // applies to the exit-while-paused scenario. Shift the decay reference
-        // to now so the offline gap is not counted as decay time on the first
-        // AdvanceTo call. When the app was NOT paused, the offline interval
-        // is normal offline decay (per PRODUCT R-02) and the reference is kept.
-        //
-        // F-06 R7: The shift must never move the reference backward. If the
-        // clock was rolled back (utcNow earlier than the saved lastDecayUtc),
-        // keep the saved reference so that F-02's non-regression protection
-        // in AdvanceTo is preserved. Only shift forward.
-        if (state.IsPaused && utcNow > lastDecayUtc)
-        {
-            lastDecayUtc = utcNow;
-        }
-
-        var acc = new EmotionDecayAccumulator(state.Grievance, lastDecayUtc);
-        var expr = new GrievanceExpressionState();
-        expr.Restore(state.PendingGrievanceExpression, state.GrievanceExpressionDate);
-        var tracker = new CornerTracker();
-
-        return (acc, expr, tracker);
+        return MapArchiveToEmotionObjectsForPet(pet, state.IsPaused, restoreUtcNow);
     }
 
     /// <summary>
     /// F-05: Production mapping from emotion objects to PetStateArchive.
     /// This is the same logic used in MarkStateDirty, extracted so tests
     /// can verify the save path without a full App instance.
+    /// P3-001-S2: Now accepts the target PetInstanceArchive directly so
+    /// multi-pet callers can route to the correct pet. The old single-pet
+    /// overload delegates to pets[0] for backward compatibility.
     /// </summary>
     internal static void MapEmotionObjectsToArchive(
         PetStateArchive state, EmotionDecayAccumulator acc, GrievanceExpressionState expr)
     {
-        state.Grievance = acc.GrievanceInt;
-        state.LastDecayUtc = acc.LastDecayUtc.ToString("o");
-        state.PendingGrievanceExpression = expr.IsPending;
-        state.GrievanceExpressionDate = expr.MarkedDate;
+        // v4: per-pet emotion fields live on pets[0] (single-pet S1 scope).
+        // F-02 R1: Filter null entries defensively.
+        if (state.Pets is null || state.Pets.Count == 0)
+            state.Pets = new List<PetInstanceArchive> { new PetInstanceArchive() };
+        else
+            state.Pets.RemoveAll(p => p is null);
+        if (state.Pets.Count == 0)
+            state.Pets = new List<PetInstanceArchive> { new PetInstanceArchive() };
+        MapEmotionObjectsToArchive(state, state.Pets[0], acc, expr);
+    }
+
+    /// <summary>
+    /// P3-001-S2: Per-pet emotion mapping. Writes emotion fields directly
+    /// to the specified PetInstanceArchive without touching the Pets list.
+    /// </summary>
+    internal static void MapEmotionObjectsToArchive(
+        PetStateArchive state, PetInstanceArchive pet,
+        EmotionDecayAccumulator acc, GrievanceExpressionState expr)
+    {
+        pet.Grievance = acc.GrievanceInt;
+        pet.LastDecayUtc = acc.LastDecayUtc.ToString("o");
+        pet.PendingGrievanceExpression = expr.IsPending;
+        pet.GrievanceExpressionDate = expr.MarkedDate;
     }
 
     /// <summary>
@@ -349,6 +496,9 @@ public partial class App : System.Windows.Application
         RuntimeTracker = runtimeTracker;
         RareEventScheduler = rareScheduler;
 
+        // P3-002: Create the social coordinator for mutual-notice sessions.
+        SocialCoordinator = new SocialCoordinator();
+
         if (stateFromBackup)
             System.Diagnostics.Trace.TraceInformation("State restored from backup.");
         if (stateUnknown)
@@ -372,30 +522,22 @@ public partial class App : System.Windows.Application
             RuntimeTracker.StartActivePeriod(nowMs / 60000.0);
         }
 
-        // Apply the paused behavior before the window can start rendering.
-        _mainWindow = new MainWindow();
-
-        // PREP-002: Pass the shared state objects and save-dirty notification
-        // to MainWindow via an explicit context, so that MainWindow no longer
-        // needs to reach back through Application.Current to access them.
-        // The App.Current fallback in MainWindow remains only for tests that
-        // use the parameterless constructor without setting StateContext.
-        _mainWindow.StateContext = new PetStateContext
+        // P3-001-S2: Create one MainWindow per pet in the archive.
+        // Each pet gets its own emotion objects (EmotionDecayAccumulator,
+        // GrievanceExpressionState, CornerTracker) so that dragging,
+        // throwing, or changing grievance on one pet does not affect the
+        // other. Rare-event objects (RuntimeTracker, RareEventScheduler)
+        // are global/shared — same instance passed to every window.
+        //
+        // S2 scope: we create windows for all pets in the archive but do
+        // NOT implement add/remove UI or social behavior. The archive may
+        // contain 1 or 2 pets (max 2 enforced by S1 migration).
+        EnsurePetListForWindows();
+        foreach (var pet in _state.Pets)
         {
-            EmotionAccumulator = EmotionAccumulator,
-            CornerTracking = CornerTracking,
-            GrievanceExpression = GrievanceExpression,
-            RuntimeTracker = RuntimeTracker,
-            RareEventScheduler = RareEventScheduler,
-            MarkStateDirty = MarkStateDirty,
-        };
-
-        if (_isPaused)
-            _mainWindow.PauseAnimation();
-        // HWND/DPI are available here, before the first visible frame. Never
-        // assign an unvalidated saved position directly to the window.
-        _mainWindow.SourceInitialized += (_, _) => RestoreWindowPosition();
-        _mainWindow.Closed += OnMainWindowClosed;
+            if (pet is null) continue;
+            CreatePetWindow(pet);
+        }
 
         // Set up tray.
         _tray = new TrayService();
@@ -403,10 +545,269 @@ public partial class App : System.Windows.Application
         _tray.PauseToggled += OnPauseToggled;
         _tray.RecoverRequested += OnRecoverRequested;
         _tray.ExitRequested += OnExitRequested;
+        _tray.AddPetRequested += OnAddPetRequested;
 
-        _mainWindow.Show();
+        foreach (var w in _petWindows.Values)
+            w.Show();
         if (stateUnknown || settingsUnknown)
             _tray.ShowReadOnlyArchiveNotice();
+    }
+
+    /// <summary>
+    /// P3-001-S2: Ensure the state has a valid pet list for window creation.
+    /// Filters nulls and ensures at least one pet exists.
+    /// </summary>
+    private void EnsurePetListForWindows()
+    {
+        if (_state is null) return;
+        if (_state.Pets is null || _state.Pets.Count == 0)
+            _state.Pets = new List<PetInstanceArchive> { new PetInstanceArchive() };
+        else
+            _state.Pets.RemoveAll(p => p is null);
+        if (_state.Pets.Count == 0)
+            _state.Pets = new List<PetInstanceArchive> { new PetInstanceArchive() };
+    }
+
+    /// <summary>
+    /// P3-001-S2: Create a MainWindow for a single pet, with independent
+    /// emotion objects and the shared rare-event/global objects.
+    /// The window is registered in _petWindows keyed by PetId.
+    /// P3-001-S2 R6 F-04: Exposed as internal so tests can verify the
+    /// production factory correctly injects/registers two instances,
+    /// rather than hand-writing substitute contexts.
+    /// </summary>
+    internal void CreatePetWindow(PetInstanceArchive pet)
+    {
+        var window = new MainWindow();
+
+        // P3-001 F-08 R14: Set personality for the visual identification badge.
+        // Proactive (first pet) = blue circle, SlowPaced (second pet) = orange triangle.
+        // Must be set before Show() so the badge appears on the first frame.
+        window.Personality = pet.Personality;
+
+        // P3-001-S2: Each pet gets independent emotion objects restored
+        // from its own archive fields. This is the key isolation point:
+        // pet A's grievance/drag/throw must not affect pet B.
+        // P3-001-S2 R5 F-03: Pass _isPaused so the per-pet mapping applies
+        // the same pause-exit freeze semantics as the legacy entry point.
+        var (emotionAcc, grievanceExpr, cornerTrack) = MapArchiveToEmotionObjectsForPet(pet, _isPaused);
+
+        window.StateContext = new PetStateContext
+        {
+            PetId = pet.PetId,
+            EmotionAccumulator = emotionAcc,
+            CornerTracking = cornerTrack,
+            GrievanceExpression = grievanceExpr,
+            // Rare events are global — shared across all pets.
+            RuntimeTracker = RuntimeTracker,
+            RareEventScheduler = RareEventScheduler,
+            // P3-002: Social coordinator is global — shared across all pets.
+            SocialCoordinator = SocialCoordinator,
+            MarkStateDirty = MarkStateDirty,
+        };
+
+        if (_isPaused)
+            window.PauseAnimation();
+
+        // HWND/DPI are available here, before the first visible frame.
+        // Never assign an unvalidated saved position directly to the window.
+        window.SourceInitialized += (_, _) => RestoreWindowPosition(pet.PetId);
+        window.Closed += OnPetWindowClosed;
+
+        _petWindows[pet.PetId] = window;
+    }
+
+    /// <summary>
+    /// P3-001-S3: Add a second pet. Enforces max-2 limit, generates a
+    /// stable PetId that doesn't collide with existing pets, assigns
+    /// SlowPaced personality (the first pet defaults to Proactive), and
+    /// places the new pet at a legal position that doesn't fully overlap
+    /// the existing pet. The new window is shown immediately.
+    /// Returns true if a pet was added, false if already at max or state
+    /// is unavailable.
+    /// </summary>
+    internal bool AddPet()
+    {
+        if (_state is null)
+            return false;
+        if (_state.Pets is null)
+            _state.Pets = new List<PetInstanceArchive>();
+        // R-05: max 2 pets.
+        if (_state.Pets.Count >= 2)
+            return false;
+
+        // F-06 R9: Generate a unique PetId that is never reused.
+        // New pets get a GUID-based ID to avoid reusing IDs of
+        // previously removed pets. The original first pet keeps its
+        // existing ID (e.g. "bear-1" from archive migration).
+        var newPetId = $"bear-{Guid.NewGuid():N}";
+
+        // F-07 R10: Determine a legal initial position using the real
+        // monitor work area (DIP), not a hardcoded 1800 assumption.
+        // Offset by 200 DIP to the right; if the full window (Left+Width)
+        // would exceed the work area right edge, offset to the left.
+        // Also verify Top+Height fits within the work area.
+        double newLeft = 100;
+        double newTop = 100;
+        if (_state.Pets.Count == 1 && _state.Pets[0] is { } first)
+        {
+            newLeft = first.WindowLeft + 200;
+            newTop = first.WindowTop;
+            // Use the primary monitor work area to validate.
+            var monitors = MonitorInterop.EnumerateMonitors();
+            if (monitors.Count > 0)
+            {
+                var primary = DesktopPet.Core.Geometry.MonitorLocator.FindPrimaryMonitor(monitors);
+                var wa = primary.WorkArea.Bounds;
+                var waRightDip = wa.Right / primary.DpiScaleX;
+                var waLeftDip = wa.Left / primary.DpiScaleX;
+                var waBottomDip = wa.Bottom / primary.DpiScaleY;
+                var waTopDip = wa.Top / primary.DpiScaleY;
+                const double petWinWidth = 120.0;
+                const double petWinHeight = 120.0;
+                // If right offset goes off-screen, try left offset.
+                if (newLeft + petWinWidth > waRightDip)
+                    newLeft = first.WindowLeft - 200;
+                // Clamp left edge to work area.
+                if (newLeft < waLeftDip)
+                    newLeft = waLeftDip + 10;
+                // Clamp top so the full window fits.
+                if (newTop + petWinHeight > waBottomDip)
+                    newTop = waBottomDip - petWinHeight - 10;
+                if (newTop < waTopDip)
+                    newTop = waTopDip + 10;
+            }
+            else
+            {
+                // Fallback: if no monitors enumerated, use a simple bound.
+                if (newLeft > 1800)
+                    newLeft = first.WindowLeft - 200;
+            }
+        }
+
+        var newPet = new PetInstanceArchive
+        {
+            PetId = newPetId,
+            Personality = Personality.SlowPaced,
+            WindowLeft = newLeft,
+            WindowTop = newTop,
+            Grievance = 50,
+            LastDecayUtc = DateTime.UtcNow.ToString("o"),
+        };
+
+        _state.Pets.Add(newPet);
+        CreatePetWindow(newPet);
+
+        // Show the new window (OnStartup shows all windows, but AddPet
+        // is called at runtime after startup).
+        if (_petWindows.TryGetValue(newPetId, out var w))
+        {
+            w.Show();
+            if (_isPaused)
+                w.PauseAnimation();
+        }
+
+        MarkStateDirty(newPetId);
+        return true;
+    }
+
+    /// <summary>
+    /// P3-001-S3: Remove a pet by PetId. Closes and releases the window,
+    /// removes it from the state archive, and saves.
+    /// F-05 R9: Only the second pet (non-original) can be removed.
+    /// The original first pet (Pets[0]) is always protected (R-05:
+    /// at least one pet must remain; the original pet is never removed
+    /// via this method). Removing the last pet is handled by global
+    /// exit (Exit menu / tray Exit), not by RemovePet.
+    /// Returns true if a pet was removed, false if not found or protected.
+    /// </summary>
+    internal bool RemovePet(string petId)
+    {
+        if (_state is null || string.IsNullOrEmpty(petId))
+            return false;
+        if (!_petWindows.TryGetValue(petId, out var window))
+            return false;
+
+        // F-05 R9: Protect the original first pet. Only the second pet
+        // (added via AddPet) can be removed.
+        if (_state.Pets is not null && _state.Pets.Count > 0 &&
+            _state.Pets[0] is { } firstPet && firstPet.PetId == petId)
+        {
+            return false;
+        }
+
+        // Detach the Closed handler so closing this window doesn't
+        // trigger OnPetWindowClosed → removal again (re-entrancy).
+        window.Closed -= OnPetWindowClosed;
+        window.Close();
+        _petWindows.Remove(petId);
+
+        // P3-002: Cancel any active social session since a participant was removed.
+        // F-02 R1: Route through the surviving window's CancelSocialImmediately
+        // so that BOTH the coordinator ForceCancel AND both windows' local
+        // _isSocialActive/_curiosity are synchronously cleared — no tick needed.
+        // F-03 R1: Use the surviving window's clock (TestGetElapsedMs in tests,
+        // GetElapsedMs in production) so the cooldown base time is in the SAME
+        // monotonic domain as the coordinator's Tick calls. Using
+        // MonotonicClock.Instance directly would create a mismatch when tests
+        // inject a controlled clock, causing the cooldown to expire instantly.
+        foreach (var surviving in _petWindows.Values)
+        {
+            if (surviving.StateContext?.PetId != petId)
+                surviving.CancelSocialImmediately(CancelReason.PetRemoved,
+                    surviving.TestGetElapsedMs?.Invoke() ?? MonotonicClock.Instance.GetElapsedMs());
+        }
+
+        // Remove from the archive state.
+        _state.Pets?.RemoveAll(p => p is not null && p.PetId == petId);
+
+        // Save the updated state (without the removed pet).
+        // F-05 R9: No shutdown here — removing the last pet is only
+        // possible via global exit, which is a separate path.
+        MarkStateDirty();
+        return true;
+    }
+
+    /// <summary>
+    /// P3-001-S2: Per-pet emotion mapping. Creates independent emotion
+    /// objects from a single PetInstanceArchive's fields.
+    /// P3-001-S2 R5 F-03: This is the single shared restore algorithm.
+    /// Both the legacy MapArchiveToEmotionObjects and CreatePetWindow
+    /// delegate here, so pause-exit freeze semantics and callback
+    /// protection cannot drift between the two entry points.
+    /// </summary>
+    internal static (EmotionDecayAccumulator acc, GrievanceExpressionState expr, CornerTracker tracker)
+        MapArchiveToEmotionObjectsForPet(PetInstanceArchive pet, bool isPaused = false, DateTime? restoreUtcNow = null)
+    {
+        var utcNow = restoreUtcNow ?? DateTime.UtcNow;
+
+        var lastDecayUtc = DateTime.TryParse(pet.LastDecayUtc, null,
+            System.Globalization.DateTimeStyles.RoundtripKind, out var parsedDecay)
+            ? DateTime.SpecifyKind(parsedDecay, DateTimeKind.Utc)
+            : utcNow;
+
+        // F-06: When the app was paused when it exited, the offline interval
+        // between save and restart is a frozen period — "暂停时段不计入衰减"
+        // applies to the exit-while-paused scenario. Shift the decay reference
+        // to now so the offline gap is not counted as decay time on the first
+        // AdvanceTo call. When the app was NOT paused, the offline interval
+        // is normal offline decay (per PRODUCT R-02) and the reference is kept.
+        //
+        // F-06 R7: The shift must never move the reference backward. If the
+        // clock was rolled back (utcNow earlier than the saved lastDecayUtc),
+        // keep the saved reference so that F-02's non-regression protection
+        // in AdvanceTo is preserved. Only shift forward.
+        if (isPaused && utcNow > lastDecayUtc)
+        {
+            lastDecayUtc = utcNow;
+        }
+
+        var acc = new EmotionDecayAccumulator(pet.Grievance, lastDecayUtc);
+        var expr = new GrievanceExpressionState();
+        expr.Restore(pet.PendingGrievanceExpression, pet.GrievanceExpressionDate);
+        var tracker = new CornerTracker();
+
+        return (acc, expr, tracker);
     }
 
     /// <summary>
@@ -491,26 +892,42 @@ public partial class App : System.Windows.Application
 
     // P2-003 S3 R6 F-08: Made internal so tests can call the real
     // production recovery entry point instead of re-implementing it.
-    internal void RestoreWindowPosition()
+    // P3-001-S2: Now accepts petId to route to the correct pet's window.
+    // The parameterless overload restores the first pet (backward compat).
+    internal void RestoreWindowPosition() => RestoreWindowPosition(null);
+
+    internal void RestoreWindowPosition(string? petId)
     {
-        if (_state is null || _mainWindow is null)
-            return;
-        var monitors = MonitorInterop.EnumerateMonitors();
+        if (_state is null) return;
+
+        var pet = FindPetById(petId);
+        if (pet is null && _state.Pets is not null && _state.Pets.Count > 0)
+            pet = _state.Pets[0];
+        if (pet is null) return;
+
+        var window = FindWindowByPetId(pet.PetId);
+        if (window is null) return;
+
+        // P3-003 R3 F-04: Use TestMonitorList when available (same as
+        // BuildPetSocialState and UpdatePhysics) so test-injected monitors
+        // with controlled DPI are used for position recovery, keeping
+        // restore consistent with the test environment.
+        var monitors = window.TestMonitorList ?? MonitorInterop.EnumerateMonitors();
         if (monitors.Count == 0)
             return; // Keep the constructor's visible default, not stale archive coordinates.
-        var sourceMonitor = monitors.FirstOrDefault(m => m.DeviceName == _state.SavedDeviceName);
+        var sourceMonitor = monitors.FirstOrDefault(m => m.DeviceName == pet.SavedDeviceName);
         if (sourceMonitor.DeviceName is null)
             sourceMonitor = DesktopPet.Core.Geometry.MonitorLocator.FindPrimaryMonitor(monitors);
-        var left = double.IsFinite(_state.WindowLeft) ? _state.WindowLeft : 100;
-        var top = double.IsFinite(_state.WindowTop) ? _state.WindowTop : 100;
+        var left = double.IsFinite(pet.WindowLeft) ? pet.WindowLeft : 100;
+        var top = double.IsFinite(pet.WindowTop) ? pet.WindowTop : 100;
         var restored = WindowPositionAdapter.RecoverPosition(monitors, left, top,
-            _mainWindow.Width, _mainWindow.Height, sourceMonitor.DpiScaleX,
-            sourceMonitor.DpiScaleY, _state.SavedDeviceName);
-        _mainWindow.Left = restored.LeftDip;
-        _mainWindow.Top = restored.TopDip;
+            window.Width, window.Height, sourceMonitor.DpiScaleX,
+            sourceMonitor.DpiScaleY, pet.SavedDeviceName);
+        window.Left = restored.LeftDip;
+        window.Top = restored.TopDip;
     }
 
-    private void OnPauseToggled(object? sender, bool paused)
+    internal void OnPauseToggled(object? sender, bool paused)
     {
         _isPaused = paused;
         if (_state is not null)
@@ -519,8 +936,9 @@ public partial class App : System.Windows.Application
 
         if (paused)
         {
-            // Stop active behavior (animation timer).
-            _mainWindow?.PauseAnimation();
+            // P3-001-S2: Pause all pet windows.
+            foreach (var w in _petWindows.Values)
+                w.PauseAnimation();
             // P1-004: End the active period so paused time is not counted
             // as effective runtime for rare-event scheduling.
             if (RuntimeTracker is not null)
@@ -532,7 +950,9 @@ public partial class App : System.Windows.Application
         }
         else
         {
-            _mainWindow?.ResumeAnimation();
+            // P3-001-S2: Resume all pet windows.
+            foreach (var w in _petWindows.Values)
+                w.ResumeAnimation();
             // P1-004: Start a fresh active period on resume.
             if (RuntimeTracker is not null)
             {
@@ -545,9 +965,55 @@ public partial class App : System.Windows.Application
         MarkStateDirty();
     }
 
-    private void OnRecoverRequested(object? sender, EventArgs e)
+    internal void OnRecoverRequested(object? sender, EventArgs e)
     {
-        _mainWindow?.RecoverPet();
+        // P3-001-S2: Recover all pet windows.
+        // P3-001-S3: When multiple pets exist, offset the second pet so
+        // recovered positions do not fully overlap (R-05 requirement).
+        // F-07 R9: After all position changes are complete, mark state
+        // dirty so the final positions (including offsets) are saved.
+        var windows = _petWindows.Values.ToList();
+        for (int i = 0; i < windows.Count; i++)
+        {
+            windows[i].RecoverPet();
+            if (i > 0)
+            {
+                // F-07 R10: Offset subsequent pets to the right by 200 DIP.
+                // Check the FULL window boundary (Left+Width, Top+Height),
+                // not just Left. If right offset goes off-screen, try left.
+                // Then clamp both edges to the work area.
+                var monitors = MonitorInterop.EnumerateMonitors();
+                if (monitors.Count > 0)
+                {
+                    var primary = DesktopPet.Core.Geometry.MonitorLocator.FindPrimaryMonitor(monitors);
+                    var wa = primary.WorkArea.Bounds;
+                    // WorkArea.Bounds are in physical pixels; convert to DIP
+                    // for comparison with window Left/Top (which are in DIP).
+                    var waRightDip = wa.Right / primary.DpiScaleX;
+                    var waLeftDip = wa.Left / primary.DpiScaleX;
+                    var waBottomDip = wa.Bottom / primary.DpiScaleY;
+                    var waTopDip = wa.Top / primary.DpiScaleY;
+                    var newLeft = windows[i].Left + 200;
+                    // Check full window: Left + Width must fit.
+                    if (newLeft + windows[i].Width > waRightDip)
+                        newLeft = windows[i].Left - 200;
+                    // Clamp Left so the full window is within the work area.
+                    if (newLeft + windows[i].Width > waRightDip)
+                        newLeft = waRightDip - windows[i].Width - 10;
+                    if (newLeft < waLeftDip)
+                        newLeft = waLeftDip + 10;
+                    windows[i].Left = newLeft;
+                    // Also clamp Top so the full window height fits.
+                    if (windows[i].Top + windows[i].Height > waBottomDip)
+                        windows[i].Top = waBottomDip - windows[i].Height - 10;
+                    if (windows[i].Top < waTopDip)
+                        windows[i].Top = waTopDip + 10;
+                }
+            }
+        }
+        // F-07 R9: Save the final positions (including offsets) so they
+        // are persisted. This must happen AFTER all position changes.
+        MarkStateDirty();
     }
 
     private void OnExitRequested(object? sender, EventArgs e)
@@ -555,12 +1021,49 @@ public partial class App : System.Windows.Application
         ShutdownMainWindow();
     }
 
-    private void OnMainWindowClosed(object? sender, EventArgs e)
+    private void OnAddPetRequested(object? sender, EventArgs e)
     {
+        AddPet();
+    }
+
+    private void OnPetWindowClosed(object? sender, EventArgs e)
+    {
+        // F-05 R9: During global shutdown (Exit/tray Exit), windows are
+        // closed by ShutdownMainWindow. This is NOT a pet removal —
+        // the state archive must be preserved for the next startup.
+        if (_isShuttingDown)
+            return;
+
+        // P3-001-S3: Per-pet removal. When a pet window closes (e.g. via
+        // right-click → Remove Pet on the second pet's window), remove
+        // just that pet from the archive.
+        if (sender is MainWindow window)
+        {
+            var petId = window.StateContext?.PetId;
+            if (!string.IsNullOrEmpty(petId))
+            {
+                // F-05 R9: Only remove the second pet (non-original).
+                // The original first pet is protected.
+                if (_state?.Pets is not null && _state.Pets.Count > 0 &&
+                    _state.Pets[0] is { } firstPet && firstPet.PetId == petId)
+                {
+                    // Original pet's window closed unexpectedly (e.g. alt-F4).
+                    // Treat as global exit, not removal.
+                    ShutdownMainWindow();
+                    return;
+                }
+
+                _petWindows.Remove(petId);
+                _state?.Pets?.RemoveAll(p => p is not null && p.PetId == petId);
+                MarkStateDirty();
+                return;
+            }
+        }
+        // Fallback: if we can't identify the pet, shut down everything.
         ShutdownMainWindow();
     }
 
-    private void ShutdownMainWindow()
+    internal void ShutdownMainWindow()
     {
         if (_isShuttingDown)
             return;
@@ -575,36 +1078,133 @@ public partial class App : System.Windows.Application
         _instanceGuard?.Dispose();
         _instanceGuard = null;
 
-        _mainWindow?.Close();
+        // P3-001-S2: Close all pet windows.
+        foreach (var w in _petWindows.Values)
+            w.Close();
+        _petWindows.Clear();
         Shutdown(0);
     }
 
-    /// <summary>Mark state as dirty for debounced save. Called by MainWindow on position changes.</summary>
-    internal void MarkStateDirty()
+    /// <summary>
+    /// F-08 R9: Test-only hook that performs the same save + cleanup as
+    /// ShutdownMainWindow but does NOT call Shutdown(0), which would
+    /// terminate the test process. Used by isolation tests to verify
+    /// the exit save chain without actually shutting down the application.
+    /// </summary>
+    internal void ShutdownMainWindowForTest()
+    {
+        if (_isShuttingDown)
+            return;
+        _isShuttingDown = true;
+        FlushFinalState();
+
+        _tray?.Dispose();
+        _tray = null;
+
+        _instanceGuard?.Dispose();
+        _instanceGuard = null;
+
+        // P3-003 R5 F-04: Align ShutdownMode to the production App.xaml
+        // configuration (OnExplicitShutdown) BEFORE closing windows.
+        // If ShutdownMode is OnLastWindowClose (the WPF default when App
+        // is constructed without loading App.xaml, or when a previous test
+        // left it at default), closing the last window triggers WPF
+        // auto-shutdown, which terminates the App lifecycle. Subsequent
+        // CreatePetWindow + Show() will not receive SourceInitialized,
+        // so RestoreWindowPosition never runs and windows stay at
+        // constructor defaults. Setting OnExplicitShutdown here ensures
+        // closing windows only closes them — the App stays alive for
+        // the restart phase of the test.
+        //
+        // Uses ResetWpfLifecycleForTest (reflection) to bypass the
+        // set_ShutdownMode property's VerifyAccess() call and also
+        // clear _appIsShutdown if a previous test's TestCleanup
+        // triggered auto-shutdown.
+        ResetWpfLifecycleForTest();
+
+        foreach (var w in _petWindows.Values.ToList())
+        {
+            try { w.Close(); } catch { /* window may already be closing */ }
+        }
+        _petWindows.Clear();
+    }
+
+    /// <summary>
+    /// Mark state as dirty for debounced save. Called by MainWindow on
+    /// position/state changes.
+    /// P3-001-S2: The petId parameter routes the save to the correct
+    /// PetInstanceArchive. Null petId saves all pets (backward compat).
+    /// </summary>
+    internal void MarkStateDirty(string? petId = null)
     {
         if (_state is not null && _saveCoordinator is not null)
         {
-            _state.WindowLeft = _mainWindow?.Left ?? _state.WindowLeft;
-            _state.WindowTop = _mainWindow?.Top ?? _state.WindowTop;
-            _state.IsPaused = _isPaused;
-            if (_mainWindow is not null)
+            // v4: per-pet position fields. Route by petId when available;
+            // fall back to pets[0] for single-pet / null-petId callers.
+            if (_state.Pets is null || _state.Pets.Count == 0)
+                _state.Pets = new List<PetInstanceArchive> { new PetInstanceArchive() };
+            else
+                _state.Pets.RemoveAll(p => p is null);
+
+            // P3-001-S3: When petId is null (called by OnPauseToggled,
+            // FlushFinalState, etc.), refresh positions for ALL pets,
+            // not just pets[0]. This ensures multi-pet positions are
+            // correctly saved on pause and exit.
+            if (string.IsNullOrEmpty(petId))
             {
-                var hwnd = new System.Windows.Interop.WindowInteropHelper(_mainWindow).Handle;
-                _state.SavedDeviceName = MonitorInterop.GetWindowMonitorDeviceName(hwnd) ?? _state.SavedDeviceName;
+                foreach (var p in _state.Pets)
+                {
+                    if (p is null) continue;
+                    RefreshPetPositionFromWindow(p);
+                }
+                // Sync rare-event state (global, once is enough).
+                if (RuntimeTracker is not null && RareEventScheduler is not null)
+                    MapRareEventObjectsToArchive(_state, RuntimeTracker, RareEventScheduler);
+                _saveCoordinator.MarkStateDirty(_state);
+                return;
             }
-            // P1-003: Sync emotion state to archive via the shared production
-            // mapping (F-05 R4: same path used by tests).
-            if (EmotionAccumulator is not null && GrievanceExpression is not null)
-            {
-                MapEmotionObjectsToArchive(_state, EmotionAccumulator, GrievanceExpression);
-            }
+
+            var pet = FindPetById(petId) ?? _state.Pets[0];
+
+            RefreshPetPositionFromWindow(pet);
+
             // P1-004: Sync rare-event state to archive via the shared production
-            // mapping (F-06: same path used by tests).
+            // mapping (F-06: same path used by tests). Rare events are global.
             if (RuntimeTracker is not null && RareEventScheduler is not null)
             {
                 MapRareEventObjectsToArchive(_state, RuntimeTracker, RareEventScheduler);
             }
             _saveCoordinator.MarkStateDirty(_state);
+        }
+    }
+
+    /// <summary>
+    /// P3-001-S3: Read the current window position and emotion state for
+    /// a single pet, writing them into the PetInstanceArchive. Handles
+    /// cross-thread access safely.
+    /// </summary>
+    private void RefreshPetPositionFromWindow(PetInstanceArchive pet)
+    {
+        var window = FindWindowByPetId(pet.PetId);
+        if (window is not null && window.Dispatcher.CheckAccess())
+        {
+            pet.WindowLeft = window.Left;
+            pet.WindowTop = window.Top;
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+            pet.SavedDeviceName = MonitorInterop.GetWindowMonitorDeviceName(hwnd) ?? pet.SavedDeviceName;
+        }
+        // P1-003: Sync emotion state to archive via the shared production
+        // mapping. P3-001-S2: Use per-pet emotion objects from the window's context.
+        if (window?.StateContext is { } ctx
+            && ctx.EmotionAccumulator is not null
+            && ctx.GrievanceExpression is not null)
+        {
+            MapEmotionObjectsToArchive(_state!, pet, ctx.EmotionAccumulator, ctx.GrievanceExpression);
+        }
+        else if (EmotionAccumulator is not null && GrievanceExpression is not null)
+        {
+            // Fallback: single-pet legacy path (tests, probe mode).
+            MapEmotionObjectsToArchive(_state!, pet, EmotionAccumulator, GrievanceExpression);
         }
     }
 
@@ -614,7 +1214,9 @@ public partial class App : System.Windows.Application
             return;
         // P1-004: If a probe is active, restore the original position so
         // the saved state reflects the pre-probe location, not the edge.
-        _mainWindow?.RestoreProbePositionForExit();
+        // P3-001-S2: Restore probe position for all pet windows.
+        foreach (var w in _petWindows.Values)
+            w.RestoreProbePositionForExit();
         // Capture and mark the final snapshot even if the previous debounce has
         // already completed. File-level protection still prevents downgrades.
         MarkStateDirty();

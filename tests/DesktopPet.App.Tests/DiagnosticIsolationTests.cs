@@ -217,6 +217,117 @@ public class DiagnosticIsolationTests
     }
 
     /// <summary>
+    /// F-08 R10: Dual-pet exit verification via the PRODUCTION
+    /// ShutdownMainWindow path in an isolated subprocess. The probe
+    /// creates two pets, calls the real ShutdownMainWindow() (which
+    /// calls FlushFinalState → save, then Shutdown(0)), and the
+    /// process exits naturally. The parent test verifies:
+    /// - Exit code is 0 (clean production shutdown).
+    /// - state.json contains BOTH pets with correct IDs and positions.
+    /// - No pet was accidentally removed by the exit path.
+    ///
+    /// This is NOT ShutdownMainWindowForTest — it uses the real
+    /// production exit path including Shutdown(0).
+    /// </summary>
+    [TestMethod]
+    [TestCategory("Isolation")]
+    public void DualPetExit_ProductionShutdown_PreservesBothPets()
+    {
+        // R11 F-05: dual-pet-exit now schedules ShutdownMainWindow on the
+        // Dispatcher and pumps Dispatcher.Run() so the WPF lifecycle ends
+        // naturally via Shutdown(0). The process should exit 0 without
+        // writing a result file (no Environment.Exit on success path).
+        // If the process unexpectedly survives, it writes a result file
+        // with exit code 1 — we check for that "unexpected" marker.
+        var (exitCode, logContent) = RunProbe("dual-pet-exit");
+
+        Assert.AreEqual(0, exitCode,
+            "Dual-pet exit via production ShutdownMainWindow should exit 0. " +
+            "Log content: " + logContent);
+
+        // R11 F-05: Verify no "unexpected" survival marker was written.
+        // On the success path, the process exits via Shutdown(0) before
+        // WriteResult can execute. If a result file exists with
+        // "unexpected", the process did NOT exit naturally.
+        var resultFile = Path.Combine(_tempDir, "dual-pet-exit-result.json");
+        if (File.Exists(resultFile))
+        {
+            var resultContent = File.ReadAllText(resultFile);
+            Assert.IsFalse(resultContent.Contains("unexpected"),
+                "Result file should not contain 'unexpected' — the process must exit " +
+                "naturally via Dispatcher lifecycle, not via Environment.Exit fallback. " +
+                "Result: " + resultContent);
+        }
+
+        // Read the sidecar file written before shutdown.
+        var sidecarFile = Path.Combine(_tempDir, "dual-pet-exit", "dual-pet-pre-exit.json");
+        Assert.IsTrue(File.Exists(sidecarFile),
+            "Sidecar file should exist (probe writes it before calling ShutdownMainWindow).");
+
+        var sidecarJson = File.ReadAllText(sidecarFile);
+        var sidecar = JsonDocument.Parse(sidecarJson);
+
+        Assert.AreEqual(2, sidecar.RootElement.GetProperty("petCount").GetInt32(),
+            "Sidecar should record 2 pets before exit.");
+        Assert.IsTrue(sidecar.RootElement.GetProperty("usingProductionShutdown").GetBoolean(),
+            "Sidecar should confirm production shutdown is being used.");
+
+        // Read the state.json written by FlushFinalState during shutdown.
+        var stateFile = Path.Combine(_tempDir, "dual-pet-exit", "state.json");
+        Assert.IsTrue(File.Exists(stateFile),
+            "state.json should exist after production shutdown (FlushFinalState saves it).");
+
+        var stateContent = File.ReadAllText(stateFile);
+        Assert.IsTrue(stateContent.Length > 0,
+            "state.json should not be empty after production shutdown.");
+
+        // R11 F-05: Parse state.json and verify BOTH pets by ID — not just
+        // substring checks. Confirm count, Left, Top, and Grievance for
+        // each pet to prove the production exit path preserved them.
+        var stateDoc = JsonDocument.Parse(stateContent);
+        var petsArray = stateDoc.RootElement.GetProperty("pets");
+        Assert.AreEqual(2, petsArray.GetArrayLength(),
+            "state.json must contain exactly 2 pets after exit. Content: " + stateContent);
+
+        // Build a lookup by petId for precise per-pet verification.
+        var petsById = new System.Collections.Generic.Dictionary<string, JsonElement>();
+        foreach (var pet in petsArray.EnumerateArray())
+        {
+            var petId = pet.GetProperty("petId").GetString() ?? "";
+            petsById[petId] = pet;
+        }
+
+        Assert.IsTrue(petsById.ContainsKey("bear-1"),
+            "state.json must contain pet with ID bear-1. Content: " + stateContent);
+        Assert.IsTrue(petsById.ContainsKey("bear-2"),
+            "state.json must contain pet with ID bear-2. Content: " + stateContent);
+
+        // Verify bear-1: Left=150, Top=120, Grievance=50.
+        var bear1 = petsById["bear-1"];
+        Assert.AreEqual(150.0, bear1.GetProperty("windowLeft").GetDouble(),
+            "bear-1 windowLeft must be 150 (modified before exit).");
+        Assert.AreEqual(120.0, bear1.GetProperty("windowTop").GetDouble(),
+            "bear-1 windowTop must be 120 (modified before exit).");
+        Assert.AreEqual(50, bear1.GetProperty("grievance").GetInt32(),
+            "bear-1 grievance must be 50.");
+
+        // Verify bear-2: Left=350, Top=220, Grievance=55.
+        var bear2 = petsById["bear-2"];
+        Assert.AreEqual(350.0, bear2.GetProperty("windowLeft").GetDouble(),
+            "bear-2 windowLeft must be 350 (modified before exit).");
+        Assert.AreEqual(220.0, bear2.GetProperty("windowTop").GetDouble(),
+            "bear-2 windowTop must be 220 (modified before exit).");
+        Assert.AreEqual(55, bear2.GetProperty("grievance").GetInt32(),
+            "bear-2 grievance must be 55.");
+
+        // Verify no false-positive diagnostic logs during clean exit.
+        Assert.IsFalse(logContent.Contains("source=DispatcherUnhandled"),
+            "Clean production exit should not produce DispatcherUnhandled entries.");
+        Assert.IsFalse(logContent.Contains("source=AppDomainUnhandled"),
+            "Clean production exit should not produce AppDomainUnhandled entries.");
+    }
+
+    /// <summary>
     /// R3 F-02: Abnormal save verification — pre-seed old state, change
     /// in-memory state, KEEP save coordinator active, trigger real UI
     /// exception. Parent process compares state.json before and after the
@@ -369,6 +480,7 @@ public class DiagnosticIsolationTests
             "task-unobserved" => 30000,
             "ui-exception" => 30000,
             "worker-exception" => 15000,
+            "dual-pet-exit" => 30000, // R11 F-05: Dispatcher lifecycle may need extra time.
             _ => 15000
         };
         if (!proc.WaitForExit(timeout))

@@ -1,0 +1,18 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Social\\SocialCoordinator.cs",
+    "Hash": "6ACC77B1A1D2FDC2BAD2CDD9EF0426782484BDCD4ECE83BB0B73B8FE51CEB031"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "3BC5EA6B8FC2E5807E97E577941C960E46B423B80119CB9C43B8FD9647CAA3A2"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.Core.Tests\\SocialCoordinatorTests.cs",
+    "Hash": "D8FC465D7CD01D0F6A9B2E3C65F855128FC82EB9A2F2F4AABCB1851143847AF3"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.App.Tests\\SocialIntegrationTests.cs",
+    "Hash": "DF41AAD91030FCCA91312A8AA08CB8E790433E1BFE94575510D9A4B7A56C369B"
+  }
+]
