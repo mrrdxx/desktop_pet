@@ -17,3 +17,5 @@
 ## 本次 Git 备份
 
 2026-11-21 用户明确授权将当前状态提交并推送至 origin/main。本次保存既有开发与监理工作，不代表 R1 阻断已关闭或实机复验通过；验收状态不变。源码、资源、测试、权威文档及 docs/reviews/evidence 留存证据纳入；.temp、artifacts、bin/obj 和临时 TestResults 排除且原件保留本机。当前 M-17 开发实机 run 原件仍仅在本机 .temp；报告中已留存的证据副本随文档备份，不宣称所有历史实机附件均已远程备份。
+
+备份结果：代码/文档快照提交 `8354f61` 已普通推送至 `git@github.com:mrrdxx/desktop_pet.git` 的 `main`，已读取远端 refs/heads/main 确认 SHA 与该快照一致；原先未推送的 P3 提交一并同步。此条同步说明随后独立提交，最终同步 SHA 由本轮交付回复记录。
