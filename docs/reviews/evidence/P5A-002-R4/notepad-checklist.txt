@@ -1,0 +1,24 @@
+
+Item                                                Result Detail
+----                                                ------ ------
+目标标记与归属确认（驱动侧零写入前提）              PASS   hwnd=0x470BBE pid=33052 marker=P5A001NP-20261118-214848
+落位：选中后脚点在目标上缘中点                      PASS   landed=True petFoot=[1100,250] expected=[1100,250] dx=0 dy=0
+晃动反馈：目标移动时宠物在晃（角度非零）            PASS   follow=True wobbling=True maxAngle=2.072
+跟随：目标移动后脚点贴新上缘                        PASS   follow=True petFoot=[1200,300] expected=[1200,300] dx=0 dy=0
+晃动反馈：目标停下后回稳且角度归零                  PASS   wobbling=False angle=0
+最大化：no-landing 脱离且宠物完整可见               PASS   det=True vis=True active=False pet=[1140,180,1260,300] screen=[0,0,1920,1080]
+最大化恢复后重选落位                                PASS   vis=True landed=True petFoot=[1100,250] expected=[1100,250] dx=0 dy=0
+失效脱离：最小化 detached(Minimized) 且宠物停在原地 PASS   reason=Minimized stay=True active=False
+恢复后重选落位                                      PASS   vis=True landed=True petFoot=[1100,250] expected=[1100,250] dx=0 dy=0
+遮挡脱离：落脚处被盖 occluded-detach 且宠物停在原地 PASS   fraction=0 stay=True active=False
+遮挡解除后重选落位                                  PASS   vis=True landed=True petFoot=[1100,250] expected=[1100,250] dx=0 dy=0
+远端遮挡：落脚区外上缘被盖不脱离                    FAIL   occ=True footSame=True active=False cover=[1170,245,300,120] foot=1100 petW=120 occBy=[-8,-8,1928,1040] [外部窗口标题省略]
+失效脱离：关闭 detached(WindowGone) 且宠物停在原地  PASS   reason=WindowGone stay=True active=False
+重开后重选落位                                      PASS   vis=True landed=True petFoot=[1100,250] expected=[1100,250] dx=0 dy=0
+晃动反馈：拖动时小熊正在晃（角度非零）              PASS   wobbling=True angle=1.211
+拖动接管：真实鼠标拖动宠物 drag-preempted           PASS   dragEv=True active=False dragCancelled=0x271314 target=0x271314 moved=True
+晃动反馈：拖动接管打断后无残留                      PASS   preNonZero=True(wob=True angle=-4.19) zeroAtPost=True wobbling=False angle=0
+松手不回拉：移动目标后无 follow 且宠物留在松手处    PASS   followAfterDrag=0 footFinal=[1235,343] footAtDrop=[1235,343] active=False
+探针 exitCode=0                                     PASS   probe exit=0 result exitCode=0
+
+

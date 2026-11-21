@@ -1,0 +1,12 @@
+{"tMs":882,"type":"landed","reason":null,"petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":1004,"type":"follow","reason":null,"petFootPx":[1950,850],"petRectPx":[1860,670,2040,850]}
+{"tMs":2683,"type":"detached","reason":"no-landing","petFootPx":[1950,850],"petRectPx":[1860,670,2040,850]}
+{"tMs":4555,"type":"landed","reason":null,"petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":5192,"type":"detached","reason":"Minimized","petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":7249,"type":"landed","reason":null,"petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":7362,"type":"occluded-detach","reason":null,"petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":9271,"type":"landed","reason":null,"petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":17224,"type":"detached","reason":"Hidden","petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":19917,"type":"landed","reason":null,"petFootPx":[1850,800],"petRectPx":[1760,620,1940,800]}
+{"tMs":20174,"type":"follow","reason":null,"petFootPx":[1910,840],"petRectPx":[1820,660,2000,840]}
+{"tMs":20381,"type":"drag-preempted","reason":null,"petFootPx":[1910,840],"petRectPx":[1820,660,2000,840]}

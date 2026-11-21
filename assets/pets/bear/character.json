@@ -42,6 +42,19 @@
     ] },
     "bashful": { "loop": "once", "frames": [
       { "imagePath": "bashful_0.png", "durationMs": 1000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "stretch": { "loop": "once", "frames": [
+      { "imagePath": "stretch_0.png", "durationMs": 400, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "stretch_1.png", "durationMs": 800, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "stretch_2.png", "durationMs": 400, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "rest": { "loop": "loop", "frames": [
+      { "imagePath": "rest_0.png", "durationMs": 2000, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "sleep": { "loop": "loop", "frames": [
+      { "imagePath": "sleep_light.png", "durationMs": 2500, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "sleep_deep.png", "durationMs": 4000, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "sleep_light.png", "durationMs": 2500, "offsetX": 0, "offsetY": 0 }
     ] }
   }
 }

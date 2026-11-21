@@ -1,0 +1,4 @@
+{"realElapsedSec":0,"accumulatedActiveMs":0,"accumulatedActiveMin":0,"deltaMs":0,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":0,"note":"started (threshold=1min, real sampling)"}
+{"realElapsedSec":2.1,"accumulatedActiveMs":2006,"accumulatedActiveMin":0.03,"deltaMs":2006,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":-0,"note":"active"}
+{"realElapsedSec":4,"accumulatedActiveMs":4000,"accumulatedActiveMin":0.07,"deltaMs":1994,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active"}
+{"realElapsedSec":6.1,"accumulatedActiveMs":6008,"accumulatedActiveMin":0.1,"deltaMs":2008,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":-0,"note":"active"}

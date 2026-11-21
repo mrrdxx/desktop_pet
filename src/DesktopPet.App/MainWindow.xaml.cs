@@ -16,6 +16,7 @@ using DesktopPet.Core.Input;
 using DesktopPet.Core.Physics;
 using DesktopPet.Core.Persistence;
 using DesktopPet.Core.Social;
+using DesktopPet.Core.Windows;
 
 // Avoid WPF/WinForms ambiguity: use explicit namespace for Color, Brushes, Point, MouseEventArgs.
 using MediaColor = System.Windows.Media.Color;
@@ -46,6 +47,12 @@ public partial class MainWindow : System.Windows.Window
     private bool _isDragging;
     private System.Windows.Point _dragOffset;
     private Point _pointerPressScreenDip;
+
+    // P5A-001: Window perch controller (lazy; only created when perching).
+    private PetWindowPerch? _petPerch;
+
+    // P5B-001: Window climb controller (lazy; only created when climbing).
+    private PetWindowClimb? _petClimb;
 
     // P2-003 F-01: Monotonic timestamp captured at pointer-down. Used as the
     // baseline sample time for StartDragging so that head-press→convert-to-drag
@@ -123,6 +130,19 @@ public partial class MainWindow : System.Windows.Window
     // divergence between Thread.Sleep-driven real UTC and injected clockMs.
     internal Func<DateTime>? TestGetUtcNow;
 
+    // P4-003: Test injection point for controlled LOCAL time source.
+    // When non-null, the night sleepy tick uses this instead of
+    // DateTime.Now so tests and isolation probes can cross the
+    // 23:30 / midnight / 06:00 boundaries without touching the system
+    // clock. Production leaves this null.
+    internal Func<DateTime>? TestGetLocalNow;
+
+    // 套件级默认本地时间（测试基础设施）：App 测试程序集初始化时固定为
+    // 白天正午，使整个套件不受真实墙钟时间影响（夜间窗口 23:30–06:00 会
+    // 把 idle 基线切到 sleep，旧测试在夜间全挂）。实例级 TestGetLocalNow
+    // 优先级更高；生产保持 null（用 DateTime.Now）。
+    internal static Func<DateTime>? TestSuiteLocalNowDefault;
+
     // P1-003: Test injection points for emotion objects (G-01/G-02 runtime tests).
     // When non-null, OnUpdateTick uses these instead of App.Current.
     // Production code leaves these null — OnUpdateTick falls back to App.Current.
@@ -137,6 +157,11 @@ public partial class MainWindow : System.Windows.Window
 
     // P3-002: Test injection point for social coordinator.
     internal SocialCoordinator? TestSocialCoordinator;
+
+    // P4-002 R2 F-03: Test accessor for the loaded character definition,
+    // so tests can remove individual actions and verify the stretch+rest
+    // resource requirement in CanStartRestReminder.
+    internal PetCharacterDef TestCharacter => _character;
 
     // P3-004 R4 F-01: Test-only flag to simulate a window becoming
     // non-writable between coordinator.Tick (which returned chase deltas)
@@ -197,6 +222,19 @@ public partial class MainWindow : System.Windows.Window
     private double _probeOriginalLeft;
     private double _probeOriginalTop;
 
+    // P4-002: Rest-reminder performance state.
+    // When active, the pet plays a stretch → rest sequence (~30 seconds).
+    // Press (body) skips immediately; drag/petting/social/rare-event/pause/
+    // lock/sleep/exit cancels without replay.
+    private readonly RestReminderPerformance _restReminder = new();
+    private string? _restReminderCurrentAction;
+
+    /// <summary>
+    /// P4-002: True when the rest-reminder performance is active (Stretching
+    /// or Resting phase). Exposed for test verification.
+    /// </summary>
+    internal bool IsRestReminderActive => _restReminder.IsActive;
+
     // Win32 constants for no-activate window (F-01) and native popup menu.
     private const int GWL_EXSTYLE = -20;
     private const int WS_EX_NOACTIVATE = 0x08000000;
@@ -242,6 +280,11 @@ public partial class MainWindow : System.Windows.Window
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetCursorPos(out POINT point);
+
+    // P5A-003: async key state for the perch pick mode (production input
+    // polling reads the real left button outside the pet window).
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int vKey);
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
@@ -652,6 +695,16 @@ public partial class MainWindow : System.Windows.Window
     private const uint MenuIdRecover = 2;
     private const uint MenuIdAddPet = 3;
     private const uint MenuIdRemovePet = 4;
+    // P4-002 R2 M-12: Operable Pause/Resume entry in the window
+    // right-click menu. The isolated probe has no tray icon, so without
+    // this item the preview offers no pause entry at all. Production
+    // keeps the tray entry; this is a redundant, same-path affordance
+    // (both call App.OnPauseToggled).
+    private const uint MenuIdPauseToggle = 5;
+    // P5A-003: formal perch entry points in the right-click menu. Internal
+    // so the diagnostic probe can drive the same menu-lifecycle seam.
+    internal const uint MenuIdPerchOnWindow = 6;
+    internal const uint MenuIdLeavePerch = 7;
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -698,6 +751,62 @@ public partial class MainWindow : System.Windows.Window
         return IntPtr.Zero;
     }
 
+    // R9 F-05: Shared menu lifecycle steps. Opening the menu cancels an
+    // in-progress drag (right-click during left-drag) and resets hover;
+    // EndDrag itself only resets the animation when a drag was actually
+    // in progress, so a menu opened during a rest-reminder performance
+    // leaves the stretch/rest animation untouched.
+    private void EnterContextMenuMode()
+    {
+        // P5A-003: opening the menu cancels an in-progress perch pick.
+        EndPerchPick("cancelled");
+        _isContextMenuOpen = true;
+        EndDrag(isCancellation: true);
+        _hoverDetector.Reset();
+    }
+
+    private void ExitContextMenuMode()
+    {
+        _isContextMenuOpen = false;
+        _hoverDetector.Reset();
+    }
+
+    /// <summary>
+    /// R9 F-05: Test seam for the context-menu lifecycle without the
+    /// blocking native TrackPopupMenuEx call. Reproduces the production
+    /// open → (menu shown) → close → command-dispatch sequence:
+    /// EnterContextMenuMode / ExitContextMenuMode / HandleContextMenuCommand.
+    /// </summary>
+    internal void TestOpenContextMenuLifecycle(int command, Action? onMenuShown = null)
+    {
+        if (_isContextMenuOpen)
+            return;
+
+        EnterContextMenuMode();
+        try
+        {
+            onMenuShown?.Invoke();
+        }
+        finally
+        {
+            ExitContextMenuMode();
+        }
+
+        HandleContextMenuCommand((uint)command);
+    }
+
+    /// <summary>
+    /// P5A-003 R1 F-02: Test seam for the REAL native context menu.
+    /// Opens the production ShowNativeContextMenu (TrackPopupMenuEx popup,
+    /// same menu build + foreground handling + command dispatch) at the
+    /// given screen point in physical pixels. Blocks until an item is
+    /// selected or the menu is dismissed; the driver injects real mouse
+    /// input to make the selection. Only the injection is synthetic —
+    /// menu display and command dispatch are the production path.
+    /// </summary>
+    internal void TestShowNativeContextMenu(int screenX, int screenY)
+        => ShowNativeContextMenu(new POINT { X = screenX, Y = screenY });
+
     private void ShowNativeContextMenu(POINT screenPoint)
     {
         if (_isContextMenuOpen)
@@ -713,11 +822,7 @@ public partial class MainWindow : System.Windows.Window
         var previousForeground = GetForegroundWindow();
         int originalStyle = GetWindowLong(_hwnd, GWL_EXSTYLE);
         uint command = 0;
-        _isContextMenuOpen = true;
-        EndDrag(isCancellation: true);
-
-        // Reset hover when opening the menu.
-        _hoverDetector.Reset();
+        EnterContextMenuMode();
 
         try
         {
@@ -747,6 +852,38 @@ public partial class MainWindow : System.Windows.Window
                         System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
                         return;
                     }
+                }
+            }
+
+            // P5A-003: Leave Perch only while a perch binding is active
+            // (no lazy creation side effects from the Perch property).
+            if (_petPerch?.IsActive == true)
+            {
+                if (!AppendMenu(menu, 0, (UIntPtr)MenuIdLeavePerch, "Leave Perch"))
+                {
+                    System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                    return;
+                }
+            }
+
+            // P5A-003: Perch on Window — enter the pick mode; the next left
+            // click on an eligible external window selects it explicitly.
+            if (!AppendMenu(menu, 0, (UIntPtr)MenuIdPerchOnWindow, "Perch on Window"))
+            {
+                System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                return;
+            }
+
+            // P4-002 R2 M-12: Pause/Resume toggle (label reflects the
+            // current global pause state). The handler goes through the
+            // same App.OnPauseToggled path as the tray menu entry.
+            if (System.Windows.Application.Current is App currentApp)
+            {
+                var pauseLabel = currentApp.IsGloballyPaused ? "Resume" : "Pause";
+                if (!AppendMenu(menu, 0, (UIntPtr)MenuIdPauseToggle, pauseLabel))
+                {
+                    System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                    return;
                 }
             }
 
@@ -782,11 +919,8 @@ public partial class MainWindow : System.Windows.Window
             int currentStyle = GetWindowLong(_hwnd, GWL_EXSTYLE);
             SetWindowLong(_hwnd, GWL_EXSTYLE,
                 (currentStyle & ~WS_EX_NOACTIVATE) | (originalStyle & WS_EX_NOACTIVATE));
-            _isContextMenuOpen = false;
+            ExitContextMenuMode();
             DestroyMenu(menu);
-
-            // Start a fresh hover dwell after the menu closes.
-            _hoverDetector.Reset();
 
             // Complete the native popup lifecycle, including repeated invocations.
             PostMessage(_hwnd, WM_NULL, IntPtr.Zero, IntPtr.Zero);
@@ -798,12 +932,29 @@ public partial class MainWindow : System.Windows.Window
                 SetForegroundWindow(previousForeground);
         }
 
+        HandleContextMenuCommand(command);
+    }
+
+    /// <summary>
+    /// R9 F-05: Dispatch a context-menu command through the same paths as
+    /// the production right-click menu. Shared by ShowNativeContextMenu and
+    /// the TestOpenContextMenuLifecycle seam. Commands are dispatched via
+    /// Dispatcher.BeginInvoke (async, like the native menu return path).
+    /// </summary>
+    private void HandleContextMenuCommand(uint command)
+    {
         if (command == MenuIdExit)
             // F-05 R9: Exit is always a global app exit, not a per-pet removal.
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (System.Windows.Application.Current is App app)
                     app.ShutdownMainWindow();
+            }));
+        else if (command == MenuIdPauseToggle)
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                    app.OnPauseToggled(null, !app.IsGloballyPaused);
             }));
         else if (command == MenuIdRecover)
             Dispatcher.BeginInvoke(new Action(RecoverPet));
@@ -823,6 +974,12 @@ public partial class MainWindow : System.Windows.Window
                         app.RemovePet(petId);
                 }
             }));
+        else if (command == MenuIdPerchOnWindow)
+            // P5A-003: enter the explicit window-pick mode.
+            Dispatcher.BeginInvoke(new Action(StartPerchPick));
+        else if (command == MenuIdLeavePerch)
+            // P5A-003: leave the current perch; the pet stays where it is.
+            Dispatcher.BeginInvoke(new Action(() => _petPerch?.Detach("user-left")));
     }
 
     /// <summary>
@@ -860,8 +1017,16 @@ public partial class MainWindow : System.Windows.Window
         // Low-priority hover/curiosity branches must not override or
         // prematurely end the probe expression. Grievance expression is
         // a higher-priority state that pre-empts both.
+        // P4-003: Night sleep suppresses hover/curiosity. While the pet is
+        // sleeping (CurrentActionId == "sleep"), the idle-talking hover
+        // branch must not fire and must reset its detectors; sleep is the
+        // new idle baseline at night. Higher-priority states (drag,
+        // grievance, probe, rest reminder) still switch the action away
+        // from "sleep" first, so this check never blocks them.
         if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused
             && !_isExpressingGrievance && !_isProbing
+            && !_restReminder.IsActive
+            && _animPlayer.CurrentActionId != "sleep"
             && TryGetMousePosition(out var mouseX, out var mouseY))
         {
             var petRectPx = GetPetRectPhysicalPx();
@@ -1047,7 +1212,9 @@ public partial class MainWindow : System.Windows.Window
                 isDragging: _isDragging,
                 isExpressingGrievance: _isExpressingGrievance,
                 isPhysicsActive: _isPhysicsActive,
-                isSocialActive: authoritativeSocialActive);
+                isSocialActive: authoritativeSocialActive,
+                isRestReminderActive: _restReminder.IsActive,
+                isSleeping: _animPlayer.CurrentActionId == "sleep");
 
             // F-08: The service signals StateChanged for new plan or consumed.
             // Additionally compare against cached values to detect cross-day
@@ -1069,7 +1236,8 @@ public partial class MainWindow : System.Windows.Window
                 // states. (Evaluate is skipped during grievance per R10, so
                 // ShouldFire should not reach here while grievance is active,
                 // but the guard is retained as a secondary safety check.)
-                if (!_isProbing && !_isDragging && !_isExpressingGrievance && !_isPhysicsActive)
+                if (!_isProbing && !_isDragging && !_isExpressingGrievance && !_isPhysicsActive
+                    && _animPlayer.CurrentActionId != "sleep")
                 {
                     StartProbe(nowMs);
                 }
@@ -1100,6 +1268,69 @@ public partial class MainWindow : System.Windows.Window
         // ensures only one evaluation per nowMs.
         EvaluateSocialTick(nowMs);
 
+        // P4-002: Drive the rest-reminder performance.
+        // When active, tick the state machine and switch actions as needed.
+        // The performance is cancelled by drag/petting/social/rare-event
+        // via their entry points (Skip/Cancel). Pause/lock/sleep cancel via
+        // CancelRestReminder from App.OnPauseToggled and system event handlers.
+        if (_restReminder.IsActive)
+        {
+            var reminderAction = _restReminder.Tick(nowMs);
+            if (reminderAction is null)
+            {
+                // Performance completed (naturally or skipped/cancelled).
+                // Return to idle if we were showing a rest-reminder action.
+                if (_restReminderCurrentAction is not null &&
+                    _animPlayer.CurrentActionId == _restReminderCurrentAction &&
+                    !_isDragging && !_isProbing && !_isExpressingGrievance)
+                {
+                    _animPlayer.PlayAction("idle");
+                }
+                _restReminderCurrentAction = null;
+                _restReminder.Reset();
+            }
+            else if (reminderAction != _restReminderCurrentAction)
+            {
+                // Phase transition (stretch → rest).
+                _restReminderCurrentAction = reminderAction;
+                _animPlayer.PlayAction(reminderAction);
+            }
+        }
+
+        // P4-003: Night sleepy tick — the single re-evaluation entry point.
+        // Local time 23:30 (inclusive) → 06:00 (exclusive) is the night
+        // window (NightSchedule). "sleep" is a loop action that replaces
+        // idle as the free baseline at night. Priority: drag/petting >
+        // pause (timer stopped, no tick) > grievance > probe > rest
+        // reminder > social (may interrupt; ends back at idle) > sleep >
+        // idle. All interrupt paths end at PlayAction("idle"), so the
+        // next tick naturally re-enters sleep after an interaction ends;
+        // after resume/pause/lock the first tick re-judges the boundary
+        // by the then-current local time.
+        if (!_isAppPaused)
+        {
+            var localNow = TestGetLocalNow?.Invoke() ?? TestSuiteLocalNowDefault?.Invoke() ?? DateTime.Now;
+            bool isNight = NightSchedule.IsNight(TimeOnly.FromDateTime(localNow));
+            bool isSleeping = _animPlayer.CurrentActionId == "sleep";
+
+            if (isNight && !isSleeping
+                && _animPlayer.CurrentActionId == "idle"
+                && !_isDragging && !_isPettingCandidate && !_isPhysicsActive
+                && !_isExpressingGrievance && !_isProbing
+                && !_restReminder.IsActive && !_isContextMenuOpen)
+            {
+                _animPlayer.PlayAction("sleep");
+            }
+            else if (!isNight && isSleeping
+                && !_isDragging && !_isPettingCandidate)
+            {
+                _animPlayer.PlayAction("idle");
+            }
+        }
+
+        UpdatePerchWobble(nowMs);
+        UpdatePerchPick(nowMs);
+        _petClimb?.Tick(nowMs);
         UpdateFrame();
     }
 
@@ -1188,12 +1419,9 @@ public partial class MainWindow : System.Windows.Window
                 ? this
                 : (otherWindow?.StateContext?.PetId == result.SeekerId ? otherWindow : null);
 
-            if (seekerWindow is not null &&
-                !seekerWindow._isDragging &&
-                !seekerWindow._isPhysicsActive &&
-                !seekerWindow._isPettingCandidate &&
-                !seekerWindow._isAppPaused &&
-                !seekerWindow._isProbing)
+            // P5A-001 R3 F-02：seek 步进经共享所有权判定写入——与栖息
+            // 共用 HasCorePositionConflict 互斥核心；栖息绑定持有时让出。
+            if (seekerWindow is not null && seekerWindow.IsSocialPositionWriteAllowed)
             {
                 var delta = result.SeekStepDelta.Value;
                 if (delta != 0)
@@ -1227,19 +1455,11 @@ public partial class MainWindow : System.Windows.Window
             // P3-004 R4 F-01: TestBlockChaseCommit simulates a window
             // becoming non-writable after Tick returned chase deltas.
             if (TestBlockChaseCommit) _isPhysicsActive = true;
-            var leaderCanWrite = leaderWindow is not null &&
-                !leaderWindow._isDragging &&
-                !leaderWindow._isPhysicsActive &&
-                !leaderWindow._isPettingCandidate &&
-                !leaderWindow._isAppPaused &&
-                !leaderWindow._isProbing;
+            // P5A-001 R3 F-02：chase paired-commit 经共享所有权判定——
+            // leader/follower 任一不可写（互斥核心冲突或栖息持有）则双方跳过。
+            var leaderCanWrite = leaderWindow is not null && leaderWindow.IsSocialPositionWriteAllowed;
 
-            var followerCanWrite = followerWindow is not null &&
-                !followerWindow._isDragging &&
-                !followerWindow._isPhysicsActive &&
-                !followerWindow._isPettingCandidate &&
-                !followerWindow._isAppPaused &&
-                !followerWindow._isProbing;
+            var followerCanWrite = followerWindow is not null && followerWindow.IsSocialPositionWriteAllowed;
 
             if (leaderCanWrite && followerCanWrite)
             {
@@ -1272,7 +1492,8 @@ public partial class MainWindow : System.Windows.Window
         // Track idle start: when transitioning from busy to idle, record
         // the current time so MinIdleMs can measure continuous idle.
         var isBusy = _isDragging || _isPettingCandidate || _isPhysicsActive ||
-                     _isExpressingGrievance || _isProbing || _isAppPaused;
+                     _isExpressingGrievance || _isProbing || _isAppPaused ||
+                     _restReminder.IsActive;
         if (isBusy)
         {
             _wasSocialBusy = true;
@@ -1485,7 +1706,8 @@ public partial class MainWindow : System.Windows.Window
         var centerY = Top + effectiveHeight / 2.0;
 
         var isBusy = _isDragging || _isPettingCandidate || _isPhysicsActive ||
-                     _isExpressingGrievance || _isProbing || _isAppPaused;
+                     _isExpressingGrievance || _isProbing || _isAppPaused ||
+                     _restReminder.IsActive;
 
         // P3-003: Determine monitor and bottom-edge status.
         string? monitorId = null;
@@ -1619,6 +1841,14 @@ public partial class MainWindow : System.Windows.Window
         FrameOffsetTransform.X = offsetX;
         FrameOffsetTransform.Y = offsetY;
 
+        // R2 F-01：晃动旋转中心=帧偏移补偿后的素材脚点
+        // （footAnchor + 本帧偏移）。与帧偏移在同一次 UpdateFrame 更新——
+        // 晃动中切换动作帧（如 idle→curious，offsetY 0→9）时中心随新帧
+        // 偏移同步，素材脚点经完整变换（帧偏移+旋转）后位置不变，
+        // 与只应用帧偏移时一致。窗口位置不受影响。
+        WobbleTransform.CenterX = _character.FootAnchorX + offsetX;
+        WobbleTransform.CenterY = _character.FootAnchorY + offsetY;
+
         if (frame.ImagePath != _lastDisplayedFrame)
         {
             if (_imageCache.TryGetValue(frame.ImagePath, out var bmp))
@@ -1682,6 +1912,24 @@ public partial class MainWindow : System.Windows.Window
 
         if (_isDragging || _isPettingCandidate || !PetImageGeometry.Contains(PetImage, imagePoint))
             return false;
+
+        // P4-003 R1 F-01: A valid press on the pet must interrupt the night
+        // sleep animation — the accepted gesture plays while the screen still
+        // shows sleeping frames otherwise. Break the sleep action here so the
+        // interaction is visible immediately; after release (EndPetting /
+        // EndDrag both return to idle) the night wiring in OnUpdateTick
+        // re-evaluates against the current local time and re-enters sleep if
+        // it is still night. This does not touch the probe contract (F-10):
+        // during a probe the current action is "curious", never "sleep".
+        if (string.Equals(_animPlayer.CurrentActionId, "sleep", StringComparison.Ordinal))
+        {
+            _animPlayer.PlayAction("idle");
+        }
+
+        // P4-002: User pressed the pet — skip the rest-reminder performance.
+        // The press enters the normal drag/petting flow. Per R-06:
+        // "按下小熊实体可立即跳过，并照常进入拖动或抚摸。"
+        SkipRestReminder();
 
         bool isHeadPress = IsInHeadZone(imagePoint);
         _dragRelease?.Cancel();
@@ -1754,9 +2002,27 @@ public partial class MainWindow : System.Windows.Window
         var dragNowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
         CancelSocialImmediately(CancelReason.DragStarted, dragNowMs);
 
+        // P4-002: Cancel the rest-reminder performance on drag.
+        _restReminder.Cancel();
+        _restReminderCurrentAction = null;
+        _restReminder.Reset();
+
         // F-10: Only a real drag takeover cancels the probe without restore.
         // This covers body-press-immediate-drag and head-press-convert-to-drag.
         CancelProbeForDrag();
+        // P5A-001: Drag preempts the window perch immediately — hand back
+        // position control, detach without restoring, and blacklist the
+        // cancelled handle from auto-rebind (no pull-back after release).
+        _petPerch?.CancelForDrag();
+        // P5B-001: Drag preempts an in-progress window climb immediately —
+        // end the route without restoring (drag anchor = current position).
+        _petClimb?.CancelForDrag();
+        // P5A-002: Drag takeover ends the perch wobble immediately (no
+        // visual residue even if perch state diverges).
+        EndPerchWobble();
+        // P5A-003: A drag also cancels an in-progress perch pick (the pet
+        // itself is being moved; the pick no longer has position ownership).
+        EndPerchPick("cancelled");
         _dragRelease?.Cancel();
         // P2-003 S2: Stop any active physics when the user re-grabs the pet.
         _isPhysicsActive = false;
@@ -1959,6 +2225,528 @@ public partial class MainWindow : System.Windows.Window
         {
             _isProbing = false;
             // Do NOT restore original position; drag owns position now.
+        }
+    }
+
+    // ---------- P5A-001：窗口栖息（受守卫的位置写入） ----------
+
+    /// <summary>栖息控制器（懒创建；仅 UI 线程访问）。</summary>
+    internal PetWindowPerch Perch => _petPerch ??= new PetWindowPerch(this);
+
+    /// <summary>P5B-001：攀爬控制器（懒创建；仅 UI 线程访问）。</summary>
+    internal PetWindowClimb Climb => _petClimb ??= new PetWindowClimb(this);
+
+    /// <summary>当前是否暂停（栖息轮询脱离判定用）。</summary>
+    internal bool IsAppPausedNow => _isAppPaused;
+
+    /// <summary>当前是否正在拖动。</summary>
+    internal bool IsDraggingNow => _isDragging;
+
+    /// <summary>
+    /// 栖息位置写入是否被允许：拖动、抚摸（按压候选）、暂停、物理活动、
+    /// 探头、社交会话期间不写位置（ARCHITECTURE §5 单一写入：
+    /// 拖动/物理/社交/栖息互斥）。P5A-001 R1 F-02：栖息初选/跟随/实际
+    /// 提交都必须通过这一受守卫边界；无法提交时栖息不得报告落位。
+    /// </summary>
+    /// <summary>
+    /// 位置互斥核心旗（P5A-001 R3 F-02：栖息与社交共用的所有权判定）。
+    /// 拖动/抚摸/暂停/物理/探头/攀爬路线任一为真时，除持有者外的位移
+    /// 一律不得写位置。P5B-001：攀爬期间栖息初选/跟随与社交位移均让出。
+    /// </summary>
+    private bool HasCorePositionConflict => _isDragging || _isPettingCandidate || _isAppPaused
+        || _isPhysicsActive || _isProbing || IsClimbOwned;
+
+    /// <summary>栖息绑定是否持有位置（社交位移写入判定用；不触发懒创建）。</summary>
+    private bool IsPerchOwned => _petPerch?.IsActive ?? false;
+
+    /// <summary>P5B-001：攀爬路线是否持有位置（不触发懒创建）。</summary>
+    private bool IsClimbOwned => _petClimb?.IsActive ?? false;
+
+    /// <summary>
+    /// P5A-001 R4 F-02：本宠物是否处于共享社交会话中（读协调器的
+    /// 权威会话状态，及时生效）。窗口 A 的 tick 驱动追逐并实际移动
+    /// 窗口 B 时，B 的本地 <c>_isSocialActive</c> 要等 B 自己的
+    /// EvaluateSocialTick 才置位——栖息写入必须读共享会话，不能依赖
+    /// 本地旗，否则追逐进行中 B 的栖息轮询/初选仍会写位置（双写入者）。
+    /// 会话结束后立即返回 false，栖息权限恢复。
+    /// </summary>
+    private bool IsInSharedSocialSession
+    {
+        get
+        {
+            var coordinator = Resolve(
+                TestSocialCoordinator, StateContext?.SocialCoordinator, a => a.SocialCoordinator);
+            if (coordinator?.CurrentSession is { } session && session.IsActive)
+            {
+                var myPetId = StateContext?.PetId ?? "bear-1";
+                return session.InitiatorId == myPetId || session.TargetId == myPetId;
+            }
+            return false;
+        }
+    }
+
+    internal bool IsPerchWriteAllowed => !HasCorePositionConflict && !_isSocialActive
+        && !IsInSharedSocialSession;
+
+    /// <summary>
+    /// P5B-001：攀爬自身的位置写入判定。与 <see cref="IsPerchWriteAllowed"/>
+    /// 共用互斥核心，但不包含攀爬旗（否则攀爬自我阻塞）。
+    /// P5B-001 R1 F-01：起攀（首分支）还拒绝已持有位置的栖息绑定与本地/
+    /// 共享社交占用——已栖息或社交活跃时新起攀必须 RejectedBusy，不得
+    /// 绑定与攀爬并存；第二分支（攀爬已持有）保持让位于拖动/抚摸/暂停/
+    /// 物理/探头/社交（攀爬完成才交接栖息，两者不并发）。
+    /// </summary>
+    internal bool IsClimbWriteAllowed => (!HasCorePositionConflict && !IsPerchOwned
+        && !_isSocialActive && !IsInSharedSocialSession)
+        || (IsClimbOwned
+            && !_isDragging && !_isPettingCandidate && !_isAppPaused
+            && !_isPhysicsActive && !_isProbing && !_isSocialActive
+            && !IsInSharedSocialSession);
+
+    /// <summary>
+    /// P5A-001 R3 F-02：社交位移（seek/chase 步进）的位置写入判定。
+    /// 与栖息 <see cref="IsPerchWriteAllowed"/> 共用同一互斥核心
+    /// （<see cref="HasCorePositionConflict"/>）；此外栖息绑定持有时
+    /// 社交位移不得写位置——栖息与社交互斥，先到者持有位置，另一方让出
+    /// （社交期间栖息经 _isSocialActive 让出，反向同理）。
+    /// </summary>
+    internal bool IsSocialPositionWriteAllowed => !HasCorePositionConflict && !IsPerchOwned;
+
+    // ---------- P5A-002：栖息跟随晃动反馈（纯视觉，不写位置） ----------
+
+    private const double PerchWobbleMaxAngleDeg = 10.0;
+    private const double PerchWobblePeriodMs = 260.0;
+    private const double PerchWobbleDecayMs = 220.0;
+    private const double PerchWobbleEndAngleDeg = 0.4;
+    private const double PerchWobbleMaxDurationMs = 1200.0;
+
+    /// <summary>晃动起始时刻（-1=未晃动）。目标持续移动时每次成功跟随
+    /// 都重置，衰减包络保证停止移动后短暂回稳。</summary>
+    private double _perchWobbleStartMs = -1.0;
+
+    /// <summary>当前是否正在栖息晃动（探针/测试观测）。</summary>
+    internal bool IsPerchWobbling => _perchWobbleStartMs >= 0;
+
+    /// <summary>当前晃动角度（度；0=无残留）。</summary>
+    internal double PerchWobbleAngleDeg => WobbleTransform.Angle;
+
+    /// <summary>
+    /// P5A-002：栖息跟随成功（follow Landed）——启动一次短暂晃动。
+    /// 只改画面（WobbleTransform 绕素材脚点旋转），不改窗口位置；
+    /// 落位/跟随/脱离逻辑不变。
+    /// R1-2：正在晃动时保留相位，不重置起始时刻——每次跟随都从
+    /// 正弦零点重启会让小熊反复只向一侧摆；连续跟随期间按原相位
+    /// 继续振荡（角度有正有负），停止跟随后衰减包络内自动回稳。
+    /// </summary>
+    internal void NotifyPerchFollowLanded()
+    {
+        if (_perchWobbleStartMs >= 0)
+            return; // 正在晃动：保留相位（R1-2）
+        _perchWobbleStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+    }
+
+    /// <summary>
+    /// P5A-002：立即结束晃动并清除角度（拖动接管/暂停/脱离时调用），
+    /// 保证打断后画面无残留。
+    /// </summary>
+    internal void EndPerchWobble()
+    {
+        _perchWobbleStartMs = -1.0;
+        WobbleTransform.Angle = 0;
+    }
+
+    /// <summary>
+    /// P5A-002：按衰减振荡推进晃动画面。幅度低于阈值或超时后自动回稳
+    /// （角度归零）。未晃动时零开销。
+    /// </summary>
+    private void UpdatePerchWobble(double nowMs)
+    {
+        if (_perchWobbleStartMs < 0)
+            return;
+        var t = nowMs - _perchWobbleStartMs;
+        if (t < 0)
+        {
+            EndPerchWobble(); // 时钟回退（暂停补偿等）：安全结束
+            return;
+        }
+        var amplitude = PerchWobbleMaxAngleDeg * Math.Exp(-t / PerchWobbleDecayMs);
+        if (t >= PerchWobbleMaxDurationMs || amplitude < PerchWobbleEndAngleDeg)
+        {
+            EndPerchWobble();
+            return;
+        }
+        // R2 F-01：旋转中心（帧偏移补偿后的素材脚点）由 UpdateFrame 与
+        // 帧偏移同一次更新（帧切换时保持同步），此处不再设置。
+        WobbleTransform.Angle = amplitude * Math.Sin(2.0 * Math.PI * t / PerchWobblePeriodMs);
+    }
+
+    // ---------- P5A-003：窗口栖息正式入口（拾取模式 + 主动离开） ----------
+
+    private const double PerchPickTimeoutMs = 15000.0;
+    private const int PerchPickVkLeftButton = 0x01; // VK_LBUTTON
+
+    private bool _perchPickActive;
+    private bool _perchPickAwaitRelease;
+    private double _perchPickStartMs = -1.0;
+    private readonly Dictionary<uint, string> _perchPickPidNames = new();
+
+    /// <summary>当前是否处于栖息拾取模式（探针/测试观测）。</summary>
+    internal bool IsPerchPickActive => _perchPickActive;
+
+    /// <summary>拾取是否仍在等待初始左键释放（边沿触发；探针/测试观测）。</summary>
+    internal bool IsPerchPickAwaitingRelease => _perchPickAwaitRelease;
+
+    /// <summary>最近一次拾取轮询观察到的左键按下状态（探针/测试观测）。</summary>
+    internal bool LastPerchPickLeftDown { get; private set; }
+
+    /// <summary>
+    /// 最近一次拾取流程的终态/当前状态（探针/测试观测）：
+    /// none / active / selected / rejected-busy / rejected-ineligible /
+    /// rejected-landing / cancelled-self / cancelled-timeout / cancelled。
+    /// </summary>
+    internal string LastPerchPickStatus { get; private set; } = "none";
+
+    /// <summary>
+    /// P5A-003 测试缝：覆盖拾取输入读取（返回 (左键按下, X, Y) 物理
+    /// 像素）。仅测试使用；生产轮询读真实 GetAsyncKeyState/GetCursorPos。
+    /// </summary>
+    internal Func<(bool LeftDown, int X, int Y)>? TestPerchPickInput;
+
+    /// <summary>
+    /// P5A-003 测试缝：覆盖点选拾取的目标快照采集（返回 null 等价于
+    /// 该点没有可解析的根窗口）。仅测试使用。
+    /// </summary>
+    internal Func<int, int, ExternalWindowSnapshot?>? TestPerchPickSnapshotSource;
+
+    /// <summary>P5A-003 测试缝：覆盖拾取超时（毫秒）；null=生产 15s。</summary>
+    internal double? TestPerchPickTimeoutMs;
+
+    /// <summary>
+    /// P5A-003：进入拾取模式。位置所有权被占用（拖动/抚摸/暂停/物理/
+    /// 探头/社交）时不进入并记 rejected-busy；已激活时重复进入为无操作。
+    /// </summary>
+    internal void StartPerchPick()
+    {
+        if (_perchPickActive)
+            return;
+        if (!IsPerchWriteAllowed)
+        {
+            LastPerchPickStatus = "rejected-busy";
+            return;
+        }
+        _perchPickActive = true;
+        // 边沿触发：进入拾取时若左键正处于按下状态（如菜单点击残留或
+        // 用户按住左键进入），必须先观察到释放，再等待新的按下。否则
+        // 拾取会在首个轮询帧立即把"已按下的键"当作一次新点击，误选
+        // 光标下方的无关窗口（P5A-003 M-16 驱动首轮实测缺陷）。
+        _perchPickAwaitRelease = true;
+        _perchPickStartMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
+        LastPerchPickStatus = "active";
+    }
+
+    /// <summary>结束拾取模式并记录终态。</summary>
+    private void EndPerchPick(string status)
+    {
+        if (!_perchPickActive)
+            return;
+        _perchPickActive = false;
+        _perchPickAwaitRelease = false;
+        _perchPickStartMs = -1.0;
+        LastPerchPickStatus = status;
+    }
+
+    /// <summary>
+    /// P5A-003：拾取轮询（OnUpdateTick ~30 FPS）。左键按下时按光标点
+    /// 解析目标根窗口：点中宠物自身取消；外部窗口先资格校验再
+    /// <see cref="PetWindowPerch.TrySelectExplicit"/>（落位/跟随/脱离
+    /// 语义全部复用 P5A-001，不改）。任何终态都退出拾取模式。
+    /// </summary>
+    private void UpdatePerchPick(double nowMs)
+    {
+        if (!_perchPickActive)
+            return;
+
+        // 开菜单/拖动/暂停等打断由各自入口取消；此处兜底位置所有权
+        // 与暂停（挂钟由 TestGetElapsedMs 注入时可测）。
+        if (!IsPerchWriteAllowed || IsAppPausedNow)
+        {
+            EndPerchPick("cancelled");
+            return;
+        }
+
+        var timeoutMs = TestPerchPickTimeoutMs ?? PerchPickTimeoutMs;
+        if (nowMs - _perchPickStartMs >= timeoutMs)
+        {
+            EndPerchPick("cancelled-timeout");
+            return;
+        }
+
+        (bool leftDown, int x, int y) input;
+        if (TestPerchPickInput is not null)
+            input = TestPerchPickInput();
+        else
+        {
+            var leftDown = (GetAsyncKeyState(PerchPickVkLeftButton) & 0x8000) != 0;
+            LastPerchPickLeftDown = leftDown;
+            if (!leftDown)
+            {
+                // 观察到释放：清除边沿触发等待标记（与测试缝路径同语义；
+                // 否则生产路径永远不清标记，真实点击全部被吞，15s 超时
+                // ——M-16 实测缺陷：awaitRelease=True 且 leftDown=False）。
+                _perchPickAwaitRelease = false;
+                return; // 等待下一次按下
+            }
+            if (!GetCursorPos(out var cursorPt))
+                return;
+            input = (true, cursorPt.X, cursorPt.Y);
+        }
+        if (!input.leftDown)
+        {
+            // 觢察到释放：清除边沿触发的等待标记（此后等待新的按下）。
+            _perchPickAwaitRelease = false;
+            return;
+        }
+        if (_perchPickAwaitRelease)
+            return; // 进入拾取时键仍被按住：忽略，等释放后的新按下。
+
+        // 点中宠物自身：取消拾取（不选自己）。
+        var petRect = GetPetRectPhysicalPx();
+        if (input.x >= petRect.Left && input.x <= petRect.Left + petRect.Width
+            && input.y >= petRect.Top && input.y <= petRect.Top + petRect.Height)
+        {
+            EndPerchPick("cancelled-self");
+            return;
+        }
+
+        var snapshot = TestPerchPickSnapshotSource is not null
+            ? TestPerchPickSnapshotSource(input.x, input.y)
+            : WindowPerchInterop.SnapshotWindowFromPoint(
+                input.x, input.y, _hwnd, ResolvePerchPickProcessName);
+        if (snapshot is null)
+        {
+            EndPerchPick("rejected-ineligible");
+            return;
+        }
+
+        var selfPid = (uint)Environment.ProcessId;
+        if (ExternalWindowEligibility.Evaluate(snapshot, selfPid) != ExternalWindowExclusion.None)
+        {
+            EndPerchPick("rejected-ineligible");
+            return;
+        }
+
+        // 显式选择：落位/重选/旧绑定保留语义全部由 P5A-001 已验收的
+        // TrySelectExplicit 决定，本入口不改任何栖息行为。
+        EndPerchPick(Perch.TrySelectExplicit(snapshot, selfPid) ? "selected" : "rejected-landing");
+    }
+
+    private string ResolvePerchPickProcessName(uint pid)
+    {
+        if (_perchPickPidNames.TryGetValue(pid, out var cached))
+            return cached;
+        string name;
+        try { name = System.Diagnostics.Process.GetProcessById((int)pid).ProcessName; }
+        catch { name = ""; }
+        _perchPickPidNames[pid] = name;
+        return name;
+    }
+
+    /// <summary>
+    /// P5A-001 R1 F-01：宠物窗口的完整物理尺寸（当前显示器 DPI 下，
+    /// 虚拟桌面物理像素）。供落位可见性校验与落脚区遮挡采样使用。
+    /// </summary>
+    internal (double WidthPx, double HeightPx) GetPetPhysicalSizePx()
+    {
+        var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+        return (Width * dpiX, Height * dpiY);
+    }
+
+    /// <summary>
+    /// P5A-001：按脚底中心世界坐标（虚拟桌面物理像素）设置窗口位置。
+    /// 受守卫位置写入（拖动/抚摸/暂停/物理/探头/社交互斥）；被更高
+    /// 优先级行为占用时返回 false 且不移动。栖息位置不写入存档
+    /// （不 NotifyStateDirty）。
+    /// P5B-001 R1 F-01：所有权感知——攀爬步进通过 <paramref name="fromClimb"/>
+    /// 标注为攀爬自身写入（攀爬持有位置，不阻塞自己）；非攀爬写入
+    /// （栖息初选/跟随、测试直接调用）在攀爬活跃时拒绝——攀爬持有时
+    /// 非攀爬位移不得提交。
+    /// </summary>
+    internal bool ApplyPerchFoot(PetWorldPosition foot, bool fromClimb = false)
+    {
+        // R4 F-02：栖息位移除互斥核心旗与本地社交旗外，还必须读共享
+        // 社交会话（及时生效）——被追逐移动的窗口即使尚未 tick 也拒绝。
+        if (_isDragging || _isPettingCandidate || _isAppPaused
+            || _isPhysicsActive || _isProbing || _isSocialActive
+            || IsInSharedSocialSession || (!fromClimb && IsClimbOwned))
+            return false;
+        var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+        var (leftDip, topDip) = CoordinateTransform.FootCenterToWindowTopLeft(
+            foot, Width, Height, dpiX, dpiY);
+        Left = leftDip;
+        Top = topDip;
+        return true;
+    }
+
+    // ---------- P5B-001：窗口有限攀爬（隔离预览） ----------
+
+    /// <summary>
+    /// P5B-001：攀爬临时表现。无攀爬专用素材，首版仅在当前空闲
+    /// （idle）时切换动作制造"爬行中"的可见反馈；其他表达
+    /// （好奇/委屈/睡眠/拖动等）持有更高动作优先级，不覆盖。
+    /// 攀爬专用素材后置（R-08 升级项，不宣称已实现）。
+    /// </summary>
+    internal void PlayClimbAction()
+    {
+        if (_animPlayer.CurrentActionId == "idle")
+            _animPlayer.PlayAction("curious");
+    }
+
+    /// <summary>P5B-001：结束攀爬临时表现。仅在仍是攀爬切换的
+    /// curious 帧时回到 idle，不覆盖其他表达。</summary>
+    internal void EndClimbAction()
+    {
+        if (_animPlayer.CurrentActionId == "curious")
+            _animPlayer.PlayAction("idle");
+    }
+
+    /// <summary>
+    /// P5B-001：把宠物钳回可见工作区（路线失败/取消时回到可见区域）。
+    /// 委托既有 <see cref="ClampWindowToWorkArea"/>（同一 DIP↔脚点
+    /// 适配管线，目标显示器 DPI 一致）。
+    /// </summary>
+    internal void ClampWindowToVisibleWorkArea() => ClampWindowToWorkArea();
+
+    /// <summary>
+    /// P4-002: Check whether this window can start a rest-reminder performance.
+    /// Returns true only when the pet is idle, visible, and not busy with
+    /// any higher-priority interaction or state.
+    /// </summary>
+    internal bool CanStartRestReminder()
+    {
+        // R1 F-03: Only visible windows can receive a rest-reminder.
+        // CreatePetWindow does not call Show(); windows that haven't been
+        // shown (e.g. in isolated tests or before startup) must be skipped.
+        if (!IsVisible)
+            return false;
+
+        // R2 F-03: Check the AUTHORITATIVE shared social state from the
+        // global coordinator, not only this window's _isSocialActive
+        // flag. The local flag is only updated by EvaluateSocialTick,
+        // so it lags behind a session started by another window's tick.
+        // Reading the coordinator session here blocks a candidate that
+        // has already joined a social session between two ticks.
+        var coordinator = Resolve(
+            TestSocialCoordinator, StateContext?.SocialCoordinator, a => a.SocialCoordinator);
+        if (coordinator?.CurrentSession is { } session && session.IsActive)
+        {
+            var myPetId = StateContext?.PetId ?? "bear-1";
+            if (session.InitiatorId == myPetId || session.TargetId == myPetId)
+                return false;
+        }
+
+        if (_isDragging || _isPettingCandidate || _isPhysicsActive ||
+            _isExpressingGrievance || _isProbing || _isAppPaused ||
+            _isSocialActive || _isContextMenuOpen)
+            return false;
+
+        // Don't start if a performance is already active.
+        if (_restReminder.IsActive)
+            return false;
+
+        // R2 F-03: Require BOTH the stretch (opening signal) and the
+        // rest (quiet pose) actions. Missing either one would consume a
+        // reminder on an incomplete, unrecognizable performance, so the
+        // candidate is skipped entirely.
+        if (!_character.Actions.ContainsKey("stretch") ||
+            !_character.Actions.ContainsKey("rest"))
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// P4-002: Start the rest-reminder performance. Plays the stretch action
+    /// first (clear opening signal), then transitions to the rest action
+    /// (quiet resting pose) for the remaining duration (~30 seconds total).
+    /// Called by App.OnRestReminderRequested when this window is selected.
+    /// </summary>
+    internal void StartRestReminder(double nowMs)
+    {
+        // Calculate the stretch action's total duration from the character def.
+        double stretchDurationMs = 0;
+        if (_character.Actions.TryGetValue("stretch", out var stretchAction))
+        {
+            foreach (var f in stretchAction.Frames)
+                stretchDurationMs += f.DurationMs;
+        }
+
+        _restReminder.Start(nowMs, stretchDurationMs);
+
+        // Play the initial action.
+        var action = _restReminder.Tick(nowMs);
+        if (action is not null)
+        {
+            _restReminderCurrentAction = action;
+            _animPlayer.PlayAction(action);
+            _hoverDetector.Reset();
+            UpdateFrame();
+        }
+        else
+        {
+            // No valid action to play — reset and skip.
+            _restReminder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// P4-002: Cancel any active rest-reminder performance. Called on pause,
+    /// lock screen, sleep, exit, recover, and window removal. The performance
+    /// ends without replay (R-06).
+    /// </summary>
+    internal void CancelRestReminder()
+    {
+        if (_restReminder.IsActive)
+        {
+            _restReminder.LifecycleCancel();
+            // Return to idle if we were showing a rest-reminder action.
+            if (_restReminderCurrentAction is not null &&
+                _animPlayer.CurrentActionId == _restReminderCurrentAction &&
+                !_isDragging && !_isProbing && !_isExpressingGrievance)
+            {
+                _animPlayer.PlayAction("idle");
+                UpdateFrame();
+            }
+            _restReminderCurrentAction = null;
+            _restReminder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// P4-002: Skip the rest-reminder performance (user pressed the pet body).
+    /// The performance ends immediately; the caller proceeds with the normal
+    /// drag/petting interaction flow.
+    /// R1 F-02: Also release the animation player from stretch/rest so it
+    /// returns to idle. If the caller starts drag or petting, that branch
+    /// will set its own action (overwriting idle). If the user releases
+    /// without converting (head short-press → EndPetting), the player is
+    /// already on idle — no stale stretch/rest frame remains.
+    /// </summary>
+    private void SkipRestReminder()
+    {
+        if (_restReminder.IsActive)
+        {
+            _restReminder.Skip();
+            _restReminderCurrentAction = null;
+            _restReminder.Reset();
+            // R1 F-02: Release the animation player from stretch/rest.
+            // The caller (BeginCapturedPointerInteraction) will overwrite
+            // this with drag/petting action if it proceeds. If not (head
+            // short-press release), idle is the correct state.
+            if (!_isDragging && !_isProbing && !_isExpressingGrievance)
+            {
+                _animPlayer.PlayAction("idle");
+                UpdateFrame();
+            }
         }
     }
 
@@ -2170,9 +2958,17 @@ public partial class MainWindow : System.Windows.Window
         }
 
         // Input and position stop immediately. Only the face settles briefly.
-        _animPlayer.PlayAction("idle");
-        if (wasDragging && !_isContextMenuOpen)
-            _dragRelease?.Start(TestGetElapsedMs?.Invoke() ?? GetElapsedMs());
+        // R9 F-05: Only a real drag ending resets the animation. Opening the
+        // context menu without an in-progress drag (EndDrag is also the
+        // menu-open cancellation entry) must not overwrite an active
+        // rest-reminder performance — the reminder stays active, so the
+        // stretch/rest animation must stay on screen until it ends.
+        if (wasDragging)
+        {
+            _animPlayer.PlayAction("idle");
+            if (!_isContextMenuOpen)
+                _dragRelease?.Start(TestGetElapsedMs?.Invoke() ?? GetElapsedMs());
+        }
         UpdateFrame();
 
         // Start a fresh hover dwell after dragging.
@@ -2487,9 +3283,24 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     public void RecoverPet()
     {
+        // P5A-001 R2 F-02: Recover takes position ownership back —
+        // release any window-perch binding so the recovered pet is
+        // not re-dragged when the old target moves again.
+        _petPerch?.Detach("recovered");
+
+        // P5B-001 R1 F-01: Recover must also cancel an in-progress climb
+        // route; otherwise the route stays active and the next Tick can
+        // drag the pet back toward the old target.
+        _petClimb?.CancelForRecover();
+
         // F-02 R1: Immediately cancel any active social session on recover.
         var recoverNowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();
         CancelSocialImmediately(CancelReason.RecoverRequested, recoverNowMs);
+
+        // P4-002 R1 F-02: Cancel the rest-reminder performance on recover.
+        // Use CancelRestReminder (not bare Cancel) so the animation player
+        // is released from stretch/rest and returns to idle.
+        CancelRestReminder();
 
         var monitors = MonitorInterop.EnumerateMonitors();
         if (monitors.Count == 0)
@@ -2524,6 +3335,32 @@ public partial class MainWindow : System.Windows.Window
         // the session through the normal coordinator.Tick path.
         CancelSocialImmediately(CancelReason.Paused,
             TestGetElapsedMs?.Invoke() ?? GetElapsedMs());
+
+        // P4-002: Cancel the rest-reminder performance on pause.
+        // Per R-06: "暂停...时结束正在播放的提醒，恢复后不续播。"
+        _restReminder.LifecycleCancel();
+        if (_restReminderCurrentAction is not null &&
+            _animPlayer.CurrentActionId == _restReminderCurrentAction)
+        {
+            _restReminderCurrentAction = null;
+            // Don't PlayAction("idle") here — the player is about to be paused.
+            // The CancelRestReminder from App.OnPauseToggled handles idle switch.
+        }
+        _restReminder.Reset();
+
+        // P5A-001: Pause detaches the window perch (position unchanged);
+        // resume does not re-bind the old target.
+        _petPerch?.DetachForPause();
+
+        // P5B-001: Pause ends an in-progress window climb route (resume
+        // does not continue the old route).
+        _petClimb?.CancelForPause();
+
+        // P5A-003 R1 F-01: Pause must synchronously end the perch pick
+        // mode. The update timer is about to stop, so the pause fallback
+        // inside UpdatePerchPick can never run; without this the pending
+        // pick survives the pause and may consume a click after resume.
+        EndPerchPick("cancelled");
 
         _isAppPaused = true;
         _updateTimer.Stop();
@@ -2672,6 +3509,14 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     public void RestoreProbePositionForExit()
     {
+        // P5A-001 R1 F-03：栖息中退出时，先停栖息轮询并解除绑定，
+        // 把窗口移回栖息前的位置，保证存档坐标是休息位而非临时栖息位。
+        _petPerch?.RestorePrePerchPositionForExit();
+
+        // P5B-001：攀爬中退出时，结束路线并把窗口移回爬行前位置，
+        // 保证存档坐标是休息位而非路线中的临时位置。
+        _petClimb?.CancelForExit();
+
         // P2-003 S3: Stop physics first so the saved position is stable.
         if (_isPhysicsActive)
         {
@@ -2870,6 +3715,12 @@ public partial class MainWindow : System.Windows.Window
         // P1-003: Clean up petting state on window close.
         if (_isPettingCandidate)
             EndPetting();
+        // P5A-001 R1 F-03：关闭窗口时停止栖息轮询并解除目标绑定，
+        // 防止已关闭宠物的栖息计时器继续读外部目标或写位置。
+        _petPerch?.Detach("closed");
+        // P5B-001：关闭窗口时结束攀爬路线（防已关闭宠物的攀爬继续
+        // 读外部目标或写位置）。
+        _petClimb?.CancelForExit();
         // P2-003 S3: Stop active physics on close. FlushFinalState (called
         // by App.ShutdownMainWindow before OnClosed) already calls
         // RestoreProbePositionForExit which stops physics and clamps, but

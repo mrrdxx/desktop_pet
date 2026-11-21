@@ -61,7 +61,9 @@ public static class RareEventUpdateService
         bool isDragging,
         bool isExpressingGrievance,
         bool isPhysicsActive,
-        bool isSocialActive = false)
+        bool isSocialActive = false,
+        bool isRestReminderActive = false,
+        bool isSleeping = false)
     {
         var monotonicMinutes = nowMs / 60000.0;
         tracker.UpdateTo(monotonicMinutes);
@@ -76,15 +78,19 @@ public static class RareEventUpdateService
         // probe (grievance) or start a probe competing with the throw
         // trajectory (physics). The plan retains its original state; the next
         // idle tick evaluates normally.
+        // P4-002: Also skip while a rest-reminder performance is active.
+        // P4-003: Also skip while the pet is night-sleeping — the probe
+        // (curious at screen edge) must not break the sleep baseline; the
+        // plan retains its state and evaluates normally once awake.
         RareEventScheduler.TriggerResult? result = null;
-        if (!isExpressingGrievance && !isPhysicsActive)
+        if (!isExpressingGrievance && !isPhysicsActive && !isRestReminderActive && !isSleeping)
         {
             result = scheduler.Evaluate(
                 currentAccumulated, today,
                 isPaused: false,
                 isDragging: isDragging,
                 isSocialActive: isSocialActive,
-                isRestReminderActive: false);
+                isRestReminderActive: isRestReminderActive);
         }
 
         // F-08: Detect plan state changes for save notification.

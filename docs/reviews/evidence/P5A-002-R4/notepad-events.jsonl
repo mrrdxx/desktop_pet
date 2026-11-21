@@ -1,0 +1,16 @@
+{"tMs":838,"type":"landed","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":1101,"type":"follow","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1200,300],"wobbling":null,"wobbleAngle":null}
+{"tMs":2867,"type":"detached","reason":"no-landing","targetHwnd":null,"petFootPx":[1200,300],"wobbling":null,"wobbleAngle":null}
+{"tMs":4799,"type":"landed","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":5422,"type":"detached","reason":"Minimized","targetHwnd":null,"petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":7247,"type":"landed","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":7621,"type":"occluded-detach","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":9693,"type":"landed","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":9826,"type":"occluded-detach","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":11125,"type":"landed","reason":null,"targetHwnd":"0x470BBE","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":11997,"type":"detached","reason":"WindowGone","targetHwnd":null,"petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":15222,"type":"landed","reason":null,"targetHwnd":"0x271314","petFootPx":[1100,250],"wobbling":null,"wobbleAngle":null}
+{"tMs":15466,"type":"follow","reason":null,"targetHwnd":"0x271314","petFootPx":[1160,290],"wobbling":null,"wobbleAngle":null}
+{"tMs":15702,"type":"drag-preempted","reason":null,"targetHwnd":"0x271314","petFootPx":[1160,290],"wobbling":null,"wobbleAngle":null}
+{"tMs":15703,"type":"preempt-angle-pre","reason":null,"targetHwnd":null,"petFootPx":null,"wobbling":true,"wobbleAngle":-4.19}
+{"tMs":15707,"type":"preempt-angle-post","reason":null,"targetHwnd":null,"petFootPx":null,"wobbling":false,"wobbleAngle":0}

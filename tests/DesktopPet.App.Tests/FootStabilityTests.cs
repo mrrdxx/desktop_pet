@@ -266,8 +266,11 @@ public class FootStabilityTests
                 BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
             var petImage = petImageField?.GetValue(window) as Image;
             Assert.IsNotNull(petImage, "PetImage control must exist.");
-            var transform = petImage!.RenderTransform as TranslateTransform;
-            Assert.IsNotNull(transform, "PetImage.RenderTransform must be a TranslateTransform.");
+            // P5A-002: RenderTransform is now a TransformGroup
+            // (FrameOffsetTransform + WobbleTransform); the frame offset
+            // lives on the named TranslateTransform child.
+            var transform = GetFrameOffsetTransform(window, petImage);
+            Assert.IsNotNull(transform, "PetImage.RenderTransform must contain the FrameOffsetTransform TranslateTransform.");
             Assert.AreEqual(0, transform!.X, 0.001, "idle PetImage transform X must be 0.");
             Assert.AreEqual(0, transform.Y, 0.001, "idle PetImage transform Y must be 0.");
 
@@ -281,8 +284,8 @@ public class FootStabilityTests
                 expectedCuriousOffsetY);
 
             // Verify the transform is actually applied to the PetImage control.
-            transform = petImage.RenderTransform as TranslateTransform;
-            Assert.IsNotNull(transform, "PetImage.RenderTransform must remain a TranslateTransform.");
+            transform = GetFrameOffsetTransform(window, petImage);
+            Assert.IsNotNull(transform, "PetImage.RenderTransform must still contain the FrameOffsetTransform.");
             Assert.AreEqual(expectedCuriousOffsetY, transform!.Y, 0.001,
                 "PetImage transform Y must match the expected offset from JSON.");
 
@@ -293,7 +296,7 @@ public class FootStabilityTests
             Assert.AreEqual(0, backX, "idle transform X after switch back must be 0.");
             Assert.AreEqual(0, backY, "idle transform Y after switch back must be 0.");
 
-            transform = petImage.RenderTransform as TranslateTransform;
+            transform = GetFrameOffsetTransform(window, petImage);
             Assert.IsNotNull(transform);
             Assert.AreEqual(0, transform!.Y, 0.001,
                 "PetImage transform Y must return to 0 after switching back to idle.");
@@ -302,6 +305,31 @@ public class FootStabilityTests
         {
             window.Close();
         }
+    }
+
+    /// <summary>
+    /// P5A-002: PetImage.RenderTransform is a TransformGroup; extract the
+    /// named FrameOffsetTransform (TranslateTransform) used for frame offsets.
+    /// </summary>
+    private static TranslateTransform? GetFrameOffsetTransform(MainWindow window, Image petImage)
+    {
+        if (petImage.RenderTransform is TranslateTransform direct)
+        {
+            return direct;
+        }
+
+        if (petImage.RenderTransform is TransformGroup group)
+        {
+            foreach (var child in group.Children)
+            {
+                if (child is TranslateTransform translate)
+                {
+                    return translate;
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

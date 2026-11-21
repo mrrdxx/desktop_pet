@@ -1,0 +1,13 @@
+{
+  "run": "run-20261118-092951-edge",
+  "exitCode": 0,
+  "monitorCount": 1,
+  "primaryDpi": 144,
+  "passCount": 17,
+  "failCount": 0,
+  "selectedHwnd": "0xF41374",
+  "reopenedHwnd": "0x3210FA",
+  "contrastHwnd": "0x2014F0",
+  "contrastTargetEvents": 0,
+  "parseErrors": 0
+}

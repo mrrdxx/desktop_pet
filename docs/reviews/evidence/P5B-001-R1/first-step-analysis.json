@@ -1,0 +1,39 @@
+{
+  "start": {
+    "tMs": 1289,
+    "type": "climb-started",
+    "reason": null,
+    "fraction": null,
+    "targetHwnd": "0xF81008",
+    "targetBounds": [
+      295,
+      160,
+      1085,
+      655
+    ],
+    "foot": [
+      160,
+      220
+    ]
+  },
+  "firstStep": {
+    "tMs": 1300,
+    "type": "climb-step",
+    "reason": null,
+    "fraction": 0.17107363591643365,
+    "targetHwnd": "0xF81008",
+    "targetBounds": [
+      295,
+      160,
+      1085,
+      655
+    ],
+    "foot": [
+      251.95281999856235,
+      220
+    ]
+  },
+  "elapsedMs": 11,
+  "actualDisplacementPx": 91.95281999856235,
+  "nominalBudgetPx": 4.95
+}

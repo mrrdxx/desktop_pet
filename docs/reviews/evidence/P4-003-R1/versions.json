@@ -1,0 +1,37 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Events/NightSchedule.cs",
+      "sha256": "0B3CCECD262D4CBAF492F5D1E3F6C1B635326AAF3CEDCBDD39822C15F87C4AC8"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "2FA49D28DA634190CFB251B165F124D3FA17374E65C1CD5D6C73AAD93A9BBF80"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/RareEventUpdateService.cs",
+      "sha256": "21AFA02478EA3A03164E69E719DF939B6921BAAB5B69A33079A97F55CE2F26EA"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/NightSleepyIntegrationTests.cs",
+      "sha256": "42E026D7A24927F1B3BA204187E3F27266AC111657D4F975DED86BBDA92FE0BD"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "B411B68D5448DCAEC603C8A3F6A2653531BE6087240F6D2646797C8A01585F85"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "B825A462FF5EDCA851D591F304737492C96B374217DF2B9105ACE96182169392"
+    },
+    {
+      "path": "assets/pets/bear/sleep_light.png",
+      "sha256": "C0E3D67BCC9FCC958A6B046F17A29D5686C9FC0F83E2C8F1A64C19BD6DE77FBF"
+    },
+    {
+      "path": "assets/pets/bear/sleep_deep.png",
+      "sha256": "F616782C91D0F84A9F196AC3EE4CE34771B99CEF8B97BE6A6E55FD0E29A86DFB"
+    }
+  ]
+}

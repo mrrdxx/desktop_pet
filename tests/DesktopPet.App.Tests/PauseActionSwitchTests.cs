@@ -123,6 +123,13 @@ public class PauseActionSwitchTests
                 "Action must have switched to drag");
 
             // --- Simulate drag end: EndDrag (calls PlayAction("idle") + UpdateFrame) ---
+            // R9 F-05: EndDrag only resets the animation when a real drag
+            // was in progress (StartDragging sets _isDragging=true). Mirror
+            // a real drag here so EndDrag performs the release reset.
+            var isDraggingField = window.GetType().GetField("_isDragging",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(isDraggingField);
+            isDraggingField!.SetValue(window, true);
             InvokeMethod(window, "EndDrag", false);
 
             // After EndDrag during pause: player must STILL be paused.

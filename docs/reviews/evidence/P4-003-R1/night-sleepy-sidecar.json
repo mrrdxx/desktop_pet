@@ -1,0 +1,10 @@
+{
+  "scenario": "night-sleepy",
+  "sleepSeen": true,
+  "wakeSeen": true,
+  "sleepReentrySeen": true,
+  "dragInterruptSeen": true,
+  "usedProductionCreatePetWindow": true,
+  "usedInjectedLocalClock": true,
+  "note": "Operator can drag the bear during the hold phase (~5s\u201335s) to observe sleep \u2192 drag/idle \u2192 sleep re-entry."
+}

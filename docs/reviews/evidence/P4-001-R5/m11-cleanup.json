@@ -1,0 +1,5 @@
+{
+  "subscribedAfterCleanup": false,
+  "serviceNullAfterCleanup": true,
+  "shutdownCalled": true
+}

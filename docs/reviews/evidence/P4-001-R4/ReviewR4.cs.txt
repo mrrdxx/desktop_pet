@@ -1,0 +1,25 @@
+using DesktopPet.Core.Events;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+[TestClass]
+public class ReviewP4001R4
+{
+    [TestMethod]
+    public void FirstValidIdleSampleAfterMissingMustPreserveIdleToActiveTransition()
+    {
+        var session = new ActivitySession();
+        session.Tick(0, 0);
+        session.Tick(1000, 1000);
+        for (int time = 2000; time <= 61000; time += 1000)
+            session.Tick(time, 1000);
+
+        session.Tick(62000, null);
+        session.Tick(63000, 1000);
+        var beforeNewInput = session.AccumulatedActiveMs;
+        session.Tick(64000, 64000);
+
+        Assert.AreEqual(beforeNewInput, session.AccumulatedActiveMs);
+    }
+}

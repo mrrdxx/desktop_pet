@@ -1,0 +1,84 @@
+{
+  "run": "run-20261118-183234-notepad",
+  "exitCode": 0,
+  "passCount": 18,
+  "followMs": 1002,
+  "dragMs": 19781,
+  "elapsedFromLastFollowMs": 18779,
+  "calculatedVisualAnchorOffsetDip": [
+    1.3033584606669504,
+    0.08530097668073999
+  ],
+  "simulatedContinuousFollow": [
+    {
+      "tickMs": 33,
+      "phaseMs": 33,
+      "angleDeg": 6.1592
+    },
+    {
+      "tickMs": 66,
+      "phaseMs": 66,
+      "angleDeg": 7.406
+    },
+    {
+      "tickMs": 99,
+      "phaseMs": 99,
+      "angleDeg": 4.3423
+    },
+    {
+      "tickMs": 132,
+      "phaseMs": 12,
+      "angleDeg": 2.7077
+    },
+    {
+      "tickMs": 165,
+      "phaseMs": 45,
+      "angleDeg": 7.2166
+    },
+    {
+      "tickMs": 198,
+      "phaseMs": 78,
+      "angleDeg": 6.6716
+    },
+    {
+      "tickMs": 231,
+      "phaseMs": 111,
+      "angleDeg": 2.6759
+    },
+    {
+      "tickMs": 264,
+      "phaseMs": 24,
+      "angleDeg": 4.9137
+    },
+    {
+      "tickMs": 297,
+      "phaseMs": 57,
+      "angleDeg": 7.5738
+    },
+    {
+      "tickMs": 330,
+      "phaseMs": 90,
+      "angleDeg": 5.4667
+    },
+    {
+      "tickMs": 363,
+      "phaseMs": 3,
+      "angleDeg": 0.7145
+    },
+    {
+      "tickMs": 396,
+      "phaseMs": 36,
+      "angleDeg": 6.4894
+    },
+    {
+      "tickMs": 429,
+      "phaseMs": 69,
+      "angleDeg": 7.2737
+    },
+    {
+      "tickMs": 462,
+      "phaseMs": 102,
+      "angleDeg": 3.9387
+    }
+  ]
+}

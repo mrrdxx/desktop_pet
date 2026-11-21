@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="1c462ac0-8468-439e-921e-c08a4afabc48" name="mrrdxx@毛茸茸的小熊 2026-11-16 20:51:13" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-16T20:51:13.5196833+08:00" queuing="2026-11-16T20:51:13.5196837+08:00" start="2026-11-16T20:51:06.9001899+08:00" finish="2026-11-16T20:51:14.3361410+08:00" />
+  <TestSettings name="default" id="230da2a2-7b97-4be7-a319-2cad9b75331c">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-16_20_51_13" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="6d084513-26c1-4734-8d58-8cb410164226" testId="75c0373a-fb64-cf3f-0b3c-a121775c0977" testName="PauseDuringSleep_CrossMorningBoundary_ResumeWakesUp" computerName="毛茸茸的小熊" duration="00:00:00.3705377" startTime="2026-11-16T20:51:13.6432543+08:00" endTime="2026-11-16T20:51:14.0220465+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6d084513-26c1-4734-8d58-8cb410164226" />
+    <UnitTestResult executionId="43134352-ee8d-4d3c-98ee-40032df1c04e" testId="ede2ef38-228e-8c07-6b6e-4b7c3813335a" testName="MidnightCross_SleepContinues" computerName="毛茸茸的小熊" duration="00:00:00.0085361" startTime="2026-11-16T20:51:13.5061296+08:00" endTime="2026-11-16T20:51:13.5183059+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="43134352-ee8d-4d3c-98ee-40032df1c04e" />
+    <UnitTestResult executionId="838d67c5-9666-47f7-8233-56051acb8b84" testId="78a610fc-7f8d-0c2b-8181-71fed1df37b9" testName="R1F01_HeadPressDuringSleep_InterruptsSleepAnimation_ReentersSleepAfterRelease" computerName="毛茸茸的小熊" duration="00:00:00.0182765" startTime="2026-11-16T20:51:14.1226285+08:00" endTime="2026-11-16T20:51:14.1456308+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="838d67c5-9666-47f7-8233-56051acb8b84" />
+    <UnitTestResult executionId="f53c4e6e-6b8b-4c15-b9f7-9a91bb032a42" testId="45d338ff-bcac-35a7-bf4b-de9746325625" testName="R1F01_BodyPressDuringSleep_InterruptsSleepAnimation" computerName="毛茸茸的小熊" duration="00:00:00.0188190" startTime="2026-11-16T20:51:14.1457014+08:00" endTime="2026-11-16T20:51:14.1703631+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f53c4e6e-6b8b-4c15-b9f7-9a91bb032a42" />
+    <UnitTestResult executionId="8d0ac2a3-8703-40d5-83ef-12f992d2ce2b" testId="5f5c2edc-be06-399b-710d-817c91cfea40" testName="MorningExit_0559To0600_ReturnsToIdle" computerName="毛茸茸的小熊" duration="00:00:00.0075185" startTime="2026-11-16T20:51:13.5187063+08:00" endTime="2026-11-16T20:51:13.5302923+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8d0ac2a3-8703-40d5-83ef-12f992d2ce2b" />
+    <UnitTestResult executionId="d17629ed-de14-4573-bbd9-f21bd7310199" testId="9ad1ec79-d505-3fdf-d278-c9ca422cc9de" testName="DragInterrupt_EndDrag_ReentersSleepAtNight" computerName="毛茸茸的小熊" duration="00:00:00.0235713" startTime="2026-11-16T20:51:13.5466920+08:00" endTime="2026-11-16T20:51:13.5753421+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d17629ed-de14-4573-bbd9-f21bd7310199" />
+    <UnitTestResult executionId="324b0d4b-6ec6-4e52-9936-37715d7a0a8a" testId="c6267569-761b-0138-fa9f-63fe36212a39" testName="R1F01_HeadPressAtNight_ReleaseAfter0600_StaysAwake" computerName="毛茸茸的小熊" duration="00:00:00.0121886" startTime="2026-11-16T20:51:14.1704367+08:00" endTime="2026-11-16T20:51:14.1890303+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="324b0d4b-6ec6-4e52-9936-37715d7a0a8a" />
+    <UnitTestResult executionId="8c2856b1-cb51-477f-ad52-842ddea0764e" testId="06c24cf3-32f1-5892-9186-14467134d007" testName="PauseBeforeNight_CrossEntryBoundary_ResumeEntersSleep" computerName="毛茸茸的小熊" duration="00:00:00.0905076" startTime="2026-11-16T20:51:14.0221277+08:00" endTime="2026-11-16T20:51:14.1201274+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8c2856b1-cb51-477f-ad52-842ddea0764e" />
+    <UnitTestResult executionId="af3c6d7b-4005-479d-b14d-fdaea14fa8da" testId="e69db48a-7f86-0bec-c352-7034c85d1a44" testName="NightEntry_2329To2330_SwitchesToSleep" computerName="毛茸茸的小熊" duration="00:00:00.5762134" startTime="2026-11-16T20:51:08.1580843+08:00" endTime="2026-11-16T20:51:13.4967656+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="af3c6d7b-4005-479d-b14d-fdaea14fa8da" />
+    <UnitTestResult executionId="841a1072-a583-4326-966d-0158c1614dab" testId="c110e9a7-34f7-c6cc-3550-b7513a1660c1" testName="Daytime_NeverSleeps" computerName="毛茸茸的小熊" duration="00:00:00.0110265" startTime="2026-11-16T20:51:13.5304771+08:00" endTime="2026-11-16T20:51:13.5466047+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="841a1072-a583-4326-966d-0158c1614dab" />
+    <UnitTestResult executionId="ec053460-d457-4df9-b599-6e00895f0c27" testId="7050baea-c49b-8031-f7ef-7970090a5e63" testName="RareEvent_SuppressedWhileSleeping_PlanNotConsumed_FiresAfterWaking" computerName="毛茸茸的小熊" duration="00:00:00.0182163" startTime="2026-11-16T20:51:13.5958375+08:00" endTime="2026-11-16T20:51:13.6211999+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ec053460-d457-4df9-b599-6e00895f0c27" />
+    <UnitTestResult executionId="f6e7087b-8466-47d9-9e09-3cb9d5e048d5" testId="2be52320-71fd-ff13-1b39-0ebc7fb6cc0a" testName="Hover_SuppressedWhileSleeping_StillWorksInDaytime" computerName="毛茸茸的小熊" duration="00:00:00.0135566" startTime="2026-11-16T20:51:13.5754226+08:00" endTime="2026-11-16T20:51:13.5957559+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f6e7087b-8466-47d9-9e09-3cb9d5e048d5" />
+    <UnitTestResult executionId="e71628ce-41f3-49a1-87f2-ae35b040cbc1" testId="18fe0b32-3c24-8b7f-2cbf-3b0a7b504765" testName="RestReminder_OutranksSleep_ReturnsToSleepAfterCompletion" computerName="毛茸茸的小熊" duration="00:00:00.0139352" startTime="2026-11-16T20:51:13.6212983+08:00" endTime="2026-11-16T20:51:13.6431750+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e71628ce-41f3-49a1-87f2-ae35b040cbc1" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="PauseDuringSleep_CrossMorningBoundary_ResumeWakesUp" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="75c0373a-fb64-cf3f-0b3c-a121775c0977">
+      <Execution id="6d084513-26c1-4734-8d58-8cb410164226" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="PauseDuringSleep_CrossMorningBoundary_ResumeWakesUp" />
+    </UnitTest>
+    <UnitTest name="R1F01_HeadPressAtNight_ReleaseAfter0600_StaysAwake" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c6267569-761b-0138-fa9f-63fe36212a39">
+      <Execution id="324b0d4b-6ec6-4e52-9936-37715d7a0a8a" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="R1F01_HeadPressAtNight_ReleaseAfter0600_StaysAwake" />
+    </UnitTest>
+    <UnitTest name="DragInterrupt_EndDrag_ReentersSleepAtNight" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="9ad1ec79-d505-3fdf-d278-c9ca422cc9de">
+      <Execution id="d17629ed-de14-4573-bbd9-f21bd7310199" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="DragInterrupt_EndDrag_ReentersSleepAtNight" />
+    </UnitTest>
+    <UnitTest name="RestReminder_OutranksSleep_ReturnsToSleepAfterCompletion" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="18fe0b32-3c24-8b7f-2cbf-3b0a7b504765">
+      <Execution id="e71628ce-41f3-49a1-87f2-ae35b040cbc1" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="RestReminder_OutranksSleep_ReturnsToSleepAfterCompletion" />
+    </UnitTest>
+    <UnitTest name="MorningExit_0559To0600_ReturnsToIdle" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="5f5c2edc-be06-399b-710d-817c91cfea40">
+      <Execution id="8d0ac2a3-8703-40d5-83ef-12f992d2ce2b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="MorningExit_0559To0600_ReturnsToIdle" />
+    </UnitTest>
+    <UnitTest name="MidnightCross_SleepContinues" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ede2ef38-228e-8c07-6b6e-4b7c3813335a">
+      <Execution id="43134352-ee8d-4d3c-98ee-40032df1c04e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="MidnightCross_SleepContinues" />
+    </UnitTest>
+    <UnitTest name="R1F01_HeadPressDuringSleep_InterruptsSleepAnimation_ReentersSleepAfterRelease" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="78a610fc-7f8d-0c2b-8181-71fed1df37b9">
+      <Execution id="838d67c5-9666-47f7-8233-56051acb8b84" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="R1F01_HeadPressDuringSleep_InterruptsSleepAnimation_ReentersSleepAfterRelease" />
+    </UnitTest>
+    <UnitTest name="NightEntry_2329To2330_SwitchesToSleep" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e69db48a-7f86-0bec-c352-7034c85d1a44">
+      <Execution id="af3c6d7b-4005-479d-b14d-fdaea14fa8da" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="NightEntry_2329To2330_SwitchesToSleep" />
+    </UnitTest>
+    <UnitTest name="Daytime_NeverSleeps" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c110e9a7-34f7-c6cc-3550-b7513a1660c1">
+      <Execution id="841a1072-a583-4326-966d-0158c1614dab" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="Daytime_NeverSleeps" />
+    </UnitTest>
+    <UnitTest name="RareEvent_SuppressedWhileSleeping_PlanNotConsumed_FiresAfterWaking" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="7050baea-c49b-8031-f7ef-7970090a5e63">
+      <Execution id="ec053460-d457-4df9-b599-6e00895f0c27" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="RareEvent_SuppressedWhileSleeping_PlanNotConsumed_FiresAfterWaking" />
+    </UnitTest>
+    <UnitTest name="Hover_SuppressedWhileSleeping_StillWorksInDaytime" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="2be52320-71fd-ff13-1b39-0ebc7fb6cc0a">
+      <Execution id="f6e7087b-8466-47d9-9e09-3cb9d5e048d5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="Hover_SuppressedWhileSleeping_StillWorksInDaytime" />
+    </UnitTest>
+    <UnitTest name="PauseBeforeNight_CrossEntryBoundary_ResumeEntersSleep" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="06c24cf3-32f1-5892-9186-14467134d007">
+      <Execution id="8c2856b1-cb51-477f-ad52-842ddea0764e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="PauseBeforeNight_CrossEntryBoundary_ResumeEntersSleep" />
+    </UnitTest>
+    <UnitTest name="R1F01_BodyPressDuringSleep_InterruptsSleepAnimation" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="45d338ff-bcac-35a7-bf4b-de9746325625">
+      <Execution id="f53c4e6e-6b8b-4c15-b9f7-9a91bb032a42" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightSleepyIntegrationTests" name="R1F01_BodyPressDuringSleep_InterruptsSleepAnimation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="75c0373a-fb64-cf3f-0b3c-a121775c0977" executionId="6d084513-26c1-4734-8d58-8cb410164226" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ede2ef38-228e-8c07-6b6e-4b7c3813335a" executionId="43134352-ee8d-4d3c-98ee-40032df1c04e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78a610fc-7f8d-0c2b-8181-71fed1df37b9" executionId="838d67c5-9666-47f7-8233-56051acb8b84" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="45d338ff-bcac-35a7-bf4b-de9746325625" executionId="f53c4e6e-6b8b-4c15-b9f7-9a91bb032a42" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5f5c2edc-be06-399b-710d-817c91cfea40" executionId="8d0ac2a3-8703-40d5-83ef-12f992d2ce2b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9ad1ec79-d505-3fdf-d278-c9ca422cc9de" executionId="d17629ed-de14-4573-bbd9-f21bd7310199" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c6267569-761b-0138-fa9f-63fe36212a39" executionId="324b0d4b-6ec6-4e52-9936-37715d7a0a8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06c24cf3-32f1-5892-9186-14467134d007" executionId="8c2856b1-cb51-477f-ad52-842ddea0764e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e69db48a-7f86-0bec-c352-7034c85d1a44" executionId="af3c6d7b-4005-479d-b14d-fdaea14fa8da" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c110e9a7-34f7-c6cc-3550-b7513a1660c1" executionId="841a1072-a583-4326-966d-0158c1614dab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7050baea-c49b-8031-f7ef-7970090a5e63" executionId="ec053460-d457-4df9-b599-6e00895f0c27" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2be52320-71fd-ff13-1b39-0ebc7fb6cc0a" executionId="f6e7087b-8466-47d9-9e09-3cb9d5e048d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="18fe0b32-3c24-8b7f-2cbf-3b0a7b504765" executionId="e71628ce-41f3-49a1-87f2-ae35b040cbc1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="13" executed="13" passed="13" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

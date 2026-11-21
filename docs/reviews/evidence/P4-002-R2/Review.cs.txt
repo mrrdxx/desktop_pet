@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using DesktopPet.App;
+using DesktopPet.Core.Persistence;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
+
+namespace DesktopPet.App.Tests;
+
+[TestClass]
+public class P4002Reviewer
+{
+    [STATestMethod]
+    public void UnshownWindowMustNotConsumeReminder() => WithWindow((app, window) =>
+    {
+        Assert.IsFalse(window.IsVisible);
+        app.OnRestReminderRequested(null, EventArgs.Empty);
+        Assert.IsFalse(window.IsRestReminderActive);
+    });
+
+    [STATestMethod]
+    public void RecoverMustReleaseRestAnimation() => WithWindow((_, window) =>
+    {
+        window.StartRestReminder(0);
+        Assert.AreEqual("stretch", window.CurrentAction);
+        window.RecoverPet();
+        Assert.IsFalse(window.IsRestReminderActive);
+        Assert.AreEqual("idle", window.CurrentAction);
+    });
+
+    [STATestMethod]
+    public void LockHandlerMustCancelActivePerformance() => WithWindow((app, window) =>
+    {
+        window.StartRestReminder(0);
+        Assert.IsTrue(window.IsRestReminderActive);
+        typeof(App).GetMethod("OnSystemSessionSwitch", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(app, new object?[] { null, new SessionSwitchEventArgs(SessionSwitchReason.SessionLock) });
+        Assert.IsFalse(window.IsRestReminderActive);
+    });
+
+    [STATestMethod]
+    public void WorkerLockNotificationMustNotTouchWindowOffDispatcher() => WithWindow((app, window) =>
+    {
+        window.StartRestReminder(0);
+        Assert.AreEqual("stretch", window.CurrentAction);
+        System.Threading.Tasks.Task.Run(() =>
+            app.OnSystemSessionSwitch(null, new SessionSwitchEventArgs(SessionSwitchReason.SessionLock)))
+            .GetAwaiter().GetResult();
+
+        window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        Assert.IsFalse(window.IsRestReminderActive);
+        Assert.AreEqual("idle", window.CurrentAction);
+    });
+
+    private static void WithWindow(Action<App, MainWindow> action)
+    {
+        var app = (App?)Application.Current ?? new App();
+        var path = Path.Combine(Path.GetTempPath(), "P4002Reviewer_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            app.TestSetupIsolatedSave(path);
+            var pet = new PetInstanceArchive { PetId = "bear-1", WindowLeft = 100, WindowTop = 100 };
+            app.TestState!.Pets = new List<PetInstanceArchive> { pet };
+            app.CreatePetWindow(pet);
+            action(app, app.FindWindowByPetId("bear-1")!);
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
+}
+

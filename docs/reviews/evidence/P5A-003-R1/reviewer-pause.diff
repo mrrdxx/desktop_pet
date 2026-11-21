@@ -1,0 +1,25 @@
+diff --git a/tests/DesktopPet.App.Tests/PerchEntryTests.cs b/artifacts/p5a-003-r1/reviewer/PerchEntryTests.cs
+index 25b14c3..28f0788 100644
+--- a/tests/DesktopPet.App.Tests/PerchEntryTests.cs
++++ b/artifacts/p5a-003-r1/reviewer/PerchEntryTests.cs
+@@ -346,4 +346,19 @@ public class PerchEntryTests
+         }
+         finally { window.Close(); }
+     }
+-}
++
++    [STATestMethod]
++    public void Reviewer_PauseMustCancelPendingPerchPickBeforeResume()
++    {
++        var w = new MainWindow();
++        try
++        {
++            w.TestGetElapsedMs = () => 5000;
++            w.StartPerchPick();
++            Assert.IsTrue(w.IsPerchPickActive);
++            w.PauseAnimation();
++            Assert.IsFalse(w.IsPerchPickActive,
++                "Pause stops the timer, so it must cancel a pending pick synchronously.");
++        }
++        finally { w.Close(); }
++    }}

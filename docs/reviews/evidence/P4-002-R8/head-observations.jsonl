@@ -1,0 +1,71 @@
+{"realElapsedSec":0,"isRestReminderActive":true,"currentAction":"stretch","reminderFiredCount":1,"reminderWasFired":true,"note":"reminder fired, performance started (stretch \u2192 rest \u2192 ~30s natural end)"}
+{"realElapsedSec":2,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":4,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":6,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":8.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":10.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":12.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":14.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":16.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":18.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":20.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":22.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":24.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":26.1,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":28.1,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":30.1,"isRestReminderActive":false,"currentAction":"curious","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":32.1,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":34.1,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":36.1,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":38.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":40.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":42.1,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":44.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":46.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":48.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":50.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":52.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":54.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":56.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":58.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":60.1,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":62.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":64.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":66.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":68.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":70.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":72.2,"isRestReminderActive":false,"currentAction":"curious","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":74.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":76.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":78.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":80.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":82.2,"isRestReminderActive":false,"currentAction":"curious","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":84.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":86.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":88.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":90.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":92.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":94.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":96.2,"isRestReminderActive":false,"currentAction":"curious","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":98.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":100.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":102.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":104.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":106.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":108.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":110.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":112.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":114.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":116.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":118.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":120.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":122.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":124.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":126.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":128.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":130.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":132.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":134.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":136.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":138.2,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"performance not active (idle or ended)"}
+{"realElapsedSec":140,"isRestReminderActive":false,"currentAction":"idle","reminderFiredCount":1,"reminderWasFired":true,"note":"shutting down"}

@@ -1,0 +1,8 @@
+{
+  "scenario": "night-sleepy-noinput",
+  "exitCode": 0,
+  "message": "night-sleepy: sleepSeen=True, wakeSeen=True, realDragSeen=False, dragInterruptSeen=False, sleepReentrySeen=False (no-input control)",
+  "logDirectory": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p4-003-r2\\no-input\\night-sleepy-noinput\\logs",
+  "logFiles": [],
+  "logContent": ""
+}

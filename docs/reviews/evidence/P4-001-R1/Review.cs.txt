@@ -1,0 +1,59 @@
+using DesktopPet.App.Platform;
+using DesktopPet.Core.Events;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
+
+namespace DesktopPet.App.Tests;
+[TestClass]
+public class ReviewP4001
+{
+    [TestMethod] public void RealPowerEnumSuspends()
+    {
+        using var s = new ActivitySessionService();
+        s.OnPowerModeChanged((int)PowerModes.Suspend);
+        Assert.IsTrue(s.IsSuspended, $"Suspend={(int)PowerModes.Suspend}, Resume={(int)PowerModes.Resume}");
+        s.OnPowerModeChanged((int)PowerModes.Resume);
+        Assert.IsFalse(s.IsSuspended);
+    }
+
+    [TestMethod] public void FreshInputAfterUnobservedGapDoesNotBackfill()
+    {
+        var s = new ActivitySession();
+        s.Tick(0, 0);
+        s.Tick(1000, 1000);
+        Assert.IsFalse(s.Tick(7_201_000, 7_201_000), "A fresh input after 120 unobserved minutes must not issue a reminder.");
+        Assert.AreEqual(1000d, s.AccumulatedActiveMs);
+    }
+
+    [TestMethod] public void MissingInputSampleIsNotConfirmedRest()
+    {
+        var s = new ActivitySession();
+        s.Tick(0, 0);
+        s.Tick(1000, 1000);
+        s.Tick(302000, null);
+        Assert.AreEqual(1000d, s.AccumulatedActiveMs, "Unknown input age must rebase without fabricating 5 minutes of idle.");
+    }
+
+    [TestMethod] public void FutureTimestampIsNotRecentActivity()
+    {
+        var s = new ActivitySession();
+        s.Tick(1000, 2000);
+        s.Tick(1500, 2000);
+        Assert.AreEqual(0d, s.AccumulatedActiveMs);
+    }
+
+    [TestMethod] public void RawInputTickWrapDoesNotSendTimestampBackward()
+    {
+        var s = new ControlledSampler { Raw = uint.MaxValue - 250 };
+        var before = s.GetLastInputMs()!.Value;
+        s.Raw = 10;
+        var after = s.GetLastInputMs()!.Value;
+        Assert.IsTrue(after > before, $"Delta after rollover={after-before}");
+    }
+
+    private sealed class ControlledSampler : InputIdleSampler
+    {
+        public uint Raw { get; set; }
+        internal override uint? GetLastInputTickMs() => Raw;
+    }
+}

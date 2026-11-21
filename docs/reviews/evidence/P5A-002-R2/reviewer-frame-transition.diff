@@ -1,0 +1,34 @@
+diff --git a/tests/DesktopPet.App.Tests/PerchWobbleTests.cs b/artifacts/p5a-002-r2/reviewer/PerchWobbleTests.cs
+index d15353b..7b4ca83 100644
+--- a/tests/DesktopPet.App.Tests/PerchWobbleTests.cs
++++ b/artifacts/p5a-002-r2/reviewer/PerchWobbleTests.cs
+@@ -319,4 +319,29 @@ public class PerchWobbleTests
+         }
+         finally { window.Close(); }
+     }
++
++    [STATestMethod]
++    public void Reviewer_FrameOffsetChangeDuringWobble_MustKeepRenderedFootAnchored()
++    {
++        var window = new MainWindow();
++        try
++        {
++            double now = 5000;
++            window.TestGetElapsedMs = () => now;
++            window.NotifyPerchFollowLanded();
++            const BindingFlags access = BindingFlags.NonPublic | BindingFlags.Instance;
++            typeof(MainWindow).GetMethod("UpdatePerchWobble", access)!.Invoke(window, new object[] { now + 65 });
++            Assert.IsTrue(Math.Abs(window.PerchWobbleAngleDeg) > 0.5);
++            var player = (DesktopPet.Core.Animation.AnimationPlayer)GetField(window, "_animPlayer")!;
++            player.PlayAction("curious");
++            typeof(MainWindow).GetMethod("UpdateFrame", access)!.Invoke(window, null);
++            Assert.AreEqual(9.0, window.FrameOffsetTransform.Y, 0.001);
++            var raw = new System.Windows.Point(window.TestCharacter.FootAnchorX, window.TestCharacter.FootAnchorY);
++            var expected = window.FrameOffsetTransform.Transform(raw);
++            var actual = window.PetImage.RenderTransform.Transform(raw);
++            Assert.AreEqual(expected.X, actual.X, 0.001, "A newly applied frame offset must not shift the rendered foot through a stale pivot.");
++            Assert.AreEqual(expected.Y, actual.Y, 0.001);
++        }
++        finally { window.Close(); }
++    }
+ }

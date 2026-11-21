@@ -1,0 +1,18 @@
+[
+  {
+    "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+    "sha256": "C439791331094C84B31CE5812C5D67D52FB905098C76E92E72582B2C21C7FC7A"
+  },
+  {
+    "path": "tools/Invoke-P5A001Preview.ps1",
+    "sha256": "A086DDE4A2759FA9C6CA7EA556B9CA714D5E7A5D7AE4E11EFAB0078C485CD614"
+  },
+  {
+    "path": "tests/DesktopPet.App.Tests/PerchWobbleTests.cs",
+    "sha256": "F0581CA29A7B0934ED30A0BAB44A0A29657ED6C76B08E5612739AD4197F2EB7B"
+  },
+  {
+    "path": "tests/DesktopPet.DiagnosticProbe/WindowPerchLiveScenario.cs",
+    "sha256": "86F3F629F05DF3F2F8E070DCFEC0794A8D292A252DC9A032D5E341DD2CA7BA28"
+  }
+]

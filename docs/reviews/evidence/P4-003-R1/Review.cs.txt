@@ -1,0 +1,33 @@
+using System;
+using System.Windows;
+using DesktopPet.App;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+[TestClass]
+public class NightReviewer
+{
+    [STATestMethod]
+    public void HeadPressInterruptsNightSleepDuringPetting()
+    {
+        var window = new MainWindow();
+        try
+        {
+            window.TestGetLocalNow = () => new DateTime(2026, 11, 16, 23, 40, 0);
+            window.TestGetCursorPos = () => (900, 900);
+            window.OnUpdateTickTest();
+            Assert.AreEqual("sleep", window.CurrentAction);
+            var head = new Point(60, 25);
+            Assert.IsTrue(window.IsInHeadZone(head));
+            Assert.IsTrue(window.BeginCapturedPointerInteraction(head, new Point(160, 142)));
+            window.OnUpdateTickTest();
+            Assert.AreNotEqual("sleep", window.CurrentAction, "The active head gesture must outrank the night action.");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+}
+

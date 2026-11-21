@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3fd36937-4283-4e93-a100-c405dd62fc1a" name="mrrdxx@毛茸茸的小熊 2026-11-12 19:27:39" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T19:27:39.1658126+08:00" queuing="2026-11-12T19:27:39.1658129+08:00" start="2026-11-12T19:27:38.0376009+08:00" finish="2026-11-12T19:27:39.1732598+08:00" />
+  <TestSettings name="default" id="1600aa44-19af-4fc3-b587-b548aa827f14">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_19_27_39" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="90e9431e-360f-4d12-b911-7d34bde2dbde" testId="beeac0d3-450c-61c0-a173-7919af2a8ce7" testName="MissingInputSampleIsNotConfirmedRest" computerName="毛茸茸的小熊" duration="00:00:00.0012976" startTime="2026-11-12T19:27:38.9478765+08:00" endTime="2026-11-12T19:27:38.9493196+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="90e9431e-360f-4d12-b911-7d34bde2dbde">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;1000&gt;，实际为: &lt;0&gt;。Unknown input age must rebase without fabricating 5 minutes of idle.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001.MissingInputSampleIsNotConfirmedRest() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\Review.cs:line 34&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="34b847aa-2dda-4147-90cb-33552b12b70a" testId="5c674945-6864-b8a8-4793-3ef7a0ec7e91" testName="RealPowerEnumSuspends" computerName="毛茸茸的小熊" duration="00:00:00.2145054" startTime="2026-11-12T19:27:38.7087808+08:00" endTime="2026-11-12T19:27:38.9421065+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="34b847aa-2dda-4147-90cb-33552b12b70a">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue 失败。Suspend=3, Resume=1</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001.RealPowerEnumSuspends() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\Review.cs:line 14&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cb69312b-8e06-45cb-b5a6-205844d36344" testId="a96fb23d-6e35-1e06-66f3-5598bf95c0ba" testName="FreshInputAfterUnobservedGapDoesNotBackfill" computerName="毛茸茸的小熊" duration="00:00:00.0009530" startTime="2026-11-12T19:27:38.9463151+08:00" endTime="2026-11-12T19:27:38.9474739+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb69312b-8e06-45cb-b5a6-205844d36344">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。A fresh input after 120 unobserved minutes must not issue a reminder.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001.FreshInputAfterUnobservedGapDoesNotBackfill() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\Review.cs:line 24&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e011490d-e708-4cce-bdff-0dd6bc53f664" testId="1794e298-f1c2-ea01-ee57-873c029d57a9" testName="FutureTimestampIsNotRecentActivity" computerName="毛茸茸的小熊" duration="00:00:00.0003409" startTime="2026-11-12T19:27:38.9493692+08:00" endTime="2026-11-12T19:27:38.9497832+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e011490d-e708-4cce-bdff-0dd6bc53f664">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;0&gt;，实际为: &lt;500&gt;。</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001.FutureTimestampIsNotRecentActivity() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\Review.cs:line 42&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b74c7843-d999-408a-b851-00191f576187" testId="548b830c-f5ca-672c-3f04-2aeebc361ef9" testName="RawInputTickWrapDoesNotSendTimestampBackward" computerName="毛茸茸的小熊" duration="00:00:00.0015058" startTime="2026-11-12T19:27:38.9498749+08:00" endTime="2026-11-12T19:27:38.9527120+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b74c7843-d999-408a-b851-00191f576187">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue 失败。Delta after rollover=-4294967035</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001.RawInputTickWrapDoesNotSendTimestampBackward() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\Review.cs:line 51&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="FreshInputAfterUnobservedGapDoesNotBackfill" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="a96fb23d-6e35-1e06-66f3-5598bf95c0ba">
+      <Execution id="cb69312b-8e06-45cb-b5a6-205844d36344" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001" name="FreshInputAfterUnobservedGapDoesNotBackfill" />
+    </UnitTest>
+    <UnitTest name="FutureTimestampIsNotRecentActivity" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="1794e298-f1c2-ea01-ee57-873c029d57a9">
+      <Execution id="e011490d-e708-4cce-bdff-0dd6bc53f664" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001" name="FutureTimestampIsNotRecentActivity" />
+    </UnitTest>
+    <UnitTest name="RealPowerEnumSuspends" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="5c674945-6864-b8a8-4793-3ef7a0ec7e91">
+      <Execution id="34b847aa-2dda-4147-90cb-33552b12b70a" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001" name="RealPowerEnumSuspends" />
+    </UnitTest>
+    <UnitTest name="RawInputTickWrapDoesNotSendTimestampBackward" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="548b830c-f5ca-672c-3f04-2aeebc361ef9">
+      <Execution id="b74c7843-d999-408a-b851-00191f576187" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001" name="RawInputTickWrapDoesNotSendTimestampBackward" />
+    </UnitTest>
+    <UnitTest name="MissingInputSampleIsNotConfirmedRest" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r1\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="beeac0d3-450c-61c0-a173-7919af2a8ce7">
+      <Execution id="90e9431e-360f-4d12-b911-7d34bde2dbde" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r1\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001" name="MissingInputSampleIsNotConfirmedRest" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="beeac0d3-450c-61c0-a173-7919af2a8ce7" executionId="90e9431e-360f-4d12-b911-7d34bde2dbde" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c674945-6864-b8a8-4793-3ef7a0ec7e91" executionId="34b847aa-2dda-4147-90cb-33552b12b70a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a96fb23d-6e35-1e06-66f3-5598bf95c0ba" executionId="cb69312b-8e06-45cb-b5a6-205844d36344" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1794e298-f1c2-ea01-ee57-873c029d57a9" executionId="e011490d-e708-4cce-bdff-0dd6bc53f664" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="548b830c-f5ca-672c-3f04-2aeebc361ef9" executionId="b74c7843-d999-408a-b851-00191f576187" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="0" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e05ed5db-201a-4805-9b2f-d2199004b9c7" name="mrrdxx@毛茸茸的小熊 2026-11-12 23:26:49" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T23:26:49.2785073+08:00" queuing="2026-11-12T23:26:49.2785079+08:00" start="2026-11-12T23:26:48.2715264+08:00" finish="2026-11-12T23:26:49.2856049+08:00" />
+  <TestSettings name="default" id="fce2d7ad-e37f-4d6e-a735-07a641dea7a1">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_23_26_49" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="58219ad8-ede7-45b1-8bc6-bdad4fd1b9a4" testId="58b6adaf-d926-1d66-8673-eccf6b0077a5" testName="RecentInputBeforeClockOriginRemainsValid" computerName="毛茸茸的小熊" duration="00:00:00.0012320" startTime="2026-11-12T23:26:49.1217462+08:00" endTime="2026-11-12T23:26:49.1239644+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="58219ad8-ede7-45b1-8bc6-bdad4fd1b9a4" />
+    <UnitTestResult executionId="18195a93-3c3f-4271-a68d-e483f429df45" testId="8569d59b-146e-7c6f-2d3f-252535ff1607" testName="FirstValidSampleAfterMissingOnlyReestablishesBaseline" computerName="毛茸茸的小熊" duration="00:00:00.1017180" startTime="2026-11-12T23:26:48.9906698+08:00" endTime="2026-11-12T23:26:49.1172542+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="18195a93-3c3f-4271-a68d-e483f429df45" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="RecentInputBeforeClockOriginRemainsValid" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r4\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="58b6adaf-d926-1d66-8673-eccf6b0077a5">
+      <Execution id="58219ad8-ede7-45b1-8bc6-bdad4fd1b9a4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r4\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001R3" name="RecentInputBeforeClockOriginRemainsValid" />
+    </UnitTest>
+    <UnitTest name="FirstValidSampleAfterMissingOnlyReestablishesBaseline" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r4\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="8569d59b-146e-7c6f-2d3f-252535ff1607">
+      <Execution id="18195a93-3c3f-4271-a68d-e483f429df45" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r4\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001R3" name="FirstValidSampleAfterMissingOnlyReestablishesBaseline" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="58b6adaf-d926-1d66-8673-eccf6b0077a5" executionId="58219ad8-ede7-45b1-8bc6-bdad4fd1b9a4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8569d59b-146e-7c6f-2d3f-252535ff1607" executionId="18195a93-3c3f-4271-a68d-e483f429df45" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

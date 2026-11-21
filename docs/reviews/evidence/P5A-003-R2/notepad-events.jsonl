@@ -1,0 +1,11 @@
+{"tMs":3394,"type":"landed","reason":null,"targetHwnd":"0x7416DE","petFootPx":[900,300],"petRectPx":[840,180,960,300]}
+{"tMs":4295,"type":"follow","reason":null,"targetHwnd":"0x7416DE","petFootPx":[1000,350],"petRectPx":[940,230,1060,350]}
+{"tMs":5309,"type":"occluded-detach","reason":null,"targetHwnd":"0x7416DE","petFootPx":[1000,350],"petRectPx":[940,230,1060,350]}
+{"tMs":9254,"type":"landed","reason":null,"targetHwnd":"0x7416DE","petFootPx":[1000,350],"petRectPx":[940,230,1060,350]}
+{"tMs":10145,"type":"detached","reason":"WindowGone","targetHwnd":null,"petFootPx":[1000,350],"petRectPx":[940,230,1060,350]}
+{"tMs":15145,"type":"landed","reason":null,"targetHwnd":"0x431780","petFootPx":[900,300],"petRectPx":[840,180,960,300]}
+{"tMs":15964,"type":"drag-preempted","reason":null,"targetHwnd":"0x431780","petFootPx":[900,300],"petRectPx":[840,180,960,300]}
+{"tMs":15965,"type":"preempt-angle-pre","reason":null,"targetHwnd":null,"petFootPx":null,"petRectPx":null}
+{"tMs":15972,"type":"preempt-angle-post","reason":null,"targetHwnd":null,"petFootPx":null,"petRectPx":null}
+{"tMs":23507,"type":"landed","reason":null,"targetHwnd":"0x431780","petFootPx":[900,300],"petRectPx":[840,180,960,300]}
+{"tMs":25134,"type":"detached","reason":"user-left","targetHwnd":null,"petFootPx":[900,300],"petRectPx":[840,180,960,300]}

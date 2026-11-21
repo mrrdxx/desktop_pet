@@ -1,0 +1,55 @@
+[
+  {
+    "time": "2026-11-16T18:57:43.0278977+08:00",
+    "id": 107,
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "data": [
+      {
+        "name": "TargetState",
+        "value": "4"
+      },
+      {
+        "name": "EffectiveState",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "time": "2026-11-16T18:57:39.2619827+08:00",
+    "id": 42,
+    "provider": "Microsoft-Windows-Kernel-Power",
+    "data": [
+      {
+        "name": "TargetState",
+        "value": "4"
+      },
+      {
+        "name": "EffectiveState",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "time": "2026-11-16T18:58:43.7543148+08:00",
+    "id": 1,
+    "provider": "Microsoft-Windows-Power-Troubleshooter",
+    "data": [
+      {
+        "name": "SleepTime",
+        "value": "2026-11-16T10:57:38.3015550Z"
+      },
+      {
+        "name": "WakeTime",
+        "value": "2026-11-16T10:58:42.7536465Z"
+      },
+      {
+        "name": "TargetState",
+        "value": "4"
+      },
+      {
+        "name": "EffectiveState",
+        "value": "4"
+      }
+    ]
+  }
+]

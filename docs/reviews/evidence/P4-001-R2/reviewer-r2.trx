@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ca6a4605-92f3-4925-baac-fb1f18df7d80" name="mrrdxx@毛茸茸的小熊 2026-11-12 21:13:54" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T21:13:54.4091058+08:00" queuing="2026-11-12T21:13:54.4091062+08:00" start="2026-11-12T21:13:52.9724503+08:00" finish="2026-11-12T21:13:54.4176801+08:00" />
+  <TestSettings name="default" id="bc53a4c2-c0cc-4130-90c2-ad11c106b1e4">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-12_21_13_54" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7cb8a9fa-196d-48ee-80d6-1a5b2122a2cb" testId="4a9c5564-8636-a6d7-3c7e-d40541165e30" testName="ProductionTimerAcceptsFreshInputInSameWindowsTick" computerName="毛茸茸的小熊" duration="00:00:00.2133410" startTime="2026-11-12T21:13:53.9238614+08:00" endTime="2026-11-12T21:13:54.1391168+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7cb8a9fa-196d-48ee-80d6-1a5b2122a2cb">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue 失败。A valid age=0 sample is incorrectly considered future by the production timer.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001R2.ProductionTimerAcceptsFreshInputInSameWindowsTick() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r2\probe\Review.cs:line 39&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5b6fdacb-161e-4b23-b614-0b3b8b6f55fa" testId="120ff0b8-7f06-117c-34d3-c15dfff6f9da" testName="BackwardTickDoesNotMoveBaselineBackward" computerName="毛茸茸的小熊" duration="00:00:00.0006243" startTime="2026-11-12T21:13:53.9223577+08:00" endTime="2026-11-12T21:13:53.9232551+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5b6fdacb-161e-4b23-b614-0b3b8b6f55fa">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;1000&gt;，实际为: &lt;1500&gt;。Replayed time must not count twice.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001R2.BackwardTickDoesNotMoveBaselineBackward() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r2\probe\Review.cs:line 28&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8012b853-9337-40a7-bd05-e81de64a7ea9" testId="9bf006ed-f24c-f7d7-6f14-26bdb6f2981b" testName="NineMinuteGapMustNotCountAsActive" computerName="毛茸茸的小熊" duration="00:00:00.1462329" startTime="2026-11-12T21:13:53.7438116+08:00" endTime="2026-11-12T21:13:53.9161892+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8012b853-9337-40a7-bd05-e81de64a7ea9">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;1000&gt;，实际为: &lt;541000&gt;。Fresh input cannot prove activity through nine missed minutes.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ReviewP4001R2.NineMinuteGapMustNotCountAsActive() in C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r2\probe\Review.cs:line 18&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="BackwardTickDoesNotMoveBaselineBackward" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="120ff0b8-7f06-117c-34d3-c15dfff6f9da">
+      <Execution id="5b6fdacb-161e-4b23-b614-0b3b8b6f55fa" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001R2" name="BackwardTickDoesNotMoveBaselineBackward" />
+    </UnitTest>
+    <UnitTest name="NineMinuteGapMustNotCountAsActive" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="9bf006ed-f24c-f7d7-6f14-26bdb6f2981b">
+      <Execution id="8012b853-9337-40a7-bd05-e81de64a7ea9" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001R2" name="NineMinuteGapMustNotCountAsActive" />
+    </UnitTest>
+    <UnitTest name="ProductionTimerAcceptsFreshInputInSameWindowsTick" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r2\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="4a9c5564-8636-a6d7-3c7e-d40541165e30">
+      <Execution id="7cb8a9fa-196d-48ee-80d6-1a5b2122a2cb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r2\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001R2" name="ProductionTimerAcceptsFreshInputInSameWindowsTick" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="4a9c5564-8636-a6d7-3c7e-d40541165e30" executionId="7cb8a9fa-196d-48ee-80d6-1a5b2122a2cb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="120ff0b8-7f06-117c-34d3-c15dfff6f9da" executionId="5b6fdacb-161e-4b23-b614-0b3b8b6f55fa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9bf006ed-f24c-f7d7-6f14-26bdb6f2981b" executionId="8012b853-9337-40a7-bd05-e81de64a7ea9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="3" executed="3" passed="0" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

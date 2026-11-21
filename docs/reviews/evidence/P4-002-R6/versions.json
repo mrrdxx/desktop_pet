@@ -1,0 +1,41 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "8BE175707360D7A60D834D27B585D75467DBF1CFD24413258704F7195DE7F06D"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "DE3B69864B36CD489F3650312205D90BF4BBC311F574CCFB25B9190C3E27B7DB"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "AC53392C50C2B635692ADA281B2F35E16BA20A8367804F6FD2C3C3E00E6A51A4"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "ACF5DF4C0E97A533FF6C02735A75B9C3EF16C631D0D619E15464176BE0932370"
+    },
+    {
+      "path": "assets/pets/bear/idle_0.png",
+      "sha256": "EC70AE47CF44EB6CCFBBB4A43F58696E4FA37FC59E43CA4887E8EBA0DD403901"
+    },
+    {
+      "path": "assets/pets/bear/stretch_0.png",
+      "sha256": "9CD5B3CF32E4E6BEDC42BCDEF1C8D75870590559F3CE76E8E25B08BE5466D709"
+    },
+    {
+      "path": "assets/pets/bear/stretch_1.png",
+      "sha256": "0D441B5498ADDA2AF64B7E9A9D4A42842D0B49938E042AAF61A8522AB077E85F"
+    },
+    {
+      "path": "assets/pets/bear/stretch_2.png",
+      "sha256": "8AC3147A900595ACAACD5F1CE4795C67A3AAA8362F23381ED382B01ECEC58CB4"
+    },
+    {
+      "path": "assets/pets/bear/rest_0.png",
+      "sha256": "E648778B1B4158D42A964A6AB9649946DD315C3830BB985DEAB893CF028EB484"
+    }
+  ]
+}

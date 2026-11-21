@@ -27,7 +27,15 @@
                Height="120"
                Stretch="None">
             <Image.RenderTransform>
-                <TranslateTransform x:Name="FrameOffsetTransform" X="0" Y="0" />
+                <TransformGroup>
+                    <TranslateTransform x:Name="FrameOffsetTransform" X="0" Y="0" />
+                    <!-- P5A-002：栖息跟随成功后的短暂晃动（纯视觉）。
+                         R1-1：旋转中心=帧偏移补偿后的素材脚点
+                         （footAnchor + FrameOffset，代码每 tick 更新），
+                         晃动时素材脚点保持不动、仍贴住目标窗口上沿；
+                         不改宠物窗口位置。XAML 初值仅为占位。 -->
+                    <RotateTransform x:Name="WobbleTransform" Angle="0" CenterX="60" CenterY="110" />
+                </TransformGroup>
             </Image.RenderTransform>
         </Image>
         <!-- P3-001 F-08 R14: Lightweight personality badge overlay for visual

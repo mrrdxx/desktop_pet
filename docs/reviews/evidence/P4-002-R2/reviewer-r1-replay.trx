@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="b92a24b4-603f-4f32-a90c-6926d18d6b90" name="mrrdxx@毛茸茸的小熊 2026-11-13 18:39:49" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-13T18:39:49.9313306+08:00" queuing="2026-11-13T18:39:49.9313311+08:00" start="2026-11-13T18:39:48.5131457+08:00" finish="2026-11-13T18:39:49.9359585+08:00" />
+  <TestSettings name="default" id="d85f244f-e2a8-49e4-9500-fee0ac9a6d89">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-13_18_39_49" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5430d3c4-b1d9-4fd4-a949-1eddcb2ecba7" testId="d44dd869-4d15-0459-f9a7-1c83faeda1ab" testName="UnshownWindowMustNotConsumeReminder" computerName="毛茸茸的小熊" duration="00:00:00.6858509" startTime="2026-11-13T18:39:49.0015790+08:00" endTime="2026-11-13T18:39:49.7427707+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5430d3c4-b1d9-4fd4-a949-1eddcb2ecba7">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5fb7a117-591e-46de-8e85-940d90f0b118" testId="3c29337c-a8e4-29f8-2851-c119544599f5" testName="RecoverMustReleaseRestAnimation" computerName="毛茸茸的小熊" duration="00:00:00.0252393" startTime="2026-11-13T18:39:49.7517028+08:00" endTime="2026-11-13T18:39:49.7798574+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5fb7a117-591e-46de-8e85-940d90f0b118" />
+    <UnitTestResult executionId="c0c0345e-7943-4d13-98ca-61e3818b70b7" testId="d383d53c-4804-29fc-6689-06a54a31dd90" testName="LockHandlerMustCancelActivePerformance" computerName="毛茸茸的小熊" duration="00:00:00.0056639" startTime="2026-11-13T18:39:49.7802206+08:00" endTime="2026-11-13T18:39:49.7882373+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c0c0345e-7943-4d13-98ca-61e3818b70b7" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="RecoverMustReleaseRestAnimation" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r2\reviewer\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="3c29337c-a8e4-29f8-2851-c119544599f5">
+      <Execution id="5fb7a117-591e-46de-8e85-940d90f0b118" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r2\reviewer\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.P4002Reviewer" name="RecoverMustReleaseRestAnimation" />
+    </UnitTest>
+    <UnitTest name="LockHandlerMustCancelActivePerformance" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r2\reviewer\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="d383d53c-4804-29fc-6689-06a54a31dd90">
+      <Execution id="c0c0345e-7943-4d13-98ca-61e3818b70b7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r2\reviewer\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.P4002Reviewer" name="LockHandlerMustCancelActivePerformance" />
+    </UnitTest>
+    <UnitTest name="UnshownWindowMustNotConsumeReminder" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r2\reviewer\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="d44dd869-4d15-0459-f9a7-1c83faeda1ab">
+      <Execution id="5430d3c4-b1d9-4fd4-a949-1eddcb2ecba7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r2\reviewer\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.P4002Reviewer" name="UnshownWindowMustNotConsumeReminder" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d44dd869-4d15-0459-f9a7-1c83faeda1ab" executionId="5430d3c4-b1d9-4fd4-a949-1eddcb2ecba7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c29337c-a8e4-29f8-2851-c119544599f5" executionId="5fb7a117-591e-46de-8e85-940d90f0b118" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d383d53c-4804-29fc-6689-06a54a31dd90" executionId="c0c0345e-7943-4d13-98ca-61e3818b70b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,54 @@
+[
+  {
+    "run": "run-20261118-161637-notepad",
+    "passCount": 15,
+    "failCount": 0,
+    "exitCode": 0,
+    "maxPetRectPx": [
+      1610,
+      170,
+      1790,
+      350
+    ],
+    "maxDetach": "no-landing"
+  },
+  {
+    "run": "run-20261118-163221-notepad",
+    "passCount": 15,
+    "failCount": 0,
+    "exitCode": 0,
+    "maxPetRectPx": [
+      1860,
+      670,
+      2040,
+      850
+    ],
+    "maxDetach": "no-landing"
+  },
+  {
+    "run": "run-20261118-163324-edge",
+    "passCount": 15,
+    "failCount": 0,
+    "exitCode": 0,
+    "maxPetRectPx": [
+      1860,
+      670,
+      2040,
+      850
+    ],
+    "maxDetach": "no-landing"
+  },
+  {
+    "run": "run-20261118-163417-edge",
+    "passCount": 15,
+    "failCount": 0,
+    "exitCode": 0,
+    "maxPetRectPx": [
+      1860,
+      670,
+      2040,
+      850
+    ],
+    "maxDetach": "no-landing"
+  }
+]

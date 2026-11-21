@@ -27,6 +27,17 @@ public partial class App : System.Windows.Application
     // P3-001-S2: Multi-window management. Each pet has its own MainWindow,
     // keyed by PetId. The old single _mainWindow field is replaced.
     private readonly Dictionary<string, MainWindow> _petWindows = new();
+
+    /// <summary>
+    /// P4-002 R2 F-01 收尾: The Dispatcher that owns the pet-window
+    /// collection. In production every pet window — and every
+    /// _petWindows mutation (CreatePetWindow / OnPetWindowClosed /
+    /// RemovePet) — lives on the single App UI thread, so this IS the
+    /// production UI Dispatcher. App.Dispatcher is not used directly
+    /// because a test may reuse an App instance created on a different
+    /// thread; the dispatcher is captured from the windows themselves.
+    /// </summary>
+    private System.Windows.Threading.Dispatcher? _petWindowsDispatcher;
     private PetStateArchive? _state;
     private PetSettingsArchive? _settings;
     private bool _isPaused;
@@ -75,6 +86,12 @@ public partial class App : System.Windows.Application
     // P3-002: Social coordinator for mutual-notice between pets.
     // Global — manages the single shared social session.
     internal SocialCoordinator? SocialCoordinator { get; set; }
+
+    // P4-001: Global activity session service for rest-reminder timing.
+    // Independent of rare-event timing (RuntimeTracker). Single shared
+    // session across all pets. App samples input idle and system lifecycle;
+    // Core (ActivitySession) handles timer and threshold logic.
+    internal ActivitySessionService? ActivitySessionService { get; private set; }
 
     /// <summary>
     /// PREP-001 R2 F-02: Isolated startup for diagnostic probes.
@@ -157,6 +174,11 @@ public partial class App : System.Windows.Application
         RareEventScheduler = scheduler ?? new RareEventScheduler();
         // P3-002: Create a fresh social coordinator for each isolated test.
         SocialCoordinator = new SocialCoordinator();
+
+        // P4-001: Create a fresh activity session service for each isolated
+        // test. Tests that need to verify the service can inject a custom
+        // one via the ActivitySessionService property setter.
+        ActivitySessionService ??= new ActivitySessionService();
         EmotionAccumulator ??= new EmotionDecayAccumulator(50, DateTime.UtcNow);
         GrievanceExpression ??= new GrievanceExpressionState();
         CornerTracking ??= new CornerTracker();
@@ -257,6 +279,9 @@ public partial class App : System.Windows.Application
         _tray = null;
         _instanceGuard?.Dispose();
         _instanceGuard = null;
+        // P4-001: Dispose the activity session service.
+        ActivitySessionService?.Dispose();
+        ActivitySessionService = null;
         // PREP-001: Clean up diagnostic logger.
         DiagnosticLogger?.Dispose();
         DiagnosticLogger = null;
@@ -274,6 +299,7 @@ public partial class App : System.Windows.Application
     {
         var petId = w.StateContext?.PetId ?? "bear-1";
         _petWindows[petId] = w;
+        _petWindowsDispatcher = w.Dispatcher;
     }
 
     /// <summary>
@@ -551,6 +577,235 @@ public partial class App : System.Windows.Application
             w.Show();
         if (stateUnknown || settingsUnknown)
             _tray.ShowReadOnlyArchiveNotice();
+
+        // P4-001: Start the global activity session service after all pet
+        // windows are shown. The service samples input idle and system
+        // lifecycle events, driving the Core ActivitySession for rest-
+        // reminder timing. Independent of rare-event timing.
+        // F-04 R4: Use the shared initialization method so production
+        // and isolated probe entry points share identical wiring.
+        InitializeActivitySession();
+    }
+
+    /// <summary>
+    /// P4-001: Subscribes to system-level session switch (lock/unlock) and
+    /// power mode (sleep/resume) events. These are Microsoft.Win32.SystemEvents
+    /// which fire on a system thread.
+    /// <para>
+    /// F-02 R2: The handlers call ActivitySessionService.OnSessionSwitch /
+    /// OnPowerModeChanged, which marshal to the Dispatcher thread via
+    /// BeginInvoke. This ensures lifecycle flag changes, suspension updates,
+    /// and timer ticks are all serialized on a single thread — no
+    /// unsynchronized cross-thread access to the service state.
+    /// </para>
+    /// </summary>
+    private void SubscribeSystemEvents()
+    {
+        if (ActivitySessionService is null) return;
+        Microsoft.Win32.SystemEvents.SessionSwitch += OnSystemSessionSwitch;
+        Microsoft.Win32.SystemEvents.PowerModeChanged += OnSystemPowerModeChanged;
+        _systemEventsSubscribed = true;
+    }
+
+    /// <summary>
+    /// P4-001: Unsubscribes system event handlers. Called on shutdown/exit
+    /// to release the system event subscriptions.
+    /// </summary>
+    private void UnsubscribeSystemEvents()
+    {
+        Microsoft.Win32.SystemEvents.SessionSwitch -= OnSystemSessionSwitch;
+        Microsoft.Win32.SystemEvents.PowerModeChanged -= OnSystemPowerModeChanged;
+        _systemEventsSubscribed = false;
+    }
+
+    // P4-001 F-04 R3: Track whether system event subscriptions are active.
+    // Used by the isolation probe to verify that ShutdownMainWindow
+    // releases the system event subscriptions.
+    private bool _systemEventsSubscribed;
+
+    /// <summary>
+    /// P4-001 F-04 R3: Exposes whether system event subscriptions are
+    /// currently active. For isolation probe verification of exit cleanup.
+    /// </summary>
+    internal bool TestSystemEventsSubscribed => _systemEventsSubscribed;
+
+    /// <summary>
+    /// P4-001 F-04 R4: Shared activity-session initialization used by
+    /// both the production <see cref="OnStartup"/> entry point and the
+    /// isolated probe entry point (<see cref="StartForIsolatedProbe"/>).
+    /// This ensures both paths use identical wiring:
+    /// 1. Create the service (same default constructor).
+    /// 2. Subscribe system events (same method).
+    /// 3. Start with current pause state (same call).
+    /// F-02 R1: Pass the current pause state so a paused archive
+    /// does not start the activity timer.
+    /// </summary>
+    private void InitializeActivitySession()
+    {
+        ActivitySessionService = new ActivitySessionService();
+        // P4-002: Subscribe to the rest-reminder event to trigger the
+        // rest-reminder performance on an available pet window.
+        ActivitySessionService.RestReminderRequested += OnRestReminderRequested;
+        SubscribeSystemEvents();
+        ActivitySessionService.Start(_isPaused);
+    }
+
+    /// <summary>
+    /// P4-001 F-04 R3: Starts the activity session through the same
+    /// production wiring used by OnStartup, but without creating windows,
+    /// tray, or single-instance guard. F-04 R4: delegates to the shared
+    /// <see cref="InitializeActivitySession"/> so probe and production
+    /// use identical wiring.
+    /// </summary>
+    internal void StartForIsolatedProbe(string isolatedDir)
+    {
+        InitializeActivitySession();
+    }
+
+    /// <summary>
+    /// F-04 R4: Overload that accepts a pre-created ActivitySessionService
+    /// with injected dependencies (e.g. a controllable InputIdleSampler).
+    /// The service is wired through the same SubscribeSystemEvents +
+    /// Start path as production, but the caller controls the service
+    /// instance. This lets the probe use controlled input without
+    /// duplicating the subscription/start wiring.
+    /// </summary>
+    internal void StartForIsolatedProbe(string isolatedDir, ActivitySessionService service)
+    {
+        ActivitySessionService = service;
+        SubscribeSystemEvents();
+        ActivitySessionService.Start(_isPaused);
+    }
+
+    internal void OnSystemSessionSwitch(object? sender, Microsoft.Win32.SessionSwitchEventArgs e)
+    {
+        // R2 F-01: Microsoft.Win32.SystemEvents fire on a system thread.
+        // The activity-session timing notification marshals to its
+        // Dispatcher inside ActivitySessionService. The performance
+        // cancellation below is marshalled to each pet window's
+        // Dispatcher — in production that IS the App Dispatcher (all
+        // windows live on the single UI thread), so the notification and
+        // the cancellation are serialized on one thread and
+        // CancelRestReminder → UpdateFrame never crosses threads.
+        ActivitySessionService?.OnSessionSwitch((int)e.Reason);
+
+        // P4-002 R1 F-01: Lock screen cancels rest-reminder performances.
+        // SessionSwitchReason.SessionLock = 7. Unlock (8) does NOT replay
+        // — the performance was already cancelled when lock started.
+        if ((int)e.Reason == 7)
+        {
+            // R2 F-01 收尾: the collection read, the snapshot and the
+            // cancels all happen on the UI Dispatcher (see
+            // CancelRestRemindersOnUiDispatcher).
+            CancelRestRemindersOnUiDispatcher();
+        }
+    }
+
+    internal void OnSystemPowerModeChanged(object? sender, Microsoft.Win32.PowerModeChangedEventArgs e)
+    {
+        // R2 F-01: System events fire on a system thread. Same
+        // per-window-Dispatcher marshalling as OnSystemSessionSwitch
+        // (see above).
+        ActivitySessionService?.OnPowerModeChanged((int)e.Mode);
+
+        // P4-002 R1 F-01: Sleep (Suspend) cancels rest-reminder
+        // performances. PowerModes.Suspend = 3. Resume (1) does NOT
+        // replay — the performance was already cancelled when sleep
+        // started.
+        if ((int)e.Mode == (int)Microsoft.Win32.PowerModes.Suspend)
+        {
+            // R2 F-01 收尾: the collection read, the snapshot and the
+            // cancels all happen on the UI Dispatcher (see
+            // CancelRestRemindersOnUiDispatcher).
+            CancelRestRemindersOnUiDispatcher();
+        }
+    }
+
+    /// <summary>
+    /// P4-002 R2 F-01 收尾: Cancel every active rest-reminder performance
+    /// on the UI Dispatcher that owns the pet-window collection. The
+    /// collection read, the snapshot (<c>ToList</c>) and the cancels are
+    /// one unit marshalled to that Dispatcher, so they are serialized
+    /// with window creation/removal (CreatePetWindow /
+    /// OnPetWindowClosed / RemovePet): a window removed or closed while
+    /// the notification is queued is simply absent from the snapshot —
+    /// no cross-thread enumeration race and no cancel on a closed
+    /// window.
+    /// <para>
+    /// The system SessionSwitch/PowerModeChanged events fire on a system
+    /// thread; in production this method queues the whole unit onto the
+    /// single App UI thread (the same thread the windows live on, so the
+    /// notification and the cancellation stay serialized).
+    /// </para>
+    /// </summary>
+    internal void CancelRestRemindersOnUiDispatcher()
+    {
+        var d = _petWindowsDispatcher;
+        if (d is null || d.CheckAccess())
+        {
+            // Already on the UI Dispatcher (or no window was ever
+            // created — the core iterates an empty collection).
+            CancelRestRemindersCore();
+        }
+        else
+        {
+            // Background/system thread: marshal the WHOLE unit —
+            // collection read, snapshot and cancel — onto the UI
+            // Dispatcher. The snapshot is taken at execution time, not
+            // at queue time.
+            d.BeginInvoke(new Action(CancelRestRemindersCore));
+        }
+    }
+
+    private void CancelRestRemindersCore()
+    {
+        // R2 F-01 收尾: executed on the UI Dispatcher. The collection is
+        // read here, at execution time, so windows closed/removed while
+        // the cancellation was queued are absent, and windows created
+        // since then are included.
+        foreach (var w in _petWindows.Values.ToList())
+            w.CancelRestReminder();
+    }
+
+    /// <summary>
+    /// P4-002: Handle the rest-reminder event from ActivitySessionService.
+    /// Selects an available (idle, visible, not busy) pet window and starts
+    /// the rest-reminder performance. If no suitable window is found, the
+    /// reminder is silently skipped (R-06: "没有合适的宠物时略过本次").
+    /// <para>
+    /// Window selection priority (R-06 P4-002):
+    /// 1. First idle, visible, non-busy window (prefer the first pet).
+    /// 2. If the first pet is busy, try the second pet.
+    /// 3. If no window is available, skip.
+    /// </para>
+    /// <para>
+    /// "Busy" means: dragging, petting, physics active, grievance expression,
+    /// probe active, social active, app paused, or already performing a
+    /// rest reminder.
+    /// </para>
+    /// </summary>
+    internal void OnRestReminderRequested(object? sender, EventArgs e)
+    {
+        // Find an available window for the performance.
+        MainWindow? selected = null;
+        foreach (var w in _petWindows.Values)
+        {
+            if (w.CanStartRestReminder())
+            {
+                selected = w;
+                break;
+            }
+        }
+
+        if (selected is null)
+        {
+            // No suitable window — silently skip this reminder.
+            System.Diagnostics.Trace.TraceInformation(
+                "P4-002: Rest reminder skipped — no available pet window.");
+            return;
+        }
+
+        selected.StartRestReminder(MonotonicClock.Instance.GetElapsedMs());
     }
 
     /// <summary>
@@ -615,6 +870,7 @@ public partial class App : System.Windows.Application
         window.Closed += OnPetWindowClosed;
 
         _petWindows[pet.PetId] = window;
+        _petWindowsDispatcher = window.Dispatcher;
     }
 
     /// <summary>
@@ -735,6 +991,10 @@ public partial class App : System.Windows.Application
         {
             return false;
         }
+
+        // P4-002 R1 F-02: Cancel any active rest-reminder performance
+        // before closing the window, so the animation player is released.
+        window.CancelRestReminder();
 
         // Detach the Closed handler so closing this window doesn't
         // trigger OnPetWindowClosed → removal again (re-entrancy).
@@ -927,6 +1187,13 @@ public partial class App : System.Windows.Application
         window.Top = restored.TopDip;
     }
 
+    /// <summary>
+    /// P4-002 R2 M-12: Read-only accessor for the global pause state.
+    /// Used by the window right-click menu to label its Pause/Resume
+    /// entry (the tray is not available in the isolated probe).
+    /// </summary>
+    internal bool IsGloballyPaused => _isPaused;
+
     internal void OnPauseToggled(object? sender, bool paused)
     {
         _isPaused = paused;
@@ -934,8 +1201,17 @@ public partial class App : System.Windows.Application
             _state.IsPaused = paused;
         _tray?.SetPaused(paused);
 
+        // P4-001: Notify the activity session service so pause stops
+        // accumulating active time. Resume starts from a new baseline.
+        ActivitySessionService?.OnPauseToggled(paused);
+
         if (paused)
         {
+            // P4-002: Cancel any active rest-reminder performance on pause.
+            // Per R-06: "暂停...时结束正在播放的提醒，恢复后不续播。"
+            foreach (var w in _petWindows.Values)
+                w.CancelRestReminder();
+
             // P3-001-S2: Pause all pet windows.
             foreach (var w in _petWindows.Values)
                 w.PauseAnimation();
@@ -1053,6 +1329,10 @@ public partial class App : System.Windows.Application
                     return;
                 }
 
+                // P4-002 R1 F-02: Cancel any active rest-reminder on the
+                // closed window before removing it from the dictionary.
+                window.CancelRestReminder();
+
                 _petWindows.Remove(petId);
                 _state?.Pets?.RemoveAll(p => p is not null && p.PetId == petId);
                 MarkStateDirty();
@@ -1063,12 +1343,48 @@ public partial class App : System.Windows.Application
         ShutdownMainWindow();
     }
 
-    internal void ShutdownMainWindow()
+    internal void ShutdownMainWindow(string? cleanupSidecarPath = null)
     {
         if (_isShuttingDown)
             return;
         _isShuttingDown = true;
+
+        // P4-002: Cancel any active rest-reminder performance before flushing.
+        foreach (var w in _petWindows.Values)
+            w.CancelRestReminder();
+
         FlushFinalState();
+
+        // P4-001: Stop the activity session and release system event
+        // subscriptions before closing windows.
+        UnsubscribeSystemEvents();
+        ActivitySessionService?.Stop();
+        ActivitySessionService?.Dispose();
+        ActivitySessionService = null;
+
+        // F-04 R4: After cleanup, write the post-cleanup state to the
+        // sidecar file so the probe can verify subscriptions were
+        // released and the service was nulled — BEFORE Shutdown(0)
+        // terminates the process.
+        // The sidecar also records that Shutdown(0) was called, so the
+        // test can distinguish a clean WPF shutdown from a bare
+        // Environment.Exit fallback.
+        if (cleanupSidecarPath is not null)
+        {
+            try
+            {
+                var cleanupState = new
+                {
+                    subscribedAfterCleanup = _systemEventsSubscribed,
+                    serviceNullAfterCleanup = ActivitySessionService is null,
+                    shutdownCalled = true
+                };
+                System.IO.File.WriteAllText(cleanupSidecarPath,
+                    System.Text.Json.JsonSerializer.Serialize(cleanupState,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            }
+            catch { /* best effort */ }
+        }
 
         // Clean up tray.
         _tray?.Dispose();
@@ -1082,6 +1398,14 @@ public partial class App : System.Windows.Application
         foreach (var w in _petWindows.Values)
             w.Close();
         _petWindows.Clear();
+
+        // F-04 R4: Ensure ShutdownMode is OnExplicitShutdown so that
+        // Shutdown(0) actually terminates the process. When the App is
+        // constructed without loading App.xaml (e.g. in the diagnostic
+        // probe), the default ShutdownMode is OnLastWindowClose. With
+        // no windows open, Shutdown(0) may not terminate Dispatcher.Run.
+        // Setting OnExplicitShutdown ensures Shutdown(0) is definitive.
+        ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
         Shutdown(0);
     }
 
@@ -1096,6 +1420,12 @@ public partial class App : System.Windows.Application
         if (_isShuttingDown)
             return;
         _isShuttingDown = true;
+
+        // P4-002: Cancel any active rest-reminder performance before flushing,
+        // matching the production ShutdownMainWindow path.
+        foreach (var w in _petWindows.Values)
+            w.CancelRestReminder();
+
         FlushFinalState();
 
         _tray?.Dispose();
@@ -1229,6 +1559,11 @@ public partial class App : System.Windows.Application
     {
         // Ensure save is flushed even if shutdown came from an unexpected path.
         FlushFinalState();
+        // P4-001: Release system event subscriptions and stop the activity
+        // session service.
+        UnsubscribeSystemEvents();
+        ActivitySessionService?.Dispose();
+        ActivitySessionService = null;
         _tray?.Dispose();
         _instanceGuard?.Dispose();
         base.OnExit(e);

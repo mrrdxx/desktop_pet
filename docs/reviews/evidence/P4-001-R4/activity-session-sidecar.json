@@ -1,0 +1,18 @@
+{
+  "scenario": "activity-session",
+  "serviceCreated": true,
+  "usedNormalAppEntry": true,
+  "subscribedAfterStart": true,
+  "initialAccumulatedMs": 0,
+  "initialReminderCount": 0,
+  "initialSuspended": false,
+  "afterPumpAccumulatedMs": 999.6362999975681,
+  "afterPumpReminderCount": 0,
+  "accumulatedGrew": true,
+  "addPetResult": true,
+  "sameServiceAfterAddPet": true,
+  "sameServiceAfterRemovePet": true,
+  "removedPetId": "bear-9c48608b301443fa95ce287a7b2b6a90",
+  "subscribedBeforeShutdown": true,
+  "usedProductionShutdown": true
+}

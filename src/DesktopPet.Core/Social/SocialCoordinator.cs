@@ -288,6 +288,15 @@ public sealed class SocialCoordinator
     public SocialConfig Config => _config;
 
     /// <summary>
+    /// P4-002 R2 F-03: Test seam. Seeds the coordinator's session
+    /// directly so App-layer tests can verify that window selection
+    /// reads the authoritative shared social state (an active session
+    /// involving the candidate pet) without driving a full dual-pet
+    /// Tick. Production code must never call this.
+    /// </summary>
+    internal void TestSeedSession(SocialSession session) => _session = session;
+
+    /// <summary>
     /// Creates a coordinator with the given config and random source.
     /// Production should pass a shared Random; tests should pass a seeded Random.
     /// </summary>

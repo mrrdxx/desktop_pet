@@ -1,0 +1,11 @@
+{"tMs":846,"type":"landed","reason":null,"targetHwnd":"0x640464","targetBounds":[1457,800,2243,1293],"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":1096,"type":"follow","reason":null,"targetHwnd":"0x640464","targetBounds":[1557,850,2343,1343],"petRectPx":[1860,670,2040,850],"petFootPx":[1950,850],"fraction":null}
+{"tMs":1975,"type":"follow","reason":null,"targetHwnd":"0x640464","targetBounds":[0,0,2560,1530],"petRectPx":[1190,-180,1370,0],"petFootPx":[1280,0],"fraction":null}
+{"tMs":2227,"type":"follow","reason":null,"targetHwnd":"0x640464","targetBounds":[1457,800,2243,1293],"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":3220,"type":"detached","reason":"Minimized","targetHwnd":null,"targetBounds":null,"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":5116,"type":"landed","reason":null,"targetHwnd":"0x640464","targetBounds":[1457,800,2243,1293],"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":5362,"type":"occluded-detach","reason":null,"targetHwnd":"0x640464","targetBounds":[1457,800,2243,1293],"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":0.3333333333333333}
+{"tMs":7365,"type":"landed","reason":null,"targetHwnd":"0x640464","targetBounds":[1457,800,2243,1293],"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":7485,"type":"detached","reason":"WindowGone","targetHwnd":null,"targetBounds":null,"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":10212,"type":"landed","reason":null,"targetHwnd":"0x1112BC","targetBounds":[1457,800,2243,1293],"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}
+{"tMs":10354,"type":"drag-preempted","reason":null,"targetHwnd":"0x1112BC","targetBounds":null,"petRectPx":[1760,620,1940,800],"petFootPx":[1850,800],"fraction":null}

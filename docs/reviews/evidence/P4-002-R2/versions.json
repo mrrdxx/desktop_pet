@@ -1,0 +1,25 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "BFAF08FEFA701C36D4F967EAEF162B9F519EC003250752F3F601991514CEEE18"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "9093DCB0E325BA977CC9F73B3F0339908AE46103A35D4B596D1B111497DCD0D9"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "5A39F317679F9CDCF3C32447C4F9D866FF4784640E1F1D2C5A4736C6DCF8E248"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/RestReminderIntegrationTests.cs",
+      "sha256": "7E0C8A6703BAB9C37B98A19CA37EDF9FE69E24E180B39E7A26B7FCC5228C9DA4"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "ACF5DF4C0E97A533FF6C02735A75B9C3EF16C631D0D619E15464176BE0932370"
+    }
+  ]
+}

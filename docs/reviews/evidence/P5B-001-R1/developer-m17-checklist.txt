@@ -1,0 +1,20 @@
+
+Item                                                           Result Detail
+----                                                           ------ ------
+① 目标标记与归属确认（驱动侧零写入前提）                       PASS   hwnd=0xF81008 pid=80924 marker=P5B001NP-20261121-141812
+② 起攀：贴脚放置+start → climb-started(targetHwnd 匹配)        PASS   started targetHwnd=0xF81008
+③ 路线推进：climb-step≥3 且 fraction 递增                      PASS   steps=8 fracInc=True fractions=[0.171073635916434,0.207537078193737,0.247465417523245,0.255552596218521,0.258512736560011,0.261759349681802,0.3008731…
+④ 顶部交接：climb-completed 脚点=上缘中点±6 perchActive 无跳动 PASS   foot=[690,160] expected=[690,160] dx=0 dy=0 perch=True climb=False noJump=True
+⑤ 交接后跟随：移动目标后脚点贴新上缘                           PASS   foot=[790,210] newEdge=[790,210] perch=True (state 断言，无 follow 事件)
+⑥ 栖息中真实拖动 → 脱离栖息，移动目标不回拉                    PASS   drag=True dragged from (790,192) by (104,260) steps=26 hold=700ms detached=True stayAtDrop=True
+⑦ 超距起攀 RejectedTooFar 不移动                               PASS   result=RejectedTooFar distance=211px (>200) footMove=(0,0)
+⑧ 盖住落位起攀 RejectedOccluded 不移动                         PASS   result=RejectedOccluded footMove=(0,0)
+⑨ 最小化起攀 RejectedIneligible 不移动                         PASS   result=RejectedIneligible iconic=True footMove=(0,0)
+⑩ 路线中目标 +150,+100 → 收敛新上缘中点                        PASS   converged to new edge midpoint [1574,310] perch=True attempt=1
+⑪ 路线中最小化 → climb-cancelled(target-*) 宠物回可见区        PASS   reason=target-Minimized petRect=[879,40,999,160] visible=True climb=False perch=False attempt=2
+⑫ 路线中上缘遮挡 → climb-occluded + climb-cancelled(occluded)  PASS   occludedEv=True cancelReason=occluded climb=False perch=False attempt=1
+⑬ 路线中真实拖动 → climb-drag-preempted 松手后不回拉           PASS   preempted=True dragged from (823,142) by (96,72) steps=12 hold=700ms stayAtDrop=True foot=[939,232] attempt=2
+⑭ 路线中 pause → climb-cancelled(paused) resume 不续接         PASS   cancelReason=paused resumeContinues=False climb=False foot=[1074,203] attempt=1
+⑮ 探针 exitCode=0                                              PASS   probe exit=0 result exitCode=0
+
+

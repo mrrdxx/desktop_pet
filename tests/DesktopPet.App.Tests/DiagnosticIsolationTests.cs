@@ -452,6 +452,103 @@ public class DiagnosticIsolationTests
     }
 
     /// <summary>
+    /// P4-001 R4 F-04: Activity session isolation verification through
+    /// the normal App entry point. R4 changes:
+    /// - Uses controllable InputIdleSampler (age=0) for predictable
+    ///   accumulated value, independent of real input activity.
+    /// - Verifies single/dual-pet timing continuity (AddPet/RemovePet
+    ///   do not reset accumulated value).
+    /// - Verifies post-cleanup state via cleanup sidecar written by
+    ///   ShutdownMainWindow AFTER UnsubscribeSystemEvents + Stop +
+    ///   Dispose + null.
+    /// - Exit code 0 comes from WPF Shutdown(0), not Environment.Exit.
+    /// </summary>
+    [TestMethod]
+    [TestCategory("Isolation")]
+    public void ActivitySession_RealAppStart_PauseExit_Observable()
+    {
+        var (exitCode, logContent) = RunProbe("activity-session");
+
+        Assert.AreEqual(0, exitCode,
+            "Activity session scenario should exit 0 (clean production shutdown via Shutdown(0)). " +
+            "Log content: " + logContent);
+
+        // Read the sidecar file written before shutdown.
+        var sidecarFile = Path.Combine(_tempDir, "activity-session", "activity-session-sidecar.json");
+        Assert.IsTrue(File.Exists(sidecarFile),
+            "Sidecar file should exist (probe writes it before calling ShutdownMainWindow).");
+
+        var sidecarJson = File.ReadAllText(sidecarFile);
+        var sidecar = JsonDocument.Parse(sidecarJson);
+
+        // Service was created through the normal App entry point.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("serviceCreated").GetBoolean(),
+            "ActivitySessionService should be created by StartForIsolatedProbe. Result: " + sidecarJson);
+        Assert.IsTrue(sidecar.RootElement.GetProperty("usedNormalAppEntry").GetBoolean(),
+            "Should use the normal App entry point (StartForIsolatedProbe), not direct service.Start(). Result: " + sidecarJson);
+
+        // F-04 R4: Shared initialization method was used.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("usedSharedInitialization").GetBoolean(),
+            "Should use shared initialization (InitializeActivitySession or equivalent). Result: " + sidecarJson);
+
+        // System events were subscribed by the normal entry point.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("subscribedAfterStart").GetBoolean(),
+            "System events should be subscribed after StartForIsolatedProbe. Result: " + sidecarJson);
+
+        // Initial state: not suspended (started with isPaused=false).
+        Assert.IsFalse(sidecar.RootElement.GetProperty("initialSuspended").GetBoolean(),
+            "Service should not be suspended after Start(isPaused: false). Result: " + sidecarJson);
+
+        // After pumping, accumulated value should be positive (controllable
+        // sampler with age=0 ensures every tick accumulates).
+        var afterPumpMs = sidecar.RootElement.GetProperty("afterPumpAccumulatedMs").GetDouble();
+        Assert.IsTrue(afterPumpMs > 0,
+            $"Accumulated ms after pump should be positive with controllable sampler (age=0), got {afterPumpMs}. Result: " + sidecarJson);
+
+        // AddPet/RemovePet share the same ActivitySessionService instance.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("addPetResult").GetBoolean(),
+            "AddPet should succeed (add a second pet). Result: " + sidecarJson);
+        Assert.IsTrue(sidecar.RootElement.GetProperty("sameServiceAfterAddPet").GetBoolean(),
+            "ActivitySessionService should be the same instance after AddPet (shared session). Result: " + sidecarJson);
+        Assert.IsTrue(sidecar.RootElement.GetProperty("sameServiceAfterRemovePet").GetBoolean(),
+            "ActivitySessionService should be the same instance after RemovePet (shared session). Result: " + sidecarJson);
+
+        // F-04 R4: Timing continuity — AddPet/RemovePet do NOT reset
+        // accumulated value.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("timingContinuousAfterAddPet").GetBoolean(),
+            "Accumulated value should not decrease after AddPet (timing continuity). Result: " + sidecarJson);
+        Assert.IsTrue(sidecar.RootElement.GetProperty("timingContinuousAfterRemovePet").GetBoolean(),
+            "Accumulated value should not decrease after RemovePet (timing continuity). Result: " + sidecarJson);
+
+        // System events were still subscribed before shutdown.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("subscribedBeforeShutdown").GetBoolean(),
+            "System events should still be subscribed before ShutdownMainWindow. Result: " + sidecarJson);
+
+        // Used production shutdown path.
+        Assert.IsTrue(sidecar.RootElement.GetProperty("usedProductionShutdown").GetBoolean(),
+            "Should use production ShutdownMainWindow. Result: " + sidecarJson);
+
+        // F-04 R4: Verify post-cleanup state from the cleanup sidecar
+        // written by ShutdownMainWindow AFTER cleanup.
+        var cleanupFile = Path.Combine(_tempDir, "activity-session", "activity-session-cleanup.json");
+        Assert.IsTrue(File.Exists(cleanupFile),
+            "Cleanup sidecar file should exist (written by ShutdownMainWindow after cleanup).");
+
+        var cleanupJson = File.ReadAllText(cleanupFile);
+        var cleanup = JsonDocument.Parse(cleanupJson);
+
+        Assert.IsFalse(cleanup.RootElement.GetProperty("subscribedAfterCleanup").GetBoolean(),
+            "System events should be unsubscribed after ShutdownMainWindow cleanup. Result: " + cleanupJson);
+        Assert.IsTrue(cleanup.RootElement.GetProperty("serviceNullAfterCleanup").GetBoolean(),
+            "ActivitySessionService should be null after ShutdownMainWindow cleanup. Result: " + cleanupJson);
+
+        // F-04 R4: Verify that Shutdown(0) was actually called by
+        // ShutdownMainWindow (not just Environment.Exit without cleanup).
+        Assert.IsTrue(cleanup.RootElement.GetProperty("shutdownCalled").GetBoolean(),
+            "ShutdownMainWindow should have called Shutdown(0) — cleanup sidecar records this. Result: " + cleanupJson);
+    }
+
+    /// <summary>
     /// R2 F-02: Runs the probe and collects the REAL exit code and log content.
     /// The probe now takes a baseDir (not logDir) and creates per-scenario
     /// subdirectories with isolated log/archive/mutex.
@@ -481,6 +578,7 @@ public class DiagnosticIsolationTests
             "ui-exception" => 30000,
             "worker-exception" => 15000,
             "dual-pet-exit" => 30000, // R11 F-05: Dispatcher lifecycle may need extra time.
+            "activity-session" => 30000, // P4-001 R3 F-04: 3s Dispatcher pump + Shutdown(0).
             _ => 15000
         };
         if (!proc.WaitForExit(timeout))

@@ -1,0 +1,9 @@
+[notepad] real-menu Perch on Window: real menu 'Perch on Window' selected: rightClick=[160,160] itemIndex=2 totalItems=5 viaKeyboard petHwnd=0x271048
+[notepad] real-menu Perch on Window: real menu 'Perch on Window' selected: rightClick=[1000,290] itemIndex=2 totalItems=5 viaKeyboard petHwnd=0x271048
+[notepad] real-menu Perch on Window: real menu 'Perch on Window' selected: rightClick=[1000,290] itemIndex=2 totalItems=5 viaKeyboard petHwnd=0x271048
+[notepad] real-menu Perch on Window: real menu 'Perch on Window' selected: rightClick=[980,288] itemIndex=2 totalItems=5 viaKeyboard petHwnd=0x271048
+[notepad] real-menu Leave Perch: real menu 'Leave Perch' selected: rightClick=[900,240] itemIndex=2 totalItems=6 viaKeyboard petHwnd=0x271048
+[notepad] probe exited code=0
+[PASS] 探针 exitCode=0 : probe exit=0 result exitCode=0
+探针 exitCode=0                                                  PASS   probe exit=0 result exitCode=0
+[notepad] checklist: ALL PASS -> C:\Users\mrrdxx\Desktop\pet\.temp\p5a-003\entry\run-20261119-192641-notepad

@@ -1,0 +1,23 @@
+{
+  "scenario": "activity-session",
+  "serviceCreated": true,
+  "usedNormalAppEntry": true,
+  "usedSharedInitialization": true,
+  "subscribedAfterStart": true,
+  "initialAccumulatedMs": 0,
+  "initialReminderCount": 0,
+  "initialSuspended": false,
+  "afterPumpAccumulatedMs": 2987.61969999969,
+  "afterPumpReminderCount": 0,
+  "accumulatedGrew": true,
+  "addPetResult": true,
+  "sameServiceAfterAddPet": true,
+  "sameServiceAfterRemovePet": true,
+  "removedPetId": "bear-a009a2824aab4502a08410b595812b47",
+  "timingContinuousAfterAddPet": true,
+  "timingContinuousAfterRemovePet": true,
+  "accumulatedAfterAddPetMs": 2987.61969999969,
+  "accumulatedAfterRemovePetMs": 2987.61969999969,
+  "subscribedBeforeShutdown": true,
+  "usedProductionShutdown": true
+}

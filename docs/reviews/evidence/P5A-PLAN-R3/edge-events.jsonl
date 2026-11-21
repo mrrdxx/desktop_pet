@@ -1,0 +1,12 @@
+{"tMs":289,"type":"select","hwnd":"0xC14F6","bounds":[17,10,903,603],"reason":null,"fraction":null}
+{"tMs":5045,"type":"occluded","hwnd":"0xC14F6","bounds":[1557,855,2343,1348],"reason":null,"fraction":0}
+{"tMs":5259,"type":"unoccluded","hwnd":"0xC14F6","bounds":[1597,875,2383,1368],"reason":null,"fraction":1}
+{"tMs":5685,"type":"occluded","hwnd":"0xC14F6","bounds":[1657,905,2443,1398],"reason":null,"fraction":0}
+{"tMs":5897,"type":"unoccluded","hwnd":"0xC14F6","bounds":[1697,925,2483,1418],"reason":null,"fraction":1}
+{"tMs":13505,"type":"cleared","hwnd":"0xC14F6","bounds":[-31993,-32000,-31770,-31968],"reason":"Minimized","fraction":null}
+{"tMs":13712,"type":"reacquire","hwnd":"0xC14F6","bounds":[1518,876,2304,1369],"reason":null,"fraction":null}
+{"tMs":15420,"type":"occluded","hwnd":"0xC14F6","bounds":[1518,876,2304,1369],"reason":null,"fraction":0.333}
+{"tMs":16033,"type":"unoccluded","hwnd":"0xC14F6","bounds":[1518,876,2304,1369],"reason":null,"fraction":1}
+{"tMs":16251,"type":"cleared","hwnd":"0xC14F6","bounds":[0,0,0,0],"reason":"WindowGone","fraction":null}
+{"tMs":16900,"type":"reacquire","hwnd":"0x111440","bounds":[1518,876,2404,1469],"reason":null,"fraction":null}
+{"tMs":19254,"type":"cleared","hwnd":"0x111440","bounds":[0,0,0,0],"reason":"WindowGone","fraction":null}

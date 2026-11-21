@@ -1,0 +1,14 @@
+[
+  {
+    "path": "tools/Invoke-M14WindowPerch.ps1",
+    "sha256": "66D26329775812638CDE4388C140B812BE3E98E4AE4A32D1E6B5C1060FD6F60D"
+  },
+  {
+    "path": "tests/DesktopPet.DiagnosticProbe/WindowPerchScenario.cs",
+    "sha256": "D2AA8B5255697B6392CF1200899040DF2E72D566A89854ED157FB2692D18D3AC"
+  },
+  {
+    "path": "src/DesktopPet.Core/Windows/WindowPerchSelectionPolicy.cs",
+    "sha256": "BB290EDA507BB410A0FE2204EC594392556ECA2E460592B31A2976B6478A16EF"
+  }
+]

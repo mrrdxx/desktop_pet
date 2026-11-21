@@ -1,0 +1,11 @@
+{
+  "scenario": "night-sleepy-noinput",
+  "sleepSeen": true,
+  "wakeSeen": true,
+  "realDragSeen": false,
+  "sleepReentrySeen": false,
+  "dragInterruptSeen": false,
+  "usedProductionCreatePetWindow": true,
+  "usedInjectedLocalClock": true,
+  "note": "P4-003 R1 F-02 no-input control run: operator must NOT touch the pet. realDragSeen/dragInterruptSeen/sleepReentrySeen must all stay false."
+}

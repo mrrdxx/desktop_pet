@@ -1,0 +1,20 @@
+
+Item                                                Result Detail
+----                                                ------ ------
+目标标记与归属确认（驱动侧零写入前提）              PASS   hwnd=0x3507C0 pid=16196 marker=P5A001Browser-20261118-163417
+落位：选中后脚点在目标上缘中点                      PASS   landed=True petFoot=[1850,800] expected=[1850,800] dx=0 dy=0
+跟随：目标移动后脚点贴新上缘                        PASS   follow=True petFoot=[1950,850] expected=[1950,850] dx=0 dy=0
+最大化：no-landing 脱离且宠物完整可见               PASS   det=True vis=True active=False pet=[1860,670,2040,850] screen=[0,0,2560,1600]
+最大化恢复后重选落位                                PASS   vis=True landed=True petFoot=[1850,800] expected=[1850,800] dx=0 dy=0
+失效脱离：最小化 detached(Minimized) 且宠物停在原地 PASS   reason=Minimized stay=True active=False
+恢复后重选落位                                      PASS   vis=True landed=True petFoot=[1850,800] expected=[1850,800] dx=0 dy=0
+遮挡脱离：落脚处被盖 occluded-detach 且宠物停在原地 PASS   fraction=0 stay=True active=False
+遮挡解除后重选落位                                  PASS   vis=True landed=True petFoot=[1850,800] expected=[1850,800] dx=0 dy=0
+远端遮挡：落脚区外上缘被盖不脱离                    PASS   occ=False footSame=True active=True cover=[1950,795,300,120] foot=1850 petW=180 occBy=n/a
+失效脱离：关闭 detached(WindowGone) 且宠物停在原地  PASS   reason=WindowGone stay=True active=False
+重开后重选落位                                      PASS   vis=True landed=True petFoot=[1850,800] expected=[1850,800] dx=0 dy=0
+拖动接管：真实鼠标拖动宠物 drag-preempted           PASS   dragEv=True active=False dragCancelled=0x1F0B5A target=0x1F0B5A moved=True
+松手不回拉：移动目标后无 follow 且宠物留在松手处    PASS   followAfterDrag=0 footFinal=[2018,920] footAtDrop=[2018,920] active=False
+探针 exitCode=0                                     PASS   probe exit=0 result exitCode=0
+
+

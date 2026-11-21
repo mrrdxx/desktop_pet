@@ -1,0 +1,37 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Events/ActivitySession.cs",
+      "sha256": "3EC30188B1D5E476F6C860D62AAD28429AEFC25DB65435255339A0EA06C6F2FC"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/InputIdleSampler.cs",
+      "sha256": "903C22F3E57C78085B1116C6E78128E603B998EC946832BFD06C4B81A3FCB3AB"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/ActivitySessionService.cs",
+      "sha256": "40DF310C5B7E47C84F48EA79940AD69CC04C9EB033517282798BC5B332CC60E9"
+    },
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "3ED42654C22535431672A610B313DE29BF9FDA855017E0F6E8D86476BD2B6183"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "0A96C2CB5E0D9E2B556CC412FEA7A316809E05277B4878B50199D49AECE7044E"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/DiagnosticIsolationTests.cs",
+      "sha256": "457CA31DFA1663FE90BA062DA2DE408C9D0BAF054C53477CE6013478F345BE79"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/ReviewP4001.cs",
+      "sha256": "DBD5ADC685E906D271AF7E58373A31F8331B18127B59CEF096E338B6BEC896B1"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/ReviewP4001R2.cs",
+      "sha256": "C6FB353451E0BA109BA7CF8EEED26454CD0E5E6385BAA5281D1D7BCB0550B723"
+    }
+  ]
+}

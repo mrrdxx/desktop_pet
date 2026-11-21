@@ -1,0 +1,25 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Events/ActivitySession.cs",
+      "sha256": "3180416B7FE32E86E1FD2879AD743199F0B5AD6D69153E50B61B01074FCB7113"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/ActivitySessionService.cs",
+      "sha256": "40DF310C5B7E47C84F48EA79940AD69CC04C9EB033517282798BC5B332CC60E9"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/InputIdleSampler.cs",
+      "sha256": "903C22F3E57C78085B1116C6E78128E603B998EC946832BFD06C4B81A3FCB3AB"
+    },
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "94CAEB3593E37EBFC979AB062F47BF52B2B60B5BA2B1BA5820805716B8696998"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "E32288A620439FE51277A702FF472E002D3D01143C38497E82449957F6C90ED4"
+    }
+  ]
+}

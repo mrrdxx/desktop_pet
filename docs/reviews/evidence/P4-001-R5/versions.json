@@ -1,0 +1,29 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.Core/Events/ActivitySession.cs",
+      "sha256": "10CFCA9C26028D034D8C45F291D35117821B68A6EC5FBE18780D8781D85F4C38"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/ActivitySessionService.cs",
+      "sha256": "40DF310C5B7E47C84F48EA79940AD69CC04C9EB033517282798BC5B332CC60E9"
+    },
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "94CAEB3593E37EBFC979AB062F47BF52B2B60B5BA2B1BA5820805716B8696998"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "15284DA583AA6A2809209D6FD59F512ADCAF1F1E15AF29E87286AA20CDF0057E"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/DiagnosticIsolationTests.cs",
+      "sha256": "30F2951220386B5FC4D07E34FBC417EFE8DAABD772C2F35331746794104B8833"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/ReviewP4001R4.cs",
+      "sha256": "494A5BB6F62FE97CB5F658B4C470F597826C65FD2A4BBDCB412E616486F6C265"
+    }
+  ]
+}

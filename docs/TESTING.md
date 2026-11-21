@@ -138,3 +138,86 @@
 1. **自动正反例。** 使用可控时间和随机源覆盖邀请、拒绝/超时静止、接受后双方位移与留距、到边界/时间/距离上限同时结束、双窗回调无倍速。验证悬空、离屏、异屏、支撑丢失、忙碌与找回、抓取（含头部候选）、暂停、移除、物理、探头的拦截或中断。覆盖冷却、重新开始及正常存档重启无旧会话，复跑共存、注意、寻找与物理相关回归。
 2. **隔离体验。** 用 `Run-ProbeLive.ps1 -Interactive -Chase` 启动独立存档并预置两只在主屏底边，先确认同屏、支撑及前方余量。观察一轮接受后的短追逐，确认原地邀请、同向一前一后、温和停步和停后间距。尝试在追逐中抓取或暂停，两只立即停止，恢复后不续演。用 `Exit` 正常退出，`-Restart` 核对位置。调试夹具若降低等待或固定随机结果，标明差异。另用默认参数观察频率，一次未抽中时延长观察并如实记录。
 3. **双宠性能。** 沿用 M-08 的 Release、采样区间与原始指标。分别运行 `Run-PerfIsolated.ps1 -Configuration Release` 和 `Run-PerfIsolated.ps1 -Configuration Release -TwoPets`。按输出的隔离数据目录和 EXE 启动，以实际 PID 用 `Collect-Perf.ps1` 采集。同一机器和构建下对照单宠与双宠，记录 DPI、空闲和动态输入条件、追逐样本次数、CPU、工作集/私有内存、句柄、线程及正常退出。已有基线仅在环境匹配时直接比较。说明帧率、输入或样本差异，报告测得数据和限制。
+
+### M-11 全局活跃会话与恢复（P4-001）
+
+1. **Core 假时钟。** 验证 [R-06](PRODUCT.md#r-06-作息与休息反馈阶段-4) 的活跃窗口、空闲停计、短暂离开后续计、满 5 分钟清零、真实跨过累计阈值仅发一次意图，以及休息后可再次提醒。验证失败或无效样本、长间隔、暂停和锁屏/睡眠重叠时的计时，恢复后丢弃缺测时段及旧意图。
+2. **App 接线。** 从正常 App 入口验证单宠和双宠在同样输入时间下累计一致，增删宠物不改变会话，退出释放系统订阅。使用现有用例验证全局暂停、稀有事件和双宠回归。测试证据只记录空闲时长、生命周期变化、累计值及意图次数。
+3. **隔离体验。** 提供能观察累计值和意图的隔离入口，用缩短阈值验证键鼠活动、离开、恢复与再次累计。分别验证真实锁屏/解锁和睡眠/唤醒，检查长间隔未计入且未补发提醒。模拟系统通知与真实系统操作分别记录。环境不允许时列出未测项、准确补测步骤和观测点。
+
+### M-12 无弹窗休息提醒（P4-002）
+
+1. 自动测试用短阈值或可控时钟经 App 接线触发提醒。验证单宠与双宠都只启动一只，首只忙时选择可用第二只，无合适窗口时略过，同一会话不重复。核对自然结束释放动画和忙碌状态。
+2. 用生产入口验证实体按压可立即跳过并继续原手势，透明区点击仍穿透。覆盖暂停、找回、锁屏/睡眠通知、移除表演窗口及退出，恢复不续播。回归拖动、抛掷、抚摸、社交和稀有事件。
+3. 在隔离预览中触发一次，观察默认大小下能否辨认伸懒腰或打哈欠、安静休息姿态、约 30 秒自然收尾及脚点稳定。另触发一次，用真实鼠标验证跳过和输入穿透。交付启动命令，区分自动、人工操作和用户观感证据。
+
+### M-13 夜间困倦与跨日验证（P4-003）
+
+1. **Core 边界。** 用 `NightScheduleTests` 覆盖 23:29（昼）→ 23:30（含，夜）、23:59/00:00 跨午夜、05:59（夜）→ 06:00（不含，昼）及正午/深夜。
+2. **App 可控本地时钟。** 用 `TestGetLocalNow` 注入本地时间驱动真实 `OnUpdateTick`：边界进入/退出、午夜无瞬态 idle、拖动打断（真实 `EndDrag` 路径）后重入睡眠、hover 与稀有事件在睡眠期间被压制（计划不消耗、醒后补发）、休息提醒优先并在完成后同 tick 回睡、暂停跨 23:30/06:00 边界后首个 tick 按当时本地时间重判。
+3. **隔离预览（不改系统时间）。** `tests\DesktopPet.DiagnosticProbe\bin\Debug\net10.0-windows\DesktopPet.DiagnosticProbe.exe <baseDir> night-sleepy <resultFile>`。虚拟本地钟 23:29 起步、1 实秒≈1 虚拟分钟，自动跨 23:30 入睡、跳 05:59→06:00 验证唤醒，60 秒自动退出；约 5–35 秒保持阶段可用真实鼠标拖动小熊观察睡眠→拖动→重入。核对 `night-sleepy-observations.jsonl` 的 action 序列与 sidecar 标志。素材检查：sleep_light/sleep_deep 脚点行与 idle_0 逐像素一致、闭眼与 Z 角标可辨。真实系统时钟夜间体验与实机观感属人工项，预览不代签。
+
+
+### M-14 外部窗口读取与失效验证（P5A-PLAN）
+
+1. 用明确选择的记事本和一个浏览器测试窗口，在普通用户权限下运行独立探针。核对候选筛选、可见外框上缘及坐标单位。记录探针如何排除自身、桌面、系统壳、不可读取及不合资格的窗口。
+2. 分别移动、快速拖动、最大化、最小化、恢复及关闭测试窗口。核对有效时外框随之更新，失效时清除旧目标，重新选择或恢复时重新验证。用独立测试覆盖句柄失效或复用，避免把重复的句柄数值当成同一窗口。
+3. 用另一窗口遮住并移开候选上缘，记录可用性和判定限制。环境有多屏时补跨屏及 DPI 换算，并记录实际布局和缩放。交运行命令、日志及未测项。
+4. 长期复跑命令（仓库根目录，逐项断言写入 `.temp\p5a-plan\m14\run-<时间戳>-<目标>\`，含 `m14-checklist.txt`、`probe-result.json`、`driver-transcript.log` 与 `window-perch\` 子目录下的 `window-perch-events.jsonl`、`candidates.jsonl`、`window-perch-result.json`；记事本轮 17 项、Edge 轮 17 项）：
+
+   ```
+   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-M14WindowPerch.ps1 -TargetKind notepad
+   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-M14WindowPerch.ps1 -TargetKind edge
+   ```
+
+   必须用 pwsh 7（`pwsh`）运行：Windows PowerShell 5.1 读取 UTF-8 脚本会乱码解析失败；交互式控制台调用可能命中旧类型缓存，需以 `-File` 独立进程运行。两条命令分别运行；同一秒启动同一目标会使用相同证据目录。
+
+   脚本只操作自建测试窗口（记事本以本轮独有标记文件 `P5AM14NP-<ts>` 绑定标题，初开/重开同标记重验归属，不改窗口标题；Edge 以本轮唯一页面标题 `P5AM14Browser-<ts>`（run 目录 html 的 `<title>`）绑定，页面/探针/驱动共用同一标记，旧固定标题 `P5AM14Browser` 两轮并行会互相误选），启动前断言系统无既有 `p5am14` 标题窗口，初开/重开先做归属校验（宿主 `ProcessName`（notepad）+ `StartTime >= t0-2s` + pid 非驱动非诱饵；Win11 记事本启动器把窗口交给子进程，不按启动 pid 匹配；Edge 宿主命令行还须含本轮 profile 路径 `--user-data-dir="<runDir>\edge-profile"`，其他轮/其他 profile 的 msedge 按归属不明只读跳过），外部候选零写入（记事本轮以不同 PID 独立 pwsh 子进程诱饵窗口对照；Edge 轮以另一个真实 msedge（独立 profile `edge-profile-other`，旧固定标题 `P5AM14Browser`）作其他轮对照），探针全程只读。真实鼠标拖动的抓取点须经 `WM_NCHITTEST` 确认 `HTCAPTION`（Win11 记事本标签页占用标题栏中部，非 HTCAPTION 点不启动拖动），否则沿标题栏扫描可拖动点，找不到安全跳过。清单覆盖：select、移动、移动后静止不重复上报、移回初始位置仍有 update、快速拖动（多次 update 且最终外框与驱动 DWM 同口径实测一致）、真实鼠标快速拖动（`mouse_event` 注入，含最终外框比对）、最大化、最小化/恢复（reacquire 同句柄）、上缘遮挡/解除、关闭（cleared 且窗口确认销毁）、重开（归属确认后 reacquire 新句柄；`WindowGone` 后同值句柄被拒绝时保持 Cleared，需重开探针显式指定新目标）、外部候选/其他轮窗口零写入对照（终局断言对照窗口标题、位置不变且存活，从未被探针选中）及探针 exitCode=0。同值句柄拒绝后持续轮询不重绑、显式新选择才成功由 Core 单测（`WindowPerchSelectionPolicy`）确定性覆盖。
+
+### M-15 窗口栖息首版隔离预览（P5A-001）
+
+1. 复跑命令（仓库根目录，pwsh 7 独立进程；证据写入 `.temp\p5a-001\m15\run-<时间戳>-<目标>\`，含 `m15-checklist.txt`、`probe-result.json`、`driver-transcript.log` 与 `window-perch-live\` 子目录下的 `perch-live-events.jsonl`、`perch-live-state.json`、`perch-live-commands.txt`；每轮 15 项）：
+
+   ```
+   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5A001Preview.ps1 -TargetKind notepad
+   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5A001Preview.ps1 -TargetKind edge
+   ```
+
+   末段有真实鼠标注入（拖动宠物验证 drag-preempted 与松手不回拉），运行期间用户须保持鼠标静止约 3 分钟。
+2. 操作序列与断言：select→landed（脚点=目标可见外框上缘中点，±6px）→移动→follow→**晃动反馈**（follow 后立即密集采样 `wobbling`/`wobbleAngle`：采样窗内最大 |angle|>0.2°=移动时晃；目标静止约 1.4s 后 `wobbling=false` 且角度=0=停下回稳。衰减包络约 0.7s，晃动采样必须在脚点检查的 600ms 停顿之前完成）→最大化→`detached(no-landing)`（上沿容不下完整宠物矩形）且宠物实际矩形完整在其所在屏幕内（`Screen.FromPoint` 动态取屏）`perchActive=false`→还原重选 landed→最小化→`detached(Minimized)` 宠物停在原地→恢复重选 landed→上缘遮挡→`occluded-detach`（fraction<1）宠物停在原地→解除重选 landed→**远端遮挡**（cover 只盖落脚区 `[footX±petWidth/2]` 右侧之外的上缘）→无 `occluded-detach`、仍 active、脚点不变→关闭→`detached(WindowGone)` 宠物停在原地→重开（同标记归属确认）重选 landed→真实鼠标拖动宠物→`drag-preempted`（perchActive=false、dragCancelledHwnd=目标、位移>10px；晃动打断无残留：`wobbling=false` 且角度=0）→移动目标→无 follow 且脚点不回拉→探针 exitCode=0。远端遮挡断言失败时驱动以 `Get-OccludersAtPoint` 枚举脚点处可见顶层窗口标题留痕（区分用户窗口/环境弹窗干扰）。探针心跳 `perch-live-state.json` 含 `wobbling`/`wobbleAngle`（P5A-002 起）。
+3. 目标锁定沿用 M-14 纪律：notepad 本轮独有标记文件 `P5A001NP-<ts>` + 归属确认（宿主 Notepad、StartTime≥t0−2s、非驱动 pid，不按启动器 pid 匹配）；Edge 本轮 profile 路径 `--user-data-dir="<runDir>\edge-profile"` + 页面标题 `P5A001Browser-<ts>`。启动前断言无既有 `p5a001` 标题窗口；启动前若存在任何 `- Notepad` 用户窗口则中止（不碰用户窗口）。
+4. 驱动含统一恢复门控 `Ensure-Perched`：外部程序（如"天翼看家行业版"告警弹窗）最小化目标或盖住落位区时，每步先恢复可见并重选；仍失败则该步记 FAIL（外部干扰），产品行为本身正确。
+5. 实机证据（单屏 144 DPI/150% 缩放，2560×1440，R1 整改后每轮 15 项）：记事本轮 `.temp/p5a-001/m15/run-20261118-161637-notepad/`、`.temp/p5a-001/m15/run-20261118-163221-notepad/` 与 Edge 轮 `.temp/p5a-001/m15/run-20261118-163324-edge/`、`.temp/p5a-001/m15/run-20261118-163417-edge/` 均 15/15 ALL PASS。过程失败轮按当时版本保留于同目录（用户操作电脑盖住落脚区、探针写状态与驱动读状态竞争崩溃——后者已修：`WindowPerchLiveScenario.cs` WriteState 重试）。整改前历史证据 `run-20261118-123626-notepad`、`run-20261118-150731-edge`（13 项）保留。
+6. P5A-002 晃动扩展实机证据（每轮含晃动断言）：初版 `.temp/p5a-001/m15/run-20261118-183234-notepad/` 21 项 ALL PASS（移动时晃 maxAngle=7.489°、停下回稳归零、拖动打断无残留；首轮 `run-20261118-183008-notepad/` 「移动时晃」FAIL 为驱动采样时序错误——follow 后先 sleep 600ms 再采样错过约 0.7s 晃动包络，驱动修正后复跑通过，产品代码两轮间未变，失败轮按当时版本保留）。R1 补证轮（F-03 实机打断）：`.temp/p5a-001/m15/run-20261118-190108-notepad/` 19 条 PASS（含新增「晃动反馈：拖动时小熊正在晃（角度非零）」；步骤 12 拖动前小位移目标触发 follow，确认 `wobbling=true` 且 |angle|>0.2 后立即抓住拖动，实测 `wobbling=True angle=4.509`，接管后 `wobbling=False angle=0`。此前记为"22 项 ALL PASS"系条数统计笔误，据原始清单核实更正为 19 条）。
+   R3 取证轮（F-03 接管前后角度时间戳）：`.temp/p5a-001/m15/run-20261118-214848-notepad/` 18 条 PASS + 1 FAIL。探针在 `drag-preempted` 处理器内同步写 `preempt-angle-pre`、`Dispatcher.BeginInvoke` 在 `CancelForDrag` 返回后写 `preempt-angle-post`，事件流同一 tick 内记录：`preempt-angle-pre` t=15703 `wobbling=true, wobbleAngle=-4.19` → `preempt-angle-post` t=15707 `wobbling=false, wobbleAngle=0`（前后态间隔 4 ms，距接管事件 5 ms），证明非零角度在接管完成时归零。唯一 FAIL「远端遮挡」为用户浏览器盖住落脚区的环境干扰（occBy 留痕），产品按规格正确 `occluded-detach`，该项沿用 R2 轮 PASS 证据。另：1080p 下原 9 候选清空点仅 (500,300) 入屏且被用户窗口盖住导致首跑 FATAL，扩充 7 个 1080p 适配候选后复跑自动选中 (700,250)（失败轮 `run-20261118-214801` 按当时版本保留）。
+   R2 补证轮（F-01 切帧同步 + F-03 接管时刻角度）：`.temp/p5a-001/m15/run-20261118-212632-notepad/` 19 项 ALL PASS（拖动中晃 `angle=6.876` → `drag-preempted` → 接管后第一条心跳即 `wobbling=False angle=0`，`zeroAtPreempt=True wobAtPreempt=False angleAtPreempt=0`；移动时晃 `maxAngle=5.573`）。本轮实机环境已变为 1920×1080@96DPI（100%，此前为 2560×1440@144DPI）：驱动 `Find-ClearSpot` 新增屏幕适配过滤（候选点原始及 +100/+50 移动后的 800×500 矩形须完整落入当前主屏），自动改选清空点 (500,300)。此前失败轮 `run-20261118-205750-notepad/`（8 项 FAIL）根因为该环境变化下移动后宠物矩形出右屏被 F-01 出屏保护正确拒绝（NoLanding 连锁），非 R2 回归，按当时版本保留。
+7. 未测项：跨屏、混合 DPI、真实用户窗口动态遮挡（遮挡由自建覆盖窗模拟）；暂停打断晃动的实机路径仅单测覆盖（M-15 无暂停步骤）；主动靠近、攀爬不在 M-15 范围。
+
+### M-16 窗口栖息正式入口实机验证（P5A-003）
+
+1. 复跑命令（仓库根目录，pwsh 7 独立进程；证据写入 `.temp\p5a-003\entry\run-<时间戳>-<目标>\`，含 `m16-checklist.txt`、`driver-transcript.log` 与 `window-perch-live\` 子目录；每轮 12 项）：
+
+   ```
+   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5A003EntryPreview.ps1 -TargetKind notepad
+   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5A003EntryPreview.ps1 -TargetKind edge
+   ```
+
+   加 `-RealMenu` 走真实原生菜单路径（R1 F-02 补证）：驱动以真实右键（`SetCursorPos` + `mouse_event`）打开宠物原生菜单，纯 `FindWindowEx('#32768')` 探测菜单出现/关闭（微秒级，不受 UIA 跨进程阻塞影响），选中前校验前台=宠物窗口、UIA 仅用于项索引定位，随后键盘注入选中（DOWN×index + ENTER），Enter 之后零 UIA 调用；菜单未出现时带前台归属诊断（fg hwnd/pid/进程名/最后输入时间）重试至多 4 次。末段含真实鼠标注入（拾取点击与拖动），运行期间用户须保持鼠标静止、电脑不休眠锁屏。目标锁定沿用 M-14/M-15 纪律（本轮独有标记 + 归属确认，不碰用户窗口）。
+2. 操作序列与断言（每轮 12 项）：正式菜单选「Perch on Window」进入拾取模式 → 真实点击测试窗口 → landed（脚点=可见外框上缘中点）→ 目标移动 follow → 上缘遮挡 `occluded-detach` 宠物停在原地 → 解除遮挡重选 landed → 关闭 `detached(WindowGone)`（notepad 为 `reason=Hidden + IsWindow=false`，Win11 先隐藏后销毁）→ 重开重选 landed → 真实鼠标拖动宠物 `drag-preempted` → 拖走后不回拉 → 拖动后再选 landed → 栖息中真实菜单选「Leave Perch」→ `detached(user-left)` 宠物留在原地、目标移动不拉走 → 探针 exitCode=0。
+3. 覆盖边界（R1 校正）：无效点击结束拾取（点中自身 `cancelled-self`、不合格目标 `rejected-ineligible`、落位失败 `rejected-landing`）；最小化/恢复、无效点击与 15s 超时（`cancelled-timeout`）仅自动测试覆盖（`PerchEntryTests` 等），M-16 实机清单不含这些步骤，每轮 12 项。
+4. 判定标准：逐项断言写入 `m16-checklist.txt`，ALL PASS 要求 12/12；探针事件流 `window-perch-live\` 可复盘时序。
+5. 实机证据（2560×1440@144DPI 单屏；R1 F-02 补证轮为 1920×1080@96DPI 单屏）：测试分发入口两轮 `.temp/p5a-003/entry/run-20261119-085140-notepad/`、`run-20261119-085219-edge/` 各 12/12 ALL PASS；真实菜单补证轮 `run-20261119-192641-notepad/` 12/12 ALL PASS（真实右键菜单「Perch on Window」→ 真实点击目标 → 真实菜单「Leave Perch」→ `detached(user-left)` 原位解绑）。过程失败轮按当时版本保留于同目录（如 run-20261119-185949：右键 4×no menu，前台被非宠物窗口持有导致生产 `SetForegroundWindow` 被拒静默返回，属前台锁偶发环境干扰；驱动补齐前台诊断日志后复跑通过，产品代码未变）；复核确认轮 `run-20261120-013233-notepad/` 12/12 ALL PASS（同命令带 `-RealMenu` 重跑，前台诊断日志确认每次真实菜单前台均归属目标记事本，未复现 no menu）。跨屏、混合 DPI 未测；多屏布局变化下的拾取与脱离待有环境后补测。
+
+### M-17 窗口有限攀爬实机验证（P5B-001）
+
+1. 复跑入口：`pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5B001ClimbPreview.ps1 -TargetKind notepad -DurationSec 600`（仓库根目录、独立 pwsh 进程；探针场景 `window-climb-live`，证据写入驱动目录：`m17-checklist.txt`、`driver-transcript.log`、`probe-result.json`、`window-climb-live\`（`climb-live-events.jsonl`（climb-started / climb-step / climb-occluded / climb-completed[-no-handoff] / climb-cancelled(reason) / climb-drag-preempted / start-rejected(result)）、`climb-live-state.json` 心跳、`climb-live-commands.txt` 命令流、`climb-live-summary.json` 汇总））。
+2. 操作序列与断言（驱动在外部测试窗口上操作；目标锁定沿用 M-14/M-16 纪律，本轮独有标记 + 归属确认，不碰用户窗口）：
+   - 起攀：宠物靠近目标可见外框（≤起攀距离阈值）→ 显式起攀 → `climb-started`，事件流含目标句柄与脚点；
+   - 路线：事件流脚点折线为 当前脚点 → 最近侧边 → 外框上缘 → 顶部落位脚点（`WindowPerchLandingPolicy` 上缘中点）；宠物最终 `climb-completed` 且落位脚点与栖息 landed 一致（无可见跳动）、交接后 follow 正常；
+   - 起攀拒绝：超距目标 `start-rejected(RejectedTooFar)`、不合格目标 `RejectedIneligible`、顶部落点被遮挡 `RejectedOccluded`、落位失败 `RejectedNoLanding`，均不移动；
+   - 路线中变化：目标移动 → 路线按最新快照重建（事件流目标 bounds 更新，仍收敛到新落位）；最小化/关闭 → `climb-cancelled` 且宠物回到可见区域；上缘遮挡 → `climb-occluded` 后取消；
+   - 接管：真实鼠标拖动宠物 → `climb-drag-preempted`，不恢复位置、松手后不回拉；暂停 → 结束路线，恢复不续接；退出 → 恢复爬行前位置。
+3. 判定标准：逐项断言写入驱动清单，ALL PASS 要求全部项通过；探针 exitCode=0。跨屏、混合 DPI 未测须注明；多宠攀爬不在本验证范围。
+4. 前置：夜间（23:30–06:00）跑 App 测试须受套件时间缝保护（`MainWindow.TestSuiteLocalNowDefault`，App 测试程序集 ModuleInitializer 固定白天正午；2026-11-20 首次夜间全量运行发现旧测试在夜间全挂的时依性缺陷后修复，Core 560/560、App 556/556 夜间全绿）。
+5. 实机证据（1920×1080@96DPI 单屏）：接受轮 `run-20261121-141812-notepad/` **15/15 ALL PASS**、探针 exitCode=0（含 ③ 路线推进 `steps=8 fracInc=True fractions=[0.171…0.339]`、④ 顶部交接 `foot=[690,160]`=上缘中点 `dx=0 dy=0 perch=True noJump=True`、⑤~⑮ 跟随/拖动脱离/超距/遮挡/最小化拒绝/路线中移动收敛/最小化取消/遮挡取消/拖动抢占/暂停取消/退出）。过程失败轮按当时版本保留：run-20261121-141126-notepad 暴露上缘卡死产品缺陷（`BuildRoute` 每 tick 重建把上缘脚点拉回侧边再折返，fraction 卡 0.29），已修复并新增 3 个回归用例，见 [P5B-001-response](remediation/P5B-001-response.md)；run-20261121-141036-notepad `start-rejected RejectedNoLanding` 判定偶发，复验轮未复现。跨屏、混合 DPI 未测；多宠攀爬不在本验证范围。
+

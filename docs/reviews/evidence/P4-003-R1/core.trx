@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="28a2c4eb-24c6-4bb0-9f12-4d1989f41f1a" name="mrrdxx@毛茸茸的小熊 2026-11-16 19:54:37" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-16T19:54:37.1307263+08:00" queuing="2026-11-16T19:54:37.1307268+08:00" start="2026-11-16T19:54:35.9338100+08:00" finish="2026-11-16T19:54:37.1399255+08:00" />
+  <TestSettings name="default" id="87a5fcb4-5a78-4a77-90c6-652345766aaf">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-16_19_54_37" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="08c4f526-a652-48a9-bc66-68963e76af14" testId="5c6614a9-9c62-679d-dc87-430be7c6e10a" testName="IsNight_JustBeforeStart_2329_IsDay" computerName="毛茸茸的小熊" duration="00:00:00.0046702" startTime="2026-11-16T19:54:36.9393784+08:00" endTime="2026-11-16T19:54:36.9673654+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="08c4f526-a652-48a9-bc66-68963e76af14" />
+    <UnitTestResult executionId="a68d04c4-9d5f-4e5e-a3c7-dca64f61c79a" testId="68f23db0-e2f8-e0ed-f670-e8f3e0ecb8ee" testName="IsNight_JustBeforeEnd_0559_IsNight" computerName="毛茸茸的小熊" duration="00:00:00.0000918" startTime="2026-11-16T19:54:36.9771941+08:00" endTime="2026-11-16T19:54:36.9773713+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a68d04c4-9d5f-4e5e-a3c7-dca64f61c79a" />
+    <UnitTestResult executionId="0fbff0eb-00d3-4961-af07-135eb9357059" testId="30b3f7b9-3e52-de1d-6831-303fd95ce936" testName="IsNight_AtStart_2330_IsNight" computerName="毛茸茸的小熊" duration="00:00:00.0004366" startTime="2026-11-16T19:54:36.9749196+08:00" endTime="2026-11-16T19:54:36.9756723+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0fbff0eb-00d3-4961-af07-135eb9357059" />
+    <UnitTestResult executionId="aa29695b-07b0-433e-aa7c-cc7fbc03c3eb" testId="be52a3da-6fe9-f835-ce13-8d163d72f6ee" testName="IsNight_AtMidnight_IsNight" computerName="毛茸茸的小熊" duration="00:00:00.0001115" startTime="2026-11-16T19:54:36.9766747+08:00" endTime="2026-11-16T19:54:36.9769006+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa29695b-07b0-433e-aa7c-cc7fbc03c3eb" />
+    <UnitTestResult executionId="22349dbc-7fdf-440b-9519-8c33a5ac7b0e" testId="de7a3b52-bdf5-9ea4-e26e-67237364cbab" testName="IsNight_DeepNight_0300_IsNight" computerName="毛茸茸的小熊" duration="00:00:00.0000964" startTime="2026-11-16T19:54:36.9769507+08:00" endTime="2026-11-16T19:54:36.9771518+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="22349dbc-7fdf-440b-9519-8c33a5ac7b0e" />
+    <UnitTestResult executionId="6615d3db-65ca-488e-a076-5f0536d2a1ca" testId="7e26c2ca-c0ee-52b4-3a73-4e958be88e1f" testName="IsNight_Noon_IsDay" computerName="毛茸茸的小熊" duration="00:00:00.0000891" startTime="2026-11-16T19:54:36.9776570+08:00" endTime="2026-11-16T19:54:36.9789254+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6615d3db-65ca-488e-a076-5f0536d2a1ca" />
+    <UnitTestResult executionId="0df4c9c9-4b81-4077-8169-347d857cb027" testId="ec4a4c7d-4365-209b-8182-dacbd99186da" testName="IsNight_BeforeMidnight_2359_IsNight" computerName="毛茸茸的小熊" duration="00:00:00.0001336" startTime="2026-11-16T19:54:36.9762630+08:00" endTime="2026-11-16T19:54:36.9765754+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0df4c9c9-4b81-4077-8169-347d857cb027" />
+    <UnitTestResult executionId="f52f812b-38bc-4c8d-b777-6d207eb05961" testId="ab7d4645-9fd1-4f33-0938-3f07e9a943fe" testName="IsNight_AtEnd_0600_IsDay" computerName="毛茸茸的小熊" duration="00:00:00.0001239" startTime="2026-11-16T19:54:36.9774048+08:00" endTime="2026-11-16T19:54:36.9776210+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f52f812b-38bc-4c8d-b777-6d207eb05961" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IsNight_AtEnd_0600_IsDay" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="ab7d4645-9fd1-4f33-0938-3f07e9a943fe">
+      <Execution id="f52f812b-38bc-4c8d-b777-6d207eb05961" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_AtEnd_0600_IsDay" />
+    </UnitTest>
+    <UnitTest name="IsNight_AtMidnight_IsNight" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="be52a3da-6fe9-f835-ce13-8d163d72f6ee">
+      <Execution id="aa29695b-07b0-433e-aa7c-cc7fbc03c3eb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_AtMidnight_IsNight" />
+    </UnitTest>
+    <UnitTest name="IsNight_Noon_IsDay" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="7e26c2ca-c0ee-52b4-3a73-4e958be88e1f">
+      <Execution id="6615d3db-65ca-488e-a076-5f0536d2a1ca" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_Noon_IsDay" />
+    </UnitTest>
+    <UnitTest name="IsNight_BeforeMidnight_2359_IsNight" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="ec4a4c7d-4365-209b-8182-dacbd99186da">
+      <Execution id="0df4c9c9-4b81-4077-8169-347d857cb027" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_BeforeMidnight_2359_IsNight" />
+    </UnitTest>
+    <UnitTest name="IsNight_AtStart_2330_IsNight" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="30b3f7b9-3e52-de1d-6831-303fd95ce936">
+      <Execution id="0fbff0eb-00d3-4961-af07-135eb9357059" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_AtStart_2330_IsNight" />
+    </UnitTest>
+    <UnitTest name="IsNight_JustBeforeStart_2329_IsDay" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="5c6614a9-9c62-679d-dc87-430be7c6e10a">
+      <Execution id="08c4f526-a652-48a9-bc66-68963e76af14" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_JustBeforeStart_2329_IsDay" />
+    </UnitTest>
+    <UnitTest name="IsNight_JustBeforeEnd_0559_IsNight" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="68f23db0-e2f8-e0ed-f670-e8f3e0ecb8ee">
+      <Execution id="a68d04c4-9d5f-4e5e-a3c7-dca64f61c79a" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_JustBeforeEnd_0559_IsNight" />
+    </UnitTest>
+    <UnitTest name="IsNight_DeepNight_0300_IsNight" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r1\build\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="de7a3b52-bdf5-9ea4-e26e-67237364cbab">
+      <Execution id="22349dbc-7fdf-440b-9519-8c33a5ac7b0e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r1\build\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.NightScheduleTests" name="IsNight_DeepNight_0300_IsNight" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5c6614a9-9c62-679d-dc87-430be7c6e10a" executionId="08c4f526-a652-48a9-bc66-68963e76af14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="68f23db0-e2f8-e0ed-f670-e8f3e0ecb8ee" executionId="a68d04c4-9d5f-4e5e-a3c7-dca64f61c79a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="30b3f7b9-3e52-de1d-6831-303fd95ce936" executionId="0fbff0eb-00d3-4961-af07-135eb9357059" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="be52a3da-6fe9-f835-ce13-8d163d72f6ee" executionId="aa29695b-07b0-433e-aa7c-cc7fbc03c3eb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de7a3b52-bdf5-9ea4-e26e-67237364cbab" executionId="22349dbc-7fdf-440b-9519-8c33a5ac7b0e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7e26c2ca-c0ee-52b4-3a73-4e958be88e1f" executionId="6615d3db-65ca-488e-a076-5f0536d2a1ca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ec4a4c7d-4365-209b-8182-dacbd99186da" executionId="0df4c9c9-4b81-4077-8169-347d857cb027" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab7d4645-9fd1-4f33-0938-3f07e9a943fe" executionId="f52f812b-38bc-4c8d-b777-6d207eb05961" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="8" executed="8" passed="8" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

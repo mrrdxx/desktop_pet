@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="b6dea5d4-2b77-47e2-baba-e9e9aa2497a6" name="mrrdxx@毛茸茸的小熊 2026-11-16 20:51:27" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-16T20:51:27.8406529+08:00" queuing="2026-11-16T20:51:27.8406534+08:00" start="2026-11-16T20:51:26.3248256+08:00" finish="2026-11-16T20:51:27.8464419+08:00" />
+  <TestSettings name="default" id="e93def6f-9a3b-4779-8f1b-b4c85458ed6f">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-16_20_51_27" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="3ece4760-d93a-48f6-92bd-d95c4a87a03c" testId="12b09c68-3d38-e5a8-88ea-608bbf1417e7" testName="HeadPressInterruptsNightSleepDuringPetting" computerName="毛茸茸的小熊" duration="00:00:00.7226912" startTime="2026-11-16T20:51:26.8371328+08:00" endTime="2026-11-16T20:51:27.6561894+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ece4760-d93a-48f6-92bd-d95c4a87a03c" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="HeadPressInterruptsNightSleepDuringPetting" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-003-r2\independent\bin\review\debug\desktoppet.app.tests.dll" id="12b09c68-3d38-e5a8-88ea-608bbf1417e7">
+      <Execution id="3ece4760-d93a-48f6-92bd-d95c4a87a03c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-003-r2\independent\bin\Review\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.NightReviewer" name="HeadPressInterruptsNightSleepDuringPetting" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="12b09c68-3d38-e5a8-88ea-608bbf1417e7" executionId="3ece4760-d93a-48f6-92bd-d95c4a87a03c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

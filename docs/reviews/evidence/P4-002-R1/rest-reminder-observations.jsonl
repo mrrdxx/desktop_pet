@@ -1,0 +1,3 @@
+{"realElapsedSec":0,"isRestReminderActive":true,"currentAction":"stretch","reminderFiredCount":1,"reminderWasFired":true,"note":"reminder fired, performance started (stretch \u2192 rest \u2192 ~30s natural end)"}
+{"realElapsedSec":2,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}
+{"realElapsedSec":4,"isRestReminderActive":true,"currentAction":"rest","reminderFiredCount":1,"reminderWasFired":true,"note":"performance active (action=rest)"}

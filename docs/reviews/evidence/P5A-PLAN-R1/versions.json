@@ -1,0 +1,14 @@
+[
+  {
+    "path": "src/DesktopPet.Core/Windows/PerchTargetTracker.cs",
+    "sha256": "8F40454B7B1D15977B83275F8495AA71F6874FE1F03E82E38134D57AAB3E15F0"
+  },
+  {
+    "path": "tests/DesktopPet.DiagnosticProbe/WindowPerchScenario.cs",
+    "sha256": "2CCED7B9CDEC0AC792BB5AA8685E8BA5576C4C933236BF909D153133B76B1798"
+  },
+  {
+    "path": ".temp/p5a-plan/m14/m14-run.ps1",
+    "sha256": "080E58DC914DC352B5390A7A13475F7124A5938845D6AAA6FAAC40F3440ED714"
+  }
+]

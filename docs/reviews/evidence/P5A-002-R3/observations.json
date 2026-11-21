@@ -1,0 +1,9 @@
+{
+  "run": "run-20261118-212632-notepad",
+  "exitCode": 0,
+  "passCount": 19,
+  "followMs": 20619,
+  "dragPreemptedMs": 20801,
+  "followToPreemptMs": 182,
+  "postPreemptSampleTimestampRecorded": false
+}

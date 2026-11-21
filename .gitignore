@@ -36,3 +36,7 @@ Windows桌宠项目要求.md
 ## Temporary debug scripts
 check_alpha.py
 check_curious.py
+
+## Local verification copies and generated test output
+.temp/
+TestResults/

@@ -1,0 +1,123 @@
+{"realElapsedSec":0,"accumulatedActiveMs":0,"accumulatedActiveMin":0,"deltaMs":0,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":0.3,"note":"started (threshold=1min, real sampling)"}
+{"realElapsedSec":2,"accumulatedActiveMs":2013,"accumulatedActiveMin":0.03,"deltaMs":2013,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":-0,"note":"active"}
+{"realElapsedSec":4,"accumulatedActiveMs":4002,"accumulatedActiveMin":0.07,"deltaMs":1989,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":-0,"note":"active"}
+{"realElapsedSec":6,"accumulatedActiveMs":6011,"accumulatedActiveMin":0.1,"deltaMs":2009,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":-0,"note":"active"}
+{"realElapsedSec":8,"accumulatedActiveMs":8015,"accumulatedActiveMin":0.13,"deltaMs":2004,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":0.7,"note":"active"}
+{"realElapsedSec":10,"accumulatedActiveMs":10022,"accumulatedActiveMin":0.17,"deltaMs":2007,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":2.7,"note":"active"}
+{"realElapsedSec":12,"accumulatedActiveMs":12029,"accumulatedActiveMin":0.2,"deltaMs":2007,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":4.7,"note":"active"}
+{"realElapsedSec":14,"accumulatedActiveMs":14023,"accumulatedActiveMin":0.23,"deltaMs":1994,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":6.7,"note":"active"}
+{"realElapsedSec":16,"accumulatedActiveMs":16034,"accumulatedActiveMin":0.27,"deltaMs":2011,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":8.7,"note":"active"}
+{"realElapsedSec":18,"accumulatedActiveMs":18044,"accumulatedActiveMin":0.3,"deltaMs":2010,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":10.7,"note":"active"}
+{"realElapsedSec":20,"accumulatedActiveMs":20037,"accumulatedActiveMin":0.33,"deltaMs":1993,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":12.7,"note":"active"}
+{"realElapsedSec":22,"accumulatedActiveMs":22045,"accumulatedActiveMin":0.37,"deltaMs":2008,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":14.7,"note":"active"}
+{"realElapsedSec":24,"accumulatedActiveMs":24042,"accumulatedActiveMin":0.4,"deltaMs":1997,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":16.7,"note":"active"}
+{"realElapsedSec":26,"accumulatedActiveMs":26037,"accumulatedActiveMin":0.43,"deltaMs":1995,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":18.7,"note":"active"}
+{"realElapsedSec":28,"accumulatedActiveMs":28046,"accumulatedActiveMin":0.47,"deltaMs":2009,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":20.7,"note":"active"}
+{"realElapsedSec":30,"accumulatedActiveMs":29047,"accumulatedActiveMin":0.48,"deltaMs":1001,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":22.7,"note":"active"}
+{"realElapsedSec":32.1,"accumulatedActiveMs":31047,"accumulatedActiveMin":0.52,"deltaMs":2000,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":24.7,"note":"active"}
+{"realElapsedSec":34,"accumulatedActiveMs":33046,"accumulatedActiveMin":0.55,"deltaMs":1999,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":26.7,"note":"active"}
+{"realElapsedSec":36,"accumulatedActiveMs":35047,"accumulatedActiveMin":0.58,"deltaMs":2001,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":28.7,"note":"active"}
+{"realElapsedSec":38,"accumulatedActiveMs":37046,"accumulatedActiveMin":0.62,"deltaMs":1999,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":30.7,"note":"active"}
+{"realElapsedSec":40.1,"accumulatedActiveMs":39046,"accumulatedActiveMin":0.65,"deltaMs":2000,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":32.7,"note":"active"}
+{"realElapsedSec":42.1,"accumulatedActiveMs":41064,"accumulatedActiveMin":0.68,"deltaMs":2018,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":34.7,"note":"active"}
+{"realElapsedSec":44.1,"accumulatedActiveMs":43073,"accumulatedActiveMin":0.72,"deltaMs":2009,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":36.7,"note":"active"}
+{"realElapsedSec":46.1,"accumulatedActiveMs":45079,"accumulatedActiveMin":0.75,"deltaMs":2006,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":38.7,"note":"active"}
+{"realElapsedSec":48.1,"accumulatedActiveMs":47088,"accumulatedActiveMin":0.78,"deltaMs":2009,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":40.7,"note":"active"}
+{"realElapsedSec":50.1,"accumulatedActiveMs":49080,"accumulatedActiveMin":0.82,"deltaMs":1992,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":42.7,"note":"active"}
+{"realElapsedSec":52.1,"accumulatedActiveMs":51087,"accumulatedActiveMin":0.85,"deltaMs":2007,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":1.4,"note":"active"}
+{"realElapsedSec":54.1,"accumulatedActiveMs":53079,"accumulatedActiveMin":0.88,"deltaMs":1992,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":3.4,"note":"active"}
+{"realElapsedSec":56.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":1005,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":5.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":58.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":7.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":60.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":9.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":62.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":11.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":64.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":13.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":66.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":15.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":68.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":17.4,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":70.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":19.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":72.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":21.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":74.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":23.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":76.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":25.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":78.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":27.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":80,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":29.4,"note":"phase 2: operator should stop all input now (idle stop observation)"}
+{"realElapsedSec":80.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":29.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":82.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":31.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":84.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":33.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":86.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":35.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":88.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":37.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":90.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":39.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":92.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":41.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":94.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":43.5,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":96.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":-0,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":98.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":true,"lastInputAgeSec":0.2,"note":"suspended (lock/sleep/pause)"}
+{"realElapsedSec":100.1,"accumulatedActiveMs":54084,"accumulatedActiveMin":0.9,"deltaMs":0,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":0,"note":"active"}
+{"realElapsedSec":102.1,"accumulatedActiveMs":56079,"accumulatedActiveMin":0.93,"deltaMs":1995,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":-0,"note":"active"}
+{"realElapsedSec":104.1,"accumulatedActiveMs":58076,"accumulatedActiveMin":0.97,"deltaMs":1997,"reminderFiredCount":0,"isSuspended":false,"lastInputAgeSec":0,"note":"active"}
+{"realElapsedSec":105.2,"accumulatedActiveMs":60090,"accumulatedActiveMin":1,"deltaMs":2014,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"RestReminderRequested event fired"}
+{"realElapsedSec":106.1,"accumulatedActiveMs":60090,"accumulatedActiveMin":1,"deltaMs":0,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.9,"note":"active [reminder fired]"}
+{"realElapsedSec":108.1,"accumulatedActiveMs":62105,"accumulatedActiveMin":1.04,"deltaMs":2015,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.3,"note":"active [reminder fired]"}
+{"realElapsedSec":110.1,"accumulatedActiveMs":64092,"accumulatedActiveMin":1.07,"deltaMs":1987,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":112.1,"accumulatedActiveMs":66092,"accumulatedActiveMin":1.1,"deltaMs":2000,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":114.1,"accumulatedActiveMs":68092,"accumulatedActiveMin":1.13,"deltaMs":2000,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":116.1,"accumulatedActiveMs":70092,"accumulatedActiveMin":1.17,"deltaMs":2000,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":118.1,"accumulatedActiveMs":72092,"accumulatedActiveMin":1.2,"deltaMs":2000,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.2,"note":"active [reminder fired]"}
+{"realElapsedSec":120.2,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":2004,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":0.1,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":122.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":1.1,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":124.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":3.1,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":126.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":5.1,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":131.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":0.3,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":133.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":1.2,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":135.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":3.2,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":137.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":true,"lastInputAgeSec":0.2,"note":"suspended (lock/sleep/pause) [reminder fired]"}
+{"realElapsedSec":139.1,"accumulatedActiveMs":74096,"accumulatedActiveMin":1.23,"deltaMs":0,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.3,"note":"active [reminder fired]"}
+{"realElapsedSec":141.1,"accumulatedActiveMs":75093,"accumulatedActiveMin":1.25,"deltaMs":997,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":143.1,"accumulatedActiveMs":77097,"accumulatedActiveMin":1.28,"deltaMs":2004,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":1.1,"note":"active [reminder fired]"}
+{"realElapsedSec":145.1,"accumulatedActiveMs":79094,"accumulatedActiveMin":1.32,"deltaMs":1997,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":147.1,"accumulatedActiveMs":81107,"accumulatedActiveMin":1.35,"deltaMs":2013,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":149.1,"accumulatedActiveMs":83094,"accumulatedActiveMin":1.38,"deltaMs":1987,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":151.1,"accumulatedActiveMs":85095,"accumulatedActiveMin":1.42,"deltaMs":2001,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":153.1,"accumulatedActiveMs":87098,"accumulatedActiveMin":1.45,"deltaMs":2003,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":155.1,"accumulatedActiveMs":89108,"accumulatedActiveMin":1.49,"deltaMs":2010,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":1.7,"note":"active [reminder fired]"}
+{"realElapsedSec":157.1,"accumulatedActiveMs":91101,"accumulatedActiveMin":1.52,"deltaMs":1993,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":3.7,"note":"active [reminder fired]"}
+{"realElapsedSec":159.1,"accumulatedActiveMs":93095,"accumulatedActiveMin":1.55,"deltaMs":1994,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":1.3,"note":"active [reminder fired]"}
+{"realElapsedSec":160.2,"accumulatedActiveMs":95105,"accumulatedActiveMin":1.59,"deltaMs":2010,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":2.4,"note":"phase 3: operator should resume input now (resume no-backfill observation)"}
+{"realElapsedSec":161.1,"accumulatedActiveMs":95105,"accumulatedActiveMin":1.59,"deltaMs":0,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":3.4,"note":"active [reminder fired]"}
+{"realElapsedSec":163.1,"accumulatedActiveMs":97098,"accumulatedActiveMin":1.62,"deltaMs":1993,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":165.1,"accumulatedActiveMs":99105,"accumulatedActiveMin":1.65,"deltaMs":2007,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":167.1,"accumulatedActiveMs":101101,"accumulatedActiveMin":1.69,"deltaMs":1996,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":169.1,"accumulatedActiveMs":103098,"accumulatedActiveMin":1.72,"deltaMs":1997,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":171.1,"accumulatedActiveMs":105109,"accumulatedActiveMin":1.75,"deltaMs":2011,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":173.1,"accumulatedActiveMs":107109,"accumulatedActiveMin":1.79,"deltaMs":2000,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":175.1,"accumulatedActiveMs":109116,"accumulatedActiveMin":1.82,"deltaMs":2007,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":177.1,"accumulatedActiveMs":111110,"accumulatedActiveMin":1.85,"deltaMs":1994,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.2,"note":"active [reminder fired]"}
+{"realElapsedSec":179.1,"accumulatedActiveMs":113121,"accumulatedActiveMin":1.89,"deltaMs":2011,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":181.1,"accumulatedActiveMs":115114,"accumulatedActiveMin":1.92,"deltaMs":1993,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.2,"note":"active [reminder fired]"}
+{"realElapsedSec":183.1,"accumulatedActiveMs":117111,"accumulatedActiveMin":1.95,"deltaMs":1997,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":1.4,"note":"active [reminder fired]"}
+{"realElapsedSec":185.1,"accumulatedActiveMs":119121,"accumulatedActiveMin":1.99,"deltaMs":2010,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":187.1,"accumulatedActiveMs":121116,"accumulatedActiveMin":2.02,"deltaMs":1995,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":189.1,"accumulatedActiveMs":123114,"accumulatedActiveMin":2.05,"deltaMs":1998,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":191.1,"accumulatedActiveMs":125111,"accumulatedActiveMin":2.09,"deltaMs":1997,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":193.1,"accumulatedActiveMs":127125,"accumulatedActiveMin":2.12,"deltaMs":2014,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":195.1,"accumulatedActiveMs":129133,"accumulatedActiveMin":2.15,"deltaMs":2008,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":197.1,"accumulatedActiveMs":131127,"accumulatedActiveMin":2.19,"deltaMs":1994,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":199.1,"accumulatedActiveMs":133138,"accumulatedActiveMin":2.22,"deltaMs":2011,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":201.1,"accumulatedActiveMs":135133,"accumulatedActiveMin":2.25,"deltaMs":1995,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":1.2,"note":"active [reminder fired]"}
+{"realElapsedSec":203.1,"accumulatedActiveMs":137127,"accumulatedActiveMin":2.29,"deltaMs":1994,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":205.1,"accumulatedActiveMs":139137,"accumulatedActiveMin":2.32,"deltaMs":2010,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":207.1,"accumulatedActiveMs":141133,"accumulatedActiveMin":2.35,"deltaMs":1996,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":209.1,"accumulatedActiveMs":143126,"accumulatedActiveMin":2.39,"deltaMs":1993,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":211.1,"accumulatedActiveMs":145139,"accumulatedActiveMin":2.42,"deltaMs":2013,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":213.1,"accumulatedActiveMs":147136,"accumulatedActiveMin":2.45,"deltaMs":1997,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.4,"note":"active [reminder fired]"}
+{"realElapsedSec":215.1,"accumulatedActiveMs":149134,"accumulatedActiveMin":2.49,"deltaMs":1998,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":217.1,"accumulatedActiveMs":151126,"accumulatedActiveMin":2.52,"deltaMs":1992,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":219.1,"accumulatedActiveMs":153133,"accumulatedActiveMin":2.55,"deltaMs":2007,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":221.1,"accumulatedActiveMs":155129,"accumulatedActiveMin":2.59,"deltaMs":1996,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":223.1,"accumulatedActiveMs":157127,"accumulatedActiveMin":2.62,"deltaMs":1998,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":225.1,"accumulatedActiveMs":159125,"accumulatedActiveMin":2.65,"deltaMs":1998,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":227.1,"accumulatedActiveMs":161137,"accumulatedActiveMin":2.69,"deltaMs":2012,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":229.1,"accumulatedActiveMs":163135,"accumulatedActiveMin":2.72,"deltaMs":1998,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":231.1,"accumulatedActiveMs":165128,"accumulatedActiveMin":2.75,"deltaMs":1993,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":233.1,"accumulatedActiveMs":167136,"accumulatedActiveMin":2.79,"deltaMs":2008,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":235.1,"accumulatedActiveMs":169129,"accumulatedActiveMin":2.82,"deltaMs":1993,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"active [reminder fired]"}
+{"realElapsedSec":237.1,"accumulatedActiveMs":171125,"accumulatedActiveMin":2.85,"deltaMs":1996,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0,"note":"active [reminder fired]"}
+{"realElapsedSec":239.1,"accumulatedActiveMs":173132,"accumulatedActiveMin":2.89,"deltaMs":2007,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":0.1,"note":"active [reminder fired]"}
+{"realElapsedSec":240.2,"accumulatedActiveMs":175128,"accumulatedActiveMin":2.92,"deltaMs":1996,"reminderFiredCount":1,"isSuspended":false,"lastInputAgeSec":-0,"note":"shutting down"}

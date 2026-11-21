@@ -1,0 +1,52 @@
+using DesktopPet.App.Platform;
+using DesktopPet.Core.Events;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Reflection;
+using System.Threading;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P4-001 R2 监理反例 — 逐字复制自 docs/reviews/evidence/P4-001-R2/Review.cs.txt。
+/// 不得修改测试逻辑，仅用于验证整改是否通过反例。
+/// </summary>
+[TestClass]
+public class ReviewP4001R2
+{
+    [TestMethod] public void NineMinuteGapMustNotCountAsActive()
+    {
+        var s = new ActivitySession();
+        s.Tick(0, 0);
+        s.Tick(1000, 1000);
+        s.Tick(541000, 541000);
+        Assert.AreEqual(1000d, s.AccumulatedActiveMs, "Fresh input cannot prove activity through nine missed minutes.");
+    }
+
+    [TestMethod] public void BackwardTickDoesNotMoveBaselineBackward()
+    {
+        var s = new ActivitySession();
+        s.Tick(1000, 1000);
+        s.Tick(2000, 2000);
+        s.Tick(1500, 1500);
+        s.Tick(2000, 2000);
+        Assert.AreEqual(1000d, s.AccumulatedActiveMs, "Replayed time must not count twice.");
+    }
+
+    [TestMethod] public void ProductionTimerAcceptsFreshInputInSameWindowsTick()
+    {
+        var session = new ActivitySession();
+        using var service = new ActivitySessionService(session, new FreshSampler(), MonotonicClock.Instance);
+        var tick = typeof(ActivitySessionService).GetMethod("OnTimerTick", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        tick.Invoke(service, new object?[]{null, EventArgs.Empty});
+        Thread.Sleep(30);
+        tick.Invoke(service, new object?[]{null, EventArgs.Empty});
+        Assert.IsTrue(session.AccumulatedActiveMs > 0, "A valid age=0 sample is incorrectly considered future by the production timer.");
+    }
+
+    private sealed class FreshSampler : InputIdleSampler
+    {
+        internal override uint? GetLastInputTickMs() => 777;
+        internal override uint? GetCurrentTickMs() { Thread.Sleep(2); return 777; }
+    }
+}

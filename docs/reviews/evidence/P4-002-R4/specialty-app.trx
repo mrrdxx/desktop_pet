@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="1fd64220-f52a-402a-bf33-fc5c90bf5969" name="mrrdxx@毛茸茸的小熊 2026-11-13 22:27:23" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-13T22:27:23.2918254+08:00" queuing="2026-11-13T22:27:23.2918257+08:00" start="2026-11-13T22:27:17.4119919+08:00" finish="2026-11-13T22:27:24.9966236+08:00" />
+  <TestSettings name="default" id="5ce1b2fd-e1ac-47cf-93e5-c8d94eda9140">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-13_22_27_23" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="1c4e5978-fe6b-444f-95f9-0e88a3fb0d37" testId="a74089d8-958f-6718-4d5f-e646d74fa4fd" testName="SinglePet_Reminder_TriggersPerformance" computerName="毛茸茸的小熊" duration="00:00:01.5154923" startTime="2026-11-13T22:27:19.0513556+08:00" endTime="2026-11-13T22:27:23.2499197+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c4e5978-fe6b-444f-95f9-0e88a3fb0d37" />
+    <UnitTestResult executionId="8e88f4dc-65c9-4a8e-935e-45e27db0e007" testId="c71b6ffa-c9d1-4f53-0df1-cae0f4829bf6" testName="WorkerLockNotification_CancelsPerformanceViaDispatcher" computerName="毛茸茸的小熊" duration="00:00:00.0403338" startTime="2026-11-13T22:27:24.3414316+08:00" endTime="2026-11-13T22:27:24.3852635+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e88f4dc-65c9-4a8e-935e-45e27db0e007" />
+    <UnitTestResult executionId="60790816-cf14-4939-8f80-1466387aefb8" testId="74ae8f89-41b4-41d5-0c17-2a0be51aef2e" testName="LockScreen_CancelsPerformance" computerName="毛茸茸的小熊" duration="00:00:00.0449831" startTime="2026-11-13T22:27:24.2405802+08:00" endTime="2026-11-13T22:27:24.2894488+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="60790816-cf14-4939-8f80-1466387aefb8" />
+    <UnitTestResult executionId="8fe30c6f-8b63-4aec-8236-3df428191378" testId="dbc08968-b6c8-589e-9f7e-5bad721e3408" testName="RestReminder_BlocksHoverAndCuriosity" computerName="毛茸茸的小熊" duration="00:00:00.0398381" startTime="2026-11-13T22:27:23.8325293+08:00" endTime="2026-11-13T22:27:23.8755434+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8fe30c6f-8b63-4aec-8236-3df428191378" />
+    <UnitTestResult executionId="b9cba9bd-473b-485d-8e5b-792412163b44" testId="0e4d32b1-c5e1-7b9d-c32b-a5dc37bc43bd" testName="NaturalCompletion_NotStuckOnStretchOrRest" computerName="毛茸茸的小熊" duration="00:00:00.0554094" startTime="2026-11-13T22:27:24.1816181+08:00" endTime="2026-11-13T22:27:24.2404967+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b9cba9bd-473b-485d-8e5b-792412163b44" />
+    <UnitTestResult executionId="68bf5e60-63e6-4b4b-aba4-29829a05ba56" testId="252decd5-0332-03f5-a6c5-c764d013b86f" testName="CanStartRestReminder_FalseWhenNotVisible" computerName="毛茸茸的小熊" duration="00:00:00.0372540" startTime="2026-11-13T22:27:24.0911905+08:00" endTime="2026-11-13T22:27:24.1314723+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="68bf5e60-63e6-4b4b-aba4-29829a05ba56" />
+    <UnitTestResult executionId="80818655-5cd1-4594-9855-41882b3c3325" testId="730ee2f8-6e48-7f5e-a069-03889de81057" testName="WorkerSleepNotification_CancelsPerformanceViaDispatcher" computerName="毛茸茸的小熊" duration="00:00:00.0428072" startTime="2026-11-13T22:27:24.3853403+08:00" endTime="2026-11-13T22:27:24.4315992+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="80818655-5cd1-4594-9855-41882b3c3325" />
+    <UnitTestResult executionId="da8c371d-94b1-43f9-9697-ee6d7c868b06" testId="513afd59-5767-8451-929b-c697464a0889" testName="Dispatch_DualPet_OnlyOneStarts" computerName="毛茸茸的小熊" duration="00:00:00.0580026" startTime="2026-11-13T22:27:23.9240244+08:00" endTime="2026-11-13T22:27:23.9851075+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="da8c371d-94b1-43f9-9697-ee6d7c868b06" />
+    <UnitTestResult executionId="007ea2c8-1ef8-4f5d-91b0-b2b87693966f" testId="13e176f4-8361-1d66-6adc-aeeb434cfdd5" testName="Dispatch_InvisibleWindow_Skipped" computerName="毛茸茸的小熊" duration="00:00:00.0075430" startTime="2026-11-13T22:27:24.1315673+08:00" endTime="2026-11-13T22:27:24.1419534+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="007ea2c8-1ef8-4f5d-91b0-b2b87693966f">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="156d5539-971f-4f25-8ae2-6209781c0ae7" testId="65824648-0df8-a264-fc99-dcae0be064ed" testName="AppPauseToggled_CancelsAllPerformances" computerName="毛茸茸的小熊" duration="00:00:00.0429746" startTime="2026-11-13T22:27:23.7359286+08:00" endTime="2026-11-13T22:27:23.7830024+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="156d5539-971f-4f25-8ae2-6209781c0ae7" />
+    <UnitTestResult executionId="35020bf9-a88c-4a5d-a91e-26f4336292c0" testId="bcbd8f77-0ddb-c263-0222-0defaf663ee4" testName="CanStartRestReminder_FalseWhenStretchMissing" computerName="毛茸茸的小熊" duration="00:00:00.0673536" startTime="2026-11-13T22:27:24.5836371+08:00" endTime="2026-11-13T22:27:24.6562601+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="35020bf9-a88c-4a5d-a91e-26f4336292c0">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3bf39fcd-5f82-41e5-8c56-a4a7899a9a17" testId="7bacf0b2-7e85-aabe-84e2-f370cfc97530" testName="SkipRestReminder_ReleasesAnimation" computerName="毛茸茸的小熊" duration="00:00:00.0350042" startTime="2026-11-13T22:27:24.1420318+08:00" endTime="2026-11-13T22:27:24.1799206+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3bf39fcd-5f82-41e5-8c56-a4a7899a9a17" />
+    <UnitTestResult executionId="5d3b0480-9066-42f8-886b-aefb2d2dfaab" testId="b8e94d9f-07ad-fcad-165e-2120551e57be" testName="ShutdownMainWindow_CancelsPerformances" computerName="毛茸茸的小熊" duration="00:00:00.0453988" startTime="2026-11-13T22:27:23.8756202+08:00" endTime="2026-11-13T22:27:23.9238584+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d3b0480-9066-42f8-886b-aefb2d2dfaab" />
+    <UnitTestResult executionId="26efc062-1382-4825-a00c-b5f3f88a7471" testId="927a3084-80f8-942d-8766-89dbe6d920b1" testName="NaturalCompletion_ReturnsToIdle" computerName="毛茸茸的小熊" duration="00:00:00.0860476" startTime="2026-11-13T22:27:23.5257749+08:00" endTime="2026-11-13T22:27:23.6164607+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="26efc062-1382-4825-a00c-b5f3f88a7471" />
+    <UnitTestResult executionId="a47bce29-848e-4d35-a406-47a690efd180" testId="66e1b895-b104-2f00-7341-e0ab22120812" testName="Dispatch_NoAvailableWindow_Skipped" computerName="毛茸茸的小熊" duration="00:00:00.0451093" startTime="2026-11-13T22:27:24.0427863+08:00" endTime="2026-11-13T22:27:24.0910967+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a47bce29-848e-4d35-a406-47a690efd180">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c298f9cd-afb8-43e5-9dae-a26249e8a49e" testId="0a66c579-bc7e-f409-ccc7-501af2ad34b4" testName="Dispatch_FirstPetMissingRest_SecondSelected" computerName="毛茸茸的小熊" duration="00:00:00.1008941" startTime="2026-11-13T22:27:24.7332858+08:00" endTime="2026-11-13T22:27:24.8408405+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c298f9cd-afb8-43e5-9dae-a26249e8a49e" />
+    <UnitTestResult executionId="fbedbc74-97d0-45bf-8d3a-e256e2e34444" testId="61408a6d-b79c-2746-20dc-0d28989ea1bd" testName="CanStartRestReminder_FalseWhenSharedSocialSessionActive" computerName="毛茸茸的小熊" duration="00:00:00.0500513" startTime="2026-11-13T22:27:24.5298760+08:00" endTime="2026-11-13T22:27:24.5835059+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fbedbc74-97d0-45bf-8d3a-e256e2e34444">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="23604932-e36a-4329-af44-87706a12b7d0" testId="5744a402-184f-17be-27ed-dd6d58355f55" testName="QueuedLockCancel_WindowClosedAndAddedDuringQueue_SnapshotAtExecution" computerName="毛茸茸的小熊" duration="00:00:00.0942124" startTime="2026-11-13T22:27:24.4316931+08:00" endTime="2026-11-13T22:27:24.5298009+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="23604932-e36a-4329-af44-87706a12b7d0" />
+    <UnitTestResult executionId="8aa42a81-47b9-40a4-8d71-5719151af51b" testId="ff88a58f-b0ef-b9bd-b5b7-13d0ed57c8c9" testName="DualPet_Reminder_OnlyOneStarts" computerName="毛茸茸的小熊" duration="00:00:00.0948544" startTime="2026-11-13T22:27:23.2699667+08:00" endTime="2026-11-13T22:27:23.3704098+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8aa42a81-47b9-40a4-8d71-5719151af51b" />
+    <UnitTestResult executionId="bef5ea8e-8976-4cb7-9f07-91e332ac7e2c" testId="d296097d-46fe-157b-098d-bcfeae584970" testName="ShortThreshold_FiresReminderOnce" computerName="毛茸茸的小熊" duration="00:00:00.0034701" startTime="2026-11-13T22:27:23.8244223+08:00" endTime="2026-11-13T22:27:23.8281019+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bef5ea8e-8976-4cb7-9f07-91e332ac7e2c" />
+    <UnitTestResult executionId="f7ed11dd-fd53-4d35-9e76-7783647b87b0" testId="9419f76c-6443-b687-6ba8-d1ea503f72b8" testName="Pause_CancelsPerformance_NoReplayOnResume" computerName="毛茸茸的小熊" duration="00:00:00.0671161" startTime="2026-11-13T22:27:23.6166221+08:00" endTime="2026-11-13T22:27:23.6875251+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7ed11dd-fd53-4d35-9e76-7783647b87b0" />
+    <UnitTestResult executionId="528111a3-c122-432e-8a00-cb80b13a177b" testId="e6289aa2-f817-fb42-4a79-b4df15a3be45" testName="Sleep_CancelsPerformance" computerName="毛茸茸的小熊" duration="00:00:00.0482689" startTime="2026-11-13T22:27:24.2895350+08:00" endTime="2026-11-13T22:27:24.3413509+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="528111a3-c122-432e-8a00-cb80b13a177b" />
+    <UnitTestResult executionId="5a237f6e-03b4-4e8f-8a13-804e5eabcdeb" testId="d0de5e87-4648-3cbe-1892-6fc589da96ab" testName="DualPet_FirstBusy_SecondSelected" computerName="毛茸茸的小熊" duration="00:00:00.0872221" startTime="2026-11-13T22:27:23.3712203+08:00" endTime="2026-11-13T22:27:23.4621905+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5a237f6e-03b4-4e8f-8a13-804e5eabcdeb" />
+    <UnitTestResult executionId="e8442a38-572b-495b-bea6-06384430c566" testId="197f4519-1a47-deea-9c9c-678b3a179d2d" testName="NoAvailableWindow_ReminderSkipped" computerName="毛茸茸的小熊" duration="00:00:00.0585622" startTime="2026-11-13T22:27:23.4624387+08:00" endTime="2026-11-13T22:27:23.5252083+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e8442a38-572b-495b-bea6-06384430c566">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e05482b2-1d86-4982-a563-f4d7b4dab8b7" testId="8ed705aa-22a4-94b1-a575-79900accd0fe" testName="Dispatch_FirstBusy_SecondSelected" computerName="毛茸茸的小熊" duration="00:00:00.0530642" startTime="2026-11-13T22:27:23.9851797+08:00" endTime="2026-11-13T22:27:24.0427026+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e05482b2-1d86-4982-a563-f4d7b4dab8b7" />
+    <UnitTestResult executionId="0adb5203-13fd-430a-bbc4-8d71deb07166" testId="00c42263-fcdc-313c-ab98-31c1758e7a99" testName="Recover_CancelsPerformance" computerName="毛茸茸的小熊" duration="00:00:00.0442648" startTime="2026-11-13T22:27:23.6876350+08:00" endTime="2026-11-13T22:27:23.7358358+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0adb5203-13fd-430a-bbc4-8d71deb07166" />
+    <UnitTestResult executionId="8fb4364f-1efd-486c-ab55-c53b6cd144d8" testId="78a37084-59e9-02ce-0a89-eff57941053b" testName="CanStartRestReminder_FalseWhenRestMissing" computerName="毛茸茸的小熊" duration="00:00:00.0705869" startTime="2026-11-13T22:27:24.6563391+08:00" endTime="2026-11-13T22:27:24.7318231+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8fb4364f-1efd-486c-ab55-c53b6cd144d8">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Information: 0 : P4-002: Rest reminder skipped — no available pet window.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6f70f9a6-bc21-4fc9-a536-332d1e5c830c" testId="c4d71bb7-81d6-ec03-4eae-7eea80a0bb48" testName="CanStartRestReminder_FalseWhenBusy" computerName="毛茸茸的小熊" duration="00:00:00.0375676" startTime="2026-11-13T22:27:23.7830951+08:00" endTime="2026-11-13T22:27:23.8243196+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f70f9a6-bc21-4fc9-a536-332d1e5c830c" />
+    <UnitTestResult executionId="89ba5949-95c9-42f6-b79a-720bd64724d9" testId="82c8f1cb-4183-7601-611c-ed966450c9c6" testName="AfterIdleReset_CanFireAgain" computerName="毛茸茸的小熊" duration="00:00:00.0009912" startTime="2026-11-13T22:27:23.8313262+08:00" endTime="2026-11-13T22:27:23.8324838+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89ba5949-95c9-42f6-b79a-720bd64724d9" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="AfterIdleReset_CanFireAgain" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="82c8f1cb-4183-7601-611c-ed966450c9c6">
+      <Execution id="89ba5949-95c9-42f6-b79a-720bd64724d9" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="AfterIdleReset_CanFireAgain" />
+    </UnitTest>
+    <UnitTest name="CanStartRestReminder_FalseWhenBusy" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c4d71bb7-81d6-ec03-4eae-7eea80a0bb48">
+      <Execution id="6f70f9a6-bc21-4fc9-a536-332d1e5c830c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="CanStartRestReminder_FalseWhenBusy" />
+    </UnitTest>
+    <UnitTest name="DualPet_FirstBusy_SecondSelected" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="d0de5e87-4648-3cbe-1892-6fc589da96ab">
+      <Execution id="5a237f6e-03b4-4e8f-8a13-804e5eabcdeb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="DualPet_FirstBusy_SecondSelected" />
+    </UnitTest>
+    <UnitTest name="ShutdownMainWindow_CancelsPerformances" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="b8e94d9f-07ad-fcad-165e-2120551e57be">
+      <Execution id="5d3b0480-9066-42f8-886b-aefb2d2dfaab" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="ShutdownMainWindow_CancelsPerformances" />
+    </UnitTest>
+    <UnitTest name="Recover_CancelsPerformance" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="00c42263-fcdc-313c-ab98-31c1758e7a99">
+      <Execution id="0adb5203-13fd-430a-bbc4-8d71deb07166" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Recover_CancelsPerformance" />
+    </UnitTest>
+    <UnitTest name="ShortThreshold_FiresReminderOnce" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="d296097d-46fe-157b-098d-bcfeae584970">
+      <Execution id="bef5ea8e-8976-4cb7-9f07-91e332ac7e2c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="ShortThreshold_FiresReminderOnce" />
+    </UnitTest>
+    <UnitTest name="LockScreen_CancelsPerformance" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="74ae8f89-41b4-41d5-0c17-2a0be51aef2e">
+      <Execution id="60790816-cf14-4939-8f80-1466387aefb8" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="LockScreen_CancelsPerformance" />
+    </UnitTest>
+    <UnitTest name="NaturalCompletion_ReturnsToIdle" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="927a3084-80f8-942d-8766-89dbe6d920b1">
+      <Execution id="26efc062-1382-4825-a00c-b5f3f88a7471" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="NaturalCompletion_ReturnsToIdle" />
+    </UnitTest>
+    <UnitTest name="NaturalCompletion_NotStuckOnStretchOrRest" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0e4d32b1-c5e1-7b9d-c32b-a5dc37bc43bd">
+      <Execution id="b9cba9bd-473b-485d-8e5b-792412163b44" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="NaturalCompletion_NotStuckOnStretchOrRest" />
+    </UnitTest>
+    <UnitTest name="CanStartRestReminder_FalseWhenStretchMissing" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="bcbd8f77-0ddb-c263-0222-0defaf663ee4">
+      <Execution id="35020bf9-a88c-4a5d-a91e-26f4336292c0" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="CanStartRestReminder_FalseWhenStretchMissing" />
+    </UnitTest>
+    <UnitTest name="SkipRestReminder_ReleasesAnimation" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="7bacf0b2-7e85-aabe-84e2-f370cfc97530">
+      <Execution id="3bf39fcd-5f82-41e5-8c56-a4a7899a9a17" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="SkipRestReminder_ReleasesAnimation" />
+    </UnitTest>
+    <UnitTest name="QueuedLockCancel_WindowClosedAndAddedDuringQueue_SnapshotAtExecution" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="5744a402-184f-17be-27ed-dd6d58355f55">
+      <Execution id="23604932-e36a-4329-af44-87706a12b7d0" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="QueuedLockCancel_WindowClosedAndAddedDuringQueue_SnapshotAtExecution" />
+    </UnitTest>
+    <UnitTest name="Sleep_CancelsPerformance" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e6289aa2-f817-fb42-4a79-b4df15a3be45">
+      <Execution id="528111a3-c122-432e-8a00-cb80b13a177b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Sleep_CancelsPerformance" />
+    </UnitTest>
+    <UnitTest name="SinglePet_Reminder_TriggersPerformance" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a74089d8-958f-6718-4d5f-e646d74fa4fd">
+      <Execution id="1c4e5978-fe6b-444f-95f9-0e88a3fb0d37" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="SinglePet_Reminder_TriggersPerformance" />
+    </UnitTest>
+    <UnitTest name="Dispatch_FirstBusy_SecondSelected" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="8ed705aa-22a4-94b1-a575-79900accd0fe">
+      <Execution id="e05482b2-1d86-4982-a563-f4d7b4dab8b7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Dispatch_FirstBusy_SecondSelected" />
+    </UnitTest>
+    <UnitTest name="AppPauseToggled_CancelsAllPerformances" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="65824648-0df8-a264-fc99-dcae0be064ed">
+      <Execution id="156d5539-971f-4f25-8ae2-6209781c0ae7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="AppPauseToggled_CancelsAllPerformances" />
+    </UnitTest>
+    <UnitTest name="CanStartRestReminder_FalseWhenNotVisible" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="252decd5-0332-03f5-a6c5-c764d013b86f">
+      <Execution id="68bf5e60-63e6-4b4b-aba4-29829a05ba56" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="CanStartRestReminder_FalseWhenNotVisible" />
+    </UnitTest>
+    <UnitTest name="DualPet_Reminder_OnlyOneStarts" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ff88a58f-b0ef-b9bd-b5b7-13d0ed57c8c9">
+      <Execution id="8aa42a81-47b9-40a4-8d71-5719151af51b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="DualPet_Reminder_OnlyOneStarts" />
+    </UnitTest>
+    <UnitTest name="CanStartRestReminder_FalseWhenSharedSocialSessionActive" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="61408a6d-b79c-2746-20dc-0d28989ea1bd">
+      <Execution id="fbedbc74-97d0-45bf-8d3a-e256e2e34444" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="CanStartRestReminder_FalseWhenSharedSocialSessionActive" />
+    </UnitTest>
+    <UnitTest name="Dispatch_DualPet_OnlyOneStarts" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="513afd59-5767-8451-929b-c697464a0889">
+      <Execution id="da8c371d-94b1-43f9-9697-ee6d7c868b06" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Dispatch_DualPet_OnlyOneStarts" />
+    </UnitTest>
+    <UnitTest name="WorkerLockNotification_CancelsPerformanceViaDispatcher" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c71b6ffa-c9d1-4f53-0df1-cae0f4829bf6">
+      <Execution id="8e88f4dc-65c9-4a8e-935e-45e27db0e007" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="WorkerLockNotification_CancelsPerformanceViaDispatcher" />
+    </UnitTest>
+    <UnitTest name="NoAvailableWindow_ReminderSkipped" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="197f4519-1a47-deea-9c9c-678b3a179d2d">
+      <Execution id="e8442a38-572b-495b-bea6-06384430c566" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="NoAvailableWindow_ReminderSkipped" />
+    </UnitTest>
+    <UnitTest name="Dispatch_InvisibleWindow_Skipped" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="13e176f4-8361-1d66-6adc-aeeb434cfdd5">
+      <Execution id="007ea2c8-1ef8-4f5d-91b0-b2b87693966f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Dispatch_InvisibleWindow_Skipped" />
+    </UnitTest>
+    <UnitTest name="Pause_CancelsPerformance_NoReplayOnResume" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="9419f76c-6443-b687-6ba8-d1ea503f72b8">
+      <Execution id="f7ed11dd-fd53-4d35-9e76-7783647b87b0" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Pause_CancelsPerformance_NoReplayOnResume" />
+    </UnitTest>
+    <UnitTest name="Dispatch_NoAvailableWindow_Skipped" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="66e1b895-b104-2f00-7341-e0ab22120812">
+      <Execution id="a47bce29-848e-4d35-a406-47a690efd180" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Dispatch_NoAvailableWindow_Skipped" />
+    </UnitTest>
+    <UnitTest name="RestReminder_BlocksHoverAndCuriosity" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="dbc08968-b6c8-589e-9f7e-5bad721e3408">
+      <Execution id="8fe30c6f-8b63-4aec-8236-3df428191378" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="RestReminder_BlocksHoverAndCuriosity" />
+    </UnitTest>
+    <UnitTest name="CanStartRestReminder_FalseWhenRestMissing" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="78a37084-59e9-02ce-0a89-eff57941053b">
+      <Execution id="8fb4364f-1efd-486c-ab55-c53b6cd144d8" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="CanStartRestReminder_FalseWhenRestMissing" />
+    </UnitTest>
+    <UnitTest name="WorkerSleepNotification_CancelsPerformanceViaDispatcher" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="730ee2f8-6e48-7f5e-a069-03889de81057">
+      <Execution id="80818655-5cd1-4594-9855-41882b3c3325" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="WorkerSleepNotification_CancelsPerformanceViaDispatcher" />
+    </UnitTest>
+    <UnitTest name="Dispatch_FirstPetMissingRest_SecondSelected" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-002-r4\build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0a66c579-bc7e-f409-ccc7-501af2ad34b4">
+      <Execution id="c298f9cd-afb8-43e5-9dae-a26249e8a49e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-002-r4\build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.RestReminderIntegrationTests" name="Dispatch_FirstPetMissingRest_SecondSelected" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="a74089d8-958f-6718-4d5f-e646d74fa4fd" executionId="1c4e5978-fe6b-444f-95f9-0e88a3fb0d37" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c71b6ffa-c9d1-4f53-0df1-cae0f4829bf6" executionId="8e88f4dc-65c9-4a8e-935e-45e27db0e007" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="74ae8f89-41b4-41d5-0c17-2a0be51aef2e" executionId="60790816-cf14-4939-8f80-1466387aefb8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dbc08968-b6c8-589e-9f7e-5bad721e3408" executionId="8fe30c6f-8b63-4aec-8236-3df428191378" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0e4d32b1-c5e1-7b9d-c32b-a5dc37bc43bd" executionId="b9cba9bd-473b-485d-8e5b-792412163b44" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="252decd5-0332-03f5-a6c5-c764d013b86f" executionId="68bf5e60-63e6-4b4b-aba4-29829a05ba56" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="730ee2f8-6e48-7f5e-a069-03889de81057" executionId="80818655-5cd1-4594-9855-41882b3c3325" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="513afd59-5767-8451-929b-c697464a0889" executionId="da8c371d-94b1-43f9-9697-ee6d7c868b06" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13e176f4-8361-1d66-6adc-aeeb434cfdd5" executionId="007ea2c8-1ef8-4f5d-91b0-b2b87693966f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="65824648-0df8-a264-fc99-dcae0be064ed" executionId="156d5539-971f-4f25-8ae2-6209781c0ae7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bcbd8f77-0ddb-c263-0222-0defaf663ee4" executionId="35020bf9-a88c-4a5d-a91e-26f4336292c0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7bacf0b2-7e85-aabe-84e2-f370cfc97530" executionId="3bf39fcd-5f82-41e5-8c56-a4a7899a9a17" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b8e94d9f-07ad-fcad-165e-2120551e57be" executionId="5d3b0480-9066-42f8-886b-aefb2d2dfaab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="927a3084-80f8-942d-8766-89dbe6d920b1" executionId="26efc062-1382-4825-a00c-b5f3f88a7471" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="66e1b895-b104-2f00-7341-e0ab22120812" executionId="a47bce29-848e-4d35-a406-47a690efd180" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0a66c579-bc7e-f409-ccc7-501af2ad34b4" executionId="c298f9cd-afb8-43e5-9dae-a26249e8a49e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61408a6d-b79c-2746-20dc-0d28989ea1bd" executionId="fbedbc74-97d0-45bf-8d3a-e256e2e34444" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5744a402-184f-17be-27ed-dd6d58355f55" executionId="23604932-e36a-4329-af44-87706a12b7d0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ff88a58f-b0ef-b9bd-b5b7-13d0ed57c8c9" executionId="8aa42a81-47b9-40a4-8d71-5719151af51b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d296097d-46fe-157b-098d-bcfeae584970" executionId="bef5ea8e-8976-4cb7-9f07-91e332ac7e2c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9419f76c-6443-b687-6ba8-d1ea503f72b8" executionId="f7ed11dd-fd53-4d35-9e76-7783647b87b0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e6289aa2-f817-fb42-4a79-b4df15a3be45" executionId="528111a3-c122-432e-8a00-cb80b13a177b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d0de5e87-4648-3cbe-1892-6fc589da96ab" executionId="5a237f6e-03b4-4e8f-8a13-804e5eabcdeb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="197f4519-1a47-deea-9c9c-678b3a179d2d" executionId="e8442a38-572b-495b-bea6-06384430c566" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8ed705aa-22a4-94b1-a575-79900accd0fe" executionId="e05482b2-1d86-4982-a563-f4d7b4dab8b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="00c42263-fcdc-313c-ab98-31c1758e7a99" executionId="0adb5203-13fd-430a-bbc4-8d71deb07166" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78a37084-59e9-02ce-0a89-eff57941053b" executionId="8fb4364f-1efd-486c-ab55-c53b6cd144d8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c4d71bb7-81d6-ec03-4eae-7eea80a0bb48" executionId="6f70f9a6-bc21-4fc9-a536-332d1e5c830c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="82c8f1cb-4183-7601-611c-ed966450c9c6" executionId="89ba5949-95c9-42f6-b79a-720bd64724d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="29" executed="29" passed="29" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

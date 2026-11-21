@@ -1,0 +1,14 @@
+{
+  "run": "run-20261118-214848-notepad",
+  "exitCode": 0,
+  "driverPassCount": 18,
+  "driverFailCount": 1,
+  "preemptMs": 15702,
+  "preMs": 15703,
+  "postMs": 15707,
+  "preToPostMs": 4,
+  "preemptToPostMs": 5,
+  "preAngle": -4.19,
+  "postAngle": 0,
+  "priorFarOcclusion": "远端遮挡：落脚区外上缘被盖不脱离                    PASS   occ=False footSame=True active=True cover=[970,295,300,120] foot=900 petW=120 occBy=n/a"
+}

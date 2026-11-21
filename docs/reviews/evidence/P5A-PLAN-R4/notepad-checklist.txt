@@ -1,0 +1,22 @@
+
+Item                                            Result Detail
+----                                            ------ ------
+select 命中我们的唯一标题窗口                   PASS   probe select hwnd=0x14055C title=P5AM14NP-20261118-090518.txt - Notepad
+移动跟踪（update 事件）                         PASS   bounds=[1507,830,2293,1323]
+移动后静止不重复上报                            PASS   stableBounds=[1507,830,2293,1323] extraUpdates=0
+移回初始位置仍有 update                         PASS   bounds=[1457,800,2243,1293] beforeMove=[1457,800,2243,1293] stable=[1507,830,2293,1323]
+快速拖动跟踪（多次 update）                     PASS   updateCount=7 lastBounds=[1707,930,2493,1423]
+快速移动最终外框与实测一致                      PASS   event=[1707,930,2493,1423] measured=[1707,930,2493,1423]
+真实鼠标快速拖动（update+最终外框）             PASS   updateCount=4 lastEvent=[1617,880,2403,1373] measured=[1617,880,2403,1373] preDrag=[1457,800,2243,1293]
+最大化跟踪（bounds 原点 0,0）                   PASS   bounds=[0,0,2560,1530]
+最小化 → cleared(Minimized)                     PASS   reason=Minimized
+恢复 → reacquire 同句柄                         PASS   hwnd=0x14055C
+上缘遮挡 → occluded(fraction<1)                 PASS   fraction=0.333 occluders=[P5AM14Cover-20261118-090518] coverHit=True
+遮挡解除 → unoccluded                           PASS   fraction=1
+关闭 → cleared(窗口已失效)                      PASS   reason=WindowGone
+重开 → reacquire 重新验证（已确认归属的新窗口） PASS   probe=0x40065E type=reacquire reopened=0x40065E owned=True title=P5AM14NP-20261118-090518.txt - Notepad sameValue=False
+最终关闭 → cleared                              PASS   reason=WindowGone
+外部候选不被改标题/移动/关闭（不同 PID 诱饵）   PASS   decoyPid=44416 driverPid=35412 title='外部候选对照 - Notepad' titleUnchanged=True rectUnchanged=True alive=True
+探针 exitCode=0                                 PASS   probe exit=0 result exitCode=0
+
+

@@ -1,0 +1,26 @@
+diff --git a/tests/DesktopPet.App.Tests/SocialIntegrationTests.cs b/artifacts/p5a-001-r4/reviewer/SocialIntegrationTests.cs
+index d74e5fa..d6b2df3 100644
+--- a/tests/DesktopPet.App.Tests/SocialIntegrationTests.cs
++++ b/artifacts/p5a-001-r4/reviewer/SocialIntegrationTests.cs
+@@ -4199,7 +4199,7 @@ public class SocialIntegrationTests
+     /// follower windows should both change their Left position.
+     /// </summary>
+     [STATestMethod]
+-    public void Chase_InviteAccepted_BothPetsMove()
++    public void Reviewer_ChaseFromA_BMustRejectPerchBeforeItsOwnTick()
+     {
+         // A at left=100 (center 160), B at left=300 (center 360).
+         // A is left of B → direction=right, B leads, A follows.
+@@ -4244,6 +4244,12 @@ public class SocialIntegrationTests
+                 $"Follower A should have moved right (leftA={wA.Left}, was {leftA0}).");
+             Assert.IsTrue(wB.Left > leftB0,
+                 $"Leader B should have moved right (leftB={wB.Left}, was {leftB0}).");
++
++            var beforePerch = (wB.Left, wB.Top);
++            var perchWrote = wB.ApplyPerchFoot(new DesktopPet.Core.Geometry.PetWorldPosition(1234, 1000));
++            Assert.IsFalse(perchWrote,
++                "B has just received a chase displacement from A's production tick; B must reject perch without waiting for its own tick.");
++            Assert.AreEqual(beforePerch, (wB.Left, wB.Top));
+         }
+         finally
+         {

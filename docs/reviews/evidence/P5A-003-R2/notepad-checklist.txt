@@ -1,0 +1,17 @@
+
+Item                                                             Result Detail
+----                                                             ------ ------
+目标标记与归属确认（驱动侧零写入前提）                           PASS   hwnd=0x7416DE pid=43700 marker=P5A003NP-20261119-192641
+正式入口选窗：pick-entry+真实左键点击 → landed 脚点贴上缘中点    PASS   pick=True click=[703,350] status=selected landed=True petFoot=[900,300] expected=[900,300] dx=0 dy=0
+跟随：目标移动后脚点贴新上缘                                     PASS   follow=True petFoot=[1000,350] expected=[1000,350] dx=0 dy=0
+遮挡脱离：落脚处被盖 occluded-detach 且宠物停在原地              PASS   fraction=0 stay=True active=False
+遮挡解除后正式入口重选落位                                       PASS   pick=True click=[803,400] status=selected landed=True petFoot=[1000,350] expected=[1000,350] dx=0 dy=0
+失效脱离：关闭 detached(WindowGone) 且宠物停在原地               PASS   reason=WindowGone stay=True active=False
+重开后正式入口选窗落位                                           PASS   pick=True click=[703,350] status=selected landed=True petFoot=[900,300] expected=[900,300] dx=0 dy=0
+拖动接管：真实鼠标拖动宠物 drag-preempted                        PASS   dragEv=True active=False dragCancelled=0x431780 target=0x431780 moved=True
+拖走后不回拉：移动目标后无 follow 且宠物留在松手处               PASS   followAfterDrag=0 footFinal=[980,360] footAtDrop=[980,360] active=False
+拖动后正式入口再选落位（显式新选择不受黑名单限制）               PASS   pick=True click=[703,350] status=selected landed=True petFoot=[900,300] expected=[900,300] dx=0 dy=0
+主动离开：leave detached(user-left) 宠物留在原地，目标移动不拉走 PASS   viaRealMenu det=True stay=True active=False followAfterLeave=0
+探针 exitCode=0                                                  PASS   probe exit=0 result exitCode=0
+
+

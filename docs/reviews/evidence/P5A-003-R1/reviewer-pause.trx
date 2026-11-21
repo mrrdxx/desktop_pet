@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="30e50488-fe87-4197-add7-400a00975d74" name="mrrdxx@毛茸茸的小熊 2026-11-19 09:13:25" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-19T09:13:25.0184853+08:00" queuing="2026-11-19T09:13:25.0184856+08:00" start="2026-11-19T09:13:20.6993454+08:00" finish="2026-11-19T09:13:25.0280382+08:00" />
+  <TestSettings name="default" id="b960dbca-2d93-469b-b851-0cd5dae534e1">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-19_09_13_25" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="69d5e0f9-3d60-4dbc-a429-11de5dcc5bb7" testId="3e5f4181-1271-314b-dfca-fc1996ebd958" testName="Reviewer_PauseMustCancelPendingPerchPickBeforeResume" computerName="毛茸茸的小熊" duration="00:00:00.8139422" startTime="2026-11-19T09:13:22.0316641+08:00" endTime="2026-11-19T09:13:24.8101961+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69d5e0f9-3d60-4dbc-a429-11de5dcc5bb7">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。Pause stops the timer, so it must cancel a pending pick synchronously.</Message>
+          <StackTrace>   at DesktopPet.App.Tests.PerchEntryTests.Reviewer_PauseMustCancelPendingPerchPickBeforeResume() in C:\Users\mrrdxx\Desktop\pet\artifacts\p5a-003-r1\reviewer\PerchEntryTests.cs:line 360&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_PauseMustCancelPendingPerchPickBeforeResume" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5a-003-r1\reviewer-build\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="3e5f4181-1271-314b-dfca-fc1996ebd958">
+      <Execution id="69d5e0f9-3d60-4dbc-a429-11de5dcc5bb7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5a-003-r1\reviewer-build\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="Reviewer_PauseMustCancelPendingPerchPickBeforeResume" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="3e5f4181-1271-314b-dfca-fc1996ebd958" executionId="69d5e0f9-3d60-4dbc-a429-11de5dcc5bb7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

@@ -5232,4 +5232,127 @@ public class SocialIntegrationTests
             app.TestCleanup();
         }
     }
+
+    // ════════════════════════════════════════════════════════════════
+    // P5A-001 R4 F-02: cross-window perch ownership timing
+    // ════════════════════════════════════════════════════════════════
+
+    private static object? PerchGetField(object obj, string name)
+        => obj.GetType().GetField(name,
+               System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+           ?.GetValue(obj);
+
+    private static void PerchInvokeOnTick(PetWindowPerch perch)
+        => typeof(PetWindowPerch).GetMethod("OnTick",
+               System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+           .Invoke(perch, null);
+
+    /// <summary>
+    /// P5A-001 R4 F-02 反例：A 的生产追逐更新实际移动 B 后，即使 B
+    /// 尚未 tick（本地 _isSocialActive 仍为 false），B 的栖息初选与
+    /// 跟随也必须读取共享协调器的即时会话状态而拒绝位移；追逐结束
+    /// （会话失效）后栖息权限恢复。
+    /// </summary>
+    [STATestMethod]
+    public void Perch_R4F02_ChaseMovesB_BeforeBTick_BRejectsPerchWrites_RestoresAfter()
+    {
+        var (app, wA, wB) = SetupTwoPets(
+            leftA: 100, topA: 700,
+            leftB: 300, topB: 700);
+        try
+        {
+            var coordinator = InjectChaseSocial(wA, wB, app,
+                attemptInterval: 0,
+                inviteProbability: 1.0,
+                respondProbability: 1.0,
+                respondDelay: 100,
+                duration: 3000,
+                leaderSpeed: 80,
+                followerSpeed: 80,
+                maxTravel: 99999,
+                cooldown: 50000);
+
+            double now = 5000;
+            wA.TestGetElapsedMs = () => now;
+            wB.TestGetElapsedMs = () => now;
+
+            // 只 tick A：invite → accept → Chasing。
+            wA.OnUpdateTickTest();
+            now += 200;
+            wA.OnUpdateTickTest();
+            Assert.AreEqual(SocialPhase.Chasing, coordinator.CurrentSession.Phase,
+                "Should be in Chasing phase.");
+
+            // A 的生产追逐更新实际移动 B（B 从未 tick）。
+            now += 100;
+            var leftB0 = wB.Left;
+            wA.OnUpdateTickTest();
+            Assert.AreNotEqual(leftB0, wB.Left, 0.001,
+                "A 的生产追逐更新必须实际移动 B。");
+            Assert.IsFalse(wB.IsSocialActive,
+                "时序前提：B 尚未 tick，本地社交旗必须仍为 false。");
+            Assert.IsTrue(coordinator.IsSocialActive, "追逐会话仍在进行。");
+
+            // B 必须拒绝栖息位移——初选/落位/跟随共用共享所有权。
+            Assert.IsFalse(wB.IsPerchWriteAllowed,
+                "共享会话活跃时栖息写入必须被拒（即使 B 未 tick，及时生效）。");
+            var leftAfterChase = wB.Left;
+            var topAfterChase = wB.Top;
+            Assert.IsFalse(wB.ApplyPerchFoot(new PetWorldPosition(1234, 1000)),
+                "共享会话期间栖息位移必须被拒。");
+            Assert.AreEqual(leftAfterChase, wB.Left, 0.001, "拒绝零写入。");
+            Assert.AreEqual(topAfterChase, wB.Top, 0.001, "拒绝零写入。");
+
+            var fakeSnap = new DesktopPet.Core.Windows.ExternalWindowSnapshot(
+                0x77777, "fake-r4-target", "FakeClass", 6000, "fakeproc",
+                true, true, false, false, false, 100, 200, 900, 700);
+            Assert.IsFalse(wB.Perch.TrySelectExplicit(fakeSnap, (uint)Environment.ProcessId),
+                "共享会话期间栖息初选必须被拒。");
+            Assert.IsFalse(wB.Perch.IsActive, "初选拒绝后不得激活。");
+
+            // 跟随路径同样拒绝：构造已有绑定（模拟追逐开始前已栖息），
+            // 驱动一轮生产轮询 OnTick——守卫早退，零写入、保持绑定。
+            var perchB = wB.Perch;
+            var tracker = (DesktopPet.Core.Windows.PerchTargetTracker)PerchGetField(perchB, "_tracker")!;
+            Assert.IsTrue(tracker.Select(fakeSnap, (uint)Environment.ProcessId),
+                "测试前提：伪造目标必须可被跟踪。");
+            typeof(PetWindowPerch).GetProperty("IsActive")!.SetValue(perchB, true);
+            ((DesktopPet.Core.Windows.PerchUpdateGate)PerchGetField(perchB, "_updateGate")!)
+                .Reset(100, 200, 900, 700);
+            perchB.TestSnapshotSource = _ => new DesktopPet.Core.Windows.ExternalWindowSnapshot(
+                0x77777, "fake-r4-target", "FakeClass", 6000, "fakeproc",
+                true, true, false, false, false, 100, 800, 900, 1500);
+            var leftBeforePoll = wB.Left;
+            var topBeforePoll = wB.Top;
+            PerchInvokeOnTick(perchB);
+            Assert.AreEqual(leftBeforePoll, wB.Left, 0.001,
+                "共享会话期间生产轮询（跟随）不得写位置。");
+            Assert.AreEqual(topBeforePoll, wB.Top, 0.001,
+                "共享会话期间生产轮询（跟随）不得写位置。");
+            Assert.IsTrue(perchB.IsActive, "守卫拒绝保持绑定待其让出。");
+
+            // 恢复无绑定状态（先到者持有语义：绑定持有时追逐位移本就应
+            // 被拒而取消会话），随后让追逐自然结束。
+            perchB.Detach("test");
+            Assert.IsFalse(perchB.IsActive);
+
+            for (int i = 0; i < 80 && coordinator.IsSocialActive; i++)
+            {
+                now += 100;
+                wA.OnUpdateTickTest();
+            }
+            Assert.IsFalse(coordinator.IsSocialActive, "追逐必须在期限内结束。");
+
+            // 追逐结束：共享会话失效，栖息权限恢复（B 仍未 tick）。
+            Assert.IsFalse(wB.IsSocialActive, "B 全程未 tick。");
+            Assert.IsTrue(wB.IsPerchWriteAllowed,
+                "追逐结束后必须恢复栖息权限（即使 B 从未 tick）。");
+            Assert.IsTrue(wB.ApplyPerchFoot(new PetWorldPosition(1234, 1000)),
+                "恢复后栖息位移必须获准。");
+        }
+        finally
+        {
+            app.TestCleanup();
+        }
+    }
 }

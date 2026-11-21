@@ -1,0 +1,10 @@
+{"tMs":724,"type":"select","hwnd":"0xA1506","bounds":[239,234,1029,729],"reason":null,"fraction":null}
+{"tMs":5411,"type":"occluded","hwnd":"0xA1506","bounds":[1555,855,2345,1350],"reason":null,"fraction":0}
+{"tMs":5630,"type":"unoccluded","hwnd":"0xA1506","bounds":[1595,875,2385,1370],"reason":null,"fraction":1}
+{"tMs":13811,"type":"cleared","hwnd":"0xA1506","bounds":[-31995,-32000,-31768,-31966],"reason":"Minimized","fraction":null}
+{"tMs":14028,"type":"reacquire","hwnd":"0xA1506","bounds":[1326,689,2116,1184],"reason":null,"fraction":null}
+{"tMs":15972,"type":"occluded","hwnd":"0xA1506","bounds":[1326,689,2116,1184],"reason":null,"fraction":0.333}
+{"tMs":16406,"type":"unoccluded","hwnd":"0xA1506","bounds":[1326,689,2116,1184],"reason":null,"fraction":1}
+{"tMs":16874,"type":"cleared","hwnd":"0xA1506","bounds":[0,0,0,0],"reason":"WindowGone","fraction":null}
+{"tMs":18014,"type":"reacquire","hwnd":"0x7910B6","bounds":[239,234,1029,729],"reason":null,"fraction":null}
+{"tMs":20462,"type":"cleared","hwnd":"0x7910B6","bounds":[0,0,0,0],"reason":"WindowGone","fraction":null}

@@ -1,0 +1,22 @@
+{
+  "run": "run-20261118-150731-edge",
+  "exitCode": 0,
+  "passCount": 14,
+  "maxTargetBounds": [
+    0,
+    0,
+    2560,
+    1528
+  ],
+  "maxPetRectPx": [
+    1190,
+    -180,
+    1370,
+    0
+  ],
+  "finalPetFootPx": [
+    2018,
+    920
+  ],
+  "perchActive": false
+}

@@ -5,4 +5,10 @@
     <RootNamespace>DesktopPet.Core</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- P4-002 R2 F-03: expose the SocialCoordinator test seam
+         (TestSeedSession) to the App integration tests. -->
+    <InternalsVisibleTo Include="DesktopPet.App.Tests" />
+  </ItemGroup>
+
 </Project>

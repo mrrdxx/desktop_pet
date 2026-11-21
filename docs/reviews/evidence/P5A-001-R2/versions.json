@@ -1,0 +1,30 @@
+[
+  {
+    "path": "src/DesktopPet.App/Platform/PetWindowPerch.cs",
+    "sha256": "4EFAF4F25BDFC4AB9C7FA1F7B84C43B31219D8E62F8F3299AAD1FDE917DDB8DE"
+  },
+  {
+    "path": "src/DesktopPet.App/Platform/WindowPerchInterop.cs",
+    "sha256": "309219000E4398D3879ADC23A7BE548EF0700C0A5711218726F74091DC4E70E9"
+  },
+  {
+    "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+    "sha256": "B93A636CC31F0EF8E893F2391B7507524F91A133F530B0A6304BAA09507F02D1"
+  },
+  {
+    "path": "src/DesktopPet.App/App.xaml.cs",
+    "sha256": "8BE175707360D7A60D834D27B585D75467DBF1CFD24413258704F7195DE7F06D"
+  },
+  {
+    "path": "src/DesktopPet.Core/Windows/WindowPerchLandingPolicy.cs",
+    "sha256": "29F7508157448C8AFA44A607DB1672D04FC02046E38988441CAFE636009EBCA2"
+  },
+  {
+    "path": "tests/DesktopPet.App.Tests/WindowPerchOwnershipTests.cs",
+    "sha256": "3D0CC773BE4BFB02F065EAC81650A29937F53388B3839C2953AD694D3F02FE1E"
+  },
+  {
+    "path": "tools/Invoke-P5A001Preview.ps1",
+    "sha256": "93102839C2FADF622DDCC301A9A952C4F3320B337237D3F3A3DEED5C04B1A524"
+  }
+]

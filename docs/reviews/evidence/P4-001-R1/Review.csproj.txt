@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><AssemblyName>DesktopPet.App.Tests</AssemblyName></PropertyGroup><ItemGroup><PackageReference Include="MSTest" Version="3.6.4"/><ProjectReference Include="../../../src/DesktopPet.App/DesktopPet.App.csproj"/></ItemGroup></Project>

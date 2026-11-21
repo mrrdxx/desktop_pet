@@ -302,6 +302,27 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 
 来源：[GetLastInputInfo](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getlastinputinfo)。
 
+### P4-001 活跃会话接入约定
+
+- App 持有唯一作息会话和低频采样入口。Windows 输入空闲读数及锁屏、睡眠、暂停状态由 App 适配，再以可注入的快照交给 Core。按单调时间计算实际活跃区间，平台空闲时间先转换为输入年龄，不能用原始 Win32 时间戳直接减共享单调时钟。
+- 锁屏、睡眠和暂停分别阻止累计。多个状态重叠时，全部解除后才可重新计时。恢复、采样失败或无法解释的长采样间隔应重建基线，不把缺测时段或暂停前的提醒意图带回。Core 暴露当前统计和一次性阈值意图，P4-001 只在验证入口观察它。
+- 该会话独立于稀有事件的 `EffectiveRuntimeTracker`，不随宠物增加、移除或窗口更新次数重建。首步不持久化会话，不接入社交协调器。以后接表演时，App 负责协调触发，窗口负责播放与取消。若表演需要同时改多个既有行为入口，先限范围抽取其协调边界并回归验证。
+
+### P4-002 休息提醒接入约定（待实现）
+
+- App 消费一次 `ActivitySessionService.RestReminderRequested` 并选择窗口，窗口拥有表演的播放、自然完成和取消。复用现有动画播放器、单调时钟和窗口更新入口。会话计时及是否已触发继续由 P4-001 持有。
+- 用户输入和系统生命周期优先。正在拖动、抛掷、抚摸、社交、稀有事件或暂停的窗口不可开始表演。表演占用期间，协调器按现有忙碌契约处理该宠物，避免社交或稀有事件覆盖动作或写位置。释放表演时只清理它自身持有的动作状态。
+- 按现有角色资源契约注册可辨认的开场动作及安静收尾，保持脚点、实体/透明命中与窗口坐标。当前 `sleepy` 是静态储备表情，可作安静段候选。动作缺失时安全略过并可诊断。
+
+### P4-003 夜间困倦接入约定（已实现）
+
+- 纯逻辑：Core `NightSchedule.IsNight(TimeOnly)` 判定本地夜间窗口 [23:30, 24:00) ∪ [00:00, 06:00)，无状态、无时钟依赖；调用方只提供当前本地时间（App 用 `TestGetLocalNow ?? DateTime.Now`，跨午夜自然成立）。
+- 表现：`sleep` 为循环动作（sleep_light 2500ms → sleep_deep 4000ms → sleep_light 2500ms），睡眠深浅由循环内帧交替表现，不按时间计算深度；素材脚点行与 idle_0 逐像素一致，动作切换不产生位置跳动。
+- 优先级（高→低）：拖动/抚摸 > 暂停（timer 停止，无 tick）> 委屈 > 探头 > 休息提醒表演 > 社交（可打断睡眠，会话结束经 idle 由下一 tick 重入）> 夜间睡眠（空闲底态取代 idle）> idle。所有打断路径最终回 `PlayAction("idle")`，下一 tick 自动重判，无额外状态标志。
+- 单一重判入口：`MainWindow.OnUpdateTick` 末尾 `UpdateFrame` 前的夜间接线。夜间且 `idle` 且非忙碌（拖动/抚摸/物理/委屈/探头/休息提醒/菜单）→ play `sleep`；非夜间且 `sleep` → idle。暂停期间 timer 停止且接线有 `!_isAppPaused` 守卫，恢复/唤醒后首个 tick 按当时本地时间重判。
+- 抑制：睡眠期间（`CurrentActionId=="sleep"`）hover/curiosity 分支跳过且重置探测器；`RareEventUpdateService.EvaluateTick` 新增 `isSleeping` 参数跳过 Evaluate（计划保留不消耗，醒后正常评估），`StartProbe` 二级守卫同样检查。
+- 不改存档、不改系统时间；隔离预览用注入虚拟本地钟（探针 `night-sleepy` 场景）。
+
 ## 8. 资源起步约定
 
 2026-10-24 小熊接入：默认运行目录为 assets/pets/bear/，角色ID bear-v1，旧 assets/pets/default/ 保留为原型回退。原P1-001占位图及其测量记录为历史基线，不是当前美术。九张静态PNG为120×120、96DPI，帧脚点(60,110)；curious PNG底部101加offsetY9，其余底部110。表情母版/导出约束见 assets/art/bear-v1/README.md，运行映射见 assets/pets/bear/README.md。
@@ -363,6 +384,17 @@ HWND 可能失效或复用，不能把一个数值句柄当成永久窗口身份
 来源：[SetWinEventHook](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwineventhook)。
 
 习惯统计先用本地频次模型，读取失败或样本不足时无预测。图标定位不属于窗口位置 API 自动提供的能力，另做验证任务。
+
+### 窗口栖息正式入口（P5A-003，已实现）
+
+- 正式入口为宠物右键菜单两项：「Perch on Window」（菜单 ID 6）进入拾取模式，「Leave Perch」（菜单 ID 7）主动离开。栖息对象选择沿用 M-14 的目标筛选与归属纪律，拾取时经 `SnapshotWindowFromPoint` 以鼠标点取候选。
+- 拾取为边沿触发：菜单点击后设置 `_perchPickAwaitRelease` 标记，等待鼠标释放帧；生产路径在 `!leftDown`（释放）时清标记并进入拾取判定。该清标记必须在生产分支完成，防止菜单点击残留导致后续真实点击被吞。无效点击结束拾取（P5A-003 R1 F-02 校正）：点中宠物自身 → `cancelled-self`，点击不合格外部目标 → `rejected-ineligible`，落位失败 → `rejected-landing`；15 秒无有效选择 → `cancelled-timeout`。最小化/恢复、无效点击与超时路径仅自动测试覆盖（M-16 实机清单每轮 12 项，不含这些步骤）。
+- 暂停即时结束拾取（P5A-003 R1 F-01）：暂停会停止更新计时器，`UpdatePerchPick` 的暂停兜底不可达，故暂停入口同步 `EndPerchPick("cancelled")`（托盘与应用级暂停共用同一入口），恢复后不续接旧拾取。
+- 栖息中宠物自己的右键菜单打开期间挂起稳态遮挡判定（P5A-003 R1 F-02 产品修复，`PetWindowPerch` 稳态轮询在 `_owner.IsContextMenuOpen` 时返回）：菜单（`TrackPopupMenuEx` 弹层）是自家 UI，会短暂盖住落脚区，若按外来窗口处理，栖息中右键想选「Leave Perch」会被误判遮挡先行脱离（M-16 实机实测菜单打开瞬间 `fraction=0.44`）；菜单关闭后下一轮轮询自动恢复判定。
+- 主动离开是终态语义：`Leave Perch` 触发 `detached(user-left)`，宠物停在当前位置，不自动回待机或跟随旧目标。其余脱离原因（最小化、遮挡、关闭/销毁、拖动抢占）沿用 P5A-001/P5A-002 的 `PetWindowPerch` 行为，该文件在 P5A-003 零改动。
+- Win11 记事本关闭先隐藏后销毁，脱离判定以 `reason=Hidden` 配合 `IsWindow=false` 兜底；驱动侧窗口最小化由 1s 缓冲 + `IsIconic` 恢复重试处理，产品不缓存瞬时状态。
+- 真实原生菜单端到端实机证据（P5A-003 R1 F-02 补证）：真实右键打开宠物原生菜单 → 键盘选中「Perch on Window」→ 真实左键点击目标落位 → 真实菜单「Leave Perch」→ `detached(user-left)` 宠物原位解绑（`.temp/p5a-003/entry/run-20261119-192641-notepad/`，12/12 ALL PASS；复核确认轮 run-20261120-013233、前台归属诊断确认轮 run-20261120-132156 同口径 12/12）。
+- 跨屏、混合 DPI 下拾取与脱离未验证，不据此承诺多屏正确性。
 
 ## 10. 双宠前工程准备（D-018）
 

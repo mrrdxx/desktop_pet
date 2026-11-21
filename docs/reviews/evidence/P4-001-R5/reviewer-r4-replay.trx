@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e78dc2df-494b-4d3b-ac98-8069d9bc79cf" name="mrrdxx@毛茸茸的小熊 2026-11-13 00:41:24" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-13T00:41:24.7537617+08:00" queuing="2026-11-13T00:41:24.7537622+08:00" start="2026-11-13T00:41:24.0339477+08:00" finish="2026-11-13T00:41:24.7590406+08:00" />
+  <TestSettings name="default" id="9d6b41e0-3d41-4ac2-9eae-ef7d494866b5">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-13_00_41_24" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="05ff9ba6-44c5-4d3d-a89b-a8d27da1e81f" testId="301c3be8-8cc4-94c8-30a9-ddb375fb729b" testName="FirstValidIdleSampleAfterMissingMustPreserveIdleToActiveTransition" computerName="毛茸茸的小熊" duration="00:00:00.0831734" startTime="2026-11-13T00:41:24.5549140+08:00" endTime="2026-11-13T00:41:24.6538215+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="05ff9ba6-44c5-4d3d-a89b-a8d27da1e81f" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="FirstValidIdleSampleAfterMissingMustPreserveIdleToActiveTransition" storage="c:\users\mrrdxx\desktop\pet\artifacts\p4-001-r5\probe\bin\debug\net10.0-windows\desktoppet.app.tests.dll" id="301c3be8-8cc4-94c8-30a9-ddb375fb729b">
+      <Execution id="05ff9ba6-44c5-4d3d-a89b-a8d27da1e81f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p4-001-r5\probe\bin\Debug\net10.0-windows\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ReviewP4001R4" name="FirstValidIdleSampleAfterMissingMustPreserveIdleToActiveTransition" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="301c3be8-8cc4-94c8-30a9-ddb375fb729b" executionId="05ff9ba6-44c5-4d3d-a89b-a8d27da1e81f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,45 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "08B73E2998D9A2C728DE05F932F7A69D370C6E8835FBE90388E9DD849C76C2DF"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "E4132ADF9EA8A320F96B320B32F8A6F27E5BEE21984BB02615E4535DA85B53F3"
+    },
+    {
+      "path": "src/DesktopPet.Core/Events/RestReminderPerformance.cs",
+      "sha256": "D2809DE2C86E535229569FD52DB2FFB8A1F40DC8E854E0E37D675178DAD403C7"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "0A8D3274DB0DE378F7541A97AD4AE64B3E7C372AAA5D4BD9786689E753BB6C7D"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/RestReminderIntegrationTests.cs",
+      "sha256": "B2DC7EE62F7DA49C75EF3A13E96720F8BA14E098BDE679BF316AEB257FC056E9"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "ACF5DF4C0E97A533FF6C02735A75B9C3EF16C631D0D619E15464176BE0932370"
+    },
+    {
+      "path": "assets/pets/bear/stretch_0.png",
+      "sha256": "A040880E86902E8FC7A1F011DE046E152D5B333202CAE3AA36896413AA443613"
+    },
+    {
+      "path": "assets/pets/bear/stretch_1.png",
+      "sha256": "9890A0546CA4253263C1C69879E7A7BE62B38479B59B55E4E82D3A45F92929E1"
+    },
+    {
+      "path": "assets/pets/bear/stretch_2.png",
+      "sha256": "C6078758BCAC08B08A4CF85EE0738BB85983F1DB5193E5FFC8705FC7338675D4"
+    },
+    {
+      "path": "assets/pets/bear/rest_0.png",
+      "sha256": "E648778B1B4158D42A964A6AB9649946DD315C3830BB985DEAB893CF028EB484"
+    }
+  ]
+}

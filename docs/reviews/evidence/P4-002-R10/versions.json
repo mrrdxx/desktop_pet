@@ -1,0 +1,21 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "8BE175707360D7A60D834D27B585D75467DBF1CFD24413258704F7195DE7F06D"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "AC4E6219A5D11D6F311DA20354B38E24C11B8B5BEA3BE26209EA9494AA21AC3D"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/PauseActionSwitchTests.cs",
+      "sha256": "4B6CA05A9A0FBD30F9B48183274DA0B30315D7640C2A563DA1387E57419F7CB0"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/RestReminderIntegrationTests.cs",
+      "sha256": "D31BF4CC5A5BF0CF33E220136731548E6FB73159C2830DEC0D8CA5AC865BBB23"
+    }
+  ]
+}

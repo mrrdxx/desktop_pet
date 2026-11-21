@@ -1,0 +1,21 @@
+
+Item                                 Result Detail
+----                                 ------ ------
+select 命中我们的唯一标题窗口        PASS   probe select hwnd=0xBA1158 title=P5AM14Browser - 用户配置 1 - Microsoft​ Edge
+移动跟踪（update 事件）              PASS   bounds=[1507,830,2293,1323]
+移动后静止不重复上报                 PASS   stableBounds=[1507,830,2293,1323] extraUpdates=0
+移回初始位置仍有 update              PASS   bounds=[1457,800,2243,1293] beforeMove=[1457,800,2243,1293] stable=[1507,830,2293,1323]
+快速拖动跟踪（多次 update）          PASS   updateCount=7 lastBounds=[1707,930,2493,1423]
+快速移动最终外框与实测一致           PASS   event=[1707,930,2493,1423] measured=[1707,930,2493,1423]
+真实鼠标快速拖动（update+最终外框）  PASS   updateCount=4 lastEvent=[1518,876,2304,1369] measured=[1518,876,2304,1369] preDrag=[1457,800,2243,1293]
+最大化跟踪（bounds 原点 0,0）        PASS   bounds=[0,0,1920,1032]
+最小化 → cleared(Minimized)          PASS   reason=Minimized
+恢复 → reacquire 同句柄              PASS   hwnd=0xBA1158
+上缘遮挡 → occluded(fraction<1)      PASS   fraction=0.333 occluders=[P5AM14Cover-20261118-010338] coverHit=True
+遮挡解除 → unoccluded                PASS   fraction=1
+关闭 → cleared(窗口已失效)           PASS   firstReason=Hidden + IsWindow=false (destroyed)
+重开 → reacquire/明确新选择 重新验证 PASS   probe=0x561006 type=reacquire reason= reopened=0x561006 title=P5AM14Browser - 用户配置 1 - Microsoft​ Edge sameValue=False
+最终关闭 → cleared                   PASS   reason=WindowGone
+探针 exitCode=0                      PASS   probe exit=0 result exitCode=0
+
+

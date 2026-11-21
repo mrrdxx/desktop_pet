@@ -1,0 +1,33 @@
+{"realElapsedSec":0,"virtualLocalTime":"2026-11-16 23:29:00","currentAction":"idle","note":"preview start: virtual 23:29 (daytime), waiting for 23:30 entry"}
+{"realElapsedSec":2,"virtualLocalTime":"2026-11-16 23:30:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":4,"virtualLocalTime":"2026-11-16 23:32:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":6,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":8,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":10,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":12,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":14,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":16,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":18,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":20,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":22,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":24,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":26,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":28,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":30,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":32,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":34,"virtualLocalTime":"2026-11-16 23:33:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":35,"virtualLocalTime":"2026-11-17 05:59:00","currentAction":"sleep","note":"jumped virtual clock to 05:59 (still night)"}
+{"realElapsedSec":36,"virtualLocalTime":"2026-11-17 05:59:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":38,"virtualLocalTime":"2026-11-17 05:59:00","currentAction":"sleep","note":"periodic snapshot"}
+{"realElapsedSec":38,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"sleep","note":"crossed 06:00 boundary \u2014 expecting wake to idle"}
+{"realElapsedSec":40,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":42,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":44,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":46,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":48,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":50,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":52,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":54,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":56,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":58,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"periodic snapshot"}
+{"realElapsedSec":60,"virtualLocalTime":"2026-11-17 06:00:00","currentAction":"idle","note":"shutting down"}

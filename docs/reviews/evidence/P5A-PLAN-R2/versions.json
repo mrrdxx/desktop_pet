@@ -1,0 +1,22 @@
+[
+  {
+    "path": "src/DesktopPet.Core/Windows/PerchUpdateGate.cs",
+    "sha256": "888D59DF9881AB37ECA175113C94AD19188EA5BD83B1D6EDCE25C00BC51904B4"
+  },
+  {
+    "path": "src/DesktopPet.Core/Windows/PerchTargetTracker.cs",
+    "sha256": "FA8F56A796F9C07030DC72515D78AAAF87300D9F10F0392D6E497072DDEE9F27"
+  },
+  {
+    "path": "tests/DesktopPet.Core.Tests/ExternalWindowTests.cs",
+    "sha256": "B84F61AC534E4268CC488E41C27D5635123A4DA5CB878C5E5C599F7432150F5C"
+  },
+  {
+    "path": "tests/DesktopPet.DiagnosticProbe/WindowPerchScenario.cs",
+    "sha256": "D8A15FF9C9B25255845E5D9A44F670CC6AF75A3F81237198EF00AA5823939A38"
+  },
+  {
+    "path": "tools/Invoke-M14WindowPerch.ps1",
+    "sha256": "2AB6E94A6BA036A5FC3C26170A33D617722B6E9247C9DDE49774A22A4DEB078B"
+  }
+]

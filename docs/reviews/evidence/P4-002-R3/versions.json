@@ -1,0 +1,33 @@
+{
+  "head": "f59e7e2f98a8da2bf8a33305cea1cba042548f65",
+  "files": [
+    {
+      "path": "src/DesktopPet.App/App.xaml.cs",
+      "sha256": "42A3F52832E9B6BD0F135609F3A905D3F15D3BE2B1622B2032B409C009401C13"
+    },
+    {
+      "path": "src/DesktopPet.App/MainWindow.xaml.cs",
+      "sha256": "DE3B69864B36CD489F3650312205D90BF4BBC311F574CCFB25B9190C3E27B7DB"
+    },
+    {
+      "path": "src/DesktopPet.App/Platform/ActivitySessionService.cs",
+      "sha256": "40DF310C5B7E47C84F48EA79940AD69CC04C9EB033517282798BC5B332CC60E9"
+    },
+    {
+      "path": "src/DesktopPet.Core/Social/SocialCoordinator.cs",
+      "sha256": "99111AE38257E1112B080688F3694C061270A369FAFD218E2C954A46FE3FDBEE"
+    },
+    {
+      "path": "tests/DesktopPet.DiagnosticProbe/Program.cs",
+      "sha256": "AC53392C50C2B635692ADA281B2F35E16BA20A8367804F6FD2C3C3E00E6A51A4"
+    },
+    {
+      "path": "tests/DesktopPet.App.Tests/RestReminderIntegrationTests.cs",
+      "sha256": "99A0635BF62ADA69D8702199EBE675FA4DD21211E8753AE640C236E02581AB0A"
+    },
+    {
+      "path": "assets/pets/bear/character.json",
+      "sha256": "ACF5DF4C0E97A533FF6C02735A75B9C3EF16C631D0D619E15464176BE0932370"
+    }
+  ]
+}

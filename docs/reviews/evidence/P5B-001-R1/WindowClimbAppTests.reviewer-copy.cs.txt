@@ -1,0 +1,436 @@
+using DesktopPet.App;
+using DesktopPet.App.Platform;
+using DesktopPet.Core.Windows;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P5B-001（R-08）：窗口有限攀爬首版（隔离预览）的 App 级测试。
+///
+/// 覆盖：
+/// - 起攀校验链：太远拒绝（不移动不改变状态）、不合格目标拒绝、
+///   落点被遮挡拒绝、位置被占用拒绝（RejectedBusy）、
+///   已在攀爬中拒绝（RejectedAlreadyActive）；
+/// - 爬行推进：沿侧边→上缘折线逐步推进（climb-step 事件、位置单调）；
+/// - 到达落位：结束路线并经 Perch.TrySelectExplicit 交接栖息
+///   （落位脚点=上缘中点，无可见跳动）；
+/// - 目标移动：每 tick 按最新快照重建路线（落位跟随最新上缘中点）；
+/// - 目标最小化：取消路线并回到可见区域（climb-cancelled: target-*）；
+/// - 用户拖动：立即接管结束路线（climb-drag-preempted，不恢复位置）；
+/// - 暂停：同步取消（climb-cancelled: paused），恢复后不续接；
+/// - 退出：恢复爬行前位置（存档为休息位）；
+/// - 位置所有权：攀爬期间栖息初选让出（TrySelectExplicit 被拒）。
+///
+/// 伪造句柄的落位/遮挡校验经测试缝强制（只替换采样来源，
+/// 落位/提交/事件路径不变，P5A-002/P5A-003 同款缝）。
+/// 攀爬动作为临时表现（idle→curious→idle），不做专用素材断言。
+/// </summary>
+[TestClass]
+public class WindowClimbAppTests
+{
+    // 宠物窗口 120×120 DIP；未 Show 的测试窗口 HWND=0 → DPI 1.0（DIP=物理像素）。
+    private const double PetLeft = 600;
+    private const double PetTop = 500;
+    private const double PetWidth = 120;
+    private const double PetHeight = 120;
+
+    // 目标可见外框（物理像素）：脚点(660,620) 距外框 40px（≤200 允许起攀）。
+    private const int TLeft = 700;
+    private const int TTop = 420;
+    private const int TRight = 1000;
+    private const int TBottom = 670;
+
+    private static MainWindow? TryCreateMainWindow()
+    {
+        try
+        {
+            return new MainWindow();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning(
+                "WindowClimbAppTests: MainWindow construction failed: {0}", ex);
+            return null;
+        }
+    }
+
+    private static ExternalWindowSnapshot Snapshot(
+        long hwnd, int left = TLeft, int top = TTop, int right = TRight,
+        int bottom = TBottom, bool minimized = false)
+        => new(hwnd, "climb-target", "FakeClass", 5000, "fakeproc",
+            true, true, minimized, false, false, left, top, right, bottom);
+
+    /// <summary>统一测试布景：宠物位置 + 攀爬/栖息测试缝 + 事件流。</summary>
+    private static PetWindowClimb Setup(MainWindow window, List<PetClimbEvent> events)
+    {
+        window.Left = PetLeft;
+        window.Top = PetTop;
+        var climb = window.Climb;
+        climb.TestLandingOcclusionSampler = (_, _, _) => (1.0, new List<string>());
+        climb.ClimbEvent += events.Add;
+        window.Perch.TestLandingOcclusionSampler = (_, _, _) => (1.0, new List<string>());
+        return climb;
+    }
+
+    private static void AssertRestPosition(MainWindow window)
+    {
+        Assert.AreEqual(PetLeft, window.Left, 0.001, "拒绝路径不得移动宠物。");
+        Assert.AreEqual(PetTop, window.Top, 0.001, "拒绝路径不得移动宠物。");
+    }
+
+    [STATestMethod]
+    public void Climb_TryStart_TooFar_RejectedWithoutSideEffects()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+
+            // 目标外框距脚点 740px（>200）：起攀距离拒绝。
+            var far = Snapshot(0x88888, left: 1400, top: 420, right: 1700, bottom: 670);
+            var result = climb.TryStart(far, (uint)Environment.ProcessId, 0);
+
+            Assert.AreEqual(PetClimbStartResult.RejectedTooFar, result);
+            Assert.IsFalse(climb.IsActive, "拒绝不得进入攀爬。");
+            Assert.AreEqual(0, events.Count, "拒绝不得发事件。");
+            AssertRestPosition(window);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_TryStart_IneligibleTarget_Rejected()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+
+            var minimized = Snapshot(0x88888, minimized: true);
+            var result = climb.TryStart(minimized, (uint)Environment.ProcessId, 0);
+
+            Assert.AreEqual(PetClimbStartResult.RejectedIneligible, result);
+            Assert.IsFalse(climb.IsActive);
+            Assert.AreEqual(0, events.Count);
+            AssertRestPosition(window);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_TryStart_LandingOccluded_Rejected()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            // 顶部落位脚点被完全遮挡。
+            climb.TestLandingOcclusionSampler = (_, _, _) => (0.0, new List<string> { "occluder" });
+
+            var result = climb.TryStart(Snapshot(0x88888), (uint)Environment.ProcessId, 0);
+
+            Assert.AreEqual(PetClimbStartResult.RejectedOccluded, result);
+            Assert.IsFalse(climb.IsActive);
+            Assert.AreEqual(0, events.Count);
+            AssertRestPosition(window);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_TryStart_WhilePositionOwned_RejectedBusy()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            // 位置被物理活动占用（互斥核心旗）。
+            typeof(MainWindow).GetField("_isPhysicsActive",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .SetValue(window, true);
+
+            var result = climb.TryStart(Snapshot(0x88888), (uint)Environment.ProcessId, 0);
+
+            Assert.AreEqual(PetClimbStartResult.RejectedBusy, result);
+            Assert.IsFalse(climb.IsActive);
+            Assert.AreEqual(0, events.Count);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_AdvancesAlongRoute_ThenCompletesAndHandsOffToPerch()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999);
+            climb.TestSnapshotSource = _ => snapshot;
+
+            // 第一次起攀尝试成功。
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            Assert.IsTrue(climb.IsActive);
+            Assert.AreEqual("climb-started", events[0].Type);
+            // 已在攀爬中：重复起攀拒绝。
+            Assert.AreEqual(PetClimbStartResult.RejectedAlreadyActive,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+
+            // 攀爬期间栖息初选让出（位置所有权互斥）。
+            Assert.IsFalse(window.Perch.TrySelectExplicit(snapshot, (uint)Environment.ProcessId),
+                "攀爬期间栖息初选必须被位置所有权守卫拒绝。");
+
+            // 部分推进：dt=100ms、速度 0.45px/ms → 45px：侧边段 40px 用完，
+            // 余 5px 沿侧边向上 → 脚点 (700, 615)。
+            climb.TestSpeedPxPerMs = WindowClimbPolicy.DefaultSpeedPxPerMs;
+            climb.Tick(100);
+            Assert.IsTrue(climb.IsActive, "45px 后路线必须仍在进行。");
+            Assert.AreEqual("climb-step", events[1].Type);
+            Assert.AreEqual(700 - PetWidth / 2, window.Left, 0.001, "侧边推进 45px 后的窗口位置。");
+            Assert.AreEqual(615 - PetHeight, window.Top, 0.001);
+
+            // 大步到达：advance 超过剩余折线 → 收敛到落位脚点并交接栖息。
+            climb.TestSpeedPxPerMs = 50.0;
+            climb.Tick(200);
+
+            Assert.IsFalse(climb.IsActive, "到达后必须结束路线。");
+            Assert.IsTrue(window.Perch.IsActive, "到达后必须交接栖息绑定。");
+            Assert.AreEqual(0x99999L, window.Perch.TargetHwndValue);
+            var last = events[^1];
+            Assert.AreEqual("climb-completed", last.Type);
+            // 落位脚点 = 可见外框上缘中点：(850, 420)；窗口左上 = (790, 300)。
+            Assert.AreEqual(850 - PetWidth / 2, window.Left, 0.001, "落位必须无可见跳动。");
+            Assert.AreEqual(420 - PetHeight, window.Top, 0.001);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_MovingTarget_RouteRebuiltEachTick_AndFollowsLatestTopMid()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TestSpeedPxPerMs = 50.0;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+
+            // 目标右移 100px：下一 tick 按最新快照重建路线。
+            snapshot = Snapshot(0x99999, left: TLeft + 100, right: TRight + 100);
+            climb.Tick(100);
+
+            Assert.IsFalse(climb.IsActive, "大步推进后必须到达。");
+            Assert.IsTrue(window.Perch.IsActive);
+            // 最新上缘中点 = (950, 420) → 窗口左上 = (890, 300)。
+            Assert.AreEqual(950 - PetWidth / 2, window.Left, 0.001,
+                "目标移动后落位必须跟随最新上缘中点。");
+            Assert.AreEqual(420 - PetHeight, window.Top, 0.001);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_TargetMinimizedDuringRoute_CancelsAndReturnsToVisibleArea()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TestSpeedPxPerMs = WindowClimbPolicy.DefaultSpeedPxPerMs;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            climb.Tick(100); // 部分推进。
+            Assert.IsTrue(climb.IsActive, "前置：取消前路线仍在进行。");
+
+            // 目标最小化：重观测清除目标 → 取消并回到可见区域。
+            snapshot = Snapshot(0x99999, minimized: true);
+            climb.Tick(200);
+
+            Assert.IsFalse(climb.IsActive, "目标最小化必须取消路线。");
+            Assert.IsFalse(window.Perch.IsActive, "取消不得交接栖息。");
+            var cancelled = events.FirstOrDefault(e => e.Type == "climb-cancelled");
+            Assert.IsNotNull(cancelled, "取消必须发 climb-cancelled 事件。");
+            Assert.IsTrue(cancelled!.Reason!.StartsWith("target-", StringComparison.Ordinal),
+                "取消原因必须是 target-*（重观测清除）。实际：" + cancelled.Reason);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_DragPreempts_ImmediatelyEndsRouteWithoutRestore()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TestSpeedPxPerMs = WindowClimbPolicy.DefaultSpeedPxPerMs;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            climb.Tick(100); // 推进到 (705, 620)。
+            var leftAfterStep = window.Left;
+            var topAfterStep = window.Top;
+
+            // 用户拖动：立即接管，结束路线、不恢复位置。
+            climb.CancelForDrag();
+
+            Assert.IsFalse(climb.IsActive, "拖动必须立即结束路线。");
+            Assert.AreEqual("climb-drag-preempted", events[^1].Type);
+            Assert.AreEqual(leftAfterStep, window.Left, 0.001, "拖动接管不得移动宠物。");
+            Assert.AreEqual(topAfterStep, window.Top, 0.001);
+            Assert.IsFalse(window.Perch.IsActive);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_PauseCancelsRoute_ResumeDoesNotResume()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999);
+            climb.TestSnapshotSource = _ => snapshot;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            Assert.IsTrue(climb.IsActive, "前置：暂停前路线激活。");
+
+            // 暂停入口（托盘/菜单共用）：必须同步取消。
+            window.PauseAnimation();
+
+            Assert.IsFalse(climb.IsActive, "暂停必须同步结束路线。");
+            var cancelled = events.FirstOrDefault(e => e.Type == "climb-cancelled");
+            Assert.IsNotNull(cancelled);
+            Assert.AreEqual("paused", cancelled!.Reason);
+
+            // 恢复后不续接旧路线。
+            window.ResumeAnimation();
+            Assert.IsFalse(climb.IsActive, "恢复后不得续接旧路线。");
+            climb.Tick(1000);
+            Assert.IsFalse(climb.IsActive, "恢复后 tick 不得重新推进旧路线。");
+            Assert.IsFalse(window.Perch.IsActive);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_ExitRestoresPreClimbPosition()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TestSpeedPxPerMs = WindowClimbPolicy.DefaultSpeedPxPerMs;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            climb.Tick(100); // 路线中间位置 (705, 620)。
+            Assert.IsTrue(climb.IsActive, "前置：退出前路线仍在进行。");
+
+            // 退出：结束路线并恢复爬行前位置（存档为休息位）。
+            climb.CancelForExit();
+
+            Assert.IsFalse(climb.IsActive);
+            Assert.AreEqual(PetLeft, window.Left, 0.001, "退出必须恢复爬行前位置。");
+            Assert.AreEqual(PetTop, window.Top, 0.001);
+            Assert.IsFalse(window.Perch.IsActive);
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Reviewer_Climb_AlreadyPerched_MustRejectWithoutChangingBinding()
+    {
+        var w = new MainWindow();
+        try {
+            var events = new List<PetClimbEvent>(); var c = Setup(w, events);
+            var target = Snapshot(0x99999);
+            Assert.IsTrue(w.Perch.TrySelectExplicit(target, (uint)Environment.ProcessId));
+            Assert.IsTrue(w.Perch.IsActive);
+            Assert.AreEqual(PetClimbStartResult.RejectedBusy, c.TryStart(target,(uint)Environment.ProcessId,0));
+        } finally { w.Close(); }
+    }
+    [STATestMethod]
+    public void Reviewer_Climb_Recovery_MustCancelRoute()
+    {
+        var w = new MainWindow();
+        try {
+            var c = Setup(w, new List<PetClimbEvent>());var target=Snapshot(0x99999);
+            c.TestSnapshotSource=_=>target;
+            Assert.AreEqual(PetClimbStartResult.Started,c.TryStart(target,(uint)Environment.ProcessId,0));
+            c.Tick(100);w.RecoverPet();
+            Assert.IsFalse(c.IsActive,"找回应立即结束攀爬，后续不得拉回目标");
+        } finally { w.Close(); }
+    }
+    [STATestMethod]
+    public void Reviewer_Climb_MustNotShortcutPolylineWhenDirectDistanceFitsBudget()
+    {
+        var w = new MainWindow();
+        try {
+            var c = Setup(w,new List<PetClimbEvent>()); var target=Snapshot(0x99999);
+            c.TestSnapshotSource=_=>target;
+            Assert.AreEqual(PetClimbStartResult.Started,c.TryStart(target,(uint)Environment.ProcessId,0));
+            // foot=(660,620); landing=(850,420), Euclidean=275.86, route=40+200+150=390.
+            c.TestSpeedPxPerMs=0.45;c.Tick(667); // budget=300.15, still 89.85 along polyline remaining.
+            Assert.IsTrue(c.IsActive,"预算尚未走完390px折线，不应斜线瞬移交接");
+        } finally { w.Close(); }
+    }
+
+    [STATestMethod]
+    public void Reviewer_Climb_LocalSocialActive_MustRejectStart()
+    {
+        var w=new MainWindow();
+        try {
+            var c=Setup(w,new List<PetClimbEvent>());
+            typeof(MainWindow).GetField("_isSocialActive",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.SetValue(w,true);
+            Assert.IsFalse(w.IsClimbWriteAllowed,"社交已持有时首次起攀不得获准");
+        } finally {w.Close();}
+    }
+    [STATestMethod]
+    public void Reviewer_Climb_LongStall_MustDiscardBacklog()
+    {
+        var w=new MainWindow();
+        try {
+            var c=Setup(w,new List<PetClimbEvent>());var target=Snapshot(0x99999);
+            c.TestSnapshotSource=_=>target;
+            Assert.AreEqual(PetClimbStartResult.Started,c.TryStart(target,(uint)Environment.ProcessId,0));
+            c.Tick(10000);
+            Assert.IsTrue(c.IsActive,"10秒停顿不能一次消费全部积压并瞬移到顶");
+        }finally{w.Close();}
+    }
+}
