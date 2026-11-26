@@ -1,0 +1,32 @@
+Window: "Usage Statistics", App: DesktopPet.App.Tests.exe.
+	0 window (窗口) Usage Statistics Secondary Actions: Raise
+		1 title bar (标题栏) (settable, string) Value: Usage Statistics
+			2 menu bar (菜单栏) 系统 ID: MenuBar
+				3 menu item (菜单项) 系统
+			4 button (按钮) 最小化
+			5 button (按钮) 最大化
+			6 button (按钮) 关闭
+		7 text (文本) Usage Statistics
+		8 text (文本) 统计：已开启。全部记录仅保存在本机。 ID: StatusText
+		9 pane (窗格)
+			10 text (文本) 已记录的统计
+			11 text (文本) 来自已提交的 30 分钟聚合记录；时长为近似前台活跃时长，不是精确使用时长。
+			12 list (列表视图) ID: RecordedItems
+				13 data item (数据项) 有记录的日期：7 天
+					14 text (文本) 有记录的日期：7 天
+				15 data item (数据项) 近似前台活跃时长：7 分钟
+					16 text (文本) 近似前台活跃时长：7 分钟
+				17 data item (数据项) 会话次数：7 次
+					18 text (文本) 会话次数：7 次
+				19 data item (数据项) 涉及应用：2 个
+					20 text (文本) 涉及应用：2 个
+			21 separator (分隔符) (disabled)
+			22 text (文本) 有样本支持的时间偏好
+			23 text (文本) 统计依据，不是预测准确率；没有达标样本时不显示任何偏好。
+			24 list (列表视图) ID: PreferenceItems
+				25 data item (数据项) notepad 09:30–09:59 支持日期 5 天，会话 5 次
+					26 text (文本) notepad 09:30–09:59 支持日期 5 天，会话 5 次
+			27 button (按钮) Refresh ID: RefreshButton
+				28 text (文本) Refresh
+
+The focused UI element is 0 window (窗口) Usage Statistics Secondary Actions: Raise.

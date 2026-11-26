@@ -323,6 +323,46 @@ WPF 可用一个调度入口累计经过时间；不得为每个行为创建独�
 - 抑制：睡眠期间（`CurrentActionId=="sleep"`）hover/curiosity 分支跳过且重置探测器；`RareEventUpdateService.EvaluateTick` 新增 `isSleeping` 参数跳过 Evaluate（计划保留不消耗，醒后正常评估），`StartProbe` 二级守卫同样检查。
 - 不改存档、不改系统时间；隔离预览用注入虚拟本地钟（探针 `night-sleepy` 场景）。
 
+### P6-001 使用习惯本地统计约定（待实现）
+
+- **事件来源接线**：`SystemEvents.SessionSwitch` 仅作 `unlock`/会话恢复来源，`PowerModeChanged` 仅作 `resume`（睡眠/挂起恢复）来源；两者均不得登记 `boot`，程序启动更不得推成 `boot`。`app-start` 只在桌宠进程自身完成启动时登记一次。`boot` 没有独立可验证来源与去重/缺测语义时，首版如实不记录；不为补测安排开机启动或常驻服务，也不要求收集全进程创建事件。事件消费在 App 生命周期适配层完成，不扩写 MainWindow 上帝类。
+- **统计口径接线**：外部应用一律按前台观测记录，观测对象是规范化可执行文件基名，不作为任何进程「启动」事件。新统计服务独立于 MainWindow 更新循环，复用既有单调时钟、`GetLastInputInfo` 输入年龄接口（会话级，不读取具体键内容）与采样接口；锁屏、睡眠、暂停及缺样区间不归属应用、不补计，恢复后重建基线。时长一律用单调差值，不能拿进程内单调数值跨重启/跨天直接比较。
+- **数据字段与存储**：应用标识只存规范化可执行文件基名（不含绝对路径/PID 长存身份），同名程序合并，识别失败丢弃该应用归属区间并在覆盖统计中计数（单一口径，不实现 unknown/丢弃两套分支）。统计独立文件（`stats.json`）、独立 `schemaVersion`，不写入宠物存档；持久化字段带明确日历日期/本地时间与时区偏移，跨午夜拆段、跨重启不接续。
+- **聚合与保留**：原始 7 天、聚合 30 天，按固定时间桶（已定 30 分钟）及时增量聚合并幂等落盘；聚合实现属于 P6-002，P6-001 只定义不实现；过期按被统计日期判定，关闭采集时清理仍执行；聚合保证既定桶内频次/时长不重不漏，不承诺恢复细粒度轨迹。
+- **关闭/清除防回写**：关闭停止新采样/更新/主动反馈但保留既有数据；清除仅删原始/聚合/派生预测与待写缓存，保留开关与配置。所有待写数据经单一写入队列防抖落盘；清除使用代次边界或等价串行化，旧定时器/异步保存/备份不得把旧数据写回新代次，重启不恢复已清除历史。
+- **展示接线**：本版只接气泡与主动查看，不驱动宠物移动；统计关闭后不做主动反馈。主动靠近按用户 [D-020](DECISIONS.md) 延期，未来另行授权时才接既有位置所有权边界，不写好感度数值、不擅自承诺图标定位。
+
+### P6-002 聚合与保留约定（已实现）
+
+- **数据模型**：`stats.json` 升级为 `schemaVersion=2`，新增 `buckets` 列表（`UsageStatsBucket`：`AppId`/`Date`/`BucketStartLocal`/`ActiveMs`/`SessionCount`）。v1 文件缺 `buckets` 反序列化为空，属附加式变更，无迁移。
+- **固定桶**：聚合桶固定 30 分钟（`UsageStatsCollector.BucketMinutes=30`），以本地零点对齐到 [:00, :30) 与 [:30, :60)；桶键为 `AppId + BucketStartLocal`。每段已验证区间在提交时同时切分到午夜与 30 分钟桶（`CommitVerifiedInterval`→`AddBuckets`），即“及时增量聚合”，不等原始记录过期。
+- **频次定义（一次使用＝一个会话）**：使用频次**不是** 5 秒采样次数。会话＝同一 `AppId` 下无中断的连续已验证前台区间链；任一中断（缺样/空闲/锁屏/睡眠/暂停/关闭/生命周期事件即 `ResetBaseline`）或切换到其他应用都会结束当前会话、下一次已验证区间开始新会话。会话计数只记录在会话起始时间所在桶（`SessionCount` 各桶加和＝会话总数），跨桶/跨午夜只分裂时长，不重复计次。
+- **双保留**：原始段/事件保留 7 天（按被统计 `Date`）；聚合桶保留 30 天（按桶起始本地 `Date`），两者独立判定，不会因为原始过期就提前删除聚合，也不会因持续生成而延长旧桶寿命。`PruneToRetention` 每次落盘都会执行两套清理，采集关闭时依旧执行。
+- **幂等与不重不漏**：落盘为“整份已提交快照覆盖写”（`PersistSnapshot` 写全部 segments/events/buckets），重试/重复 drain 不会叠加；桶内时长按每次已验证区间增量累加、会话计数按会话起始一次性记录，不存在同一区间被计两次的路径；`Restore` 只恢复已提交数据、不重建基线与会话，重启后不重复计已保存的段/桶，新活动是新的会话。
+- **关闭/清除**：不新增独立聚合开关，一个全局统计开关控制采集/更新；关闭后不再新增桶，但保留期内旧桶保留、过期清理继续；清除 (`ClearAll`) 同时清空原始、事件与聚合桶并立即落盘，generation 代次守卫阻止清除前旧写回写，重启不恢复已清除历史。聚合不写入宠物存档（`state.json`/`settings.json`），清除不触碰宠物存档。
+
+### P6-003 频次判断约定（已实现）
+
+- **纯逻辑位置**：Core `UsageStatsFrequencyJudge`（无状态、无持久化、无缓存），输入 `IEnumerable<UsageStatsBucket>`、当前本地时间与采集开关状态，输出 `UsageStatsFrequencyResult`，不依赖 App 层。
+- **输入复用 P6-002 桶**：只读 `UsageStatsBucket`（`AppId`/`Date`/`BucketStartLocal`/`ActiveMs`/`SessionCount`），不新增采集路径、不改桶语义；`BucketStartLocal` 的本地墙钟既是日期来源也是时段来源（已按 30 分钟对齐，只取 `HH:mm`），无法解析的桶被跳过。
+- **窗口与排除当天**：`today = localNow` 的本地日期；名义窗口为 `[today−WindowDays, today−1]`（默认 30 个完整日期），并与 P6-002 聚合保留上限 `[today−(RetentionDays−1), today]`（默认 `RetentionDays=30`，即 `[today−29, today]`）**取交集**，因此默认有效区间为 `[today−29, today−1]`，最多 **29 个已完成日期**。当天未结束不参与（既不作支持、也不作反对），未来日期同样排除；超出保留期的桶从第一次查询起即被排除，不依赖后续 `DrainPending` 才失效。这是纯只读过滤，查询不写盘、不清理、不延长保留。
+- **“出现”与会话数**：`ActiveMs > 0` 的桶表示该应用在该半小时时段有已验证前台时长，计入“出现日期”；会话数取该 (`AppId`, 时段) 桶的 `SessionCount` 之和（会话只计入起始桶，不重复计次）。
+- **门槛（默认常量，可经 `UsageStatsFrequencyOptions` 调整）**：`WindowDays=30`（名义回看）、`RetentionDays=30`（与聚合保留一致）、`MinObservedDates=7`、`MinSupportDates=5`、`MinSessionCount=5`、`ExcludeToday=true`。先判覆盖（有效窗口内不同 `ActiveMs>0` 日期数 ≥7），再按 (`AppId`, 时段) 判支持日期数与会话数；任一不足即不输出该候选。
+- **输出与排序**：候选含 `AppId`、`SlotStart`（"HH:mm"）、`SupportDateCount`、`SessionCount`；按支持日期数降序、会话数降序、`AppId`/时段序数升序。结果另带 `IsEnabled`、`WindowDays`、`ObservedDateCount`。其中 `WindowDays` 为**实际生效的完整日期数**（名义 `WindowDays` 与保留上限的交集，再扣除当天；默认配置下为 29，不冒称完整 30 日历史），`ObservedDateCount` 为“有记录日期数”（不等于完整观察天数）。仅为统计依据，不是准确率。
+- **关闭/清除/重启**：不设独立预测开关；`enabled=false` 直接返回空结果。App `UsageStatsService.GetFrequencyPredictions()` 按需从当前已提交桶计算，**不保留预测缓存**，因此关闭或 `ClearAll` 后下一次调用即为空；重启由 `Restore` 恢复桶后重算，不恢复旧预测。仅内部输出，不接气泡/位置/图标定位/自动启动（归 P6-004）。
+
+### P6-004 展示：气泡与统计入口约定（第一步已实现）
+
+- **本版完成边界**：原“第一步”气泡与查看入口已由监理 R3 接收；用户随后按 [D-020](DECISIONS.md) 确认纯气泡收尾，主动靠近移为后续独立任务。此分步标题保留以兼容既有引用，不表示本版还需实现移动；最终接收见 [监理 R4](reviews/P6-004-review.md)。
+- **规则与表现分层**：展示判定为 Core 纯逻辑 `UsageStatsBubblePlanner`（无状态、无 WPF 依赖），输入 P6-003 `UsageStatsFrequencyResult`、当前本地时间、上次展示的本地日期、是否挂起、是否有可接受展示的空闲宠物，输出“是否展示 + 文案 + 应用/时段”。App 只负责取数据和呈现，不在窗口更新循环里堆判定逻辑。
+- **时段匹配**：取当前本地时间按 30 分钟截断得到 `HH:mm`（`:00` 或 `:30`），只挑 `SlotStart` 与之相等的候选；不匹配即安静。P6-003 结果已按支持日期数降序，取首个匹配项。
+- **文案**：由 `UsageStatsBubblePlanner.FormatBubbleMessage` 生成，含支持日期数与时段，例如「过去有记录的日期里，你有 5 天在 12:00–12:29 这个时段使用 notepad」。不写指令式措辞、不写准确率。
+- **每日去重与重启**：`UsageStatsArchive` 新增附加字段 `bubbleLastShownLocalDate`（`yyyy-MM-dd`），与桶同处独立 `stats.json`；展示成功后立即整份快照落盘。`Restore` 读回该日期，同一本地日期不再展示；`ClearAll` 重置为空并落盘；关闭保留该标记（当天不重复展示）。
+- **展示抑制**：`UsageStatsService.IsSuspended`（暂停/锁屏/睡眠任一）与统计关闭都直接不展示；这是每次判定的即时输入，不存在排队补播。App 在暂停、锁屏、睡眠、关闭统计、清除统计的同一入口顺手隐藏当前气泡，隐藏是幂等的。
+- **视图**：`StatsBubbleWindow` 为独立 WPF 窗口（`WindowStyle=None`、`AllowsTransparency=True`、`Topmost`、`ShowInTaskbar=False`、`Focusable=False`、`ShowActivated=False`，`SourceInitialized` 时加 `WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`），尺寸贴合内容，优先宠物左右两侧，放不下时尝试上/下并夹至工作区。真实输入/不重叠验收范围见监理 R3，不据位置算法宣称所有多屏组合已测。自动关闭约 8 秒由窗口内 `DispatcherTimer` 负责，关闭按钮只关闭气泡。
+- **空闲宠物选择**：`MainWindow.IsAvailableForStatsBubble` 复用既有忙碌判定（拖动/抚摸/物理/委屈/探头/休息提醒/菜单/攀爬/社交/暂停任一为真即不可用），App 只取第一只可用宠物；没有可用宠物时本次不展示且不消费当日额度。
+- **查看入口**：右键菜单新增 `MenuIdStatsView`（标签「Usage Statistics」）通过 `App.ShowUsageStatsViewer()` 打开只读查看窗 `StatsViewerWindow`。汇总文本由 Core `UsageStatsBubblePlanner.FormatRecordedSummaryLines` / `FormatPreferenceLine` 生成，保证与统计口径同名同义。查看窗由用户主动打开，允许激活，不在宠物窗口内额外占用命中区域。
+
 ## 8. 资源起步约定
 
 2026-10-24 小熊接入：默认运行目录为 assets/pets/bear/，角色ID bear-v1，旧 assets/pets/default/ 保留为原型回退。原P1-001占位图及其测量记录为历史基线，不是当前美术。九张静态PNG为120×120、96DPI，帧脚点(60,110)；curious PNG底部101加offsetY9，其余底部110。表情母版/导出约束见 assets/art/bear-v1/README.md，运行映射见 assets/pets/bear/README.md。
@@ -395,6 +435,7 @@ HWND 可能失效或复用，不能把一个数值句柄当成永久窗口身份
 - Win11 记事本关闭先隐藏后销毁，脱离判定以 `reason=Hidden` 配合 `IsWindow=false` 兜底；驱动侧窗口最小化由 1s 缓冲 + `IsIconic` 恢复重试处理，产品不缓存瞬时状态。
 - 真实原生菜单端到端实机证据（P5A-003 R1 F-02 补证）：真实右键打开宠物原生菜单 → 键盘选中「Perch on Window」→ 真实左键点击目标落位 → 真实菜单「Leave Perch」→ `detached(user-left)` 宠物原位解绑（`.temp/p5a-003/entry/run-20261119-192641-notepad/`，12/12 ALL PASS；复核确认轮 run-20261120-013233、前台归属诊断确认轮 run-20261120-132156 同口径 12/12）。
 - 跨屏、混合 DPI 下拾取与脱离未验证，不据此承诺多屏正确性。
+- P5B-002：攀爬正式入口「Climb on Window」（菜单 ID 8）与栖息入口**共用同一拾取状态机**（`WindowPickIntent.Perch/Climb`；超时、边沿触发按下/释放、点自身取消、资格校验、开菜单/拖动/暂停取消全部共享），仅在点击合格目标后分派——栖息走 `Perch.TrySelectExplicit`，攀爬走 `PetWindowClimb.TryStart`（拒绝分支映射为 `rejected-*` 终态且不移动）。避免复制状态机导致行为漂移。生命周期打断点（拖动 2019、暂停 3363、开菜单 762）对两种意图同时生效。
 
 ## 10. 双宠前工程准备（D-018）
 

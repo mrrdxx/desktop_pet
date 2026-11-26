@@ -151,4 +151,12 @@ public sealed class PetSettingsArchive
 
     /// <summary>Whether the pet should auto-start with Windows (future use, not implemented in P0-004).</summary>
     public bool AutoStart { get; set; } = false;
+
+    /// <summary>
+    /// P6-001: Whether local usage statistics collection is enabled.
+    /// Defaults to false (R-09: statistics are off until the user explicitly enables them).
+    /// Settings-only value: preserved by Clear, only toggled by the user.
+    /// Missing key in older settings.json loads as false (statistics stay disabled).
+    /// </summary>
+    public bool UsageStatsEnabled { get; set; } = false;
 }

@@ -1,0 +1,30 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Events\\UsageStatsBubblePlanner.cs",
+    "Hash": "AE6F704401A659A9B9E34E7A6061830F2B58063C7CBC38AA600439364D94A92C"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\UsageStatsService.cs",
+    "Hash": "8097DCB0149D421583ED0111FAD3B193EF9E2EB378B6A3E19D5BBE5A7CFECAF9"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\StatsBubbleWindow.xaml.cs",
+    "Hash": "778CAAD70D1C36735611A2A0BBC7BAE4DFCB4B15807884AD2CC31F726BB06C0D"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\StatsBubbleWindow.xaml",
+    "Hash": "B53F1D72FD7CFB3347173AE07E2C0C1C0D930F8DD50B9F2B803C88B75189F041"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\StatsViewerWindow.xaml.cs",
+    "Hash": "8281A73961953C31E72990071C61792FC409F0E8250F84200F77129189E96EF1"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\App.xaml.cs",
+    "Hash": "42B7BB9331E63125E4512CFEFC556F8BD15DBDE06479406E94FD9650545EDF6D"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "B9A6A327FB6E9D6FEC2C873AF52A17A36A2B040BBF88EC3791BF033A1B66A7F3"
+  }
+]

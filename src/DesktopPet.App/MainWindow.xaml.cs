@@ -235,6 +235,62 @@ public partial class MainWindow : System.Windows.Window
     /// </summary>
     internal bool IsRestReminderActive => _restReminder.IsActive;
 
+    /// <summary>
+    /// P6-004（第一小步）：这只宠物当前是否“可接受展示”主动统计气泡。
+    /// 拖动/抚摸/物理/委屈/探头/休息提醒/菜单/攀爬/社交/暂停任一进行中即
+    /// 不可用；隐藏或最小化也不可用。只读判定，不改变任何交互状态。
+    /// <para>
+    /// P6-004 R1 F-01：社交占用同时读共享社交权威状态
+    /// （<see cref="IsInSharedSocialSession"/>），与栖息写入判定同源。窗口 A
+    /// 的 tick 驱动会话并移动 B 时，B 的本地 <c>_isSocialActive</c> 要等 B
+    /// 自己的社交轮询才置位；只读共享会话可避免在会话进行中选中 B 展示气泡。
+    /// 本地旗 <c>_isSocialActive</c> 仍保留（其余社交阶段/冷却判定）。
+    /// </para>
+    /// </summary>
+    internal bool IsAvailableForStatsBubble
+        => IsVisible
+           && WindowState != System.Windows.WindowState.Minimized
+           && !_isDragging
+           && !_isPettingCandidate
+           && !_isPhysicsActive
+           && !_isExpressingGrievance
+           && !_isProbing
+           && !_restReminder.IsActive
+           && !_isContextMenuOpen
+           && !_isSocialActive
+           && !IsInSharedSocialSession
+           && !_isAppPaused
+           && !(_petClimb?.IsActive ?? false)
+           && !IsClimbAction(_animPlayer.CurrentActionId);
+
+    /// <summary>
+    /// P6-004（第一小步）：宠物窗口当前的矩形（DIP），供气泡放置在宠物外侧。
+    /// </summary>
+    internal Rect GetPetRectDipForStatsBubble() => new(Left, Top, Width, Height);
+
+    /// <summary>
+    /// P6-004（第一小步）：宠物所在显示器的工作区（DIP），供气泡夹取位置。
+    /// 使用与位置恢复/物理相同的显示器枚举与 DPI 换算。
+    /// </summary>
+    internal Rect GetWorkAreaDipForStatsBubble()
+    {
+        var monitors = TestMonitorList ?? MonitorInterop.EnumerateMonitors();
+        if (monitors.Count == 0)
+            return SystemParameters.WorkArea;
+
+        var (dpiX, dpiY) = MonitorInterop.GetWindowDpiScale(_hwnd);
+        var foot = CoordinateTransform.WindowTopLeftToFootCenter(
+            Left, Top, Width, Height, dpiX, dpiY);
+        var monitor = MonitorLocator.FindMonitor(monitors, foot.FootCenterX, foot.FootCenterY)
+                      ?? MonitorLocator.FindNearestMonitor(monitors, foot.FootCenterX, foot.FootCenterY);
+        var wa = monitor.WorkArea.Bounds;
+        return new Rect(
+            wa.Left / monitor.DpiScaleX,
+            wa.Top / monitor.DpiScaleY,
+            wa.Width / monitor.DpiScaleX,
+            wa.Height / monitor.DpiScaleY);
+    }
+
     // Win32 constants for no-activate window (F-01) and native popup menu.
     private const int GWL_EXSTYLE = -20;
     private const int WS_EX_NOACTIVATE = 0x08000000;
@@ -636,7 +692,14 @@ public partial class MainWindow : System.Windows.Window
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (_animPlayer.CurrentActionId == actionId && _animPlayer.IsCompleted)
+                {
+                    // P5B-003 S2：climb_land 播完经此路径自动回 idle（不经
+                    // EndClimbAction）——若 ScaleX 仍为 -1 会把 idle 帧镜像
+                    // 显示，必须随回 idle 一起复位。
+                    if (IsClimbAction(actionId))
+                        ClimbMirrorTransform.ScaleX = 1;
                     _animPlayer.PlayAction("idle");
+                }
             }));
         }
     }
@@ -691,7 +754,10 @@ public partial class MainWindow : System.Windows.Window
 
     private IntPtr _hwnd;
     private bool _isContextMenuOpen;
-    private const uint MenuIdExit = 1;
+    // P6-001 R8 F-06: internal so the diagnostic probe can drive the same
+    // production menu-lifecycle seam for the real Exit regression (same
+    // precedent as MenuIdPerchOnWindow below).
+    internal const uint MenuIdExit = 1;
     private const uint MenuIdRecover = 2;
     private const uint MenuIdAddPet = 3;
     private const uint MenuIdRemovePet = 4;
@@ -705,6 +771,18 @@ public partial class MainWindow : System.Windows.Window
     // so the diagnostic probe can drive the same menu-lifecycle seam.
     internal const uint MenuIdPerchOnWindow = 6;
     internal const uint MenuIdLeavePerch = 7;
+    // P5B-002: formal climb entry point in the right-click menu (parallel
+    // entry to Perch on Window; same pick flow, climb route on click).
+    internal const uint MenuIdClimbOnWindow = 8;
+    // P6-001: local usage statistics entries — toggle (dynamic label like
+    // PauseToggle) and clear. Internal so tests can drive the same
+    // menu-lifecycle seam.
+    internal const uint MenuIdStatsToggle = 9;
+    internal const uint MenuIdStatsClear = 10;
+    // P6-004（第一小步）：只读统计查看入口（区分“已记录统计”与“有样本支撑
+    // 的时间偏好”）。Internal so the diagnostic probe can drive the same
+    // menu-lifecycle seam.
+    internal const uint MenuIdStatsView = 11;
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -874,6 +952,15 @@ public partial class MainWindow : System.Windows.Window
                 return;
             }
 
+            // P5B-002: Climb on Window — same pick flow as Perch on Window;
+            // the left click on an eligible external window starts the climb
+            // route (parallel entry; Perch on Window behavior unchanged).
+            if (!AppendMenu(menu, 0, (UIntPtr)MenuIdClimbOnWindow, "Climb on Window"))
+            {
+                System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                return;
+            }
+
             // P4-002 R2 M-12: Pause/Resume toggle (label reflects the
             // current global pause state). The handler goes through the
             // same App.OnPauseToggled path as the tray menu entry.
@@ -881,6 +968,30 @@ public partial class MainWindow : System.Windows.Window
             {
                 var pauseLabel = currentApp.IsGloballyPaused ? "Resume" : "Pause";
                 if (!AppendMenu(menu, 0, (UIntPtr)MenuIdPauseToggle, pauseLabel))
+                {
+                    System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                    return;
+                }
+            }
+
+            // P6-001: Statistics toggle (label mirrors the persisted toggle;
+            // same path as the settings, default OFF) and Clear entry.
+            if (System.Windows.Application.Current is App statsApp)
+            {
+                var statsLabel = statsApp.IsUsageStatsEnabled ? "Statistics: On" : "Statistics: Off";
+                if (!AppendMenu(menu, 0, (UIntPtr)MenuIdStatsToggle, statsLabel))
+                {
+                    System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                    return;
+                }
+                if (!AppendMenu(menu, 0, (UIntPtr)MenuIdStatsClear, "Clear Statistics"))
+                {
+                    System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
+                    return;
+                }
+                // P6-004（第一小步）：只读查看入口。统计关闭时仍可打开，
+                // 窗口会如实显示未启用与已有记录。
+                if (!AppendMenu(menu, 0, (UIntPtr)MenuIdStatsView, "Usage Statistics"))
                 {
                     System.Diagnostics.Trace.TraceWarning("AppendMenu failed: {0}", Marshal.GetLastPInvokeError());
                     return;
@@ -958,6 +1069,30 @@ public partial class MainWindow : System.Windows.Window
             }));
         else if (command == MenuIdRecover)
             Dispatcher.BeginInvoke(new Action(RecoverPet));
+        else if (command == MenuIdStatsToggle)
+            // P6-001: toggle statistics collection through the settings +
+            // service path (default-off; the toggle persists).
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                    app.SetUsageStatsEnabled(!app.IsUsageStatsEnabled);
+            }));
+        else if (command == MenuIdStatsClear)
+            // P6-001: clear all collected statistics (toggle and settings
+            // are preserved).
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                    app.ClearUsageStats();
+            }));
+        else if (command == MenuIdStatsView)
+            // P6-004（第一小步）：open the read-only statistics viewer
+            // (recorded statistics vs. sample-supported time preferences).
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (System.Windows.Application.Current is App app)
+                    app.ShowUsageStatsViewer();
+            }));
         else if (command == MenuIdAddPet)
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -977,6 +1112,9 @@ public partial class MainWindow : System.Windows.Window
         else if (command == MenuIdPerchOnWindow)
             // P5A-003: enter the explicit window-pick mode.
             Dispatcher.BeginInvoke(new Action(StartPerchPick));
+        else if (command == MenuIdClimbOnWindow)
+            // P5B-002: enter the explicit window-pick mode for climbing.
+            Dispatcher.BeginInvoke(new Action(StartClimbPick));
         else if (command == MenuIdLeavePerch)
             // P5A-003: leave the current perch; the pet stays where it is.
             Dispatcher.BeginInvoke(new Action(() => _petPerch?.Detach("user-left")));
@@ -1023,10 +1161,15 @@ public partial class MainWindow : System.Windows.Window
         // new idle baseline at night. Higher-priority states (drag,
         // grievance, probe, rest reminder) still switch the action away
         // from "sleep" first, so this check never blocks them.
+        // R7 F-04: hover 是低优先级表达，不得覆盖攀爬表现——攀爬路线
+        // 进行中（_petClimb.IsActive）或 climb_* 动作呈现中（含到达后
+        // land 播完前）都不触发好奇。
         if (!_isDragging && !_isPettingCandidate && !_isContextMenuOpen && !_isAppPaused
             && !_isExpressingGrievance && !_isProbing
             && !_restReminder.IsActive
             && _animPlayer.CurrentActionId != "sleep"
+            && !(_petClimb?.IsActive ?? false)
+            && !IsClimbAction(_animPlayer.CurrentActionId)
             && TryGetMousePosition(out var mouseX, out var mouseY))
         {
             var petRectPx = GetPetRectPhysicalPx();
@@ -1307,6 +1450,10 @@ public partial class MainWindow : System.Windows.Window
         // next tick naturally re-enters sleep after an interaction ends;
         // after resume/pause/lock the first tick re-judges the boundary
         // by the then-current local time.
+        // R12 F-07：攀爬路线活跃期间（IsClimbOwned）sleep 接线绝不重入——
+        // 起攀后当前动作是 climb_* 天然不满足 idle 条件，此处的显式排除
+        // 保证"被更高优先级表达覆盖、释放回 idle 而路线仍活跃"的瞬时窗口
+        // 也不会被夜间重判覆盖，下一 tick 由攀爬控制器补播阶段动作。
         if (!_isAppPaused)
         {
             var localNow = TestGetLocalNow?.Invoke() ?? TestSuiteLocalNowDefault?.Invoke() ?? DateTime.Now;
@@ -1315,6 +1462,7 @@ public partial class MainWindow : System.Windows.Window
 
             if (isNight && !isSleeping
                 && _animPlayer.CurrentActionId == "idle"
+                && !IsClimbOwned
                 && !_isDragging && !_isPettingCandidate && !_isPhysicsActive
                 && !_isExpressingGrievance && !_isProbing
                 && !_restReminder.IsActive && !_isContextMenuOpen)
@@ -2236,6 +2384,16 @@ public partial class MainWindow : System.Windows.Window
     /// <summary>P5B-001：攀爬控制器（懒创建；仅 UI 线程访问）。</summary>
     internal PetWindowClimb Climb => _petClimb ??= new PetWindowClimb(this);
 
+    /// <summary>
+    /// R8 F-03：栖息实际脱离（目标失效/遮挡/主动脱离/暂停/拖动——生产
+    /// PetWindowPerch.OnTick 轮询 Cleared/no-landing/occluded 与
+    /// Detach/DetachForPause/CancelForDrag 均收敛到 DetachInternal 收口）
+    /// 时，经此释放仍由攀爬持有的落位表现（到达交接后 climb_land 在播）。
+    /// 经 <c>_petClimb?</c> 调用避免纯栖息场景懒创建攀爬实例；攀爬自身
+    /// 已清理时 no-op（IsPresentingClimb 守卫）。
+    /// </summary>
+    internal void ReleaseClimbForPerchDetach() => _petClimb?.CancelForPerchDetached();
+
     /// <summary>当前是否暂停（栖息轮询脱离判定用）。</summary>
     internal bool IsAppPausedNow => _isAppPaused;
 
@@ -2385,13 +2543,26 @@ public partial class MainWindow : System.Windows.Window
     private const double PerchPickTimeoutMs = 15000.0;
     private const int PerchPickVkLeftButton = 0x01; // VK_LBUTTON
 
+    /// <summary>
+    /// P5B-002：拾取意图——点击目标后的动作（栖息落位或攀爬起攀）。
+    /// 两种意图共用同一拾取状态机（超时、边沿触发按下/释放、点自身
+    /// 取消、资格校验、乱开菜单/拖动/暂停取消全部共享），只在点击合格
+    /// 目标后的分派不同，避免复制一份状态机造成行为漂移。
+    /// </summary>
+    private enum WindowPickIntent { Perch, Climb }
+
+    private WindowPickIntent _pickIntent = WindowPickIntent.Perch;
+
     private bool _perchPickActive;
     private bool _perchPickAwaitRelease;
     private double _perchPickStartMs = -1.0;
     private readonly Dictionary<uint, string> _perchPickPidNames = new();
 
-    /// <summary>当前是否处于栖息拾取模式（探针/测试观测）。</summary>
+    /// <summary>当前是否处于拾取模式（探针/测试观测；两种意图共用）。</summary>
     internal bool IsPerchPickActive => _perchPickActive;
+
+    /// <summary>P5B-002：当前拾取是否为攀爬意图（探针/测试观测）。</summary>
+    internal bool IsClimbPickActive => _perchPickActive && _pickIntent == WindowPickIntent.Climb;
 
     /// <summary>拾取是否仍在等待初始左键释放（边沿触发；探针/测试观测）。</summary>
     internal bool IsPerchPickAwaitingRelease => _perchPickAwaitRelease;
@@ -2402,7 +2573,11 @@ public partial class MainWindow : System.Windows.Window
     /// <summary>
     /// 最近一次拾取流程的终态/当前状态（探针/测试观测）：
     /// none / active / selected / rejected-busy / rejected-ineligible /
-    /// rejected-landing / cancelled-self / cancelled-timeout / cancelled。
+    /// rejected-landing / rejected-too-far / rejected-occluded /
+    /// rejected-active / started / cancelled-self / cancelled-timeout /
+    /// cancelled。
+    /// 「started」表示攀爬意图起攀成功（栖意图选中为 selected）；
+    /// rejected-* 均为拒绝且不移动。
     /// </summary>
     internal string LastPerchPickStatus { get; private set; } = "none";
 
@@ -2422,10 +2597,21 @@ public partial class MainWindow : System.Windows.Window
     internal double? TestPerchPickTimeoutMs;
 
     /// <summary>
-    /// P5A-003：进入拾取模式。位置所有权被占用（拖动/抚摸/暂停/物理/
-    /// 探头/社交）时不进入并记 rejected-busy；已激活时重复进入为无操作。
+    /// P5A-003：进入栖息拾取模式（点击目标后落位）。位置所有权被占用
+    /// （拖动/抚摸/暂停/物理/探头/社交）时不进入并记 rejected-busy；
+    /// 已激活时重复进入为无操作。
     /// </summary>
-    internal void StartPerchPick()
+    internal void StartPerchPick() => StartPick(WindowPickIntent.Perch);
+
+    /// <summary>
+    /// P5B-002：进入攀爬拾取模式（点击目标后按既有攀爬路线起攀）。
+    /// 与 <see cref="StartPerchPick"/> 共用同一拾取状态机；起攀距离与
+    /// 顶部落位资格由 <see cref="PetWindowClimb.TryStart"/> 沿既有守卫
+    /// 校验（拒绝不移动）。处于栖息绑定中时经攀爬守卫拒绝起攀。
+    /// </summary>
+    internal void StartClimbPick() => StartPick(WindowPickIntent.Climb);
+
+    private void StartPick(WindowPickIntent intent)
     {
         if (_perchPickActive)
             return;
@@ -2434,6 +2620,7 @@ public partial class MainWindow : System.Windows.Window
             LastPerchPickStatus = "rejected-busy";
             return;
         }
+        _pickIntent = intent;
         _perchPickActive = true;
         // 边沿触发：进入拾取时若左键正处于按下状态（如菜单点击残留或
         // 用户按住左键进入），必须先观察到释放，再等待新的按下。否则
@@ -2535,9 +2722,31 @@ public partial class MainWindow : System.Windows.Window
             return;
         }
 
-        // 显式选择：落位/重选/旧绑定保留语义全部由 P5A-001 已验收的
-        // TrySelectExplicit 决定，本入口不改任何栖息行为。
-        EndPerchPick(Perch.TrySelectExplicit(snapshot, selfPid) ? "selected" : "rejected-landing");
+        // 点击合格目标：按进入时的意图分派。
+        if (_pickIntent == WindowPickIntent.Climb)
+        {
+            // P5B-002：攀爬意图 → 沿既有控制器起攀（资格/距离/落位/
+            // 遮挡拒绝全部由 TryStart 沿既有守卫校验，拒绝不移动）。
+            var result = Climb.TryStart(snapshot, selfPid, nowMs);
+            EndPerchPick(result switch
+            {
+                PetClimbStartResult.Started => "started",
+                PetClimbStartResult.RejectedBusy => "rejected-busy",
+                PetClimbStartResult.RejectedTooFar => "rejected-too-far",
+                PetClimbStartResult.RejectedNoLanding => "rejected-landing",
+                PetClimbStartResult.RejectedOccluded => "rejected-occluded",
+                PetClimbStartResult.RejectedIneligible => "rejected-ineligible",
+                PetClimbStartResult.RejectedAlreadyActive => "rejected-active",
+                _ => "rejected",
+            });
+        }
+        else
+        {
+            // P5A-003：显式选择——落位/重选/旧绑定保留语义全部由
+            // P5A-001 已验收的 TrySelectExplicit 决定，本入口不改任何
+            // 栖息行为。
+            EndPerchPick(Perch.TrySelectExplicit(snapshot, selfPid) ? "selected" : "rejected-landing");
+        }
     }
 
     private string ResolvePerchPickProcessName(uint pid)
@@ -2590,24 +2799,55 @@ public partial class MainWindow : System.Windows.Window
     // ---------- P5B-001：窗口有限攀爬（隔离预览） ----------
 
     /// <summary>
-    /// P5B-001：攀爬临时表现。无攀爬专用素材，首版仅在当前空闲
-    /// （idle）时切换动作制造"爬行中"的可见反馈；其他表达
-    /// （好奇/委屈/睡眠/拖动等）持有更高动作优先级，不覆盖。
-    /// 攀爬专用素材后置（R-08 升级项，不宣称已实现）。
+    /// P5B-003 S2：播放攀爬阶段动作并设置朝向镜像。
+    /// 仅当当前动作是空闲底态（idle 或夜间 sleep）或 climb_* 时播放，
+    /// 避免覆盖更高优先级表达（好奇/委屈/拖动等）。
+    /// R12 F-07：夜间 sleep 是低优先级空闲底态——成功起攀取得路线所有权
+    /// 时必须让位给 climb_side；拒绝/取消路径不经本方法，因此不会因此
+    /// 唤醒睡眠。<paramref name="mirrorLeft"/> 为 true 表示目标方向在
+    /// 宠物右侧（素材默认朝左伸爪，需 ScaleX=-1）。
+    /// R7 F-04：返回是否实际播放成功——被守卫拒绝或动作未注册（缺失）
+    /// 时不播放、不改镜像，返回 false；调用方只在 true 时记录缓存，
+    /// 且缺失回退不会把 idle 帧镜像显示。
     /// </summary>
-    internal void PlayClimbAction()
+    internal bool PlayClimbAction(string actionId, bool mirrorLeft)
     {
-        if (_animPlayer.CurrentActionId == "idle")
-            _animPlayer.PlayAction("curious");
+        var current = _animPlayer.CurrentActionId;
+        if (current != "idle" && current != "sleep" && !IsClimbAction(current))
+            return false;
+        // F-04：动作未注册（素材缺失）不播放、不改镜像——保持当前 idle
+        // 表现（AnimationPlayer 的 missing 兜底不参与攀爬专用调用）。
+        if (!_character.Actions.ContainsKey(actionId))
+            return false;
+        ClimbMirrorTransform.ScaleX = mirrorLeft ? -1 : 1;
+        _animPlayer.PlayAction(actionId);
+        // 防御性复核：播放后当前动作必须是 climb_*（PlayAction 同步切
+        // 换；此处兜底播放器与素材不一致的极端情况），否则复位镜像。
+        if (!IsClimbAction(_animPlayer.CurrentActionId))
+        {
+            ClimbMirrorTransform.ScaleX = 1;
+            return false;
+        }
+        return true;
     }
 
-    /// <summary>P5B-001：结束攀爬临时表现。仅在仍是攀爬切换的
-    /// curious 帧时回到 idle，不覆盖其他表达。</summary>
-    internal void EndClimbAction()
+    /// <summary>P5B-003 S2：结束攀爬表现。默认立即回 idle 并复位镜像；
+    /// keepLand=true（到达分支已交栖息）时不动，让 land once 自然播完。
+    /// R7 F-03：任何清理路径都无条件复位镜像防残影；仅当前确为 climb_*
+    /// 时才回 idle（不误清更高优先级表达）。</summary>
+    internal void EndClimbAction(bool keepLand = false)
     {
-        if (_animPlayer.CurrentActionId == "curious")
-            _animPlayer.PlayAction("idle");
+        if (keepLand)
+            return;
+        ClimbMirrorTransform.ScaleX = 1;
+        if (!IsClimbAction(_animPlayer.CurrentActionId))
+            return;
+        _animPlayer.PlayAction("idle");
     }
+
+    /// <summary>P5B-003 S2：攀爬专用动作标识判定。</summary>
+    private static bool IsClimbAction(string actionId)
+        => actionId == "climb_side" || actionId == "climb_edge" || actionId == "climb_land";
 
     /// <summary>
     /// P5B-001：把宠物钳回可见工作区（路线失败/取消时回到可见区域）。
@@ -3292,6 +3532,13 @@ public partial class MainWindow : System.Windows.Window
         // route; otherwise the route stays active and the next Tick can
         // drag the pet back toward the old target.
         _petClimb?.CancelForRecover();
+
+        // P5B-002 R2 F-01: Recover must synchronously end a pending
+        // perch/climb pick (selection not yet made). The tray entry calls
+        // RecoverPet directly, bypassing EnterContextMenuMode, so without
+        // this the pick stays active and a later ordinary click can still
+        // start the interrupted target selection. Mirrors PauseAnimation.
+        EndPerchPick("cancelled");
 
         // F-02 R1: Immediately cancel any active social session on recover.
         var recoverNowMs = TestGetElapsedMs?.Invoke() ?? GetElapsedMs();

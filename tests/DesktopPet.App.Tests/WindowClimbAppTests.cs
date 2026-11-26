@@ -756,7 +756,7 @@ public class WindowClimbAppTests
     /// 判定 IsWindowAlive=false → WindowGone 清除 → CancelCore("target-WindowGone")
     /// → 回可见区 + climb-cancelled(target-WindowGone)。
     /// 证据层次：本测试覆盖「重观测 → 失效判定 → 取消 → 不再写位置」完整
-    /// 判定链；「回可见区实机钳制」由 M-17 驱动真实关闭目标场景捕捉。
+    /// 判定链；本用例通过注入失效采样验证，未实际销毁外部窗口。
     /// </summary>
     [STATestMethod]
     public void Climb_TargetClosedDuringRoute_DeadSnapshot_CancelsAndStopsWrites()
@@ -777,7 +777,7 @@ public class WindowClimbAppTests
             Assert.IsTrue(climb.IsActive, "前置：目标关闭前路线仍在进行。");
             var stepsBeforeClose = events.Count(e => e.Type == "climb-step");
 
-            // 目标窗口真实关闭：采样返回 null（句柄销毁）。
+            // 模拟句柄销毁后的采样：返回 null，走生产取消路径。
             climb.TestSnapshotSource = _ => null;
             climb.Tick(200);
 
@@ -800,5 +800,25 @@ public class WindowClimbAppTests
             Assert.IsFalse(climb.IsActive);
         }
         finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Climb_RollbackThenOldBaseline_DoesNotConsumeTimeTwice()
+    {
+        var window = new MainWindow();
+        try {
+            var events = new List<PetClimbEvent>(); var climb = Setup(window, events);
+            var snapshot = Snapshot(0x99999); climb.TestSnapshotSource = _ => snapshot;
+            Assert.AreEqual(PetClimbStartResult.Started, climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            climb.Tick(100); var left=window.Left; var top=window.Top;
+            climb.Tick(50); climb.Tick(100);
+            Assert.AreEqual(left,window.Left,0.001);Assert.AreEqual(top,window.Top,0.001);
+            Assert.AreEqual(1,events.Count(e=>e.Type=="climb-step"));
+            for(int i=2;i<50 && climb.IsActive;i++) climb.Tick(i*100);
+            var arrived=events.Single(e=>e.Type=="climb-arrived");
+            var completed=events.Single(e=>e.Type=="climb-completed");
+            Assert.AreEqual(arrived.FootX,completed.FootX,0.001);
+            Assert.AreEqual(arrived.FootY,completed.FootY,0.001);
+        }finally{window.Close();}
     }
 }

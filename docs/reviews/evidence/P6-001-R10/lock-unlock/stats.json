@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "lastSavedUtc": "2026-11-26T13:47:44.5894505Z",
+  "coverageMismatchCount": 0,
+  "segments": [
+    {
+      "appId": "explorer",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:14.4946426\u002B08:00",
+      "durationMs": 4999.231
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:29.4871748\u002B08:00",
+      "durationMs": 5011.937
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:34.4991967\u002B08:00",
+      "durationMs": 5002.385
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:39.5016562\u002B08:00",
+      "durationMs": 5001.414
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:44.5031476\u002B08:00",
+      "durationMs": 4997.486
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:49.5007080\u002B08:00",
+      "durationMs": 5001.724
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:54.5025065\u002B08:00",
+      "durationMs": 5003.745
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:44:59.5063293\u002B08:00",
+      "durationMs": 5000.359
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:45:04.5067807\u002B08:00",
+      "durationMs": 5005.312
+    },
+    {
+      "appId": "clouddesktop-qml",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:45:09.5121529\u002B08:00",
+      "durationMs": 5001.114
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:45:14.5133474\u002B08:00",
+      "durationMs": 4993.566
+    },
+    {
+      "appId": "codefreespace",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:45:19.5069866\u002B08:00",
+      "durationMs": 5023.453
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:46:44.5484872\u002B08:00",
+      "durationMs": 4999.921
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:46:49.5484931\u002B08:00",
+      "durationMs": 5006.634
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:46:54.5552009\u002B08:00",
+      "durationMs": 5005.671
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:46:59.5609472\u002B08:00",
+      "durationMs": 4991.539
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:04.5525636\u002B08:00",
+      "durationMs": 5005.526
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:09.5581664\u002B08:00",
+      "durationMs": 4994.906
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:14.5531476\u002B08:00",
+      "durationMs": 5009.552
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:19.5627753\u002B08:00",
+      "durationMs": 5015.215
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:24.5780672\u002B08:00",
+      "durationMs": 5011.738
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:29.5898803\u002B08:00",
+      "durationMs": 5003.463
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:34.5934202\u002B08:00",
+      "durationMs": 4992.953
+    },
+    {
+      "appId": "windowsterminal",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T21:47:39.5864491\u002B08:00",
+      "durationMs": 5002.911
+    }
+  ],
+  "events": [
+    {
+      "eventType": "app-start",
+      "date": "2026-11-26",
+      "occurredLocal": "2026-11-26T21:43:24.4920489\u002B08:00"
+    },
+    {
+      "eventType": "unlock",
+      "date": "2026-11-26",
+      "occurredLocal": "2026-11-26T21:46:41.0292769\u002B08:00"
+    }
+  ]
+}

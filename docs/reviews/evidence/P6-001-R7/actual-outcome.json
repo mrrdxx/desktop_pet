@@ -1,0 +1,12 @@
+{
+  "uiFailure": "new isolated windows absent from sky/cua inventory; sky.launch_app returned product policy blocks this app for powershell.exe",
+  "statsFileCreated": false,
+  "initialAbortedRun": "run-20261126-153200",
+  "remainingOwnedProcesses": [],
+  "termination": "supervisor aborted exact probe PID after UI tool policy rejection; not normal exit",
+  "allDisabled": true,
+  "observations": 114,
+  "maxEvents": 0.0,
+  "maxElapsedSec": 218.2,
+  "maxSegments": 0.0
+}

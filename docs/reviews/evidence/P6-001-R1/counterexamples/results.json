@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Invalid input null",
+    "expected": 0,
+    "actual": 10000,
+    "pass": false
+  },
+  {
+    "name": "Invalid input NaN",
+    "expected": 0,
+    "actual": 10000,
+    "pass": false
+  },
+  {
+    "name": "Invalid input \u221E",
+    "expected": 0,
+    "actual": 10000,
+    "pass": false
+  },
+  {
+    "name": "Invalid input 100000",
+    "expected": 0,
+    "actual": 10000,
+    "pass": false
+  },
+  {
+    "name": "Failed foreground interval must not extend known app",
+    "expected": 5000,
+    "actual": 10000,
+    "pass": false
+  },
+  {
+    "name": "Long gap preserves previously verified duration",
+    "expected": 10000,
+    "actual": 0,
+    "pass": false
+  },
+  {
+    "name": "No accumulation while pause",
+    "expected": 5000,
+    "actual": 15000,
+    "pass": false
+  },
+  {
+    "name": "No accumulation while lock",
+    "expected": 5000,
+    "actual": 15000,
+    "pass": false
+  },
+  {
+    "name": "No accumulation while sleep",
+    "expected": 5000,
+    "actual": 15000,
+    "pass": false
+  },
+  {
+    "name": "No accumulation while overlap",
+    "expected": 5000,
+    "actual": 15000,
+    "pass": false
+  },
+  {
+    "name": "Verified active duration checkpointed before shutdown",
+    "expected": "\u003E0",
+    "actual": 0,
+    "pass": false
+  },
+  {
+    "name": "Clear removes preserved historical payload",
+    "expected": 0,
+    "actual": [
+      "stats.json.corrupted"
+    ],
+    "pass": false
+  },
+  {
+    "name": "Optional statistics I/O failure contained",
+    "expected": "no uncaught exception",
+    "actual": "UnauthorizedAccessException",
+    "pass": false
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "action": "idle",
+    "accepted": true,
+    "reason": "normal landing idle (perch active)"
+  },
+  {
+    "action": "sleep",
+    "accepted": true,
+    "reason": "normal landing idle (perch active)"
+  },
+  {
+    "action": "curious",
+    "accepted": true,
+    "reason": "normal landing idle (perch active)"
+  },
+  {
+    "action": "drag",
+    "accepted": true,
+    "reason": "normal landing idle (perch active)"
+  }
+]

@@ -1,0 +1,1 @@
+{"scenario":"usage-stats-wiring","session":2,"toggleOnAfterLoad":true,"subscribedAfterStart":true,"enabledAfterInit":true,"appStartEventCount":2,"note":"Same-directory re-run of this command writes session N\u002B1 without overwriting this file."}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "lastSavedUtc": "2026-11-26T08:10:25.7634593Z",
+  "coverageMismatchCount": 0,
+  "segments": [
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:10:15.7544771\u002B08:00",
+      "durationMs": 4997.203
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:10:20.7516951\u002B08:00",
+      "durationMs": 5011.75
+    }
+  ],
+  "events": []
+}

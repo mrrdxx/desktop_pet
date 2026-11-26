@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Reviewer_Climb_LocalSocialActive_MustRejectStart",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_Climb_Recovery_MustCancelRoute",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_ClimbingSameWall_MirrorMustNotFlipAtSideContact",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_Climb_AlreadyPerched_MustRejectWithoutChangingBinding",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_Climb_MustNotShortcutPolylineWhenDirectDistanceFitsBudget",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_ExpressionEndsDuringClimb_RetryStagePlayback",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_LandTargetGone_MustReleasePresentation",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_LandPlayback_PauseMustClearActionAndMirror",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_AlreadyPlayingThenOverridden_MustRetryStage",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_MissingAction_MustNotMirrorIdle",
+    "outcome": "Passed"
+  },
+  {
+    "name": "Reviewer_Climb_LongStall_MustDiscardBacklog",
+    "outcome": "Passed"
+  }
+]

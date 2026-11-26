@@ -27,7 +27,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
+using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 using DesktopPet.App;
 using DesktopPet.App.Platform;
@@ -103,6 +106,12 @@ public static partial class Program
         var selfPid = (uint)Environment.ProcessId;
         var counts = new Dictionary<string, int>();
         var lastEvent = "";
+        // R16：只用于观测的本次链标识。每次起攀（climb-started）递增并写入事件
+        // JSON，链内后续事件（step/occluded/completed/cancelled 等）携带同一
+        // chainId。生产正确取消路径（land 交接 tracker 释放后发 perch-detached
+        // 取消）的 climb-cancelled 事件 targetHwnd=null，无法用目标句柄关联，
+        // 驱动以 chainId 关联本次 land/真实拖动链（R16 监理判据）。
+        var chainId = 0;
         string HwndHex(long v) => "0x" + v.ToString("X");
 
         var petHwnd = new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle;
@@ -112,15 +121,30 @@ public static partial class Program
         {
             counts[ev.Type] = counts.TryGetValue(ev.Type, out var c) ? c + 1 : 1;
             lastEvent = ev.Type;
+            // R16：chainId 每次起攀递增，链内事件共用；不依赖 ev.TargetHwnd
+            //（land 拖动取消时其为 null，驱动以 chainId 关联本次链）。
+            if (ev.Type == "climb-started") { chainId++; }
             var line = JsonSerializer.Serialize(new
             {
                 tMs = stopwatch.ElapsedMilliseconds,
                 type = ev.Type,
+                // R16：本次链标识（只用于观测，随事件输出供驱动关联 land 拖动取消）。
+                chainId = chainId,
+                // R15：事件流同步记录触发当刻的实际 CurrentAction（与 sidecar/心跳
+                // 同源），climb-started 与 climb-step 均带；mirror 不再独立承担
+                // side 证据（R15 否证：mirror 初值也可能 1，不能凭 mirror 推断 side
+                // 播放）；驱动以 action + mirror 共同取证左右侧段。
+                action = mainWindow.CurrentAction,
                 reason = ev.Reason,
                 fraction = ev.Fraction,
                 targetHwnd = ev.TargetHwnd is null ? null : HwndHex(ev.TargetHwnd.Value),
                 targetBounds = ev.TargetBounds,
                 foot = new[] { ev.FootX, ev.FootY },
+                // R11 实机轮：side 段心跳在攀爬渲染高峰被饿死（DispatcherBackground
+                // 轮询与宠物动画同进程共用 Dispatcher，三次实测 ③④ side 段零心跳），
+                // 事件流是同步观测不经过轮询；此处仍记录当刻镜像作方向证据，
+                // 但验证是否播放 side 以 action 字段为准。
+                mirror = ReadClimbMirrorScaleX(),
             });
             File.AppendAllText(eventsFile, line + "\n");
             Console.WriteLine($"[P5B001] t={stopwatch.ElapsedMilliseconds}ms {ev.Type} {ev.Reason ?? ""}");
@@ -204,6 +228,78 @@ public static partial class Program
                 {
                     mainWindow.ResumeAnimation();
                 }
+                else if (line == "pick-entry")
+                {
+                    // P5B-002: drive the production climb menu entry (same
+                    // BeginInvoke dispatch path as the native menu).
+                    mainWindow.TestOpenContextMenuLifecycle((int)MainWindow.MenuIdClimbOnWindow);
+                }
+                else if (line.StartsWith("menu-entry ", StringComparison.Ordinal))
+                {
+                    // P5B-002: open the REAL native context menu (production
+                    // TrackPopupMenuEx popup) at the given physical screen
+                    // point. Blocks until the driver's injected mouse input
+                    // selects/dismisses an item; command dispatch is the
+                    // production path.
+                    var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 3
+                        && int.TryParse(parts[1], out var menuX)
+                        && int.TryParse(parts[2], out var menuY))
+                    {
+                        mainWindow.TestShowNativeContextMenu(menuX, menuY);
+                    }
+                }
+                else if (line.StartsWith("capture ", StringComparison.Ordinal))
+                {
+                    // P5B-003 R9：按需渲染帧截图（120×120 默认尺寸）。
+                    // 复用 ClimbPreviewScenario 的反射取 PetImage +
+                    // RenderTargetBitmap 手法；落在 frames/<name>.png，
+                    // 并写 frame-captured 事件供驱动断言取证。
+                    var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 2)
+                    {
+                        var name = string.Concat(parts[1].Select(ch =>
+                            char.IsLetterOrDigit(ch) || ch == '-' ? ch : '_'));
+                        if (name.Length > 0)
+                        {
+                            var dir = Path.Combine(scenarioDir, "frames");
+                            Directory.CreateDirectory(dir);
+                            var petImage = PreviewGetField(mainWindow, "PetImage") as Image;
+                            if (petImage is not null)
+                            {
+                                var capTMs = stopwatch.ElapsedMilliseconds;
+                                PreviewRenderPng(petImage, Path.Combine(dir, name + ".png"));
+                                // R10 F-06：sidecar 记录采集瞬间的真实动作/镜像/时间，
+                                // 驱动据此证明帧捕到 climb_land（不能只靠文件名）；
+                                // 字段与心跳同源（缺镜像=null，不做默认值）。
+                                var sidecar = JsonSerializer.Serialize(new
+                                {
+                                    tMs = capTMs,
+                                    action = mainWindow.CurrentAction,
+                                    mirror = ReadClimbMirrorScaleX(),
+                                    climbActive = mainWindow.Climb.IsActive,
+                                    perchActive = mainWindow.Perch.IsActive,
+                                    name,
+                                });
+                                File.WriteAllText(Path.Combine(dir, name + ".json"), sidecar);
+                                File.AppendAllText(eventsFile, JsonSerializer.Serialize(new
+                                {
+                                    tMs = capTMs,
+                                    type = "frame-captured",
+                                    name,
+                                }) + "\n");
+                                Console.WriteLine($"[P5B001] t={capTMs}ms frame-captured {name} @{mainWindow.CurrentAction}/mir={ReadClimbMirrorScaleX()}");
+                            }
+                        }
+                    }
+                }
+                else if (line == "recover")
+                {
+                    // P5B-003 R9：生产 RecoverPet（public）——攀爬/栖息/
+                    // 拾取同步清理入口，与托盘/App 真实调用同一方法，
+                    // 探针仅触发、不改产品实现。
+                    mainWindow.RecoverPet();
+                }
                 else if (line == "quit")
                 {
                     quit = true;
@@ -211,15 +307,34 @@ public static partial class Program
             }
         }
 
+        // ---- 动作/镜像观测（WriteState 与 capture sidecar 共用） ----
+        // P5B-003 R9/R10：CurrentAction 为 public 属性直访；ClimbMirrorTransform
+        // 是 XAML 生成 internal 字段（App 仅 InternalsVisibleTo
+        // DesktopPet.App.Tests），探针一律反射读取 ScaleX
+        // （ScaleTransform public 属性，见 ClimbPreviewScenario 先例）；
+        // 反射失败置 null 以便驱动区分，不静默默认值。
+        double? ReadClimbMirrorScaleX()
+        {
+            var mirrorField = typeof(MainWindow).GetField("ClimbMirrorTransform",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (mirrorField?.GetValue(mainWindow) is ScaleTransform mirror)
+                return mirror.ScaleX;
+            return null;
+        }
+
         // ---- 心跳状态（驱动读取） ----
         void WriteState()
         {
             var climb = mainWindow.Climb;
+            double? climbMirrorScaleX = ReadClimbMirrorScaleX();
             var state = new
             {
                 tMs = stopwatch.ElapsedMilliseconds,
+                petHwnd = petHwnd.ToInt64(),
                 climbActive = climb.IsActive,
                 progress = Math.Round(climb.ProgressFraction, 4),
+                currentAction = mainWindow.CurrentAction,
+                climbMirrorScaleX,
                 climbTargetHwnd = climb.TargetHwndValue is null ? null : HwndHex(climb.TargetHwndValue.Value),
                 perchActive = mainWindow.Perch.IsActive,
                 perchTargetHwnd = mainWindow.Perch.TargetHwndValue is null ? null : HwndHex(mainWindow.Perch.TargetHwndValue.Value),
@@ -227,6 +342,10 @@ public static partial class Program
                 petFootPx = PetFoot(),
                 lastEvent,
                 isDragging = mainWindow.IsDragging,
+                climbPickActive = mainWindow.IsClimbPickActive,
+                climbPickStatus = mainWindow.LastPerchPickStatus,
+                climbPickAwaitRelease = mainWindow.IsPerchPickAwaitingRelease,
+                climbPickLeftDown = mainWindow.LastPerchPickLeftDown,
             };
             // 驱动并发读取 stateFile（Get-Content）会短暂持有句柄，MoveFile 可能
             // 抛 UnauthorizedAccessException；心跳写入失败只跳过本轮，不崩溃探针。

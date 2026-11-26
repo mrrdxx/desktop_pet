@@ -1,0 +1,22 @@
+{
+  "scenario": "usage-stats-live",
+  "session": 1,
+  "usedProductionCreatePetWindow": true,
+  "usedProductionInitializeUsageStats": true,
+  "usedReal5sTimer": true,
+  "usedRealForegroundSampler": true,
+  "usedRealIdleSampler": true,
+  "realContextMenuDispatchConfirmed": false,
+  "usedFakeForegroundOrManualTick": false,
+  "appStartEventCount": 0,
+  "statsFilePath": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261126-160614-user\\usage-stats-live\\stats.json",
+  "settingsFilePath": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261126-160614-user\\usage-stats-live\\settings.json",
+  "stateFilePath": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261126-160614-user\\usage-stats-live\\state.json",
+  "enabledAtShutdown": false,
+  "generationAtShutdown": 1,
+  "segmentsCountAtShutdown": 2,
+  "eventsCountAtShutdown": 0,
+  "coverageMismatchCountAtShutdown": 0,
+  "lastWriteError": null,
+  "note": "Operator plan: B enable \u2192 C/D foreground accumulation \u2192 E \u0027\u5173\u95ED\u4FDD\u7559\u0027 (disabled, data kept \u0026 frozen) \u2192 F \u0027\u91CD\u65B0\u5F00\u542F\u540E\u6E05\u9664\u4FDD\u7559 On\u0027 (clear: generation/time recorded, old records gone, toggle stays ON, new records allowed afterwards). app-start is only registered when the toggle was enabled at startup (never fabricated during the run). A same-directory restart restores settings/state from disk (toggle survives), does NOT restore cleared history, and allows new records \u2014 under a new session-numbered observation file."
+}

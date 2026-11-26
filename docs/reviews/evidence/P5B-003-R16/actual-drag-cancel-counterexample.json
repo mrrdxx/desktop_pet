@@ -1,0 +1,20 @@
+{
+  "currentProductionPredicate": {
+    "Kind": "stale",
+    "Ok": false,
+    "Detail": "only stale cancel: type=climb-cancelled reason=perch-detached tMs=63900 <= since=71021"
+  },
+  "actualEvent": {
+    "tMs": 71099,
+    "type": "climb-cancelled",
+    "reason": "perch-detached",
+    "fraction": null,
+    "targetHwnd": null,
+    "targetBounds": null,
+    "foot": [
+      0,
+      0
+    ],
+    "mirror": 1
+  }
+}

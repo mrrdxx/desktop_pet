@@ -1,0 +1,7 @@
+{
+  "started": "2026-11-27T00:10:06.1865303+08:00",
+  "exe": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p6001-probe-r9\\bin\\DesktopPet.DiagnosticProbe\\debug\\DesktopPet.DiagnosticProbe.exe",
+  "base": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261127-001006-supervisor-sleep",
+  "probe": 84136,
+  "mode": "supervisor requests actual Windows Suspend; user wakes"
+}

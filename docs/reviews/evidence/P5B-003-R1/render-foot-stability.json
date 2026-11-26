@@ -1,0 +1,2431 @@
+{
+  "idleRenderMatchesAsset": true,
+  "sideFootStable": true,
+  "edgeFootStable": true,
+  "landFeetCollectedStable": true,
+  "allPass": true,
+  "failures": [],
+  "footStats": {
+    "idle_base": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_side_00": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_01": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_02": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_03": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_04": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_05": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_06": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_07": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_side_08": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_00": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_01": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_02": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_03": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_04": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_05": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_06": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_07": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_edge_08": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "104": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "105": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 39
+        },
+        "109": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 35
+        },
+        "110": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 30
+        }
+      }
+    },
+    "climb_land_00": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 40
+        },
+        "104": {
+          "min": 41,
+          "max": 79,
+          "center": 60.0,
+          "count": 39
+        },
+        "105": {
+          "min": 41,
+          "max": 78,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 38
+        },
+        "109": {
+          "min": 41,
+          "max": 78,
+          "center": 59.5,
+          "count": 34
+        },
+        "110": {
+          "min": 42,
+          "max": 77,
+          "center": 59.5,
+          "count": 29
+        }
+      }
+    },
+    "climb_land_01": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 40
+        },
+        "104": {
+          "min": 41,
+          "max": 79,
+          "center": 60.0,
+          "count": 39
+        },
+        "105": {
+          "min": 41,
+          "max": 78,
+          "center": 59.5,
+          "count": 38
+        },
+        "106": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 40
+        },
+        "108": {
+          "min": 40,
+          "max": 79,
+          "center": 59.5,
+          "count": 38
+        },
+        "109": {
+          "min": 41,
+          "max": 78,
+          "center": 59.5,
+          "count": 34
+        },
+        "110": {
+          "min": 42,
+          "max": 77,
+          "center": 59.5,
+          "count": 29
+        }
+      }
+    },
+    "climb_land_02": {
+      "bottomGroundRow": 110,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "102": {
+          "min": 37,
+          "max": 82,
+          "center": 59.5,
+          "count": 46
+        },
+        "103": {
+          "min": 42,
+          "max": 77,
+          "center": 59.5,
+          "count": 36
+        },
+        "104": {
+          "min": 43,
+          "max": 77,
+          "center": 60.0,
+          "count": 35
+        },
+        "105": {
+          "min": 43,
+          "max": 76,
+          "center": 59.5,
+          "count": 34
+        },
+        "106": {
+          "min": 42,
+          "max": 77,
+          "center": 59.5,
+          "count": 36
+        },
+        "107": {
+          "min": 42,
+          "max": 77,
+          "center": 59.5,
+          "count": 36
+        },
+        "108": {
+          "min": 42,
+          "max": 77,
+          "center": 59.5,
+          "count": 36
+        },
+        "109": {
+          "min": 43,
+          "max": 76,
+          "center": 59.5,
+          "count": 34
+        },
+        "110": {
+          "min": 44,
+          "max": 75,
+          "center": 59.5,
+          "count": 29
+        }
+      }
+    },
+    "climb_land_03": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_04": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_05": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_06": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_07": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_08": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_09": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_10": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_11": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_12": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_13": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    },
+    "climb_land_14": {
+      "bottomGroundRow": 111,
+      "rows100-110": {
+        "100": {
+          "min": 36,
+          "max": 83,
+          "center": 59.5,
+          "count": 48
+        },
+        "101": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "102": {
+          "min": 37,
+          "max": 83,
+          "center": 60.0,
+          "count": 47
+        },
+        "103": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 45
+        },
+        "104": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 44
+        },
+        "105": {
+          "min": 39,
+          "max": 81,
+          "center": 60.0,
+          "count": 40
+        },
+        "106": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 40
+        },
+        "107": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 41
+        },
+        "108": {
+          "min": 38,
+          "max": 82,
+          "center": 60.0,
+          "count": 40
+        },
+        "109": {
+          "min": 38,
+          "max": 81,
+          "center": 59.5,
+          "count": 38
+        },
+        "110": {
+          "min": 39,
+          "max": 80,
+          "center": 59.5,
+          "count": 34
+        }
+      }
+    }
+  },
+  "deliverables": [
+    "preview_edge.gif",
+    "preview_land.gif",
+    "preview_side.gif",
+    "climb_keyframes_4x.png",
+    "climb_zoom_compare_2x.png"
+  ]
+}

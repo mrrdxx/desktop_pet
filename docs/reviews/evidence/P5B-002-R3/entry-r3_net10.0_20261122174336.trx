@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="adaba9da-89a6-48db-aad1-24af9067e158" name="mrrdxx@毛茸茸的小熊 2026-11-22 17:43:35" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T17:43:35.9351456+08:00" queuing="2026-11-22T17:43:35.9351458+08:00" start="2026-11-22T17:43:32.4943136+08:00" finish="2026-11-22T17:43:36.2684250+08:00" />
+  <TestSettings name="default" id="d1e61790-f3e8-4f68-acaa-5a45abcfcf36">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-22_17_43_35" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="cedbb4a8-11e4-4cba-b257-2d11d98024f8" testId="c3204ce8-d883-ecb0-f37b-19db5274cb41" testName="PerchPick_EntryWhileLeftButtonDown_IgnoresHeldButtonUntilRelease" computerName="毛茸茸的小熊" duration="00:00:00.0061073" startTime="2026-11-22T17:43:36.1110027+08:00" endTime="2026-11-22T17:43:36.1191675+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cedbb4a8-11e4-4cba-b257-2d11d98024f8" />
+    <UnitTestResult executionId="62b9b9f2-e8a0-4be5-986e-6087dcd28db5" testId="adab3133-6bf0-b128-d8b2-5a347ddc98bd" testName="PerchPick_OpeningMenu_CancelsPick" computerName="毛茸茸的小熊" duration="00:00:00.0057595" startTime="2026-11-22T17:43:36.0946375+08:00" endTime="2026-11-22T17:43:36.1020958+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="62b9b9f2-e8a0-4be5-986e-6087dcd28db5" />
+    <UnitTestResult executionId="9e11838b-da20-4635-8342-82e53b062551" testId="418755ec-c278-f5cb-0293-2b2a087e0fda" testName="ClimbPick_OpeningMenu_CancelsPick" computerName="毛茸茸的小熊" duration="00:00:00.0061397" startTime="2026-11-22T17:43:35.9674287+08:00" endTime="2026-11-22T17:43:35.9754506+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9e11838b-da20-4635-8342-82e53b062551" />
+    <UnitTestResult executionId="94b29b76-1483-4789-8798-eef6eb1288c3" testId="e0cfd695-a54c-90de-30ca-9c791852b1f2" testName="ClimbPick_PauseDuringPick_CancelsImmediately_ResumeDoesNotResume" computerName="毛茸茸的小熊" duration="00:00:00.0095100" startTime="2026-11-22T17:43:35.9755254+08:00" endTime="2026-11-22T17:43:35.9872200+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="94b29b76-1483-4789-8798-eef6eb1288c3" />
+    <UnitTestResult executionId="68576fc2-b6f0-4eeb-9266-330d26f173e4" testId="f2e05f40-b001-bc1b-b3af-2d8eac3b6ae1" testName="ClimbPick_IneligibleTarget_RejectedAndPickEnds" computerName="毛茸茸的小熊" duration="00:00:00.0060742" startTime="2026-11-22T17:43:35.9286470+08:00" endTime="2026-11-22T17:43:35.9364971+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="68576fc2-b6f0-4eeb-9266-330d26f173e4" />
+    <UnitTestResult executionId="370cb346-247a-42b1-8746-12ef0e62678c" testId="afa2b018-0945-41cd-4ae0-802e9a934ccc" testName="ClimbPick_EntryWhileBusy_DoesNotEnterPickMode" computerName="毛茸茸的小熊" duration="00:00:00.0059818" startTime="2026-11-22T17:43:35.9594036+08:00" endTime="2026-11-22T17:43:35.9671743+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="370cb346-247a-42b1-8746-12ef0e62678c" />
+    <UnitTestResult executionId="3ff93b9a-0094-44ff-bf77-3262713aa58b" testId="0103ba73-0be3-c2a7-8600-6d56be32ae5b" testName="PerchPick_PauseDuringPick_CancelsImmediately_ResumeDoesNotResume" computerName="毛茸茸的小熊" duration="00:00:00.0069632" startTime="2026-11-22T17:43:36.1021663+08:00" endTime="2026-11-22T17:43:36.1109265+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ff93b9a-0094-44ff-bf77-3262713aa58b" />
+    <UnitTestResult executionId="6a278f36-9eb8-4dd4-9240-b3d8bf5ec520" testId="9d57ed04-c245-64d0-54a8-8bc65536614b" testName="PerchPick_PositionOwnershipLostWhilePicking_Cancels" computerName="毛茸茸的小熊" duration="00:00:00.0067507" startTime="2026-11-22T17:43:36.0760182+08:00" endTime="2026-11-22T17:43:36.0847244+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6a278f36-9eb8-4dd4-9240-b3d8bf5ec520" />
+    <UnitTestResult executionId="7fa82bd3-fe97-472d-9dd8-265b00bbf709" testId="ad4199fe-c979-0a7e-bee1-255d31ec1376" testName="PerchPick_ParallelEntry_RemainsUnchanged" computerName="毛茸茸的小熊" duration="00:00:00.0084476" startTime="2026-11-22T17:43:35.9982654+08:00" endTime="2026-11-22T17:43:36.0095199+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7fa82bd3-fe97-472d-9dd8-265b00bbf709" />
+    <UnitTestResult executionId="5e9512d9-bc4e-4d06-9938-069c51bbe609" testId="06c06a25-b26a-fad0-58b3-90593dacf7aa" testName="RecoverPet_DuringClimbPick_EndsPickAndOldClickDoesNotClimb" computerName="毛茸茸的小熊" duration="00:00:00.0071927" startTime="2026-11-22T17:43:36.0209786+08:00" endTime="2026-11-22T17:43:36.0300902+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e9512d9-bc4e-4d06-9938-069c51bbe609" />
+    <UnitTestResult executionId="ed21aa36-90fb-4117-90ca-5325d8a59836" testId="409ed795-80b9-6ba5-4203-719acf52a06a" testName="PerchPick_Timeout_Cancels" computerName="毛茸茸的小熊" duration="00:00:00.0061924" startTime="2026-11-22T17:43:36.0676601+08:00" endTime="2026-11-22T17:43:36.0759248+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ed21aa36-90fb-4117-90ca-5325d8a59836" />
+    <UnitTestResult executionId="08cabe52-d313-43ec-9279-f4b4cac2a51b" testId="10306b2b-1a16-79f0-1766-26fc685eed32" testName="ClimbPick_WhileClimbAlreadyActive_RejectedAndPickEnds" computerName="毛茸茸的小熊" duration="00:00:00.0066957" startTime="2026-11-22T17:43:35.9872944+08:00" endTime="2026-11-22T17:43:35.9957839+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="08cabe52-d313-43ec-9279-f4b4cac2a51b" />
+    <UnitTestResult executionId="b2a83487-e290-45d2-b8bc-41d53e9e866f" testId="2ce65744-0c0d-0105-3b25-17467bab4da2" testName="ClimbPick_LandingOccluded_RejectedWithoutMoving" computerName="毛茸茸的小熊" duration="00:00:00.0062155" startTime="2026-11-22T17:43:35.9439222+08:00" endTime="2026-11-22T17:43:35.9516352+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2a83487-e290-45d2-b8bc-41d53e9e866f" />
+    <UnitTestResult executionId="adcd2a82-3388-413c-a685-0d8af09a057d" testId="f5732553-887a-e712-0cac-4bbdab941bec" testName="ClimbPick_Timeout_Cancels" computerName="毛茸茸的小熊" duration="00:00:00.0058277" startTime="2026-11-22T17:43:35.9517021+08:00" endTime="2026-11-22T17:43:35.9592832+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="adcd2a82-3388-413c-a685-0d8af09a057d" />
+    <UnitTestResult executionId="e6e58ce9-f86a-4e0f-87c0-20c33b7716a9" testId="0a1872f5-ba5e-93c6-6d59-81755d0e2f8f" testName="ClimbPick_FullChain_ClimbRouteDrivesToPerchHandoff" computerName="毛茸茸的小熊" duration="00:00:00.0085312" startTime="2026-11-22T17:43:36.0095896+08:00" endTime="2026-11-22T17:43:36.0209063+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e6e58ce9-f86a-4e0f-87c0-20c33b7716a9" />
+    <UnitTestResult executionId="44d7840c-f816-47b6-a0d1-243fd7028796" testId="32b0ac55-4270-efbb-8472-ed89d3dc12d4" testName="ClimbPick_TooFarTarget_RejectedWithoutMoving" computerName="毛茸茸的小熊" duration="00:00:00.0056104" startTime="2026-11-22T17:43:35.9367428+08:00" endTime="2026-11-22T17:43:35.9438708+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="44d7840c-f816-47b6-a0d1-243fd7028796" />
+    <UnitTestResult executionId="30791dbe-a6cf-4aea-8608-a7a892d1c381" testId="725c7c4f-480a-2609-5c55-9f25e8f61c08" testName="PerchPick_LeftClickOnPetSelf_CancelsWithoutSelecting" computerName="毛茸茸的小熊" duration="00:00:00.0073093" startTime="2026-11-22T17:43:36.0496465+08:00" endTime="2026-11-22T17:43:36.0594008+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30791dbe-a6cf-4aea-8608-a7a892d1c381" />
+    <UnitTestResult executionId="79b208ef-069c-4b72-a5e5-96f997a073eb" testId="e7eb3390-99c8-ecdf-0aef-763dc955c138" testName="PerchPick_MenuEntry_StartsPickModeThenLeftClickSelects" computerName="毛茸茸的小熊" duration="00:00:00.0084770" startTime="2026-11-22T17:43:36.0379760+08:00" endTime="2026-11-22T17:43:36.0491883+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79b208ef-069c-4b72-a5e5-96f997a073eb" />
+    <UnitTestResult executionId="b698c8dd-238f-4590-b9d2-ade372791c93" testId="7a340867-f063-3cba-40fe-f65df944a5ac" testName="ClimbPick_MenuEntry_StartsPickThenClickStartsClimb" computerName="毛茸茸的小熊" duration="00:00:00.5725113" startTime="2026-11-22T17:43:33.7918457+08:00" endTime="2026-11-22T17:43:35.9038771+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b698c8dd-238f-4590-b9d2-ade372791c93" />
+    <UnitTestResult executionId="a0227877-cb3b-4d30-bd34-13b759eb2204" testId="39b88aa4-95a9-9f6d-c889-9e6721788df4" testName="PerchPick_RecoverDuringPick_EndsSelectionNoParallelRegression" computerName="毛茸茸的小熊" duration="00:00:00.0056467" startTime="2026-11-22T17:43:36.0301933+08:00" endTime="2026-11-22T17:43:36.0379075+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a0227877-cb3b-4d30-bd34-13b759eb2204" />
+    <UnitTestResult executionId="5d8d6a16-cd21-4ce7-a7d5-babc5b282dba" testId="0ce43eda-dc27-8cb1-e6ed-b62f6a2115de" testName="PerchPick_IneligibleTarget_RejectedAndPickEnds" computerName="毛茸茸的小熊" duration="00:00:00.0065492" startTime="2026-11-22T17:43:36.0594785+08:00" endTime="2026-11-22T17:43:36.0675651+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d8d6a16-cd21-4ce7-a7d5-babc5b282dba" />
+    <UnitTestResult executionId="61c63f3b-55e4-43ba-a874-2b70971b6712" testId="5cad15df-0264-d94e-d7d7-316d43cb3a84" testName="LeavePerch_MenuEntry_DetachesWithUserLeft_PetStaysPut" computerName="毛茸茸的小熊" duration="00:00:00.0061555" startTime="2026-11-22T17:43:36.1192349+08:00" endTime="2026-11-22T17:43:36.1282708+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="61c63f3b-55e4-43ba-a874-2b70971b6712" />
+    <UnitTestResult executionId="a21c5483-b3ce-42e6-bf34-d67b99307dfb" testId="1dabe2fb-a9c3-7be5-25e5-3c9d42d12dfb" testName="PerchPick_EntryWhileBusy_DoesNotEnterPickMode" computerName="毛茸茸的小熊" duration="00:00:00.0057034" startTime="2026-11-22T17:43:36.0864405+08:00" endTime="2026-11-22T17:43:36.0945657+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a21c5483-b3ce-42e6-bf34-d67b99307dfb" />
+    <UnitTestResult executionId="27fd9c53-5278-435e-b0e1-8b9f9192d632" testId="80724b23-7470-c79a-5476-df5941823538" testName="ClimbPick_LeftClickOnPetSelf_CancelsWithoutClimbing" computerName="毛茸茸的小熊" duration="00:00:00.0089689" startTime="2026-11-22T17:43:35.9162310+08:00" endTime="2026-11-22T17:43:35.9281324+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="27fd9c53-5278-435e-b0e1-8b9f9192d632" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="PerchPick_Timeout_Cancels" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="409ed795-80b9-6ba5-4203-719acf52a06a">
+      <Execution id="ed21aa36-90fb-4117-90ca-5325d8a59836" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_Timeout_Cancels" />
+    </UnitTest>
+    <UnitTest name="PerchPick_IneligibleTarget_RejectedAndPickEnds" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0ce43eda-dc27-8cb1-e6ed-b62f6a2115de">
+      <Execution id="5d8d6a16-cd21-4ce7-a7d5-babc5b282dba" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_IneligibleTarget_RejectedAndPickEnds" />
+    </UnitTest>
+    <UnitTest name="PerchPick_ParallelEntry_RemainsUnchanged" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="ad4199fe-c979-0a7e-bee1-255d31ec1376">
+      <Execution id="7fa82bd3-fe97-472d-9dd8-265b00bbf709" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="PerchPick_ParallelEntry_RemainsUnchanged" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_LeftClickOnPetSelf_CancelsWithoutClimbing" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="80724b23-7470-c79a-5476-df5941823538">
+      <Execution id="27fd9c53-5278-435e-b0e1-8b9f9192d632" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_LeftClickOnPetSelf_CancelsWithoutClimbing" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_OpeningMenu_CancelsPick" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="418755ec-c278-f5cb-0293-2b2a087e0fda">
+      <Execution id="9e11838b-da20-4635-8342-82e53b062551" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_OpeningMenu_CancelsPick" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_WhileClimbAlreadyActive_RejectedAndPickEnds" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="10306b2b-1a16-79f0-1766-26fc685eed32">
+      <Execution id="08cabe52-d313-43ec-9279-f4b4cac2a51b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_WhileClimbAlreadyActive_RejectedAndPickEnds" />
+    </UnitTest>
+    <UnitTest name="PerchPick_PositionOwnershipLostWhilePicking_Cancels" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="9d57ed04-c245-64d0-54a8-8bc65536614b">
+      <Execution id="6a278f36-9eb8-4dd4-9240-b3d8bf5ec520" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_PositionOwnershipLostWhilePicking_Cancels" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_LandingOccluded_RejectedWithoutMoving" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="2ce65744-0c0d-0105-3b25-17467bab4da2">
+      <Execution id="b2a83487-e290-45d2-b8bc-41d53e9e866f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_LandingOccluded_RejectedWithoutMoving" />
+    </UnitTest>
+    <UnitTest name="RecoverPet_DuringClimbPick_EndsPickAndOldClickDoesNotClimb" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="06c06a25-b26a-fad0-58b3-90593dacf7aa">
+      <Execution id="5e9512d9-bc4e-4d06-9938-069c51bbe609" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="RecoverPet_DuringClimbPick_EndsPickAndOldClickDoesNotClimb" />
+    </UnitTest>
+    <UnitTest name="PerchPick_LeftClickOnPetSelf_CancelsWithoutSelecting" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="725c7c4f-480a-2609-5c55-9f25e8f61c08">
+      <Execution id="30791dbe-a6cf-4aea-8608-a7a892d1c381" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_LeftClickOnPetSelf_CancelsWithoutSelecting" />
+    </UnitTest>
+    <UnitTest name="LeavePerch_MenuEntry_DetachesWithUserLeft_PetStaysPut" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="5cad15df-0264-d94e-d7d7-316d43cb3a84">
+      <Execution id="61c63f3b-55e4-43ba-a874-2b70971b6712" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="LeavePerch_MenuEntry_DetachesWithUserLeft_PetStaysPut" />
+    </UnitTest>
+    <UnitTest name="PerchPick_MenuEntry_StartsPickModeThenLeftClickSelects" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e7eb3390-99c8-ecdf-0aef-763dc955c138">
+      <Execution id="79b208ef-069c-4b72-a5e5-96f997a073eb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_MenuEntry_StartsPickModeThenLeftClickSelects" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_PauseDuringPick_CancelsImmediately_ResumeDoesNotResume" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="e0cfd695-a54c-90de-30ca-9c791852b1f2">
+      <Execution id="94b29b76-1483-4789-8798-eef6eb1288c3" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_PauseDuringPick_CancelsImmediately_ResumeDoesNotResume" />
+    </UnitTest>
+    <UnitTest name="PerchPick_EntryWhileBusy_DoesNotEnterPickMode" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="1dabe2fb-a9c3-7be5-25e5-3c9d42d12dfb">
+      <Execution id="a21c5483-b3ce-42e6-bf34-d67b99307dfb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_EntryWhileBusy_DoesNotEnterPickMode" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_MenuEntry_StartsPickThenClickStartsClimb" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="7a340867-f063-3cba-40fe-f65df944a5ac">
+      <Execution id="b698c8dd-238f-4590-b9d2-ade372791c93" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_MenuEntry_StartsPickThenClickStartsClimb" />
+    </UnitTest>
+    <UnitTest name="PerchPick_RecoverDuringPick_EndsSelectionNoParallelRegression" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="39b88aa4-95a9-9f6d-c889-9e6721788df4">
+      <Execution id="a0227877-cb3b-4d30-bd34-13b759eb2204" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="PerchPick_RecoverDuringPick_EndsSelectionNoParallelRegression" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_EntryWhileBusy_DoesNotEnterPickMode" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="afa2b018-0945-41cd-4ae0-802e9a934ccc">
+      <Execution id="370cb346-247a-42b1-8746-12ef0e62678c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_EntryWhileBusy_DoesNotEnterPickMode" />
+    </UnitTest>
+    <UnitTest name="PerchPick_OpeningMenu_CancelsPick" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="adab3133-6bf0-b128-d8b2-5a347ddc98bd">
+      <Execution id="62b9b9f2-e8a0-4be5-986e-6087dcd28db5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_OpeningMenu_CancelsPick" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_Timeout_Cancels" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f5732553-887a-e712-0cac-4bbdab941bec">
+      <Execution id="adcd2a82-3388-413c-a685-0d8af09a057d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_Timeout_Cancels" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_FullChain_ClimbRouteDrivesToPerchHandoff" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0a1872f5-ba5e-93c6-6d59-81755d0e2f8f">
+      <Execution id="e6e58ce9-f86a-4e0f-87c0-20c33b7716a9" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_FullChain_ClimbRouteDrivesToPerchHandoff" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_TooFarTarget_RejectedWithoutMoving" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="32b0ac55-4270-efbb-8472-ed89d3dc12d4">
+      <Execution id="44d7840c-f816-47b6-a0d1-243fd7028796" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_TooFarTarget_RejectedWithoutMoving" />
+    </UnitTest>
+    <UnitTest name="ClimbPick_IneligibleTarget_RejectedAndPickEnds" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f2e05f40-b001-bc1b-b3af-2d8eac3b6ae1">
+      <Execution id="68576fc2-b6f0-4eeb-9266-330d26f173e4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="ClimbPick_IneligibleTarget_RejectedAndPickEnds" />
+    </UnitTest>
+    <UnitTest name="PerchPick_EntryWhileLeftButtonDown_IgnoresHeldButtonUntilRelease" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c3204ce8-d883-ecb0-f37b-19db5274cb41">
+      <Execution id="cedbb4a8-11e4-4cba-b257-2d11d98024f8" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_EntryWhileLeftButtonDown_IgnoresHeldButtonUntilRelease" />
+    </UnitTest>
+    <UnitTest name="PerchPick_PauseDuringPick_CancelsImmediately_ResumeDoesNotResume" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-r3\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0103ba73-0be3-c2a7-8600-6d56be32ae5b">
+      <Execution id="3ff93b9a-0094-44ff-bf77-3262713aa58b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-r3\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.PerchEntryTests" name="PerchPick_PauseDuringPick_CancelsImmediately_ResumeDoesNotResume" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="c3204ce8-d883-ecb0-f37b-19db5274cb41" executionId="cedbb4a8-11e4-4cba-b257-2d11d98024f8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="adab3133-6bf0-b128-d8b2-5a347ddc98bd" executionId="62b9b9f2-e8a0-4be5-986e-6087dcd28db5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="418755ec-c278-f5cb-0293-2b2a087e0fda" executionId="9e11838b-da20-4635-8342-82e53b062551" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e0cfd695-a54c-90de-30ca-9c791852b1f2" executionId="94b29b76-1483-4789-8798-eef6eb1288c3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f2e05f40-b001-bc1b-b3af-2d8eac3b6ae1" executionId="68576fc2-b6f0-4eeb-9266-330d26f173e4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="afa2b018-0945-41cd-4ae0-802e9a934ccc" executionId="370cb346-247a-42b1-8746-12ef0e62678c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0103ba73-0be3-c2a7-8600-6d56be32ae5b" executionId="3ff93b9a-0094-44ff-bf77-3262713aa58b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9d57ed04-c245-64d0-54a8-8bc65536614b" executionId="6a278f36-9eb8-4dd4-9240-b3d8bf5ec520" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ad4199fe-c979-0a7e-bee1-255d31ec1376" executionId="7fa82bd3-fe97-472d-9dd8-265b00bbf709" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06c06a25-b26a-fad0-58b3-90593dacf7aa" executionId="5e9512d9-bc4e-4d06-9938-069c51bbe609" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="409ed795-80b9-6ba5-4203-719acf52a06a" executionId="ed21aa36-90fb-4117-90ca-5325d8a59836" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="10306b2b-1a16-79f0-1766-26fc685eed32" executionId="08cabe52-d313-43ec-9279-f4b4cac2a51b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2ce65744-0c0d-0105-3b25-17467bab4da2" executionId="b2a83487-e290-45d2-b8bc-41d53e9e866f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f5732553-887a-e712-0cac-4bbdab941bec" executionId="adcd2a82-3388-413c-a685-0d8af09a057d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0a1872f5-ba5e-93c6-6d59-81755d0e2f8f" executionId="e6e58ce9-f86a-4e0f-87c0-20c33b7716a9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="32b0ac55-4270-efbb-8472-ed89d3dc12d4" executionId="44d7840c-f816-47b6-a0d1-243fd7028796" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="725c7c4f-480a-2609-5c55-9f25e8f61c08" executionId="30791dbe-a6cf-4aea-8608-a7a892d1c381" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e7eb3390-99c8-ecdf-0aef-763dc955c138" executionId="79b208ef-069c-4b72-a5e5-96f997a073eb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7a340867-f063-3cba-40fe-f65df944a5ac" executionId="b698c8dd-238f-4590-b9d2-ade372791c93" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="39b88aa4-95a9-9f6d-c889-9e6721788df4" executionId="a0227877-cb3b-4d30-bd34-13b759eb2204" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0ce43eda-dc27-8cb1-e6ed-b62f6a2115de" executionId="5d8d6a16-cd21-4ce7-a7d5-babc5b282dba" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5cad15df-0264-d94e-d7d7-316d43cb3a84" executionId="61c63f3b-55e4-43ba-a874-2b70971b6712" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1dabe2fb-a9c3-7be5-25e5-3c9d42d12dfb" executionId="a21c5483-b3ce-42e6-bf34-d67b99307dfb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="80724b23-7470-c79a-5476-df5941823538" executionId="27fd9c53-5278-435e-b0e1-8b9f9192d632" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="24" executed="24" passed="24" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

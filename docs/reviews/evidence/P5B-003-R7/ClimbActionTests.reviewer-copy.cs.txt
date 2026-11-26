@@ -1,0 +1,447 @@
+using System.Reflection;
+using DesktopPet.App;
+using DesktopPet.App.Platform;
+using DesktopPet.Core.Animation;
+using DesktopPet.Core.Windows;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading;
+using System.Windows.Threading;
+
+namespace DesktopPet.App.Tests;
+
+/// <summary>
+/// P5B-003 S2：攀爬动作表现接线专项测试。
+///
+/// 覆盖：
+/// - 起攀播 climb_side，镜像朝向目标侧边（目标在右 → ScaleX=-1；在左 → ScaleX=1）；
+/// - 上缘段切 climb_edge（方向沿用落位脚点判据，镜像方向随目标保持）；
+/// - 到达播 climb_land，交栖息后 land 自然播完 → 自动回 idle 且 ScaleX 复位为 1
+///   （OnActionCompleted 路径不经 EndClimbAction，防镜像残留）；
+/// - 拖动/暂停/找回/退出/遮挡/目标失效各取消路径：立即回 idle、无镜像残留
+///   （写拒 write-rejected 与拖动同属"让位"语义，收口 StopCore→EndClimbAction，
+///   与 occluded/dead 路径共享同一无残留保证，测试缝无法天然构造写拒竞争）；
+/// - 缺失攀爬动作回退 idle 不崩溃；
+/// - 优先级守卫：非攀爬表达（好奇等）不被攀爬播放覆盖，EndClimbAction 不误清。
+///
+/// 布景与 WindowClimbAppTests 一致：宠物 600,500(120×120 DIP，HWND=0→DPI 1.0)，
+/// 目标可见外框 (700,420,1000,670)，脚点 (660,620)，起攀距离 40≤200。
+/// sideX=700&gt;footX=660 → 目标在右 → 期望 ScaleX=-1。
+/// </summary>
+[TestClass]
+public class ClimbActionTests
+{
+    private const double PetLeft = 600;
+    private const double PetTop = 500;
+    private const double PetWidth = 120;
+    private const double PetHeight = 120;
+
+    private const int TLeft = 700;
+    private const int TTop = 420;
+    private const int TRight = 1000;
+    private const int TBottom = 670;
+
+    private static MainWindow? TryCreateMainWindow()
+    {
+        try
+        {
+            return new MainWindow();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning(
+                "ClimbActionTests: MainWindow construction failed: {0}", ex);
+            return null;
+        }
+    }
+
+    private static ExternalWindowSnapshot Snapshot(
+        long hwnd, int left = TLeft, int top = TTop, int right = TRight,
+        int bottom = TBottom, bool minimized = false)
+        => new(hwnd, "climb-action-target", "FakeClass", 5000, "fakeproc",
+            true, true, minimized, false, false, left, top, right, bottom);
+
+    /// <summary>统一布景：宠物位置 + 测试缝 + 动画/鼠标时钟隔离 + 事件流。</summary>
+    private static (PetWindowClimb Climb, double ClockMs) Setup(
+        MainWindow window, List<PetClimbEvent> events)
+    {
+        window.Left = PetLeft;
+        window.Top = PetTop;
+        var clockMs = 0.0;
+        window.TestGetElapsedMs = () => clockMs;
+        // 鼠标远离宠物：防止 hover 分支触发 curious 盖掉攀爬动作。
+        window.TestGetCursorPos = () => (9999, 9999);
+        var climb = window.Climb;
+        climb.TestLandingOcclusionSampler = (_, _, _) => (1.0, new List<string>());
+        climb.ClimbEvent += events.Add;
+        window.Perch.TestLandingOcclusionSampler = (_, _, _) => (1.0, new List<string>());
+        return (climb, clockMs);
+    }
+
+    /// <summary>泵 Dispatcher 到 Background 优先级，让 BeginInvoke 排队
+    /// （OnActionCompleted 回 idle 的 Normal 优先级回调）先执行完。</summary>
+    private static void PumpDispatcher()
+    {
+        var frame = new DispatcherFrame();
+        Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,
+            new Action(() => frame.Continue = false));
+        Dispatcher.PushFrame(frame);
+    }
+
+    private static void AssertCleanIdle(MainWindow window, string context)
+    {
+        Assert.AreEqual("idle", window.CurrentAction, $"{context}：动作必须立即回 idle。");
+        Assert.AreEqual(1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+            $"{context}：镜像必须复位（无攀爬残影）。");
+    }
+
+    /// <summary>反射取动画播放器（模拟高阶表达时直接经播放器切动作）。</summary>
+    private static AnimationPlayer GetAnimPlayer(MainWindow window)
+    {
+        var field = typeof(MainWindow).GetField("_animPlayer",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        if (field is null)
+            Assert.Fail("_animPlayer field not found.");
+        return (AnimationPlayer)field!.GetValue(window)!;
+    }
+
+    // ── 起攀：climb_side + 镜像朝向目标 ────────────────────────────────
+
+    [STATestMethod]
+    public void Start_PlaysSide_ScalesTowardNearestTargetSide()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var (climb, _) = Setup(window, events);
+
+            // 目标在宠物右侧（sideX=700 > 脚点 660）→ ScaleX=-1（朝右伸爪）。
+            var rightTarget = Snapshot(0xAAA01);
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(rightTarget, (uint)Environment.ProcessId, 0));
+            Assert.AreEqual("climb_side", window.CurrentAction, "起攀必须播 climb_side。");
+            Assert.AreEqual(-1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+                "目标在右：必须镜像翻转（ScaleX=-1）。");
+            climb.CancelForDrag();
+            AssertCleanIdle(window, "右目标起攀后取消");
+
+            // 目标在宠物左侧（sideX=600 < 脚点 660）→ ScaleX=1（朝左，素材默认朝向）。
+            var leftTarget = Snapshot(0xAAA02, left: 200, top: 420, right: 600, bottom: 670);
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(leftTarget, (uint)Environment.ProcessId, 0));
+            Assert.AreEqual("climb_side", window.CurrentAction, "再次起攀必须播 climb_side。");
+            Assert.AreEqual(1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+                "目标在左：素材默认朝左，不得反转（ScaleX=1）。");
+        }
+        finally { window.Close(); }
+    }
+
+    // ── 上缘段：climb_edge 切换，镜像随目标保持 ────────────────────────
+
+    [STATestMethod]
+    public void SideToEdge_SwitchesAction_KeepsMirrorTowardTarget()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var (climb, _) = Setup(window, events);
+            var snapshot = Snapshot(0xAAA03);
+            climb.TestSnapshotSource = _ => snapshot;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+            Assert.AreEqual("climb_side", window.CurrentAction);
+
+            // 默认速度 0.45px/ms、单 tick 上限 200ms（0.45*200=90px）：
+            // 折线 [660,620]→[700,620]→[700,420]→[850,420] 共 390px。
+            // tick@200→(700,570)、tick@400→(700,480)（分派仍 side）；
+            // tick@600 起始 (700,480) 尚未上缘（仍 side），结束 (730,420)；
+            // tick@800 起始 (730,420) 满足 onTopEdge → 切 climb_edge。
+            // 时间戳必须单调递增：TryStart(nowMs:0) 将 _lastTickMs 置 0，
+            // 重复 Tick(200) 除首个外 dt=0 不推进（P5B-001 F-02 单调时间守卫）。
+            climb.Tick(200);
+            climb.Tick(400);
+            climb.Tick(600);
+            climb.Tick(800);
+
+            Assert.IsTrue(climb.IsActive, "上缘段路线仍在进行。");
+            Assert.AreEqual("climb_edge", window.CurrentAction,
+                "进入上缘段必须切换播 climb_edge。");
+            // 上缘段方向判据用落位脚点：landingX=850 > 当前脚点 → 目标在右。
+            Assert.AreEqual(-1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+                "上缘段向落位脚点方向移动，镜像保持目标朝向。");
+        }
+        finally { window.Close(); }
+    }
+
+    // ── 到达：climb_land 播完自动回 idle 且镜像复位（关键新发现）────────
+
+    [STATestMethod]
+    public void Arrival_PlaysLand_ThenCompletesToIdle_ResetsMirror()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var events = new List<PetClimbEvent>();
+            var (climb, _) = Setup(window, events);
+            var snapshot = Snapshot(0xAAA04);
+            climb.TestSnapshotSource = _ => snapshot;
+
+            Assert.AreEqual(PetClimbStartResult.Started,
+                climb.TryStart(snapshot, (uint)Environment.ProcessId, 0));
+
+            // 大步到达：0.45 默认 → 直接走到达分支。
+            climb.TestSpeedPxPerMs = 50.0;
+            climb.Tick(100);
+
+            Assert.IsFalse(climb.IsActive, "到达后路线必须结束。");
+            Assert.IsTrue(window.Perch.IsActive, "到达后必须交接栖息（不打断 land）。");
+            Assert.AreEqual("climb_land", window.CurrentAction,
+                "到达分支必须播 climb_land（不应被 StopCore 立即切回 idle）。");
+            Assert.AreEqual(-1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+                "land 播放期间保持最后攀爬朝向。");
+
+            // land once 总时长 260+340+2400=3000ms（AnimationPlayer 用真实
+            // MonotonicClock）：真实等待后触发帧刷新，ActionCompleted → 自动回
+            // idle 且经 OnActionCompleted 复位镜像（不经 EndClimbAction）。
+            Thread.Sleep(3100);
+            window.OnUpdateTickTest();
+            PumpDispatcher();
+            window.OnUpdateTickTest();
+            PumpDispatcher();
+
+            AssertCleanIdle(window, "land 播完自动回 idle");
+        }
+        finally { window.Close(); }
+    }
+
+    // ── 各取消路径：立即回 idle、无镜像残留 ─────────────────────────────
+
+    [STATestMethod]
+    public void DragCancel_ImmediateIdle_AndResetsMirror()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (climb, _) = Setup(window, new List<PetClimbEvent>());
+            climb.TryStart(Snapshot(0xAAA05), (uint)Environment.ProcessId, 0);
+            Assert.AreEqual(-1.0, window.ClimbMirrorTransform.ScaleX, 0.0001, "起攀后已镜像。");
+
+            climb.CancelForDrag();
+
+            Assert.IsFalse(climb.IsActive);
+            AssertCleanIdle(window, "拖动取消");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void PauseCancel_ImmediateIdle_AndResetsMirror()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (climb, _) = Setup(window, new List<PetClimbEvent>());
+            climb.TryStart(Snapshot(0xAAA06), (uint)Environment.ProcessId, 0);
+
+            climb.CancelForPause();
+
+            Assert.IsFalse(climb.IsActive);
+            AssertCleanIdle(window, "暂停取消");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void RecoverCancel_ImmediateIdle_AndResetsMirror()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (climb, _) = Setup(window, new List<PetClimbEvent>());
+            climb.TryStart(Snapshot(0xAAA07), (uint)Environment.ProcessId, 0);
+
+            climb.CancelForRecover();
+
+            Assert.IsFalse(climb.IsActive);
+            AssertCleanIdle(window, "找回取消");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void ExitCancel_ImmediateIdle_ResetsMirror_AndRestoresPosition()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (climb, _) = Setup(window, new List<PetClimbEvent>());
+            var snapshot = Snapshot(0xAAA08);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TryStart(snapshot, (uint)Environment.ProcessId, 0);
+            climb.Tick(200); // 推进一段：位置已离开爬行前点。
+
+            climb.CancelForExit();
+
+            Assert.IsFalse(climb.IsActive);
+            AssertCleanIdle(window, "退出取消");
+            Assert.AreEqual(PetLeft, window.Left, 0.001, "退出必须恢复爬行前位置。");
+            Assert.AreEqual(PetTop, window.Top, 0.001, "退出必须恢复爬行前位置。");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void OccludedCancel_ImmediateIdle_AndResetsMirror()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (climb, _) = Setup(window, new List<PetClimbEvent>());
+            var snapshot = Snapshot(0xAAA09);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TryStart(snapshot, (uint)Environment.ProcessId, 0);
+
+            // 起攀后落点被遮挡 → tick 走遮挡取消路径。
+            climb.TestLandingOcclusionSampler = (_, _, _) => (0.0, new List<string> { "occluder" });
+            climb.Tick(100);
+
+            Assert.IsFalse(climb.IsActive);
+            AssertCleanIdle(window, "落点遮挡取消");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void DeadTargetCancel_ImmediateIdle_AndResetsMirror()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (climb, _) = Setup(window, new List<PetClimbEvent>());
+            var snapshot = Snapshot(0xAAA0A);
+            climb.TestSnapshotSource = _ => snapshot;
+            climb.TryStart(snapshot, (uint)Environment.ProcessId, 0);
+
+            // 目标句柄销毁（采集返回 null → DeadSnapshot）→ 目标失效取消。
+            climb.TestSnapshotSource = _ => null;
+            climb.Tick(100);
+
+            Assert.IsFalse(climb.IsActive);
+            AssertCleanIdle(window, "目标失效取消");
+        }
+        finally { window.Close(); }
+    }
+
+    // ── 缺失动作回退与优先级守卫 ────────────────────────────────────────
+
+    [STATestMethod]
+    public void MissingAction_FallsBackToIdle_NoCrash()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (_, _) = Setup(window, new List<PetClimbEvent>());
+
+            // 攀爬动作缺失（未注册）：AnimationPlayer 回退 idle，不崩溃。
+            window.PlayClimbAction("climb_missing", mirrorLeft: true);
+            Assert.AreEqual("idle", window.CurrentAction,
+                "缺失攀爬动作必须回退 idle，不得崩溃。");
+            // 回退后镜像随播放调用被设置，但动作是 idle —— 无残留风险；
+            // 更关键的是下一个合法攀爬/回 idle 都能正常复位（下方断言）。
+            window.PlayClimbAction("climb_side", mirrorLeft: false);
+
+            Assert.AreEqual("climb_side", window.CurrentAction, "合法攀爬动作正常播放。");
+            Assert.AreEqual(1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+                "mirrorLeft=false（目标在左）不得反转。");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void ClimbDoesNotOverrideActiveExpression()
+    {
+        var window = TryCreateMainWindow();
+        if (window is null) { Assert.Inconclusive("MainWindow requires character assets; skipping."); return; }
+        try
+        {
+            var (_, _) = Setup(window, new List<PetClimbEvent>());
+            var animPlayer = GetAnimPlayer(window);
+
+            // 模拟更高优先级表达已持有动作（好奇等）。
+            animPlayer.PlayAction("curious");
+            Assert.AreEqual("curious", window.CurrentAction, "前置于好奇表达。");
+
+            // 攀爬播放守卫：当前非 idle/非 climb_* 时不得覆盖。
+            window.PlayClimbAction("climb_side", mirrorLeft: true);
+            Assert.AreEqual("curious", window.CurrentAction,
+                "攀爬动作不得覆盖更高优先级表达。");
+            Assert.AreEqual(1.0, window.ClimbMirrorTransform.ScaleX, 0.0001,
+                "未播放攀爬时镜像不得被设置。");
+
+            // 攀爬结束清理守卫：非攀爬动作时不得误清其他表达。
+            window.EndClimbAction();
+            Assert.AreEqual("curious", window.CurrentAction,
+                "EndClimbAction 不得误清非攀爬表达。");
+        }
+        finally { window.Close(); }
+    }
+
+    [STATestMethod]
+    public void Reviewer_MissingAction_MustNotMirrorIdle()
+    {
+        var w=new MainWindow();try {
+            w.PlayClimbAction("climb_missing",true);
+            Assert.AreEqual("idle",w.CurrentAction);
+            Assert.AreEqual(1.0,w.ClimbMirrorTransform.ScaleX,"缺失资源回退idle时不能残留镜像");
+        }finally{w.Close();}
+    }
+    [STATestMethod]
+    public void Reviewer_LandPlayback_PauseMustClearActionAndMirror()
+    {
+        var w=new MainWindow();try {
+            var (c,_)=Setup(w,new List<PetClimbEvent>());var target=Snapshot(0xAAA01);
+            c.TestSnapshotSource=_=>target;c.TestSpeedPxPerMs=50;
+            Assert.AreEqual(PetClimbStartResult.Started,c.TryStart(target,(uint)Environment.ProcessId,0));
+            c.Tick(100);Assert.IsFalse(c.IsActive);Assert.AreEqual("climb_land",w.CurrentAction);
+            w.PauseAnimation();
+            AssertCleanIdle(w,"land期间生产暂停入口");
+        }finally{w.Close();}
+    }
+    [STATestMethod]
+    public void Reviewer_ClimbingSameWall_MirrorMustNotFlipAtSideContact()
+    {
+        var w=new MainWindow();try {
+            var (c,_)=Setup(w,new List<PetClimbEvent>());var target=Snapshot(0xAAA01);
+            c.TestSnapshotSource=_=>target;
+            Assert.AreEqual(PetClimbStartResult.Started,c.TryStart(target,(uint)Environment.ProcessId,0));
+            c.Tick(200);Assert.AreEqual(-1.0,w.ClimbMirrorTransform.ScaleX);
+            c.Tick(400);Assert.IsTrue(c.IsActive);Assert.AreEqual("climb_side",w.CurrentAction);
+            Assert.AreEqual(-1.0,w.ClimbMirrorTransform.ScaleX,"仍沿同一左侧边向上爬，不能贴边后翻转");
+        }finally{w.Close();}
+    }
+    [STATestMethod]
+    public void Reviewer_ExpressionEndsDuringClimb_RetryStagePlayback()
+    {
+        var w=new MainWindow();try {
+            var (c,_)=Setup(w,new List<PetClimbEvent>());var target=Snapshot(0xAAA01);
+            c.TestSnapshotSource=_=>target;
+            GetAnimPlayer(w).PlayAction("curious");
+            Assert.AreEqual(PetClimbStartResult.Started,c.TryStart(target,(uint)Environment.ProcessId,0));
+            GetAnimPlayer(w).PlayAction("idle");
+            c.Tick(50);
+            Assert.AreEqual("climb_side",w.CurrentAction,"临时表达已释放且路线仍推进，必须重新申请阶段动作");
+        }finally{w.Close();}
+    }
+}

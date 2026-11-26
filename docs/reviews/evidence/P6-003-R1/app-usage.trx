@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="7e87b163-fc04-4e3b-b5f7-6f60cda980cc" name="mrrdxx@毛茸茸的小熊 2026-11-27 01:14:19" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-27T01:14:19.5054068+08:00" queuing="2026-11-27T01:14:19.5054072+08:00" start="2026-11-27T01:14:10.2407072+08:00" finish="2026-11-27T01:14:20.5746138+08:00" />
+  <TestSettings name="default" id="220ea51b-62d6-46dd-b096-918e7984282d">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-27_01_14_19" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f2c521ea-c10d-4c04-913e-d6dcd08ad63f" testId="a5035375-9a0a-c3da-c77e-e8b0548ec5be" testName="NormalizeAppId_KeepsOnlyLowercasedBaseName" computerName="毛茸茸的小熊" duration="00:00:00.0005563" startTime="2026-11-27T01:14:20.0726430+08:00" endTime="2026-11-27T01:14:20.0734119+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2c521ea-c10d-4c04-913e-d6dcd08ad63f" />
+    <UnitTestResult executionId="252a8d3d-f9bc-4ee4-888c-41e5f3aca9a2" testId="3ac4f389-31a3-ba08-bd14-8eee7e1b9180" testName="ClearAll_RemovesCorruptedAndTempSideArtifacts_OnlyThisStorage" computerName="毛茸茸的小熊" duration="00:00:00.0672811" startTime="2026-11-27T01:14:19.8449574+08:00" endTime="2026-11-27T01:14:19.9240682+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="252a8d3d-f9bc-4ee4-888c-41e5f3aca9a2">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Warning: 0 : Corrupted stats archive; preserving as .corrupted: C:\Users\mrrdxx\AppData\Local\Temp\DP6Stats_6fd5080da1ba45deaf2c32032358a79c\stats.json</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2852c9b8-207a-40fd-ab43-0446aa061542" testId="00189b34-2449-7e15-4ece-158e4f86d40a" testName="Frequency_ClearAll_MakesPredictionEmptyImmediately" computerName="毛茸茸的小熊" duration="00:00:00.0177544" startTime="2026-11-27T01:14:20.3492890+08:00" endTime="2026-11-27T01:14:20.3725319+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2852c9b8-207a-40fd-ab43-0446aa061542" />
+    <UnitTestResult executionId="3167ab98-6a3b-44e2-b57f-e71ac52b6e45" testId="d286700c-9911-3685-e79b-74ea13b6ef10" testName="Buckets_ExpiredByCountedDate_PrunedWhileDisabled" computerName="毛茸茸的小熊" duration="00:00:00.0299778" startTime="2026-11-27T01:14:20.2601519+08:00" endTime="2026-11-27T01:14:20.2951642+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3167ab98-6a3b-44e2-b57f-e71ac52b6e45" />
+    <UnitTestResult executionId="a14f9f00-2c43-48f1-8228-8fcd302c6f9c" testId="8b117450-81c0-69a9-3509-c50534e52ac5" testName="Restart_RestoresPreviouslySavedStats" computerName="毛茸茸的小熊" duration="00:00:00.0174318" startTime="2026-11-27T01:14:20.0281509+08:00" endTime="2026-11-27T01:14:20.0512409+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a14f9f00-2c43-48f1-8228-8fcd302c6f9c" />
+    <UnitTestResult executionId="0e301d99-2ab1-4380-8aa9-fa4a2237f94c" testId="9a13a67a-617e-f8d1-59d4-91d06583c1aa" testName="AppWiring_SetUsageStatsEnabled_PersistsToggleAndDisableKeepsData" computerName="毛茸茸的小熊" duration="00:00:00.0399526" startTime="2026-11-27T01:14:20.1328259+08:00" endTime="2026-11-27T01:14:20.1767291+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e301d99-2ab1-4380-8aa9-fa4a2237f94c" />
+    <UnitTestResult executionId="7c1b999f-76a8-44db-8376-0a28400e8c54" testId="4248fda6-a8e1-bc16-a172-6c3b1000b569" testName="InputAgeBeyondThreshold_ClosesSegment_IdleNotAttributed" computerName="毛茸茸的小熊" duration="00:00:00.0453501" startTime="2026-11-27T01:14:19.6638359+08:00" endTime="2026-11-27T01:14:19.7144981+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7c1b999f-76a8-44db-8376-0a28400e8c54" />
+    <UnitTestResult executionId="7d2d0d6d-5ae4-4fff-89bd-cf0a7f0fa135" testId="9c5f346f-af73-7040-a22d-0be4fb55dbb2" testName="ClearAll_SideArtifactLocked_FailureVisible_RetriedOnDrain" computerName="毛茸茸的小熊" duration="00:00:00.0210473" startTime="2026-11-27T01:14:20.0030357+08:00" endTime="2026-11-27T01:14:20.0280421+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7d2d0d6d-5ae4-4fff-89bd-cf0a7f0fa135">
+      <Output>
+        <StdOut>调试跟踪:&#xD;
+testhost Warning: 0 : Corrupted stats archive; preserving as .corrupted: C:\Users\mrrdxx\AppData\Local\Temp\DP6Stats_05566e42a51f4daca36b0d3aa2ea9925\stats.json&#xD;
+testhost Warning: 0 : Could not delete stats artifact C:\Users\mrrdxx\AppData\Local\Temp\DP6Stats_05566e42a51f4daca36b0d3aa2ea9925\stats.json.corrupted: The process cannot access the file 'C:\Users\mrrdxx\AppData\Local\Temp\DP6Stats_05566e42a51f4daca36b0d3aa2ea9925\stats.json.corrupted' because it is being used by another process.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a0667e31-c084-45d7-9fae-84e3010bb07e" testId="f1ed6f1d-de4b-0779-6d2d-cf67b768d403" testName="Lifecycle_LockSuspendPauseCloseSegment_UnlockResumeRecordDistinctEvents" computerName="毛茸茸的小熊" duration="00:00:00.0317856" startTime="2026-11-27T01:14:19.7351911+08:00" endTime="2026-11-27T01:14:19.7745350+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a0667e31-c084-45d7-9fae-84e3010bb07e" />
+    <UnitTestResult executionId="df85d0f9-c3bc-4d45-b24f-60cfbd3cc742" testId="a1a18f42-a3c5-99e0-8f93-48bfe4acbcc9" testName="Frequency_Disabled_NoPrediction_ImmediatelyEmptyAfterDisable" computerName="毛茸茸的小熊" duration="00:00:00.0071947" startTime="2026-11-27T01:14:20.3361574+08:00" endTime="2026-11-27T01:14:20.3491833+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df85d0f9-c3bc-4d45-b24f-60cfbd3cc742" />
+    <UnitTestResult executionId="acd72077-d19b-4207-8493-5c0aecfc88bd" testId="98bdbb5c-a652-6f7a-1d1f-89360f9d4bfd" testName="AppWiring_PausedStart_ToggleOff_EnablingKeepsSuspended" computerName="毛茸茸的小熊" duration="00:00:00.0084038" startTime="2026-11-27T01:14:20.2192023+08:00" endTime="2026-11-27T01:14:20.2341127+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="acd72077-d19b-4207-8493-5c0aecfc88bd" />
+    <UnitTestResult executionId="5a7b4083-5c7f-41ef-88df-69df132614fb" testId="3c216e4a-57e3-012c-276d-dfca2a5ae1cb" testName="Buckets_ClearedWithStats_ToggleKept" computerName="毛茸茸的小熊" duration="00:00:00.0182156" startTime="2026-11-27T01:14:20.2952592+08:00" endTime="2026-11-27T01:14:20.3215803+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5a7b4083-5c7f-41ef-88df-69df132614fb" />
+    <UnitTestResult executionId="10cf1d88-f4fc-47ed-ac18-54b0d8313beb" testId="1693d8ed-a822-255a-fe63-57a1ea51422f" testName="StatsWriteFailure_IsContainedVisible_AndRecoversOnNextDrain" computerName="毛茸茸的小熊" duration="00:00:00.0565480" startTime="2026-11-27T01:14:19.9250798+08:00" endTime="2026-11-27T01:14:19.9885203+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10cf1d88-f4fc-47ed-ac18-54b0d8313beb" />
+    <UnitTestResult executionId="4730a80e-cef5-4beb-8368-d4672c206537" testId="f0f62414-db72-5569-2cba-8f3b6bceb41a" testName="Frequency_TodayAndExpiredBuckets_AreIgnored" computerName="毛茸茸的小熊" duration="00:00:00.0067525" startTime="2026-11-27T01:14:20.3726273+08:00" endTime="2026-11-27T01:14:20.3876171+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4730a80e-cef5-4beb-8368-d4672c206537" />
+    <UnitTestResult executionId="e5b2d370-7dc4-48fe-91a4-0c8530cbd81f" testId="0aca133b-b01f-f1da-e464-adbbfbbfa80e" testName="DisabledByDefault_NeverSamples_NoStatsFile" computerName="毛茸茸的小熊" duration="00:00:00.0463001" startTime="2026-11-27T01:14:13.0828596+08:00" endTime="2026-11-27T01:14:19.4644083+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e5b2d370-7dc4-48fe-91a4-0c8530cbd81f" />
+    <UnitTestResult executionId="7544e20d-e029-411e-8668-7dba6e7f9638" testId="cc2ca802-01be-1543-e4ee-e5a2e615c07b" testName="Frequency_EnoughData_ReturnsCandidate_AndRecalculatedAfterRestart" computerName="毛茸茸的小熊" duration="00:00:00.0112304" startTime="2026-11-27T01:14:20.3216793+08:00" endTime="2026-11-27T01:14:20.3360475+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7544e20d-e029-411e-8668-7dba6e7f9638" />
+    <UnitTestResult executionId="bcec6013-ff31-43b3-8cab-bd76ceb15267" testId="79cd0e0a-8634-a78d-de1e-b689c6d5c1fc" testName="Enable_SampleSwitchApp_PersistsSegmentWithSchemaVersion1" computerName="毛茸茸的小熊" duration="00:00:00.1748485" startTime="2026-11-27T01:14:19.4822951+08:00" endTime="2026-11-27T01:14:19.6627761+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bcec6013-ff31-43b3-8cab-bd76ceb15267" />
+    <UnitTestResult executionId="094e1f37-5702-4c7f-973d-142f57c8c686" testId="266ea872-ff78-3e1c-275f-939ff1c0cc17" testName="Suspended_DoesNotReadForegroundSampler_KeepsVerifiedDuration" computerName="毛茸茸的小熊" duration="00:00:00.0052878" startTime="2026-11-27T01:14:19.9886207+08:00" endTime="2026-11-27T01:14:19.9979786+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="094e1f37-5702-4c7f-973d-142f57c8c686" />
+    <UnitTestResult executionId="2d70ab07-ac9a-42c8-8a78-d0922bcedcd2" testId="265c1877-170b-d525-3bd4-89b30d6ded8b" testName="Disable_KeepsOldData_StopsNewCollection" computerName="毛茸茸的小熊" duration="00:00:00.0148910" startTime="2026-11-27T01:14:19.7746420+08:00" endTime="2026-11-27T01:14:19.7978002+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2d70ab07-ac9a-42c8-8a78-d0922bcedcd2" />
+    <UnitTestResult executionId="ddd7e1f4-8ea1-45ed-ba08-ff32fe071af7" testId="3efe747a-e118-cfee-4fec-5a2f4bf4d381" testName="AppWiring_SystemAndPauseLifecycle_ForwardedToStatsService" computerName="毛茸茸的小熊" duration="00:00:00.0551019" startTime="2026-11-27T01:14:20.0734850+08:00" endTime="2026-11-27T01:14:20.1327044+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ddd7e1f4-8ea1-45ed-ba08-ff32fe071af7" />
+    <UnitTestResult executionId="b3949ad4-0dd5-4788-a07d-3ab3a8f2b3da" testId="15c0240b-f7b8-30cd-22d0-040a4cc7f77b" testName="AppWiring_ClearUsageStats_KeepsToggle_DoesNotTouchPetArchive" computerName="毛茸茸的小熊" duration="00:00:00.0351156" startTime="2026-11-27T01:14:20.1768171+08:00" endTime="2026-11-27T01:14:20.2190936+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3949ad4-0dd5-4788-a07d-3ab3a8f2b3da" />
+    <UnitTestResult executionId="773bd822-3f63-45f7-b7ad-9797b9498961" testId="d61da903-1205-1abc-c56a-2aec7261ca02" testName="ClearAll_EmptiesArchive_NewDataDoesNotResurrectOld" computerName="毛茸茸的小熊" duration="00:00:00.0354338" startTime="2026-11-27T01:14:19.7979031+08:00" endTime="2026-11-27T01:14:19.8448485+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="773bd822-3f63-45f7-b7ad-9797b9498961" />
+    <UnitTestResult executionId="9112adfc-6276-4ef9-954f-382e6d6e7c07" testId="612c747f-3e67-3cad-2f68-f80509a2549f" testName="ClearThenRestart_DoesNotRestoreClearedHistory" computerName="毛茸茸的小熊" duration="00:00:00.0169688" startTime="2026-11-27T01:14:20.0513278+08:00" endTime="2026-11-27T01:14:20.0725382+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9112adfc-6276-4ef9-954f-382e6d6e7c07" />
+    <UnitTestResult executionId="f30c0b7b-65f4-4f89-87aa-a928c26cfbe5" testId="cd39b368-05a3-4c70-1374-77534c5369c1" testName="ForegroundResolutionFailed_DropsIntervalAndCountsMismatch" computerName="毛茸茸的小熊" duration="00:00:00.0156152" startTime="2026-11-27T01:14:19.7148490+08:00" endTime="2026-11-27T01:14:19.7350712+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f30c0b7b-65f4-4f89-87aa-a928c26cfbe5" />
+    <UnitTestResult executionId="1cfb6d96-5e0a-4cbc-873b-762b35087a37" testId="3566477d-6b75-d89e-2a84-38b7d681df36" testName="Buckets_PersistedAndRestored_NoDoubleCountOnRestart" computerName="毛茸茸的小熊" duration="00:00:00.0178060" startTime="2026-11-27T01:14:20.2342074+08:00" endTime="2026-11-27T01:14:20.2581783+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1cfb6d96-5e0a-4cbc-873b-762b35087a37" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="StatsWriteFailure_IsContainedVisible_AndRecoversOnNextDrain" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="1693d8ed-a822-255a-fe63-57a1ea51422f">
+      <Execution id="10cf1d88-f4fc-47ed-ac18-54b0d8313beb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="StatsWriteFailure_IsContainedVisible_AndRecoversOnNextDrain" />
+    </UnitTest>
+    <UnitTest name="AppWiring_SetUsageStatsEnabled_PersistsToggleAndDisableKeepsData" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="9a13a67a-617e-f8d1-59d4-91d06583c1aa">
+      <Execution id="0e301d99-2ab1-4380-8aa9-fa4a2237f94c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="AppWiring_SetUsageStatsEnabled_PersistsToggleAndDisableKeepsData" />
+    </UnitTest>
+    <UnitTest name="Frequency_TodayAndExpiredBuckets_AreIgnored" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f0f62414-db72-5569-2cba-8f3b6bceb41a">
+      <Execution id="4730a80e-cef5-4beb-8368-d4672c206537" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Frequency_TodayAndExpiredBuckets_AreIgnored" />
+    </UnitTest>
+    <UnitTest name="InputAgeBeyondThreshold_ClosesSegment_IdleNotAttributed" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="4248fda6-a8e1-bc16-a172-6c3b1000b569">
+      <Execution id="7c1b999f-76a8-44db-8376-0a28400e8c54" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="InputAgeBeyondThreshold_ClosesSegment_IdleNotAttributed" />
+    </UnitTest>
+    <UnitTest name="AppWiring_PausedStart_ToggleOff_EnablingKeepsSuspended" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="98bdbb5c-a652-6f7a-1d1f-89360f9d4bfd">
+      <Execution id="acd72077-d19b-4207-8493-5c0aecfc88bd" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="AppWiring_PausedStart_ToggleOff_EnablingKeepsSuspended" />
+    </UnitTest>
+    <UnitTest name="Frequency_EnoughData_ReturnsCandidate_AndRecalculatedAfterRestart" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="cc2ca802-01be-1543-e4ee-e5a2e615c07b">
+      <Execution id="7544e20d-e029-411e-8668-7dba6e7f9638" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Frequency_EnoughData_ReturnsCandidate_AndRecalculatedAfterRestart" />
+    </UnitTest>
+    <UnitTest name="ClearAll_SideArtifactLocked_FailureVisible_RetriedOnDrain" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="9c5f346f-af73-7040-a22d-0be4fb55dbb2">
+      <Execution id="7d2d0d6d-5ae4-4fff-89bd-cf0a7f0fa135" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="ClearAll_SideArtifactLocked_FailureVisible_RetriedOnDrain" />
+    </UnitTest>
+    <UnitTest name="Buckets_ClearedWithStats_ToggleKept" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="3c216e4a-57e3-012c-276d-dfca2a5ae1cb">
+      <Execution id="5a7b4083-5c7f-41ef-88df-69df132614fb" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Buckets_ClearedWithStats_ToggleKept" />
+    </UnitTest>
+    <UnitTest name="NormalizeAppId_KeepsOnlyLowercasedBaseName" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a5035375-9a0a-c3da-c77e-e8b0548ec5be">
+      <Execution id="f2c521ea-c10d-4c04-913e-d6dcd08ad63f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="NormalizeAppId_KeepsOnlyLowercasedBaseName" />
+    </UnitTest>
+    <UnitTest name="Enable_SampleSwitchApp_PersistsSegmentWithSchemaVersion1" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="79cd0e0a-8634-a78d-de1e-b689c6d5c1fc">
+      <Execution id="bcec6013-ff31-43b3-8cab-bd76ceb15267" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Enable_SampleSwitchApp_PersistsSegmentWithSchemaVersion1" />
+    </UnitTest>
+    <UnitTest name="ClearAll_EmptiesArchive_NewDataDoesNotResurrectOld" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="d61da903-1205-1abc-c56a-2aec7261ca02">
+      <Execution id="773bd822-3f63-45f7-b7ad-9797b9498961" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="ClearAll_EmptiesArchive_NewDataDoesNotResurrectOld" />
+    </UnitTest>
+    <UnitTest name="Lifecycle_LockSuspendPauseCloseSegment_UnlockResumeRecordDistinctEvents" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="f1ed6f1d-de4b-0779-6d2d-cf67b768d403">
+      <Execution id="a0667e31-c084-45d7-9fae-84e3010bb07e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Lifecycle_LockSuspendPauseCloseSegment_UnlockResumeRecordDistinctEvents" />
+    </UnitTest>
+    <UnitTest name="Disable_KeepsOldData_StopsNewCollection" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="265c1877-170b-d525-3bd4-89b30d6ded8b">
+      <Execution id="2d70ab07-ac9a-42c8-8a78-d0922bcedcd2" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Disable_KeepsOldData_StopsNewCollection" />
+    </UnitTest>
+    <UnitTest name="Frequency_ClearAll_MakesPredictionEmptyImmediately" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="00189b34-2449-7e15-4ece-158e4f86d40a">
+      <Execution id="2852c9b8-207a-40fd-ab43-0446aa061542" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Frequency_ClearAll_MakesPredictionEmptyImmediately" />
+    </UnitTest>
+    <UnitTest name="ForegroundResolutionFailed_DropsIntervalAndCountsMismatch" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="cd39b368-05a3-4c70-1374-77534c5369c1">
+      <Execution id="f30c0b7b-65f4-4f89-87aa-a928c26cfbe5" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="ForegroundResolutionFailed_DropsIntervalAndCountsMismatch" />
+    </UnitTest>
+    <UnitTest name="Restart_RestoresPreviouslySavedStats" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="8b117450-81c0-69a9-3509-c50534e52ac5">
+      <Execution id="a14f9f00-2c43-48f1-8228-8fcd302c6f9c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Restart_RestoresPreviouslySavedStats" />
+    </UnitTest>
+    <UnitTest name="Buckets_ExpiredByCountedDate_PrunedWhileDisabled" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="d286700c-9911-3685-e79b-74ea13b6ef10">
+      <Execution id="3167ab98-6a3b-44e2-b57f-e71ac52b6e45" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Buckets_ExpiredByCountedDate_PrunedWhileDisabled" />
+    </UnitTest>
+    <UnitTest name="Frequency_Disabled_NoPrediction_ImmediatelyEmptyAfterDisable" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="a1a18f42-a3c5-99e0-8f93-48bfe4acbcc9">
+      <Execution id="df85d0f9-c3bc-4d45-b24f-60cfbd3cc742" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Frequency_Disabled_NoPrediction_ImmediatelyEmptyAfterDisable" />
+    </UnitTest>
+    <UnitTest name="AppWiring_ClearUsageStats_KeepsToggle_DoesNotTouchPetArchive" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="15c0240b-f7b8-30cd-22d0-040a4cc7f77b">
+      <Execution id="b3949ad4-0dd5-4788-a07d-3ab3a8f2b3da" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="AppWiring_ClearUsageStats_KeepsToggle_DoesNotTouchPetArchive" />
+    </UnitTest>
+    <UnitTest name="ClearAll_RemovesCorruptedAndTempSideArtifacts_OnlyThisStorage" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="3ac4f389-31a3-ba08-bd14-8eee7e1b9180">
+      <Execution id="252a8d3d-f9bc-4ee4-888c-41e5f3aca9a2" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="ClearAll_RemovesCorruptedAndTempSideArtifacts_OnlyThisStorage" />
+    </UnitTest>
+    <UnitTest name="Buckets_PersistedAndRestored_NoDoubleCountOnRestart" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="3566477d-6b75-d89e-2a84-38b7d681df36">
+      <Execution id="1cfb6d96-5e0a-4cbc-873b-762b35087a37" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Buckets_PersistedAndRestored_NoDoubleCountOnRestart" />
+    </UnitTest>
+    <UnitTest name="ClearThenRestart_DoesNotRestoreClearedHistory" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="612c747f-3e67-3cad-2f68-f80509a2549f">
+      <Execution id="9112adfc-6276-4ef9-954f-382e6d6e7c07" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="ClearThenRestart_DoesNotRestoreClearedHistory" />
+    </UnitTest>
+    <UnitTest name="DisabledByDefault_NeverSamples_NoStatsFile" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="0aca133b-b01f-f1da-e464-adbbfbbfa80e">
+      <Execution id="e5b2d370-7dc4-48fe-91a4-0c8530cbd81f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="DisabledByDefault_NeverSamples_NoStatsFile" />
+    </UnitTest>
+    <UnitTest name="AppWiring_SystemAndPauseLifecycle_ForwardedToStatsService" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="3efe747a-e118-cfee-4fec-5a2f4bf4d381">
+      <Execution id="ddd7e1f4-8ea1-45ed-ba08-ff32fe071af7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="AppWiring_SystemAndPauseLifecycle_ForwardedToStatsService" />
+    </UnitTest>
+    <UnitTest name="Suspended_DoesNotReadForegroundSampler_KeepsVerifiedDuration" storage="c:\users\mrrdxx\desktop\pet\artifacts\p6003-app-r1\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="266ea872-ff78-3e1c-275f-939ff1c0cc17">
+      <Execution id="094e1f37-5702-4c7f-973d-142f57c8c686" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p6003-app-r1\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.UsageStatsServiceTests" name="Suspended_DoesNotReadForegroundSampler_KeepsVerifiedDuration" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="a5035375-9a0a-c3da-c77e-e8b0548ec5be" executionId="f2c521ea-c10d-4c04-913e-d6dcd08ad63f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3ac4f389-31a3-ba08-bd14-8eee7e1b9180" executionId="252a8d3d-f9bc-4ee4-888c-41e5f3aca9a2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="00189b34-2449-7e15-4ece-158e4f86d40a" executionId="2852c9b8-207a-40fd-ab43-0446aa061542" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d286700c-9911-3685-e79b-74ea13b6ef10" executionId="3167ab98-6a3b-44e2-b57f-e71ac52b6e45" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8b117450-81c0-69a9-3509-c50534e52ac5" executionId="a14f9f00-2c43-48f1-8228-8fcd302c6f9c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9a13a67a-617e-f8d1-59d4-91d06583c1aa" executionId="0e301d99-2ab1-4380-8aa9-fa4a2237f94c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4248fda6-a8e1-bc16-a172-6c3b1000b569" executionId="7c1b999f-76a8-44db-8376-0a28400e8c54" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c5f346f-af73-7040-a22d-0be4fb55dbb2" executionId="7d2d0d6d-5ae4-4fff-89bd-cf0a7f0fa135" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f1ed6f1d-de4b-0779-6d2d-cf67b768d403" executionId="a0667e31-c084-45d7-9fae-84e3010bb07e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a1a18f42-a3c5-99e0-8f93-48bfe4acbcc9" executionId="df85d0f9-c3bc-4d45-b24f-60cfbd3cc742" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="98bdbb5c-a652-6f7a-1d1f-89360f9d4bfd" executionId="acd72077-d19b-4207-8493-5c0aecfc88bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c216e4a-57e3-012c-276d-dfca2a5ae1cb" executionId="5a7b4083-5c7f-41ef-88df-69df132614fb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1693d8ed-a822-255a-fe63-57a1ea51422f" executionId="10cf1d88-f4fc-47ed-ac18-54b0d8313beb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f0f62414-db72-5569-2cba-8f3b6bceb41a" executionId="4730a80e-cef5-4beb-8368-d4672c206537" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0aca133b-b01f-f1da-e464-adbbfbbfa80e" executionId="e5b2d370-7dc4-48fe-91a4-0c8530cbd81f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cc2ca802-01be-1543-e4ee-e5a2e615c07b" executionId="7544e20d-e029-411e-8668-7dba6e7f9638" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="79cd0e0a-8634-a78d-de1e-b689c6d5c1fc" executionId="bcec6013-ff31-43b3-8cab-bd76ceb15267" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="266ea872-ff78-3e1c-275f-939ff1c0cc17" executionId="094e1f37-5702-4c7f-973d-142f57c8c686" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="265c1877-170b-d525-3bd4-89b30d6ded8b" executionId="2d70ab07-ac9a-42c8-8a78-d0922bcedcd2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3efe747a-e118-cfee-4fec-5a2f4bf4d381" executionId="ddd7e1f4-8ea1-45ed-ba08-ff32fe071af7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="15c0240b-f7b8-30cd-22d0-040a4cc7f77b" executionId="b3949ad4-0dd5-4788-a07d-3ab3a8f2b3da" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d61da903-1205-1abc-c56a-2aec7261ca02" executionId="773bd822-3f63-45f7-b7ad-9797b9498961" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="612c747f-3e67-3cad-2f68-f80509a2549f" executionId="9112adfc-6276-4ef9-954f-382e6d6e7c07" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cd39b368-05a3-4c70-1374-77534c5369c1" executionId="f30c0b7b-65f4-4f89-87aa-a928c26cfbe5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3566477d-6b75-d89e-2a84-38b7d681df36" executionId="1cfb6d96-5e0a-4cbc-873b-762b35087a37" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="25" executed="25" passed="25" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

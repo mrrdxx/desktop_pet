@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "lastSavedUtc": "2026-11-26T08:09:20.7354388Z",
+  "coverageMismatchCount": 0,
+  "segments": [
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:15.6965423\u002B08:00",
+      "durationMs": 4992.37
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:20.6894300\u002B08:00",
+      "durationMs": 5047.514
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:25.7364522\u002B08:00",
+      "durationMs": 5000.287
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:30.7367410\u002B08:00",
+      "durationMs": 5008.121
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:35.7448765\u002B08:00",
+      "durationMs": 4992.29
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:40.7371676\u002B08:00",
+      "durationMs": 4998.504
+    },
+    {
+      "appId": "notepad",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:45.7356916\u002B08:00",
+      "durationMs": 5001.394
+    },
+    {
+      "appId": "explorer",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:50.7370808\u002B08:00",
+      "durationMs": 5009.707
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:07:55.7467942\u002B08:00",
+      "durationMs": 4989.923
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:00.7367262\u002B08:00",
+      "durationMs": 5010.508
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:05.7472404\u002B08:00",
+      "durationMs": 4989.64
+    },
+    {
+      "appId": "chatgpt",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:10.7368905\u002B08:00",
+      "durationMs": 5000.149
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:15.7370439\u002B08:00",
+      "durationMs": 5000.858
+    },
+    {
+      "appId": "teleagent",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:20.7379115\u002B08:00",
+      "durationMs": 5002.76
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:25.7406823\u002B08:00",
+      "durationMs": 4995.888
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:30.7365753\u002B08:00",
+      "durationMs": 5006.585
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:35.7432395\u002B08:00",
+      "durationMs": 4994.962
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:40.7381355\u002B08:00",
+      "durationMs": 5000.413
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:45.7385542\u002B08:00",
+      "durationMs": 4997.129
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:50.7356907\u002B08:00",
+      "durationMs": 5004.537
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:08:55.7402364\u002B08:00",
+      "durationMs": 4994.91
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:09:00.7351537\u002B08:00",
+      "durationMs": 5004.726
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:09:05.7398886\u002B08:00",
+      "durationMs": 4995.908
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:09:10.7358035\u002B08:00",
+      "durationMs": 5004.311
+    },
+    {
+      "appId": "msedge",
+      "date": "2026-11-26",
+      "startLocal": "2026-11-26T16:09:15.7401206\u002B08:00",
+      "durationMs": 4995.288
+    }
+  ],
+  "events": []
+}

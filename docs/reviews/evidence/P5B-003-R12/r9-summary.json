@@ -1,0 +1,32 @@
+{
+  "runDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261124-002634-fixture",
+  "summary": {
+    "total": 4,
+    "passed": 2,
+    "failed": 2
+  },
+  "checks": [
+    {
+      "Item": "① 目标标记与归属确认（驱动侧零写入前提）",
+      "Result": "PASS",
+      "Detail": "hwnd=0xF080C pid=15476 marker=P5B003R9-20261124-002634"
+    },
+    {
+      "Item": "② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX",
+      "Result": "PASS",
+      "Detail": "currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[240,330] | 来源：心跳 climb-live-state.json"
+    },
+    {
+      "Item": "③ 左侧链：贴边镜像=1 → 上缘 → land → 正常回 idle",
+      "Result": "FAIL",
+      "Detail": "start=started targetHwnd=0xF080C currentAction=sleep climbMirrorScaleX=1 climbActive=True perchActive=False progress=0.0556 foot=[218,180] | side=,mir=1(src=startedEvt)@t=14601 edge=,mir=@t= land=,mir=@t= steps=10 §sidecar left-sidelimb action=sleep mirror=1 tMs=16477 land finished before observed: currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[510,180] | 帧=frames/left-sidelimb.png(+sidecar)"
+    },
+    {
+      "Item": "①⑩（中止）运行异常",
+      "Result": "FAIL",
+      "Detail": "left chain failed - aborting"
+    }
+  ],
+  "framesDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261124-002634-fixture\\window-climb-live\\frames",
+  "targetSubstr": "P5B003R9-20261124-002634"
+}

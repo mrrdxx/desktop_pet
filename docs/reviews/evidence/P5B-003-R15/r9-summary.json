@@ -1,0 +1,62 @@
+{
+  "targetSubstr": "P5B003R9-20261124-043037",
+  "framesDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261124-043037-fixture\\window-climb-live\\frames",
+  "checks": [
+    {
+      "Item": "① 目标标记与归属确认（驱动侧零写入前提）",
+      "Result": "PASS",
+      "Detail": "hwnd=0x31444 pid=564 marker=P5B003R9-20261124-043037"
+    },
+    {
+      "Item": "② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX",
+      "Result": "PASS",
+      "Detail": "currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[240,330] | 来源：心跳 climb-live-state.json"
+    },
+    {
+      "Item": "③ 左侧链：贴边镜像=1 → 上缘 → land → 正常回 idle",
+      "Result": "PASS",
+      "Detail": "start=started targetHwnd=0x31444 currentAction=climb_edge climbMirrorScaleX=-1 climbActive=True perchActive=False progress=-0.1327 foot=[160,180] | side=,mir=1(src=startedEvt)@t=2744 edge=climb_edge,mir=-1@t=3678 land=climb_land,mir=-1@t=4443 steps=7 §sidecar left-sidelimb action=climb_land mirror=-1 tMs=4646 after land -> currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[510,180] | 帧=frames/left-sidelimb.png(+sidecar)"
+    },
+    {
+      "Item": "④ 右侧链：贴边镜像=-1 → 上缘 → land → 正常回 idle",
+      "Result": "PASS",
+      "Detail": "start=started targetHwnd=0x31444 currentAction=climb_side climbMirrorScaleX=-1 climbActive=True perchActive=False progress=0.3395 foot=[755,206] | side=,mir=-1(src=startedEvt)@t=22346 edge=climb_edge,mir=-1@t=23430 land=climb_land,mir=-1@t=24234 steps=17 §sidecar right-sidelimb action=climb_land mirror=-1 tMs=24446 after land -> currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[1144,180] | 帧=frames/right-sidelimb.png(+sidecar)"
+    },
+    {
+      "Item": "⑤ hover 不抢占：真实悬停期间动作保持 climb_*",
+      "Result": "PASS",
+      "Detail": "samples=[climb_edge:-1 climb_edge:-1 climb_edge:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1] keptClimb=True seenLand=True §sidecar hover-samples action=climb_land mirror=-1 tMs=45841 after land -> currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[1518,180] | 帧=frames/hover-samples.png(+sidecar) | 自动测试已覆盖 hover 正反例，此为真实悬停补充观察"
+    },
+    {
+      "Item": "⑥ land 期间暂停→暂停清理→resume 不续播→回 idle",
+      "Result": "PASS",
+      "Detail": "§sidecar land-before-pause action=climb_land mirror=-1 tMs=63695 frozen=True pre=[1893,180] frozenFoot=[1893,180] paused=currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1893,180] pausedJudge=clean idle resumeSamples=[idle:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1] noResume=True after=currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1893,180] final=clean idle | 帧=frames/land-before-pause.png(+sidecar证明land)"
+    },
+    {
+      "Item": "⑦ land 期间拖动→preempted→回 idle 镜像复位不回拉",
+      "Result": "FAIL",
+      "Detail": "§sidecar land-before-drag action=climb_land mirror=1 tMs=71021 dragged from (1363,153) by (-104,260) steps=26 hold=700ms preempted=False currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1259,440] idle=clean idle stable=True | 帧=frames/land-before-drag.png(+sidecar证明land) | 拖动手感细节已由 P2-004 覆盖，此处验证 land 中断清理"
+    },
+    {
+      "Item": "⑧ land 期间找回→RecoverPet 清理回 idle 镜像复位",
+      "Result": "PASS",
+      "Detail": "§sidecar land-before-recover action=climb_land mirror=-1 tMs=89824 after=currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1280,764] cleared=True(clean idle) | 帧=frames/land-before-recover.png(+sidecar证明land) | 来源：生产 RecoverPet→CancelForRecover 路径"
+    },
+    {
+      "Item": "⑨ land 期间目标失效→关闭清理回 idle 镜像复位",
+      "Result": "PASS",
+      "Detail": "§sidecar land-before-close action=climb_land mirror=-1 tMs=94960 targetClosed=True after=currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1810,504] cleared=True(clean idle) | 帧=frames/land-before-close.png(+sidecar证明land) | 该故障组合自动测试已覆盖(Reviewer_LandTargetGone)，此为生产路径真实关闭观察"
+    },
+    {
+      "Item": "⑩ 探针 exitCode=0 且诱饵内容/标题/位置/进程存活 + 帧数达标",
+      "Result": "PASS",
+      "Detail": "exitCode=0 frames=7 frameEvents=7 lureFile=True lureContent=True lureWin=True lureWinPos=True lureProc=True"
+    }
+  ],
+  "runDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261124-043037-fixture",
+  "summary": {
+    "total": 10,
+    "passed": 9,
+    "failed": 1
+  }
+}

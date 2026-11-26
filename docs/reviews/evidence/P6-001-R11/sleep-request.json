@@ -1,0 +1,8 @@
+{
+  "disableWakeEvent": false,
+  "api": "System.Windows.Forms.Application.SetSuspendState",
+  "state": "Suspend",
+  "force": false,
+  "userAuthorization": "2026-11-27 用户：你来做；已告知需用户唤醒",
+  "requestedAt": "2026-11-27T00:11:19.9986038+08:00"
+}

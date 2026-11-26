@@ -98,7 +98,7 @@ public class InputIdleSampler
     /// milliseconds, supplied by the caller (typically the same value
     /// used for the session tick). This ensures the input timestamp and
     /// the tick time share the same clock snapshot.</param>
-    public double? GetLastInputMs(double monotonicNow)
+    public virtual double? GetLastInputMs(double monotonicNow)
     {
         var lastInputTick = GetLastInputTickMs();
         if (lastInputTick is null)

@@ -1,0 +1,23 @@
+
+Item                                                           Result Detail
+----                                                           ------ ------
+① 目标标记与归属确认（驱动侧零写入前提）                       PASS   hwnd=0xC0F60 pid=48920 marker=P5B001NP-20261122-045010
+② 起攀：贴脚放置+start → climb-started(targetHwnd 匹配)        PASS   started targetHwnd=0xC0F60
+③ 路线推进：climb-step≥3 且 fraction 递增                      PASS   steps=7 fracInc=True fractions=[0.00889314940841768,0.0489698125452106,0.0999473572418687,0.153015298039007,0.204281773819906,0.255157873274676,0.260…
+④ 顶部交接：climb-completed 脚点=上缘中点±6 perchActive 无跳动 PASS   foot=[690,160] expected=[690,160] dx=0 dy=0 perch=True climb=False noJump=True
+⑤ 交接后跟随：移动目标后脚点贴新上缘                           PASS   foot=[790,210] newEdge=[790,210] perch=True (state 断言，无 follow 事件)
+⑥ 栖息中真实拖动 → 脱离栖息，移动目标不回拉                    PASS   drag=True dragged from (790,192) by (104,260) steps=26 hold=700ms detached=True stayAtDrop=True
+⑦ 超距起攀 RejectedTooFar 不移动                               PASS   result=RejectedTooFar distance=213px (>200) footMove=(0,0)
+⑧ 盖住落位起攀 RejectedOccluded 不移动                         PASS   result=RejectedOccluded footMove=(0,0)
+⑨ 最小化起攀 RejectedIneligible 不移动                         PASS   result=RejectedIneligible iconic=True footMove=(0,0)
+⑩ 路线中目标 +150,+100 → 收敛新上缘中点                        PASS   converged to new edge midpoint [1574,310] perch=True attempt=1
+⑪ 路线中最小化 → climb-cancelled(target-*) 宠物回可见区        PASS   reason=target-Minimized petRect=[1586,450,1706,570] visible=True climb=False perch=False attempt=1
+⑫ 路线中上缘遮挡 → climb-occluded + climb-cancelled(occluded)  PASS   occludedEv=True cancelReason=occluded climb=False perch=False attempt=1
+⑬ 路线中真实拖动 → climb-drag-preempted 松手后不回拉           PASS   preempted=True dragged from (1588,552) by (96,72) steps=12 hold=700ms stayAtDrop=True foot=[1684,642] attempt=1
+⑭ 路线中 pause → climb-cancelled(paused) resume 不续接         PASS   cancelReason=paused resumeContinues=False climb=False foot=[1608,642] attempt=1
+⑮ 探针 exitCode=0                                              PASS   probe exit=0 result exitCode=0
+⑯ 其他轮标记文件/标记窗口未越界清理（诱饵存活）                PASS   lureFile=True lureWin=True title='P5B001NP-lure-20261122-045010.txt' rect=[60,60,360,180] snapshot=[60,60,360,180] iconic=False
+⑰ 无窗口外部进程未被误杀（诱饵存活）                           PASS   windowlessPid=46276 alive=True
+⑱ 完整流程走完（固定条目数）                                   PASS   17/17
+
+

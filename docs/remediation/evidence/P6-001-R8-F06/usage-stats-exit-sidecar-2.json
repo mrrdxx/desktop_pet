@@ -1,0 +1,15 @@
+{
+  "scenario": "usage-stats-exit",
+  "session": 2,
+  "isRestart": true,
+  "usedProductionCreatePetWindow": true,
+  "usedProductionInitializeUsageStats": true,
+  "usedProductionMenuExitDispatch": true,
+  "exitViaSeam": true,
+  "exitViaEnvironmentExit": false,
+  "windowVisibleBeforeExit": true,
+  "systemEventsSubscribedBeforeExit": true,
+  "serviceAliveBeforeExit": true,
+  "shutdownModeBeforeExit": "OnExplicitShutdown",
+  "note": "Parent asserts: exit code 0, no exception logs in run/logs/, cleanup sidecar (subscribedAfterCleanup=false, serviceNullAfterCleanup=true, shutdownCalled=true)."
+}

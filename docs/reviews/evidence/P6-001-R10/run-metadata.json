@@ -1,0 +1,8 @@
+{
+  "session": 1,
+  "mode": "user real lock/unlock and sleep/resume; isolated seeded enabled",
+  "base": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261126-214322-lifecycle",
+  "exe": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p6001-probe-r9\\bin\\DesktopPet.DiagnosticProbe\\debug\\DesktopPet.DiagnosticProbe.exe",
+  "probe": 65588,
+  "started": "2026-11-26T21:43:22.9794690+08:00"
+}

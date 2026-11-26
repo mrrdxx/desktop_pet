@@ -1,0 +1,10 @@
+{
+  "clearKeptEnabled": true,
+  "session2Stopped": true,
+  "firstEnabledSec": 42,
+  "clearObservedSegments": 0,
+  "finalDisabledDurationSec": 26.80000000000001,
+  "finalDisabledAllFrozen": true,
+  "clearFirstObservedSec": 236.2,
+  "allFinalRecordsStartAfterClear": true
+}

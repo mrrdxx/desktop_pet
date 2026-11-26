@@ -1,0 +1,9 @@
+{
+  "unlockCount": 1,
+  "countsWhileSuspended": [
+    12
+  ],
+  "firstSuspendedSec": 124.2,
+  "lastSuspendedSec": 196.3,
+  "suspendedObservations": 38
+}

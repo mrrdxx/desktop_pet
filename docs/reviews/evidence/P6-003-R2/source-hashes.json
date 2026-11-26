@@ -1,0 +1,22 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Events\\UsageStatsFrequencyJudge.cs",
+    "Hash": "EE3E9C058AA8E3FC340091E62E415867376BD0EA1D7633C595B1405D8677501F"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Events\\UsageStatsCollector.cs",
+    "Hash": "991A46AC6375615CC975E24B2568FD7C04CE7562243791E86AEFA3F4706CAF84"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\UsageStatsService.cs",
+    "Hash": "1C0BD1364EC8AAAFA784B6AC44FDDE63367958297AA2D98F35136C8234C7A79A"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.Core.Tests\\UsageStatsFrequencyJudgeTests.cs",
+    "Hash": "7DCE4138AE118E6A256EC6724BA68AFC4B7CBB1F16A55200342BE10B0718F0E9"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.App.Tests\\UsageStatsServiceTests.cs",
+    "Hash": "51545EDDBEA17F055E4B35EAE9EBA7D8A61252DBDB6E2ED0D437AC891D157B59"
+  }
+]

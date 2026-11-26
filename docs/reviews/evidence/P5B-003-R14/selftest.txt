@@ -1,0 +1,22 @@
+[R9] driver thread DPI awareness = 2 (2=PerMonitor; required for physical px)
+[R9-SELFTEST] positive in-land verdict : PASS (expect in-land)
+[R9-SELFTEST] negative land-expired (idle after completed) : PASS (expect land-finished)
+[R9-SELFTEST] negative fields-missing verdict : PASS (expect fields-missing)
+[R9-SELFTEST] negative pause-still-land rejected : PASS (expect FAIL (still climbActive (climb_land)))
+[R9-SELFTEST] negative not-cleaned rejected (mirror=-1, climbActive) : PASS (expect FAIL (still climbActive (idle)))
+[R9-SELFTEST] positive clean idle : PASS (expect PASS)
+[R9-SELFTEST] negative stale-heartbeat rejected : PASS (expect FAIL (stale tMs=100 <= 200))
+[R9-SELFTEST] positive fresh-heartbeat : PASS (expect PASS)
+[R9-SELFTEST] negative incomplete checklist (9/10) : PASS (expect FAIL (checks=9 != 10))
+[R9-SELFTEST] negative checklist with FAIL item : PASS (expect FAIL)
+[R9-SELFTEST] positive complete checklist (10 PASS) : PASS (expect PASS)
+[R9-SELFTEST] positive normal-landing idle (perch active) : PASS (expect PASS (normal landing idle (perch active)))
+[R9-SELFTEST] negative still-in-land rejected : PASS (expect FAIL (still climbActive (climb_land)))
+[R9-SELFTEST] negative perch-lost rejected : PASS (expect FAIL (perch lost (正常落位后栖息应仍活跃)))
+[R9-SELFTEST] negative curious rejected (day, perch active) : PASS (expect FAIL (action=curious not free baseline idle/night-sleep))
+[R9-SELFTEST] negative drag rejected (day, perch active) : PASS (expect FAIL (action=drag not free baseline idle/night-sleep))
+[R9-SELFTEST] negative daytime-sleep rejected : PASS (expect FAIL (daytime sleep rejected (localNow=12:00)))
+[R9-SELFTEST] positive night-sleep accepted (perch active) : PASS (expect PASS (normal landing sleep (night, perch active)))
+[R9-SELFTEST] total=18 failed=0
+[R9-SELFTEST] RESULT=PASS
+exitCode=0

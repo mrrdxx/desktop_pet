@@ -1,0 +1,86 @@
+[
+  {
+    "name": "pause preserves committed duration",
+    "expected": 5000,
+    "actual": 5000,
+    "pass": true
+  },
+  {
+    "name": "pause does not read foreground",
+    "expected": 2,
+    "actual": 2,
+    "pass": true
+  },
+  {
+    "name": "lock preserves committed duration",
+    "expected": 5000,
+    "actual": 5000,
+    "pass": true
+  },
+  {
+    "name": "lock does not read foreground",
+    "expected": 2,
+    "actual": 2,
+    "pass": true
+  },
+  {
+    "name": "sleep preserves committed duration",
+    "expected": 5000,
+    "actual": 5000,
+    "pass": true
+  },
+  {
+    "name": "sleep does not read foreground",
+    "expected": 2,
+    "actual": 2,
+    "pass": true
+  },
+  {
+    "name": "overlap preserves committed duration",
+    "expected": 5000,
+    "actual": 5000,
+    "pass": true
+  },
+  {
+    "name": "overlap does not read foreground",
+    "expected": 2,
+    "actual": 2,
+    "pass": true
+  },
+  {
+    "name": "Clock rollback does not duplicate verified interval",
+    "expected": 5000,
+    "actual": 5000,
+    "pass": true
+  },
+  {
+    "name": "Multiple post-rollback ticks do not re-count pre-high-water interval",
+    "expected": 5000,
+    "actual": 8000,
+    "pass": false
+  },
+  {
+    "name": "Failed backup deletion is observable",
+    "expected": true,
+    "actual": "The process cannot access the file \u0027C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-review-r3-edge\\locked-sidecar\\stats.json.corrupted\u0027 because it is being used by another process.",
+    "pass": true
+  },
+  {
+    "name": "Retained history exposes incomplete clear status",
+    "expected": true,
+    "actual": true,
+    "pass": true
+  },
+  {
+    "name": "Clear retry removes remaining historical backup",
+    "expected": false,
+    "actual": false,
+    "pass": true
+  },
+  {
+    "name": "Enable stats after paused default-off startup preserves pause",
+    "expected": true,
+    "actual": true,
+    "pass": true
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tools\\Invoke-P5B003R9Live.ps1",
+    "Hash": "6C7980FB93ED7D920097746B3CD598CB9A13F690DF5FCB310DD0F339FEA2DA88"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.DiagnosticProbe\\WindowClimbLiveScenario.cs",
+    "Hash": "C87E84F26C112479DE99E84B2DB81408490B65451C85577144EA9318B09BAFE4"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\MainWindow.xaml.cs",
+    "Hash": "E438EB5D56EEA3057BA5FC2F9751189869C8EB90BA4AF22C14AD08DDE16512EE"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\PetWindowClimb.cs",
+    "Hash": "A6595375E2A5D0CD52C93993F9547F22A25F041AB8752E41D7974AE62D9EFF99"
+  }
+]

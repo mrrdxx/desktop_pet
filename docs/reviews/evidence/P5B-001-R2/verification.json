@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-22",
+  "authorization": "不需要独立审查 AI，你继续做审查AI",
+  "independent": false,
+  "sourceSha256": {
+    "src/DesktopPet.App/Platform/PetWindowClimb.cs": "944f811356d0fde21de1f64d058c0471b9333a1acd05b951a8940afd9d2e3ddd",
+    "tests/DesktopPet.App.Tests/WindowClimbAppTests.cs": "d7410288c35b6a35aca5ed887c07fffd886301cb18c349857cd4be4b96b9fdfe",
+    "tests/DesktopPet.DiagnosticProbe/WindowClimbLiveScenario.cs": "89cc060cef0b7d421101d39cd124610d52b79459df4aa4b8e92a8234830b9c16",
+    "tools/Invoke-P5B001ClimbPreview.ps1": "e98bfe1a7de5fe083643b6d19da961549da52b24db2b2282d6a7f361ed3b715d"
+  },
+  "handoffPairs": [
+    {
+      "arrivedMs": 2343,
+      "completedMs": 2345,
+      "foot": [
+        690,
+        160
+      ],
+      "deltaPx": 0.0
+    },
+    {
+      "arrivedMs": 19679,
+      "completedMs": 19680,
+      "foot": [
+        1574,
+        310
+      ],
+      "deltaPx": 0.0
+    }
+  ],
+  "checklistPassCount": 18,
+  "probeExitCode": 0,
+  "method": "复核实际源文件、源码摘要、既有自测TRX与原始实机事件；本轮未重复运行应用或测试"
+}

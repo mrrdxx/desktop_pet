@@ -1,0 +1,42 @@
+{
+  "runDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261125-200852-fixture",
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1
+  },
+  "framesDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261125-200852-fixture\\window-climb-live\\frames",
+  "mode": "R15-NARROW",
+  "narrowChecks": [
+    4,
+    7
+  ],
+  "targetSubstr": "P5B003R9-20261125-200852",
+  "checks": [
+    {
+      "Item": "① 目标标记与归属确认（驱动侧零写入前提）",
+      "Result": "PASS",
+      "Detail": "hwnd=0x4C1776 pid=64652 marker=P5B003R9-20261125-200852"
+    },
+    {
+      "Item": "② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX",
+      "Result": "PASS",
+      "Detail": "currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[160,220] | 来源：心跳 climb-live-state.json"
+    },
+    {
+      "Item": "④ 右侧链：贴边镜像=-1 → 上缘 → land → 正常回 idle",
+      "Result": "PASS",
+      "Detail": "start=started targetHwnd=0x4C1776 afterStart=currentAction=climb_edge climbMirrorScaleX=-1 climbActive=True perchActive=False progress=0.591 foot=[472,160] | beforeMenu=currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[160,220]; afterPick=currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[160,220] | sideAction=climb_side(evt@t=3427) mirSide=-1(src=startedEvt) edge=climb_edge,mir=-1@t=4499 land=climb_land,mir=-1@t=4904 steps=7 §sidecar right-sidelimb action=climb_land mirror=-1 tMs=5114 after land -> currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[690,160] | 帧=frames/right-sidelimb.png(+sidecar)"
+    },
+    {
+      "Item": "⑦ land 期间拖动→preempted→回 idle 镜像复位不回拉",
+      "Result": "PASS",
+      "Detail": "§sidecar land-before-drag action=climb_land mirror=-1 tMs=17396 dragged from (1324,142) by (-104,260) steps=26 hold=700ms cancel=perch-detached(climb-cancelled(perch-detached) @t=17480 reason=perch-detached) currentAction=curious climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1220,420] idle=clean idle stable=True | 帧=frames/land-before-drag.png(+sidecar证明land) | 拖动手感细节已由 P2-004 覆盖，此处验证 land 中断清理"
+    },
+    {
+      "Item": "⑩ 探针 exitCode=0 且诱饵内容/标题/位置/进程存活 + 帧数达标",
+      "Result": "FAIL",
+      "Detail": "exitCode=0 frames=2 frameEvents=2 lureFile=True lureContent=True lureWin=True lureWinPos=True lureProc=True"
+    }
+  ]
+}

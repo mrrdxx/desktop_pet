@@ -1,0 +1,85 @@
+<Window x:Class="DesktopPet.App.Platform.StatsViewerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Usage Statistics"
+        Width="480"
+        Height="480"
+        MinWidth="360"
+        MinHeight="320"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        Background="#FAFAFA">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Usage Statistics"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Foreground="#202020" />
+            <TextBlock x:Name="StatusText"
+                       FontSize="12"
+                       Foreground="#606060"
+                       Margin="0,4,0,0"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="已记录的统计"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="#202020"
+                           Margin="0,0,0,4" />
+                <TextBlock Text="来自已提交的 30 分钟聚合记录；时长为近似前台活跃时长，不是精确使用时长。"
+                           FontSize="11"
+                           Foreground="#808080"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,6" />
+                <ItemsControl x:Name="RecordedItems">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                       FontSize="12"
+                                       Foreground="#202020"
+                                       Margin="0,1" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Separator Margin="0,12,0,12" />
+
+                <TextBlock Text="有样本支持的时间偏好"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="#202020"
+                           Margin="0,0,0,4" />
+                <TextBlock Text="统计依据，不是预测准确率；没有达标样本时不显示任何偏好。"
+                           FontSize="11"
+                           Foreground="#808080"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,6" />
+                <ItemsControl x:Name="PreferenceItems">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                       FontSize="12"
+                                       Foreground="#202020"
+                                       Margin="0,1" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button x:Name="RefreshButton"
+                        Content="Refresh"
+                        HorizontalAlignment="Left"
+                        Margin="0,16,0,0"
+                        Padding="12,4"
+                        Click="RefreshButton_Click" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

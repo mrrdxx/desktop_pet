@@ -1,0 +1,28 @@
+{
+  "scenario": "window-climb-live",
+  "targetTitleSubstr": "P5B001NP-20261122-045010",
+  "durationSec": 600,
+  "selfPid": 41004,
+  "counts": {
+    "climb-started": 6,
+    "climb-step": 75,
+    "climb-arrived": 2,
+    "climb-completed": 2,
+    "climb-cancelled": 3,
+    "climb-occluded": 1,
+    "climb-drag-preempted": 1
+  },
+  "lastEvent": "climb-cancelled",
+  "climbActive": false,
+  "perchActive": false,
+  "petRectPx": [
+    1548,
+    522,
+    1668,
+    642
+  ],
+  "petFootPx": [
+    1608,
+    642
+  ]
+}

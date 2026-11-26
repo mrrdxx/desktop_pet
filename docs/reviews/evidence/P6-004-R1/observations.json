@@ -1,0 +1,41 @@
+[
+  {
+    "scenario": "shared-session-before-pet-tick",
+    "phase": "Noticing",
+    "sharedActive": true,
+    "localSocialFlag": false,
+    "availableForBubble": true,
+    "plannerWouldShow": true,
+    "pass": false
+  },
+  {
+    "scenario": "no-session-control",
+    "availableForBubble": true,
+    "pass": true
+  },
+  {
+    "scenario": "viewer-summary-before-after-normal-prune",
+    "before": {
+      "recordedDateCount": 2,
+      "approximateForegroundActiveMs": 10000,
+      "sessionCount": 2,
+      "appCount": 1,
+      "hasRecords": true
+    },
+    "after": {
+      "recordedDateCount": 1,
+      "approximateForegroundActiveMs": 5000,
+      "sessionCount": 1,
+      "appCount": 1,
+      "hasRecords": true
+    },
+    "pass": false
+  },
+  {
+    "scenario": "real-wpf-dispatcher-autohide-offscreen",
+    "initiallyVisible": true,
+    "hiddenAfterPump": true,
+    "elapsedMs": 8504,
+    "pass": true
+  }
+]

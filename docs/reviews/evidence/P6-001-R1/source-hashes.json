@@ -1,0 +1,34 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Events\\UsageStatsCollector.cs",
+    "Hash": "98460BB1AB8165A4C27996365579A371E0C7B58AA8562F8CCD541EF63162CAD8"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\UsageStatsService.cs",
+    "Hash": "9F14E8D3DCF4B0C28E4B76D71433DC830F61E35520828327062AB368DD165484"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\ForegroundAppSampler.cs",
+    "Hash": "A1D082CEEF4E735CA75EDB892AA4706FEBDFFA8B7F7FE6F92EDAE0399D0588BD"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\App.xaml.cs",
+    "Hash": "FC8583E15ADA35067CCF97D8F0494507087AB17EC9735ECFED1A9C09CB9996DE"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Persistence\\UsageStatsArchive.cs",
+    "Hash": "A72FD88959B895F54DE3FBA393A31F46429E8F1FA06B01735B5069119BA55152"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Persistence\\PetStateArchive.cs",
+    "Hash": "8A2183467C769A4876C047912873D92EC49F21D4F1295952A2C2E86A8FF7FAD4"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.App.Tests\\UsageStatsServiceTests.cs",
+    "Hash": "61898F0A835CD5C99C1D14BE96EF541693A68709C2D8CC7CCF7EB7EA75966504"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.Core.Tests\\UsageStatsCollectorTests.cs",
+    "Hash": "73D59043DD11F593FE9DFF3DAC14625A64B4A3E886E76D765B3AF4F1ED3F6E02"
+  }
+]

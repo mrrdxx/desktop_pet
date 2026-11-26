@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "total": 5,
+    "passed": 3,
+    "failed": 2
+  },
+  "checks": [
+    {
+      "Item": "① 目标标记与归属确认（驱动侧零写入前提）",
+      "Result": "PASS",
+      "Detail": "hwnd=0x2610DA pid=64848 marker=P5B003R9-20261125-185433"
+    },
+    {
+      "Item": "② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX",
+      "Result": "PASS",
+      "Detail": "currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[240,330] | 来源：心跳 climb-live-state.json"
+    },
+    {
+      "Item": "③ 左侧链：贴边镜像=1 → 上缘 → land → 正常回 idle",
+      "Result": "PASS",
+      "Detail": "start=started targetHwnd=0x2610DA currentAction=climb_edge climbMirrorScaleX=-1 climbActive=True perchActive=False progress=0.1707 foot=[254,180] | sideAction=climb_side(evt@t=3185) mirSide=1(src=startedEvt) edge=climb_edge,mir=-1@t=4271 land=climb_land,mir=-1@t=4693 steps=8 §sidecar left-sidelimb action=climb_land mirror=-1 tMs=4902 after land -> currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[510,180] | 帧=frames/left-sidelimb.png(+sidecar)"
+    },
+    {
+      "Item": "④ 右侧链：贴边镜像=-1 → 上缘 → land → 正常回 idle",
+      "Result": "FAIL",
+      "Detail": "start=started targetHwnd=0x2610DA currentAction=curious climbMirrorScaleX=1 climbActive=True perchActive=False progress=0.3317 foot=[755,246] | sideAction=curious(evt@t=14537) mirSide=1(src=startedEvt) edge=,mir=@t= land=,mir=@t= steps=17 §sidecar right-sidelimb action=idle mirror=1 tMs=16728 land finished before observed: currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[1144,180] | 帧=frames/right-sidelimb.png(+sidecar)"
+    },
+    {
+      "Item": "①⑩（中止）运行异常",
+      "Result": "FAIL",
+      "Detail": "right chain failed - aborting"
+    }
+  ],
+  "runDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261125-185433-fixture",
+  "mode": "R15-NARROW",
+  "targetSubstr": "P5B003R9-20261125-185433",
+  "narrowChecks": [
+    3,
+    4,
+    7
+  ],
+  "framesDir": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p5b-003\\r9\\run-20261125-185433-fixture\\window-climb-live\\frames"
+}

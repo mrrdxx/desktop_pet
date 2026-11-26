@@ -1,0 +1,57 @@
+**********************
+PowerShell transcript start
+Start time: 20261124043037
+Username: 毛茸茸的小熊\mrrdxx
+RunAs User: 毛茸茸的小熊\mrrdxx
+Configuration Name: 
+Machine: 毛茸茸的小熊 (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\WindowsApps\OpenAI.CodexPrimaryRuntime.v26-1119-907-0_26.1119.907.0_x64__3k8sg7r9htsxt\dependencies\native\powershell\pwsh.dll -NoProfile -Sta -File tools/Invoke-P5B003R9Live.ps1 -DurationSec 900
+Process ID: 33532
+PSVersion: 7.6.9
+PSEdition: Core
+GitCommitId: 7.6.9
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+[R9] driver thread DPI awareness = 2 (2=PerMonitor; required for physical px)
+[R9] lures set: file=C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\lure-run-20261124-043037\P5B003R9-lure-20261124-043037.txt window='P5B003R9-lure-20261124-043037.txt' @(60,60) windowlessPid=26900
+[R9] run dir: C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\run-20261124-043037-fixture
+[R9] targetSubstr='P5B003R9-20261124-043037' (unique; user windows cannot match)
+[R9] target start issued pid=564
+[R9] target ownership verified: hwnd=0x31444 pid=564
+[PASS] ① 目标标记与归属确认（驱动侧零写入前提） : hwnd=0x31444 pid=564 marker=P5B003R9-20261124-043037
+[R9] probe started pid=35244
+[PASS] ② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX : currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[240,330] | 来源：心跳 climb-live-state.json
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=36.2s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[240,240] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[PASS] ③ 左侧链：贴边镜像=1 → 上缘 → land → 正常回 idle : start=started targetHwnd=0x31444 currentAction=climb_edge climbMirrorScaleX=-1 climbActive=True perchActive=False progress=-0.1327 foot=[160,180] | side=,mir=1(src=startedEvt)@t=2744 edge=climb_edge,mir=-1@t=3678 land=climb_land,mir=-1@t=4443 steps=7 §sidecar left-sidelimb action=climb_land mirror=-1 tMs=4646 after land -> currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[510,180] | 帧=frames/left-sidelimb.png(+sidecar)
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=10.3s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[614,350] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[PASS] ④ 右侧链：贴边镜像=-1 → 上缘 → land → 正常回 idle : start=started targetHwnd=0x31444 currentAction=climb_side climbMirrorScaleX=-1 climbActive=True perchActive=False progress=0.3395 foot=[755,206] | side=,mir=-1(src=startedEvt)@t=22346 edge=climb_edge,mir=-1@t=23430 land=climb_land,mir=-1@t=24234 steps=17 §sidecar right-sidelimb action=climb_land mirror=-1 tMs=24446 after land -> currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[1144,180] | 帧=frames/right-sidelimb.png(+sidecar)
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=10.7s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1248,350] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[PASS] ⑤ hover 不抢占：真实悬停期间动作保持 climb_* : samples=[climb_edge:-1 climb_edge:-1 climb_edge:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1 climb_land:-1] keptClimb=True seenLand=True §sidecar hover-samples action=climb_land mirror=-1 tMs=45841 after land -> currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[1518,180] | 帧=frames/hover-samples.png(+sidecar) | 自动测试已覆盖 hover 正反例，此为真实悬停补充观察
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=10.3s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1622,350] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[PASS] ⑥ land 期间暂停→暂停清理→resume 不续播→回 idle : §sidecar land-before-pause action=climb_land mirror=-1 tMs=63695 frozen=True pre=[1893,180] frozenFoot=[1893,180] paused=currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1893,180] pausedJudge=clean idle resumeSamples=[idle:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1 sleep:1] noResume=True after=currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1893,180] final=clean idle | 帧=frames/land-before-pause.png(+sidecar证明land)
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=6.5s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1893,90] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[FAIL] ⑦ land 期间拖动→preempted→回 idle 镜像复位不回拉 : §sidecar land-before-drag action=climb_land mirror=1 tMs=71021 dragged from (1363,153) by (-104,260) steps=26 hold=700ms preempted=False currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1259,440] idle=clean idle stable=True | 帧=frames/land-before-drag.png(+sidecar证明land) | 拖动手感细节已由 P2-004 覆盖，此处验证 land 中断清理
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=12.1s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1259,350] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[PASS] ⑧ land 期间找回→RecoverPet 清理回 idle 镜像复位 : §sidecar land-before-recover action=climb_land mirror=-1 tMs=89824 after=currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1280,764] cleared=True(clean idle) | 帧=frames/land-before-recover.png(+sidecar证明land) | 来源：生产 RecoverPet→CancelForRecover 路径
+[R9] real-menu attempt 1 pre-click: fg=0x31444 title='P5B003R9-20261124-043037' lastInput=3.9s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1280,674] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2142A
+[PASS] ⑨ land 期间目标失效→关闭清理回 idle 镜像复位 : §sidecar land-before-close action=climb_land mirror=-1 tMs=94960 targetClosed=True after=currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1810,504] cleared=True(clean idle) | 帧=frames/land-before-close.png(+sidecar证明land) | 该故障组合自动测试已覆盖(Reviewer_LandTargetGone)，此为生产路径真实关闭观察
+[PASS] ⑩ 探针 exitCode=0 且诱饵内容/标题/位置/进程存活 + 帧数达标 : exitCode=0 frames=7 frameEvents=7 lureFile=True lureContent=True lureWin=True lureWinPos=True lureProc=True
+[R9] checklist completeness FAIL: not all PASS
+[R9] summary: 10 checks, passed=9 failed=1
+[R9] details at C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\run-20261124-043037-fixture (r9-summary.json / driver-transcript.log / frames)
+**********************
+PowerShell transcript end
+End time: 20261124043218
+**********************

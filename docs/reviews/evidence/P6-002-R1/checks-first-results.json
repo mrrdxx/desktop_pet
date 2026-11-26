@@ -1,0 +1,30 @@
+{
+  "allPass": false,
+  "results": [
+    {
+      "name": "ExactBoundary_NoEmptyNextBucket_OneSessionAcrossMidnight",
+      "pass": true
+    },
+    {
+      "name": "DeterministicRandomTrace_ExpectedPerBucketTotalsAndSessionStarts",
+      "pass": true
+    },
+    {
+      "name": "WholeSnapshot_RepeatedDrain_RestartNewActivity_ClearRestart",
+      "pass": true
+    },
+    {
+      "name": "WriteFailure_RetrySnapshotDoesNotDuplicateBuckets",
+      "pass": false,
+      "error": "System.IO.FileNotFoundException: Could not find file \u0027C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-002-r1-checks-20261127\\retry\\stats.json\u0027.\r\nFile name: \u0027C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-002-r1-checks-20261127\\retry\\stats.json\u0027\r\n   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)\r\n   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable\u00601 unixCreateMode)\r\n   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable\u00601 unixCreateMode)\r\n   at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable\u00601 unixCreateMode)\r\n   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)\r\n   at Program.\u003C\u003Ec__DisplayClass4_0.\u003CMain\u003Eb__4() in C:\\Users\\mrrdxx\\Desktop\\pet\\docs\\reviews\\evidence\\P6-002-R1\\checks\\Program.cs:line 56\r\n   at Program.\u003C\u003Ec__DisplayClass4_0.\u003CMain\u003Eg__Check|0(String name, Action body) in C:\\Users\\mrrdxx\\Desktop\\pet\\docs\\reviews\\evidence\\P6-002-R1\\checks\\Program.cs:line 17"
+    },
+    {
+      "name": "V1Load_PreservesRaw_NoInventedBuckets_UpgradesOnNewActivity",
+      "pass": true
+    },
+    {
+      "name": "RetentionExactDates_Raw7_Aggregate30_WhileDisabled",
+      "pass": true
+    }
+  ]
+}

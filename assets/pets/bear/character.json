@@ -51,6 +51,21 @@
     "rest": { "loop": "loop", "frames": [
       { "imagePath": "rest_0.png", "durationMs": 2000, "offsetX": 0, "offsetY": 0 }
     ] },
+    "climb_side": { "loop": "loop", "frames": [
+      { "imagePath": "climb_side_0.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "climb_side_1.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "climb_side_2.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "climb_edge": { "loop": "loop", "frames": [
+      { "imagePath": "climb_edge_0.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "climb_edge_1.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "climb_edge_2.png", "durationMs": 300, "offsetX": 0, "offsetY": 0 }
+    ] },
+    "climb_land": { "loop": "once", "frames": [
+      { "imagePath": "climb_land_0.png", "durationMs": 260, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "climb_land_1.png", "durationMs": 340, "offsetX": 0, "offsetY": 0 },
+      { "imagePath": "idle_0.png", "durationMs": 2400, "offsetX": 0, "offsetY": 0 }
+    ] },
     "sleep": { "loop": "loop", "frames": [
       { "imagePath": "sleep_light.png", "durationMs": 2500, "offsetX": 0, "offsetY": 0 },
       { "imagePath": "sleep_deep.png", "durationMs": 4000, "offsetX": 0, "offsetY": 0 },

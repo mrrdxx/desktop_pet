@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="23d4034d-73bc-4fe9-be3f-1b2fb559d961" name="mrrdxx@毛茸茸的小熊 2026-11-22 04:45:50" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T04:45:50.7515222+08:00" queuing="2026-11-22T04:45:50.7515226+08:00" start="2026-11-22T04:45:49.9410239+08:00" finish="2026-11-22T04:45:50.7787645+08:00" />
+  <TestSettings name="default" id="1db77ec5-009c-4cf1-89fd-35cb17274bcb">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-22_04_45_50" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5d03fa0f-6bd8-44fc-aebe-a01bf370b628" testId="4a6f92c4-e4f1-63ca-edd0-c801db42b740" testName="Route_OnTopEdgeOutsideSpan_StillTurnsToNearestSide" computerName="毛茸茸的小熊" duration="00:00:00.0000798" startTime="2026-11-22T04:45:50.6833320+08:00" endTime="2026-11-22T04:45:50.6834538+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d03fa0f-6bd8-44fc-aebe-a01bf370b628" />
+    <UnitTestResult executionId="e712c0f5-57f8-4117-961e-67ac1db69b32" testId="2e4c815c-dc70-6cff-e92d-b59da0c1946d" testName="Distance_NullOrDegenerate_IsInfinity" computerName="毛茸茸的小熊" duration="00:00:00.0000880" startTime="2026-11-22T04:45:50.6819231+08:00" endTime="2026-11-22T04:45:50.6821030+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e712c0f5-57f8-4117-961e-67ac1db69b32" />
+    <UnitTestResult executionId="23f9653a-e30f-42b9-aa96-9aeb92e749d8" testId="8de5ef84-8cd5-85ad-f593-3b1985855b11" testName="Advance_ZeroOrNegative_StaysAtCurrentFoot" computerName="毛茸茸的小熊" duration="00:00:00.0001151" startTime="2026-11-22T04:45:50.7125548+08:00" endTime="2026-11-22T04:45:50.7127072+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="23f9653a-e30f-42b9-aa96-9aeb92e749d8" />
+    <UnitTestResult executionId="df340074-7f70-46ea-abc8-9b019818efed" testId="e8c2bf85-82af-7cc6-15b6-6eec6ba818bc" testName="Route_OnTopEdgeInsideSpan_GoesHorizontalStraightToLanding" computerName="毛茸茸的小熊" duration="00:00:00.0000782" startTime="2026-11-22T04:45:50.6831994+08:00" endTime="2026-11-22T04:45:50.6833123+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df340074-7f70-46ea-abc8-9b019818efed" />
+    <UnitTestResult executionId="9b108e7c-797b-44c0-9a06-182a7821e6c6" testId="1e010f1c-2460-e10a-4a72-dedfd5f59865" testName="Advance_BeyondTotalLength_ConvergesAtLanding" computerName="毛茸茸的小熊" duration="00:00:00.0000945" startTime="2026-11-22T04:45:50.7124130+08:00" endTime="2026-11-22T04:45:50.7125419+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9b108e7c-797b-44c0-9a06-182a7821e6c6" />
+    <UnitTestResult executionId="2fc1ea6b-4624-4888-aa68-48d06133a1e6" testId="007b5c7b-5cce-67e5-c63f-5796aad1b1c7" testName="Route_NearRightSide_GoesUpRightEdgeToTopLanding" computerName="毛茸茸的小熊" duration="00:00:00.0000928" startTime="2026-11-22T04:45:50.6828958+08:00" endTime="2026-11-22T04:45:50.6830538+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2fc1ea6b-4624-4888-aa68-48d06133a1e6" />
+    <UnitTestResult executionId="59091968-6603-4cdc-8a0a-e94d6938e061" testId="33a94e2f-8f34-2e19-d452-a4082fdbcc60" testName="Distance_OutsideFrame_IsEuclideanDistance" computerName="毛茸茸的小熊" duration="00:00:00.0032676" startTime="2026-11-22T04:45:50.6629147+08:00" endTime="2026-11-22T04:45:50.6778735+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="59091968-6603-4cdc-8a0a-e94d6938e061" />
+    <UnitTestResult executionId="f07a1312-dc77-40d6-8db7-1b7e3d44868b" testId="4db92fb9-c10e-8865-3621-321b8868f344" testName="Advance_AcrossSegments_ClimbsThenWalksTopEdge" computerName="毛茸茸的小熊" duration="00:00:00.0000953" startTime="2026-11-22T04:45:50.7122582+08:00" endTime="2026-11-22T04:45:50.7123951+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f07a1312-dc77-40d6-8db7-1b7e3d44868b" />
+    <UnitTestResult executionId="c386db43-a71b-4df4-b8ec-cf78e68c08b7" testId="70e81686-11e3-a589-a273-0705d1ecae45" testName="Advance_ExactLandingFootAlreadyAtLanding_NoMovement" computerName="毛茸茸的小熊" duration="00:00:00.0001027" startTime="2026-11-22T04:45:50.7127290+08:00" endTime="2026-11-22T04:45:50.7135269+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c386db43-a71b-4df4-b8ec-cf78e68c08b7" />
+    <UnitTestResult executionId="32c64f1d-c36e-4517-9bac-5de9ce214e9b" testId="3ece3a37-6507-d3d0-f93f-0ac747754e82" testName="Route_FootAboveFrameTop_EnterClampedToTop" computerName="毛茸茸的小熊" duration="00:00:00.0000732" startTime="2026-11-22T04:45:50.6830725+08:00" endTime="2026-11-22T04:45:50.6831875+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32c64f1d-c36e-4517-9bac-5de9ce214e9b" />
+    <UnitTestResult executionId="aa3978f9-56e1-453d-8f01-8f454059dfe8" testId="3755d689-7047-15b6-053f-744d1f5417e4" testName="Distance_InsideFrame_IsZero" computerName="毛茸茸的小熊" duration="00:00:00.0005561" startTime="2026-11-22T04:45:50.6809587+08:00" endTime="2026-11-22T04:45:50.6816840+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa3978f9-56e1-453d-8f01-8f454059dfe8" />
+    <UnitTestResult executionId="be3922ce-0745-40fc-a8cf-724c922424e6" testId="bf90d22c-758c-0521-6932-87b893a6a9d4" testName="Advance_FirstSegment_InterpolatesLinearly" computerName="毛茸茸的小熊" duration="00:00:00.0001221" startTime="2026-11-22T04:45:50.7120368+08:00" endTime="2026-11-22T04:45:50.7122377+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="be3922ce-0745-40fc-a8cf-724c922424e6" />
+    <UnitTestResult executionId="e0d4e681-0ac8-4f3a-9c87-ea4ef9131a4b" testId="63dc675d-dfa2-4a18-d9ab-afef07b6b9f9" testName="StartDistance_ThresholdInclusive" computerName="毛茸茸的小熊" duration="00:00:00.0001784" startTime="2026-11-22T04:45:50.6821200+08:00" endTime="2026-11-22T04:45:50.6823475+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e0d4e681-0ac8-4f3a-9c87-ea4ef9131a4b" />
+    <UnitTestResult executionId="3d2d984f-7faa-49f5-bf74-5f0a7b765d3a" testId="e4e46c04-62a0-e176-75dd-61e3837a3116" testName="Route_RebuiltEachTickOnTopEdge_AdvancesMonotonicallyToLanding" computerName="毛茸茸的小熊" duration="00:00:00.0006255" startTime="2026-11-22T04:45:50.7111932+08:00" endTime="2026-11-22T04:45:50.7119710+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3d2d984f-7faa-49f5-bf74-5f0a7b765d3a" />
+    <UnitTestResult executionId="3814c9c1-89b6-4642-9c30-55def86ada96" testId="bc2266df-b18c-6094-ff31-342175c57429" testName="Route_NearLeftSide_GoesUpLeftEdgeToTopLanding" computerName="毛茸茸的小熊" duration="00:00:00.0004401" startTime="2026-11-22T04:45:50.6823712+08:00" endTime="2026-11-22T04:45:50.6828684+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3814c9c1-89b6-4642-9c30-55def86ada96" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Advance_ExactLandingFootAlreadyAtLanding_NoMovement" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="70e81686-11e3-a589-a273-0705d1ecae45">
+      <Execution id="c386db43-a71b-4df4-b8ec-cf78e68c08b7" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Advance_ExactLandingFootAlreadyAtLanding_NoMovement" />
+    </UnitTest>
+    <UnitTest name="Advance_BeyondTotalLength_ConvergesAtLanding" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="1e010f1c-2460-e10a-4a72-dedfd5f59865">
+      <Execution id="9b108e7c-797b-44c0-9a06-182a7821e6c6" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Advance_BeyondTotalLength_ConvergesAtLanding" />
+    </UnitTest>
+    <UnitTest name="Route_NearLeftSide_GoesUpLeftEdgeToTopLanding" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="bc2266df-b18c-6094-ff31-342175c57429">
+      <Execution id="3814c9c1-89b6-4642-9c30-55def86ada96" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Route_NearLeftSide_GoesUpLeftEdgeToTopLanding" />
+    </UnitTest>
+    <UnitTest name="Advance_ZeroOrNegative_StaysAtCurrentFoot" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="8de5ef84-8cd5-85ad-f593-3b1985855b11">
+      <Execution id="23f9653a-e30f-42b9-aa96-9aeb92e749d8" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Advance_ZeroOrNegative_StaysAtCurrentFoot" />
+    </UnitTest>
+    <UnitTest name="Distance_InsideFrame_IsZero" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="3755d689-7047-15b6-053f-744d1f5417e4">
+      <Execution id="aa3978f9-56e1-453d-8f01-8f454059dfe8" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Distance_InsideFrame_IsZero" />
+    </UnitTest>
+    <UnitTest name="StartDistance_ThresholdInclusive" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="63dc675d-dfa2-4a18-d9ab-afef07b6b9f9">
+      <Execution id="e0d4e681-0ac8-4f3a-9c87-ea4ef9131a4b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="StartDistance_ThresholdInclusive" />
+    </UnitTest>
+    <UnitTest name="Route_OnTopEdgeInsideSpan_GoesHorizontalStraightToLanding" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="e8c2bf85-82af-7cc6-15b6-6eec6ba818bc">
+      <Execution id="df340074-7f70-46ea-abc8-9b019818efed" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Route_OnTopEdgeInsideSpan_GoesHorizontalStraightToLanding" />
+    </UnitTest>
+    <UnitTest name="Advance_FirstSegment_InterpolatesLinearly" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="bf90d22c-758c-0521-6932-87b893a6a9d4">
+      <Execution id="be3922ce-0745-40fc-a8cf-724c922424e6" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Advance_FirstSegment_InterpolatesLinearly" />
+    </UnitTest>
+    <UnitTest name="Distance_OutsideFrame_IsEuclideanDistance" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="33a94e2f-8f34-2e19-d452-a4082fdbcc60">
+      <Execution id="59091968-6603-4cdc-8a0a-e94d6938e061" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Distance_OutsideFrame_IsEuclideanDistance" />
+    </UnitTest>
+    <UnitTest name="Route_RebuiltEachTickOnTopEdge_AdvancesMonotonicallyToLanding" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="e4e46c04-62a0-e176-75dd-61e3837a3116">
+      <Execution id="3d2d984f-7faa-49f5-bf74-5f0a7b765d3a" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Route_RebuiltEachTickOnTopEdge_AdvancesMonotonicallyToLanding" />
+    </UnitTest>
+    <UnitTest name="Route_NearRightSide_GoesUpRightEdgeToTopLanding" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="007b5c7b-5cce-67e5-c63f-5796aad1b1c7">
+      <Execution id="2fc1ea6b-4624-4888-aa68-48d06133a1e6" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Route_NearRightSide_GoesUpRightEdgeToTopLanding" />
+    </UnitTest>
+    <UnitTest name="Distance_NullOrDegenerate_IsInfinity" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="2e4c815c-dc70-6cff-e92d-b59da0c1946d">
+      <Execution id="e712c0f5-57f8-4117-961e-67ac1db69b32" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Distance_NullOrDegenerate_IsInfinity" />
+    </UnitTest>
+    <UnitTest name="Advance_AcrossSegments_ClimbsThenWalksTopEdge" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="4db92fb9-c10e-8865-3621-321b8868f344">
+      <Execution id="f07a1312-dc77-40d6-8db7-1b7e3d44868b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Advance_AcrossSegments_ClimbsThenWalksTopEdge" />
+    </UnitTest>
+    <UnitTest name="Route_OnTopEdgeOutsideSpan_StillTurnsToNearestSide" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="4a6f92c4-e4f1-63ca-edd0-c801db42b740">
+      <Execution id="5d03fa0f-6bd8-44fc-aebe-a01bf370b628" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Route_OnTopEdgeOutsideSpan_StillTurnsToNearestSide" />
+    </UnitTest>
+    <UnitTest name="Route_FootAboveFrameTop_EnterClampedToTop" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b-r1-direct-20261122\bin\desktoppet.core.tests\debug\desktoppet.core.tests.dll" id="3ece3a37-6507-d3d0-f93f-0ac747754e82">
+      <Execution id="32c64f1d-c36e-4517-9bac-5de9ce214e9b" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b-r1-direct-20261122\bin\DesktopPet.Core.Tests\debug\DesktopPet.Core.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.Core.Tests.WindowClimbTests" name="Route_FootAboveFrameTop_EnterClampedToTop" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="4a6f92c4-e4f1-63ca-edd0-c801db42b740" executionId="5d03fa0f-6bd8-44fc-aebe-a01bf370b628" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2e4c815c-dc70-6cff-e92d-b59da0c1946d" executionId="e712c0f5-57f8-4117-961e-67ac1db69b32" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8de5ef84-8cd5-85ad-f593-3b1985855b11" executionId="23f9653a-e30f-42b9-aa96-9aeb92e749d8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e8c2bf85-82af-7cc6-15b6-6eec6ba818bc" executionId="df340074-7f70-46ea-abc8-9b019818efed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1e010f1c-2460-e10a-4a72-dedfd5f59865" executionId="9b108e7c-797b-44c0-9a06-182a7821e6c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="007b5c7b-5cce-67e5-c63f-5796aad1b1c7" executionId="2fc1ea6b-4624-4888-aa68-48d06133a1e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="33a94e2f-8f34-2e19-d452-a4082fdbcc60" executionId="59091968-6603-4cdc-8a0a-e94d6938e061" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4db92fb9-c10e-8865-3621-321b8868f344" executionId="f07a1312-dc77-40d6-8db7-1b7e3d44868b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="70e81686-11e3-a589-a273-0705d1ecae45" executionId="c386db43-a71b-4df4-b8ec-cf78e68c08b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3ece3a37-6507-d3d0-f93f-0ac747754e82" executionId="32c64f1d-c36e-4517-9bac-5de9ce214e9b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3755d689-7047-15b6-053f-744d1f5417e4" executionId="aa3978f9-56e1-453d-8f01-8f454059dfe8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf90d22c-758c-0521-6932-87b893a6a9d4" executionId="be3922ce-0745-40fc-a8cf-724c922424e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="63dc675d-dfa2-4a18-d9ab-afef07b6b9f9" executionId="e0d4e681-0ac8-4f3a-9c87-ea4ef9131a4b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4e46c04-62a0-e176-75dd-61e3837a3116" executionId="3d2d984f-7faa-49f5-bf74-5f0a7b765d3a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bc2266df-b18c-6094-ff31-342175c57429" executionId="3814c9c1-89b6-4642-9c30-55def86ada96" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="15" executed="15" passed="15" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

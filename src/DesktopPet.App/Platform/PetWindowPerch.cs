@@ -366,6 +366,11 @@ public sealed class PetWindowPerch
         IsActive = false;
         _tracker.Reset();
         _hasPrePerchPosition = false;
+        // R8 F-03：脱离收口同步释放攀爬落位表现（到达交接后 climb_land
+        // 仍在播、路线已结束——目标此刻失效/遮挡/主动脱离，若不清理，
+        // land 动作连同镜像悬挂在宠物体上）。经 MainWindow 接线走
+        // _petClimb?（纯栖息场景不触发懒创建）；攀爬自身已清理时 no-op。
+        _owner.ReleaseClimbForPerchDetach();
         if (reason is not null)
             Emit("detached", reason: reason);
     }

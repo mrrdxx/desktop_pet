@@ -1,0 +1,8 @@
+{
+  "scenario": "usage-stats-exit",
+  "exitCode": 0,
+  "message": "usage-stats-exit session 2 (restart=True): production menu Exit completed; cleanup sidecar verified (subscribedAfterCleanup=false, serviceNullAfterCleanup=true, shutdownCalled=true); no exception logs.",
+  "logDirectory": "C:\\Users\\mrrdxx\\AppData\\Local\\Temp\\codefree-agent\\p6-001-r8-f6-verify\\usage-stats-exit\\logs",
+  "logFiles": [],
+  "logContent": ""
+}

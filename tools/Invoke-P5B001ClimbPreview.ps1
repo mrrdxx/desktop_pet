@@ -20,7 +20,7 @@
 #   15 quit → 探针 exitCode=0
 #
 # 目标锁定纪律与 M-16 相同：本轮独有标记 P5B001NP-<ts> + 归属确认
-# （宿主 Notepad、StartTime≥t0−2s、非驱动 pid），不碰用户窗口。
+# （独立 WinForms 夹具、精确启动 PID、StartTime≥t0−2s），不碰用户窗口。
 # P5B001 R1 F-03：清理只针对本轮归属对象——启动前不删其他 run 的标记
 # 文件、不杀无窗口 Notepad、不清理残留标记窗口；finally 只关/杀本轮
 # `Find-OwnedTarget` 确认归属的目标（其他轮、无窗口外部进程、同进程
@@ -35,14 +35,28 @@
 # 跨屏/混合 DPI 未测（本机 1920×1080@96DPI 单屏）。
 #
 # 用法（仓库根目录，pwsh 7 -File 独立进程运行）：
-#   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5B001ClimbPreview.ps1 -TargetKind notepad -DurationSec 600
+#   pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5B001ClimbPreview.ps1 -TargetKind fixture -DurationSec 600
 
 param(
-    [Parameter(Mandatory = $true)][ValidateSet('notepad')][string]$TargetKind,
+    [ValidateSet('fixture')][string]$TargetKind = 'fixture',
+    [string]$FixtureTitle,
+    [string]$ProbePath,
     [int]$DurationSec = 600
 )
 
 $ErrorActionPreference = 'Stop'
+if ($FixtureTitle) {
+    Add-Type -AssemblyName System.Windows.Forms
+    $form = [System.Windows.Forms.Form]::new()
+    try {
+        $form.Text = $FixtureTitle
+        $form.ShowInTaskbar = $true
+        $form.WindowState = [System.Windows.Forms.FormWindowState]::Normal
+        [System.Windows.Forms.Application]::Run($form)
+    } finally { $form.Dispose() }
+    return
+}
+
 $repo = Split-Path -Parent $PSScriptRoot
 $ts = Get-Date -Format 'yyyyMMdd-HHmmss'
 $script:t0 = Get-Date
@@ -53,7 +67,7 @@ $resultFile = Join-Path $runDir 'probe-result.json'
 $eventsFile = Join-Path $scenarioDir 'climb-live-events.jsonl'
 $stateFile = Join-Path $scenarioDir 'climb-live-state.json'
 $commandsFile = Join-Path $scenarioDir 'climb-live-commands.txt'
-$probeExe = Join-Path $repo 'tests\DesktopPet.DiagnosticProbe\bin\Debug\net10.0-windows\DesktopPet.DiagnosticProbe.exe'
+$probeExe = if ($ProbePath) { (Resolve-Path -LiteralPath $ProbePath).Path } else { Join-Path $repo 'tests\DesktopPet.DiagnosticProbe\bin\Debug\net10.0-windows\DesktopPet.DiagnosticProbe.exe' }
 Start-Transcript -Path (Join-Path $runDir 'driver-transcript.log') | Out-Null
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -198,6 +212,13 @@ function Test-ProbeAlive {
 function Find-PetHwnd([int]$tolerance = 3) {
     $st = Get-State
     if ($null -eq $st -or $null -eq $st.petRectPx) { return [IntPtr]::Zero }
+    if ($st.petHwnd) {
+        $known = [IntPtr]([long]$st.petHwnd)
+        $knownPid = [uint32]0
+        [M15W2]::GetWindowThreadProcessId($known,[ref]$knownPid) | Out-Null
+        if ([M15W2]::IsWindow($known) -and $knownPid -eq $script:probe.Id) { return $known }
+        return [IntPtr]::Zero
+    }
     $petRect = $st.petRectPx
     foreach ($h in Get-Tops) {
         $p = [uint32]0
@@ -222,6 +243,13 @@ function Get-FootToFrameDistance($foot, $fb) {
 }
 
 $script:checks = New-Object System.Collections.Generic.List[object]
+function Test-M17Complete($checks, [bool]$reachedEnd, [bool]$failed) {
+    $expectedIds = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰'
+    $actualIds = (@($checks | ForEach-Object { $_.Item.Substring(0,1) }) -join '')
+    return ($reachedEnd -and -not $failed -and $checks.Count -eq 17 -and
+        $actualIds -ceq $expectedIds -and @($checks | Where-Object Result -NE 'PASS').Count -eq 0)
+}
+
 function Add-Check([string]$name, [bool]$pass, [string]$detail) {
     $script:checks.Add([pscustomobject]@{ Item = $name; Result = $(if ($pass) { 'PASS' } else { 'FAIL' }); Detail = $detail })
     Write-Host ("[{0}] {1} : {2}" -f $(if ($pass) { 'PASS' } else { 'FAIL' }), $name, $detail)
@@ -239,7 +267,9 @@ $script:otherRunMarkerFiles = @(
         Where-Object { $_.FullName -ne $script:markerFile } |
         ForEach-Object { $_.FullName })
 function Start-Target {
-    Start-Process notepad -ArgumentList "`"$script:markerFile`"" -PassThru
+    Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList @(
+        '-NoProfile','-Sta','-File', "`"$PSCommandPath`"", '-FixtureTitle', $targetSubstr
+    ) -PassThru -WindowStyle Normal
 }
 
 # ---- 本轮归属清理（R1 F-03：仅清理由当前驱动创建并能确认归属的
@@ -247,59 +277,15 @@ function Start-Target {
 #      无窗口进程一律不写不关不杀；同进程用户标签页保留）----
 $script:ownedTargetHwnd = [IntPtr]::Zero
 $script:ownedTargetPid = 0
-# 仅当归属 pid 已无任何顶层窗口时才停止该进程（我们的启动进程、单窗口）；
-# 仍有窗口（同进程用户标签页/被接管）则不触碰。
-function Stop-OwnedOrphanProcess {
-    if ($script:ownedTargetPid -eq 0) { return }
-    $left = @(Get-Tops | ForEach-Object {
-        $p = [uint32]0
-        [M15W2]::GetWindowThreadProcessId([IntPtr]$_, [ref]$p) | Out-Null
-        if ($p -eq [uint32]$script:ownedTargetPid) { [IntPtr]$_ }
-    })
-    if ($left.Count -gt 0) {
-        Write-Host "[M17] cleanup: owned pid $($script:ownedTargetPid) still has $($left.Count) window(s) - process left untouched"
-        return
-    }
-    $p = Get-Process -Id $script:ownedTargetPid -ErrorAction SilentlyContinue
-    if ($null -ne $p) {
-        Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-        Write-Host "[M17] cleanup: stopped owned orphan process pid=$($script:ownedTargetPid) (0 windows left)"
-    }
-}
+# 清理时重新核对本轮独立子进程与句柄，不发送不保存按键、不强杀目标进程。
 function Invoke-CleanupOwnedTarget {
-    if ($script:ownedTargetHwnd -eq [IntPtr]::Zero) { return }
     $h = $script:ownedTargetHwnd
-    $t = Get-Title $h
-    if (-not [M15W2]::IsWindow($h) -or $t -notlike "*$targetSubstr*") {
-        # 窗口已自行关闭或标题漂移：不改动（可能已被用户接管）。
-        Write-Host "[M17] cleanup: owned target gone or drifted - left untouched (hwnd=$(HwndHex $h) title='$t')"
-        return
-    }
-    # 只关闭归属窗口自身（WM_CLOSE 仅发向该窗口，不涉及其他窗口）。
-    [M15W]::SendMessage($h, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
-    Start-Sleep -Milliseconds 600
-    if (-not [M15W2]::IsWindow($h)) {
-        Write-Host "[M17] cleanup: closed owned target 0x$($h.ToString('X')) '$t'"
-        Stop-OwnedOrphanProcess
-        return
-    }
-    # 脏标签关闭时 Win11 记事本会弹应用内保存提示挡住 WM_CLOSE。
-    # 提示已把该窗口置于前台时发送 Alt+N（不保存）关闭；前台不是
-    # 该窗口时不发按键（避免打进用户窗口）。
-    $dlgDeadline = (Get-Date).AddSeconds(2)
-    while ((Get-Date) -lt $dlgDeadline -and [M15W2]::IsWindow($h)) {
-        if ([M15W2]::GetForegroundWindow() -eq $h) {
-            [M16K2]::AltN()
-            Start-Sleep -Milliseconds 600
-        }
-        Start-Sleep -Milliseconds 200
-    }
-    if ([M15W2]::IsWindow($h)) {
-        Write-Host "[M17] cleanup: owned target still open after Alt+N - left as-is (hwnd=$(HwndHex $h))"
-    } else {
-        Write-Host "[M17] cleanup: closed owned target via Alt+N (hwnd=$(HwndHex $h))"
-        Stop-OwnedOrphanProcess
-    }
+    if ($h -eq [IntPtr]::Zero -or -not [M15W2]::IsWindow($h)) { return }
+    $ownerPid = [uint32]0
+    [M15W2]::GetWindowThreadProcessId($h,[ref]$ownerPid) | Out-Null
+    if ($ownerPid -ne $targetProc.Id -or $targetProc.HasExited -or (Get-Title $h) -cne $targetSubstr) { return }
+    # 独立夹具进程只有本轮窗口；无强杀、无不保存按键、无跨轮清理。
+    [M15W]::SendMessage($h,0x0010,[IntPtr]::Zero,[IntPtr]::Zero) | Out-Null
 }
 
 # ---- 诱饵对照（R1 F-03：证明清理范围不越界；finally 结束后验证）----
@@ -328,10 +314,6 @@ $script:windowlessLure = Start-Process -FilePath 'powershell' `
 Write-Host "[M17] lures set: file=$script:lureFile window='$($script:lureWindow.Text)' @($($lureR.L),$($lureR.T)) windowlessPid=$($script:windowlessLure.Id)"
 
 # ---- 安全预检 ----
-$existingNp = @(Get-Tops | ForEach-Object { Get-Title ([IntPtr]$_) } | Where-Object { $_ -like '*- Notepad' })
-if ($existingNp.Count -gt 0) {
-    throw "existing Notepad window(s) found: [$($existingNp -join '; ')] - notepad target unsafe; close user Notepad first"
-}
 Write-Host "[M17] run dir: $runDir"
 Write-Host "[M17] targetSubstr='$targetSubstr' (unique; user windows cannot match)"
 
@@ -350,7 +332,7 @@ function Find-OwnedTarget([long[]]$excludeHwnds) {
             $cPid = [uint32]0
             [M15W2]::GetWindowThreadProcessId([IntPtr]$h, [ref]$cPid) | Out-Null
             $cProc = Get-Process -Id $cPid -ErrorAction SilentlyContinue
-            $owned = ($null -ne $cProc -and $cProc.ProcessName -eq 'Notepad' -and
+            $owned = ($null -ne $cProc -and $cPid -eq $targetProc.Id -and -not $targetProc.HasExited -and
                 $cPid -ne $PID -and $cProc.StartTime -ge $script:t0.AddSeconds(-2))
             if (-not $owned) { continue }
             return @{ Hwnd = [IntPtr]$h; Pid = $cPid }
@@ -577,7 +559,9 @@ try {
         for ($gs = 0; $gs -lt 3 -and $null -eq $grab; $gs++) {
             $st = Get-State
             if ($null -eq $st) { Start-Sleep -Milliseconds 250; continue }
-            $pr = $st.petRectPx
+            $liveRect = New-Object M15W+RECT
+            [M15W]::GetWindowRect($petHwnd,[ref]$liveRect) | Out-Null
+            $pr = @($liveRect.L,$liveRect.T,$liveRect.R,$liveRect.B)
             $petW = $pr[2] - $pr[0]; $petH = $pr[3] - $pr[1]
             foreach ($fy in 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15) {
                 foreach ($fx in 0.5, 0.4, 0.6, 0.3, 0.7) {
@@ -862,9 +846,11 @@ try {
     if (-not $script:probe.WaitForExit(30 * 1000)) { Stop-Process -Id $script:probe.Id -Force }
     Write-Host "[M17] probe exited code=$($script:probe.ExitCode)"
     $res = $(if (Test-Path $resultFile) { Get-Content $resultFile -Raw | ConvertFrom-Json } else { $null })
+    $script:reachedEnd = $true
     Add-Check '⑮ 探针 exitCode=0' ($script:probe.ExitCode -eq 0 -and $null -ne $res -and $res.exitCode -eq 0) "probe exit=$($script:probe.ExitCode) result exitCode=$($res.exitCode)"
 }
 catch {
+    $script:failed = $true
     Write-Host "[M17] FATAL: $($_.Exception.GetType().Name): $($_.Exception.Message) at line $($_.InvocationInfo.ScriptLineNumber)"
     Write-Host "[M17] FATAL position: $($_.InvocationInfo.PositionMessage)"
     throw
@@ -914,9 +900,9 @@ finally {
         exit 1
     }
     # R1 F-04：固定条目汇总——提前抛错/中途退出时清单不完整，必须显式 FAIL。
-    $expectCount = 18
-    if ($script:checks.Count -ne $expectCount) {
-        Write-Host "[M17] ABORTED EARLY: checklist incomplete ($($script:checks.Count)/$expectCount) - marked FAIL"
+    $expectCount = 17
+    if (-not (Test-M17Complete $script:checks ([bool]$script:reachedEnd) ([bool]$script:failed))) {
+        Write-Host "[M17] FAILED: checklist incomplete or contains failed checks ($($script:checks.Count)/$expectCount) - marked FAIL"
         Add-Check '⑱ 完整流程走完（固定条目数）' $false "$($script:checks.Count)/$expectCount"
     } else {
         Add-Check '⑱ 完整流程走完（固定条目数）' $true "$($script:checks.Count)/$expectCount"

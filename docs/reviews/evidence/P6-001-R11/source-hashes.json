@@ -1,0 +1,18 @@
+[
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\tests\\DesktopPet.DiagnosticProbe\\Program.cs",
+    "Hash": "E2C8803C281F6518C84CF04C68EC6125F2EB552D9AE7543756BB0D6A4A38F291"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\App.xaml.cs",
+    "Hash": "7276B0CF4C4193D079F2FF6502DDACBCB6CEF439EB35121F93F7ED4F3649ACF5"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.App\\Platform\\UsageStatsService.cs",
+    "Hash": "6EBE5C29BBBE8DC648CC1512E2593AA6B78237E96A17511CAB35248D3D3F8005"
+  },
+  {
+    "Path": "C:\\Users\\mrrdxx\\Desktop\\pet\\src\\DesktopPet.Core\\Events\\UsageStatsCollector.cs",
+    "Hash": "ED94F633249C96CF09C225152D81681879D6F2A78EE988B805D07FA78C191E56"
+  }
+]

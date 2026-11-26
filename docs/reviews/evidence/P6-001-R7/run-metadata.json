@@ -1,0 +1,8 @@
+{
+  "probe": 79288,
+  "base": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261126-153241",
+  "exe": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p6001-probe-r6\\bin\\DesktopPet.DiagnosticProbe\\debug\\DesktopPet.DiagnosticProbe.exe",
+  "fixtureA": 92828,
+  "marker": "P6-STATS-153241",
+  "fixtureB": 82344
+}

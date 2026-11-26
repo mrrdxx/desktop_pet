@@ -1,0 +1,29 @@
+{
+  "allPass": true,
+  "results": [
+    {
+      "name": "ExactBoundary_NoEmptyNextBucket_OneSessionAcrossMidnight",
+      "pass": true
+    },
+    {
+      "name": "DeterministicRandomTrace_ExpectedPerBucketTotalsAndSessionStarts",
+      "pass": true
+    },
+    {
+      "name": "WholeSnapshot_RepeatedDrain_RestartNewActivity_ClearRestart",
+      "pass": true
+    },
+    {
+      "name": "WriteFailure_RetrySnapshotDoesNotDuplicateBuckets",
+      "pass": true
+    },
+    {
+      "name": "V1Load_PreservesRaw_NoInventedBuckets_UpgradesOnNewActivity",
+      "pass": true
+    },
+    {
+      "name": "RetentionExactDates_Raw7_Aggregate30_WhileDisabled",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "scenario": "usage-stats-bubble",
+  "exitCode": 0,
+  "message": "usage-stats-bubble: isolated preview passed (session 1, candidate=notepad@09:30 support=5 sessions=5, bubble shown once/day with evidence-only wording, viewer split into recorded stats \u002B sample-supported preference, disable kept the daily marker, clear reset it). Evidence: C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-004-probe-run\\usage-stats-bubble\\usage-stats-bubble-1.jsonl",
+  "logDirectory": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-004-probe-run\\usage-stats-bubble\\logs",
+  "logFiles": [],
+  "logContent": ""
+}

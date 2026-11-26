@@ -1,0 +1,45 @@
+**********************
+PowerShell 记录开始
+开始时间: 20261124002634
+用户名: 毛茸茸的小熊\mrrdxx
+RunAs 用户: 毛茸茸的小熊\mrrdxx
+配置名称: 
+计算机: 毛茸茸的小熊 (Microsoft Windows NT 10.0.26200.0)
+主机应用程序: C:\Program Files\PowerShell\7\pwsh.dll -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5B003R9Live.ps1 -DurationSec 960
+进程 ID: 6468
+PSVersion: 7.6.10
+PSEdition: Core
+GitCommitId: 7.6.10
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+[R9] driver thread DPI awareness = 2 (2=PerMonitor; required for physical px)
+[R9] lures set: file=C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\lure-run-20261124-002634\P5B003R9-lure-20261124-002634.txt window='P5B003R9-lure-20261124-002634.txt' @(60,60) windowlessPid=6088
+[R9] run dir: C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\run-20261124-002634-fixture
+[R9] targetSubstr='P5B003R9-20261124-002634' (unique; user windows cannot match)
+[R9] target start issued pid=15476
+[R9] target ownership verified: hwnd=0xF080C pid=15476
+[PASS] ① 目标标记与归属确认（驱动侧零写入前提） : hwnd=0xF080C pid=15476 marker=P5B003R9-20261124-002634
+[R9] probe started pid=29624
+[PASS] ② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX : currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[240,330] | 来源：心跳 climb-live-state.json
+[R9] real-menu attempt 1 pre-click: fg=0x30702 title='' lastInput=0s ago
+[R9] real-menu attempt 1 : no menu (fgBefore=0x30702 petHwnd=0x2008E6)
+[R9] real-menu attempt 2 pre-click: fg=0x30702 title='' lastInput=0s ago
+[R9] real-menu attempt 2 : no menu (fgBefore=0x30702 petHwnd=0x2008E6)
+[R9] real-menu attempt 3 pre-click: fg=0x106FC title='codeunity - CodeFreeSpace' lastInput=0s ago
+[R9] real-menu attempt 3 : no menu (fgBefore=0x106FC petHwnd=0x2008E6)
+[R9] real-menu attempt 4 pre-click: fg=0x106FC title='codeunity - CodeFreeSpace' lastInput=0.6s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[240,240] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x2008E6
+[FAIL] ③ 左侧链：贴边镜像=1 → 上缘 → land → 正常回 idle : start=started targetHwnd=0xF080C currentAction=sleep climbMirrorScaleX=1 climbActive=True perchActive=False progress=0.0556 foot=[218,180] | side=,mir=1(src=startedEvt)@t=14601 edge=,mir=@t= land=,mir=@t= steps=10 §sidecar left-sidelimb action=sleep mirror=1 tMs=16477 land finished before observed: currentAction=sleep climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[510,180] | 帧=frames/left-sidelimb.png(+sidecar)
+[R9] EXCEPTION: left chain failed - aborting
+[FAIL] ①⑩（中止）运行异常 : left chain failed - aborting
+[R9] summary: 4 checks, passed=2 failed=2
+[R9] details at C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\run-20261124-002634-fixture (r9-summary.json / driver-transcript.log / frames)
+**********************
+PowerShell 记录结束
+结束时间: 20261124002659
+**********************

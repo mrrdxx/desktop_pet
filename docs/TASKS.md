@@ -604,7 +604,7 @@
 ### P5B-001 窗口有限攀爬（R-08 首版）
 
 - 任务 ID 与名称：P5B-001 窗口有限攀爬（R-08 首版）。
-- 状态：`awaiting-verification`（2026-11-21；[监理 R1](reviews/P5B-001-review.md) 四项阻断 F-01～F-04 已整改完成并自测通过，待监理 R2 复核；开发 M-17 15项PASS按原覆盖保留）。
+- 状态：`done`（2026-11-22；[监理R2](reviews/P5B-001-review.md) 按用户明确指定由同助手复核接收，F-01～F-04全部关闭；不是独立复核）。
 - 依赖与需求 ID：依赖 [P5A-001](#p5a-001-窗口栖息首版)、[P5A-002](#p5a-002-窗口栖息晃动反馈)、[P5A-003](#p5a-003-窗口栖息正式入口)（均 done）；范围见 [R-08](PRODUCT.md#r-08-窗口攀爬阶段-5b)。
 - 必读章节：PRODUCT R-08；ARCHITECTURE §4/§5/§9；TESTING（M-17 登记后）。
 - 输入/已有条件：工作区已有攀爬实现——Core `Windows/WindowClimbPolicy.cs`（纯逻辑折线，含上缘水平分支与 R1 整改折线长度/有限补步）、App `Platform/PetWindowClimb.cs`（控制器，含起攀/更新同时间域、找回取消）、`MainWindow.xaml.cs`（`IsClimbWriteAllowed`/`ApplyPerchFoot(fromClimb)`/`RecoverPet` 所有权与找回）、`WindowClimbTests`/`WindowClimbAppTests`（含监理 5 反例）、探针 `WindowClimbLiveScenario`（window-climb-live）。
@@ -620,11 +620,180 @@
 
 - 未通过窗口可行性验证前，不给社交或物理系统加入 HWND 依赖。
 
+### P5B-002 窗口攀爬正式入口
+
+- 任务 ID 与名称：P5B-002 窗口攀爬正式入口。
+- 状态：`done`（2026-11-22；[监理R3](reviews/P5B-002-review.md) 关闭R2 F-01，接收正式入口；M-18原18/18通过，原反例1/1及当前入口回归24/24通过）。
+- 依赖与需求 ID：依赖 [P5B-001](#p5b-001-窗口有限攀爬r-08-首版)（done）、[P5A-003](#p5a-003-窗口栖息正式入口)（done）；范围见 [R-08](PRODUCT.md#r-08-窗口攀爬阶段-5b)，正式入口为 R-08 后续延伸。
+- 必读章节：PRODUCT R-08；ARCHITECTURE §4/§5/§9；TESTING（正式入口实机场景登记后）。
+- 输入/已有条件：复用 P5A-003 窗口拾取流程（右键菜单进入拾取→左键点击合格外部窗口显式选中，`TrySelectExplicit`；15s 超时、点中宠物自身/拖动/开菜单/暂停取消；进入拾取时左键已按下须先释放再等新按下）+ `PetWindowClimb` 既有攀爬路线与守卫（起攀距离、所有权守卫、找回取消、超距/遮挡/不合格目标拒绝起攀且不移动）+ MainWindow 右键菜单接线。
+- 范围与明确边界：右键菜单新增「Climb on Window」进入拾取模式，左键点击合格目标后按既有攀爬路线执行（靠近侧边→外框上缘→顶部落位→交接 `PetWindowPerch` 栖息）；无效目标、超距、超时及用户取消安全结束拾取，不移动宠物；拖动、暂停、找回、退出继续可接管。既有「直接栖息」入口（P5A-003「Perch on Window」）保留为平行入口。不做：自主选窗、自动靠近、专用攀爬美术、多宠攀爬、习惯学习；不扩大多屏支持声明。
+- 预期产物：App 正式入口接线 + 正式入口测试（App 单测专项 + 真实菜单关键链实机验证）+ 权威文档同步。
+- 可观察验收条件：从正式入口选记事本/浏览器/独立夹具→按既有路线攀爬落位、交接栖息（脚点一致无跳动）；无效点击/超距/超时取消且宠物不移动；拖动/暂停/找回/退出可接管；「直接栖息」入口行为不变。单屏环境，跨屏未测须注明。
+- 验证方式与证据：构建 0 警告 0 错误 + Core/App 全量单测；正式入口专项测试；真实菜单关键链实机验证（真实右键菜单→真实点击目标，手法参照 M-16 R1 补证轮）；实机占用鼠标前先告知用户；证据入 `.temp`。
+- 阻塞条件（如有）：无。
+
+- 实现证据（2026-11-22）：构建 `DesktopPet.slnx -c Debug` 0 警告 0 错误；新增专项 `ClimbEntryTests` **12/12**（菜单进入→点击合格近距目标→`started`+攀爬激活、点自身取消、不合格/超距/遮挡拒绝且不移动、超时取消、占用拒绝进入、开菜单/暂停取消、攀爬进行中重复进入拒绝、平行入口「Perch on Window」回归 `selected`、完整关键链到达交接栖息 `climb-completed` 落位无跳动）；栖息拾取回归 `PerchEntryTests` **10/10**；全量 Core **563/563**、App **582/582**，0 失败 0 跳过。实现方式：拾取状态机泛化（`WindowPickIntent.Perch/Climb` 共享超时/边沿触发/取消路径，仅在点击后分派 `Perch.TrySelectExplicit` 或 `Climb.TryStart`）；新增 `MenuIdClimbOnWindow=8` 菜单项与命令分支、`StartClimbPick` 入口、`IsClimbPickActive` 观测；探针 `WindowClimbLiveScenario` 增补 `pick-entry`/`menu-entry` 命令与攀爬拾取心跳（真实菜单关键链实机手法）。未提交/推送。
+- 实机验证证据（M-18，2026-11-22）：最终轮 `run-20261122-152310-fixture` **18/18 ALL PASS**，探针 exitCode=0，证据 `.temp\p5b-002\m18\run-20261122-152310-fixture\`（driver-transcript.log / m18-checklist.txt / probe-result.json）。真实右键「Climb on Window」→ 真实点击目标 → 攀爬路线（steps=19 递增）→ 顶部交接栖息（脚点=上缘中点±6 无跳动）；「Perch on Window」平行入口 real-menu（idx=2）→ selected+perchActive 攀爬不触发；拒绝/取消 ⑧-⑮ 逐项 PASS（rejected-ineligible、rejected-too-far、点自身取消 status=cancelled〔实机语义见 TESTING M-18，`cancelled-self` 仅测试缝可达〕、cancelled-timeout、真实菜单 Esc、暂停、拖动、攀爬拖动抢占）。诱饵存活证明清理未越界。晚于最终轮的失败自测轮保留在 `.temp` 为开发证据，不覆盖最终轮。状态保持 `awaiting-verification`，待监理复核；未提交/推送，未改 docs/reviews 及证据。
+- R2 F-01 整改证据（2026-11-22）：`RecoverPet()` 新增 `EndPerchPick("cancelled")` 同步结束待选拾取；新增测试 `RecoverPet_DuringClimbPick_EndsPickAndOldClickDoesNotClimb`（找回→旧点击零起攀/零位移+Tick 零位移）与 `PerchPick_RecoverDuringPick_EndsSelectionNoParallelRegression`（共享栖息入口找回取消、无回归）。验证：`ClimbEntryTests` **14/14**、`PerchEntryTests` **10/10**、App 全量 **584/584**（原 582+新增 2）、Debug warnaserror 0 警告 0 错误。详见 [整改记录](remediation/P5B-002-response.md)。
+
+### P5B-003 攀爬动作表现
+
+- 状态：`done`（2026-11-25；[监理R21](reviews/P5B-003-review.md) 接收，F-06关闭；R21右侧/land拖动与R18左侧、R15其余有效证据组合验收。原始窄轮4/5、exit1系固定截图数量门槛假阴性，原件保留；临时美术按R6用户豁免，不称定稿）。
+- 必读章节：PRODUCT R-08；ARCHITECTURE §5（动画播放器/脚点约定）；TESTING（本任务隔离预览登记后）。
+- 输入/已有条件：已接收的攀爬路线与正式入口（P5B-001/P5B-002）；现有小熊素材（`assets/pets/bear/`，idle/blink/curious/sleep 等帧与 `character.json` 动作注册）；动画播放器与脚点布局约定（待本任务调研确认）。
+- 范围与明确边界：为攀爬流程提供专用动作表现——**侧边爬升**、**上缘移动**、**顶部落位**三阶段最小动作集。先交付素材与隔离动作预览（默认 120×120，必要时放大对比）供观感确认，**确认后再接入完整攀爬流程**。动画只改变局部画面，不修改世界位置、速度、窗口尺寸或路线；保持脚点稳定。拖动、暂停、找回、取消和退出后不得残留攀爬帧。没有对应专用动作时保留明确兼容回退（可回退到现有 idle/既有帧）。保持现有小熊风格；左右侧按既有能力镜像（不新增右侧专用素材）。不做：重新设计已接收路线与正式入口、自动靠近、多宠攀爬、习惯学习、复杂寻路、新窗口尺寸/新计时器。
+- 预期产物：三阶段最小动作集素材 + 隔离动作预览交付物 + 观感确认后的流程接入（接线到既有攀爬状态机与取消/打断路径）。
+- 可观察验收条件：预览中侧边爬升/上缘移动/顶部落位动作可辨认、脚点稳定、与路线/窗口尺寸/速度无关；取消类操作后立即回到非攀爬帧无残留；无专用动作的场景有回退不崩溃。
+- 验证方式与证据去向：素材像素断言（脚点行/尺寸与既有帧一致）+ 隔离预览实跑（截图/帧序列，120×120 默认，必要时 2× 放大对比）+ 接入后 App 单测专项与全量回归；证据入 `.temp` 与跟随交付说明。
+- 阻塞条件（如有）：无。
+
+- **第一阶段（素材+隔离预览，2026-11-22）**：状态 `in-progress`（[监理R2](reviews/P5B-003-review.md) 退回后 F-01/F-02 已整改、自测通过，`awaiting-verification`；观感通过后才进第二阶段接线）。Git 核实：工作区**无任何 ScaleTransform/RenderTransform 代码引用**（镜像留第二阶段）；本阶段新增＝8 素材 + `character.json` 三动作注册 + 探针 `ClimbPreviewScenario` + 驱动 `Invoke-P5B003ClimbPreview.ps1` + Verify 脚本。
+  - 素材（PIL 派生，idle_0 为底局部重绘，全程 y<=102 不动脚带）：`climb_side_0/1/2`（R1 F-01 后为连体毛绒爪臂：左伸高抓→双爪承重→右伸高抓）、`climb_edge_0/1/2`（身体 y<=102 整体横移 ±3px+低伸爪：探左/居中/探右）、`climb_land_0/1`（收脚两帧渐收，末帧直接引用 idle_0 站稳，未改动）。像素断言：side/edge 脚带 y104-110 与 idle_0 逐像素一致；land 收脚行中心≈60、不越出 idle、y110 仍落地。旧方案（垂臂+叠加圆环、耳/脸/额误绘色块、edge lean 曾逐字节相同）为 R1 F-01 反例，已被连体爪臂方案替换，不复用。
+  - 注册（`character.json`）：`climb_side` loop 3×300ms、`climb_edge` loop 3×300ms、`climb_land` once（land_0 260ms 收脚 → land_1 340ms 收脚 → idle_0 2400ms 站稳 → 播完保持末帧），全 offset 0。
+  - 隔离预览（真实 MainWindow + CreatePetWindow + 生产 UpdateFrame + RenderTargetBitmap 120×120，反射取 `_animPlayer`/`PetImage`/`_updateTimer`，探针无 InternalsVisibleTo）：34 帧（idle 基准 1 + side 9 + edge 9 + land 15）；stop 生产 33ms tick；`PreviewSetField` 置 `_idleBlink`/`_dragRelease` 为 null（消除表达式合成不确定）；每阶段首帧前 `InitStage` 预热渲染（消除 Image.Source 换图首帧滞后伪影，diag_pixels8 实证 side_00 眼区与 idle diff 由 0→309）。
+  - 渲染级断言（`Verify-P5B003RenderPreview.py`，F-01 后最终 run `run-20261122-185508`）**34/34 ALL PASS**：idle_base 未引入位移（bbox±1、真实底行=110〔过滤渲染链 alpha≤3 边缘插值伪差行〕、内容量 6395→6553 在 ±5% 内）；side/edge 各 9 帧脚带 y104-110 中心≈60±1.5、不越出 idle±1、y110 落地；land 15 帧收脚中心≈60、不越出 idle、y110 落地。脚点稳定判据＝渲染像素逐帧测量（非 Offset=0/非脚底行相等），跨素材逐像素断言已三次证伪（渲染链系统性 ±1 扰动）不采用。
+  - 交付物（`.temp\p5b-003\run-20261122-185508\deliverables\`）：`preview_side.gif`/`preview_edge.gif`/`preview_land.gif`（120×120 动态）＋ `climb_keyframes_4x.png`（34 行 4× 放大）＋ `climb_zoom_compare_2x.png` ＋ `render-foot-stability.json`/`render-summary.txt`（allPass=true）。未接线 `PlayClimbAction`/`EndClimbAction`，未改路线/位置/中断规则。未提交/推送。
+  - **R1 F-01 整改（2026-11-22）**：候选 6 帧（`climb_side_*` 左伸高抓/双爪承重/右伸高抓、`climb_edge_*` 身体整体横移+低伸爪）经用户确认造型后批量导出覆盖 assets；素材由真实肩部（左 (25,61)/右 (95,61)）连体毛绒爪臂构成，脸/耳/脚带 y104-110 零改动，side_1/2 右臂肘外移 x106 避脸颊；`climb_land_*` byte-identical 保留。素材层校验 ALL OK（新增像素簇与身体连通无悬浮圆、耳区无新绘、脚带逐像素同 idle、面部/耳区与基准零差异，edge 基准为同 dx 平移 idle）；assets 与定稿帧 SHA256 全等。详见 [整改记录](remediation/P5B-003-response.md)。状态 `in-progress`、`awaiting-verification`，待监理复核观感；未提交/推送，未改 docs/reviews 及证据。
+  - **R1 F-01 整改驳回 → R2 F-01/F-02 整改（2026-11-22）**：R2 判定 F-01 仍四臂（以 idle 为底 `im.copy()` 叠加新臂）且新臂细长硬边，F-02 最终 run-185508 渲染仍旧图（与 run-182213 33/34 字节相同）。整改：
+    - F-01 v2（用户确认造型后批量）：真正收缩体侧缘（`L_BAND=(10,44)`/`R_BAND=(76,110)`）消除 idle 垂臂，从肩部连出恰好两条粗短圆润前肢，脸 y<44、脚带零改动；`climb_side_1`/`climb_edge_0` 与候选 `side_cand_highgrab_v2`/`edge_cand_lowmove_v2` 逐字节一致（diffPx=0）。
+    - F-02 根因：探针 `FindAssetDirectory` 首位＝exe 输出目录 `tests\...\bin\Debug\net10.0-windows\assets\pets\bear`，旧副本未随源更新。`sync_assets_to_bin.py` 同步 6 张：src==final==bin SHA-256 前 16 位全一致（A4F15A45…/938086F7…/124862F9…/7A5279C6…/BAC250A5…/D1AD86FF…）。
+    - Verify 增强（`Verify-P5B003RenderPreview.py`）：①bin SHA==源 ②idle 基线 MAJOR%≈0 ③渲染帧内容一致（素材映射以 events.jsonl `imagePath` 为权威；切换帧取同阶段素材集合最小 MAJOR%——`diag_switch_frames.py` 6×3 矩阵证明 6 帧为动画 300ms/帧×采样 100ms/帧的切换时序伪影、与相邻素材 MAJOR% 0.05–0.17，旧图反验证仍 18/18 FAIL）④新旧 run 字节对比。
+    - 新 run `run-20261122-194743`：探针 exitCode=0、34 帧齐全；Verify **ALL PASS**（idle 位移、①、②0.59%、③ 18 帧 best-match 0.05–0.17%、脚带 34 项、④side/edge 18/18 与旧 run 字节不同）；`render-foot-stability.json` allPass=true。状态 `in-progress`、`awaiting-verification`，待监理复核；未提交/推送，未改 docs/reviews 及证据。详见 [整改记录](remediation/P5B-003-response.md)。
+- **第二阶段（动作接线+镜像，2026-11-23）**：状态 `in-progress`/`awaiting-verification`（整体验收待监理复核）。实现范围：`climb_side`/`climb_edge`/`climb_land` 按既有攀爬阶段分派；左右镜像用 `ScaleTransform(-1,…)` 不新增右侧素材；取消/结束立即回 idle 无残留（含 land 播完回 idle 时镜像复位）；缺失动作回退 idle 不崩溃；优先级让位（好奇/委屈/睡眠不覆盖攀爬）。
+  - 实现（`MainWindow.xaml.cs`）：`PlayClimbAction(actionId, mirrorLeft)` 仅在 `(actionId, mirrorLeft)` 变化时重播；阶段分派与 `BuildRoute` 同源（上缘判据 `footY<=BoundsTop && footX∈[BoundsLeft,BoundsRight]`；edge/land 方向用 landingX vs footX，side 用最近侧边 vs footX）；到达分支 `StopCore(keepLand:true)` 交栖息不打断 land；镜像复位在 `OnActionCompleted` 的 climb_* 分支。`PetWindowClimb.cs` 供事件/状态；`MainWindow.xaml` 配 RTransform。
+  - 专项测试（`ClimbActionTests` **11/11**）：阶段分派映射（side/edge/land）、镜像翻转标识、land 播完回 idle 镜像复位、各取消路径（暂停/拖动/找回/目标失效/退出）立即回 idle 无残留、缺失动作回退、优先级让位。测试时间戳须递增（`TryStart(nowMs:0)` 置 `_lastTickMs=0`，重复 `Tick(200)` dt=0 被单调性守卫拦截——测试缺陷非产品缺陷）。
+  - 回归中发现的布景问题（已修，非产品逻辑回归）：`ClimbEntryTests` 2 用例原失败，根因=未 Show 测试窗口 HWND=0 使 DPI 查询固定 1.0，在 150% 实屏上菜单路径 `EndDrag→ClampWindowToWorkArea` 经 `WindowPositionAdapter` 前向 source DPI=1.0/反向 target DPI=1.5 双向不一致把宠物错位搬移（实测 (600,500)→(380,293.33)，起攀距离 40→260px 致 `rejected-too-far`）。修复：`Setup` 注入 `TestMonitorList` 单一 100% 监视器（1920×1080/工作区 1040/DpiScale 1.0），clamp 变 no-op；产品 clamp 逻辑不动。
+  - 验证：Debug warnaserror 构建 0 警告 0 错误；专项 `ClimbEntryTests` **14/14** + `ClimbActionTests` **11/11**；全量 Core **563/563** + App **595/595** = 1158/1158 0 失败 0 跳过；资源内容一致性 bin SHA==源（9 素材+character.json）全 OK。三处临时诊断（`CLIMBDIAG`：enter-menu/startpick/clamp-in）已全部移除，`git diff` 无残留。未提交/推送，未改素材/`character.json`/`docs/reviews`。
+  - **R7 技术整改（2026-11-23，[监理R7](reviews/P5B-003-review.md) F-03～F-05 阻断）**：修复动作生命周期/实际播放恢复/侧爬镜像方向，已整改并自测通过，待监理复核。
+    - F-03 land 播放中生产中断清理：`PetWindowClimb` 新增 `IsPresentingClimb`（`IsActive || IsClimbActionId(CurrentAction)`）解耦路线活跃与攀爬呈现所有权；`CancelForDrag/Pause/Recover/Exit` 先决条件放宽为 `!IsPresentingClimb`；`EndClimbAction` 所有清理路径无条件 `ScaleX=1`、仅当前确为 climb_* 才回 idle。
+    - F-04 播放重试/hover 不覆盖：`PlayClimbAction` 返回 bool（守卫拒绝/`_character.Actions` 缺失→false 不改动作不改镜像）；`TryStart`/`DispatchStageAction` 缓存只在实际成功播放后更新，临时表达释放后下一 tick 经生产 tick 补播；hover 分支加 `_petClimb.IsActive` 与 `IsClimbAction(CurrentActionId)` 双守卫。
+    - F-05 贴边不翻转：非顶边镜像改 `Math.Abs(w1x-footX)<=0.5 ? _lastClimbMirrorLeft : w1x>footX`（SideWallEpsilonPx=0.5），同墙垂直上爬保持朝向；顶边仍按实际水平方向。
+    - 验证：新增 8 项测试走生产入口（`PauseAnimation`/`OnUpdateTickTest`/`TestGetCursorPos`）；`ClimbActionTests` **18/18**、`ClimbEntryTests` **14/14**、全量 **1165/1165**（Core 563 + App 602，复跑两次稳定；首跑一次 VSTest MSB4181 任务层偶发无具体用例）、Debug warnaserror 0 警告 0 错误、资源一致性 mismatch=0、无临时代码残留。详见 [整改记录](remediation/P5B-003-response.md)。未重做路线/正式入口，未改素材/`character.json`/`docs/reviews`/证据，未提交/推送。
+  - **R8 限定补边（2026-11-23，[监理R8](reviews/P5B-003-review.md) F-03/F-04 剩余边界）**：仅补两个边界，已整改并自测通过，待监理复核。F-05 已关闭、F-01 临时美术豁免及 F-02 关闭结论不变，未重做已通过项。
+    - F-03 栖息实际脱离释放攀爬落位表现：`PetWindowClimb` 新增 `CancelForPerchDetached()`（`IsPresentingClimb` 守卫 + `StopCore()` + Emit(`climb-cancelled`,`perch-detached`)，不移动宠物）；`PetWindowPerch.DetachInternal` 尾部（`_hasPrePerchPosition=false` 后、Emit 前）统一调用 `_owner.ReleaseClimbForPerchDetach()`（`MainWindow` internal 包装，`_petClimb?.` 不触发懒创建）；Pause/Recover/Drag 先经 Perch 再调既有 `CancelFor*`，新清理后守卫使后调 no-op，不误清独立表情。
+    - F-04 缓存相等仍核对真实播放：`DispatchStageAction` 缓存相等时核对 `_owner.CurrentAction == actionId && (ClimbMirrorTransform.ScaleX < 0) == mirrorLeft`，一致才 return，不一致重试 `PlayClimbAction`（守卫通过则补播并更新缓存）；临时表情覆盖释放后经生产 tick 补播，正常同阶段播放不每 tick 重启。
+    - 新增 4 项测试走生产路径（`ClimbActionTests` 22 项）：F-03 反例 `LandPlayback_TargetGoneViaPerchOnTick_ReleasesClimbPresentation`（反射 `PetWindowPerch.OnTick` 生产轮询，`TestSnapshotSource=null` 目标失效→Perch 脱离+清洁 idle）、正例 `LandPlayback_TargetValidViaPerchOnTick_KeepsClimbPresentation`（目标外框变化触发 OnTick follow 分支→Landed 跟随不误清）；F-04 反例 `StagePlayedThenOverridden_ReleaseReplaysStage`（已播 climb_side→curious/idle 覆盖释放→`climb.Tick(50)` 生产推进补播）、正例 `SameStageTick_DoesNotRestartPlayback`（两次采样 `_actionStartMs` 相对比较 B==A、C==B 不重启）。
+    - 验证：先重建测试项目再专项（`ClimbActionTests` **22/22**、`ClimbEntryTests` **14/14** `--no-build`）、全量 **1169/1169**（Core 563 + App 606）、Debug warnaserror 0 警告 0 错误、资源一致性 `assets\pets` 35 文件双向 SHA mismatch=0。详见 [整改记录](remediation/P5B-003-response.md) R8 段。未重做已通过项，未改 `docs/reviews` 及 R8 证据副本，未提交/推送；实机待代码复核通过后另行安排。
+
 ## 阶段 6：习惯学习
 
-- `P6-PLAN`：`todo`，依赖阶段 5 验收；用户可明确调整优先级。
-- 按 R-09 分开实现可关闭的统计、聚合、频次预测和展示；精确图标定位另立探索任务。
-- 没有真实样本/对照验证，不能把频次统计写成已经可靠预测习惯。
+- **本版阶段已完成（2026-11-27）**：P6-001～004 均 done；P6-004 最终接收见[监理 R4](reviews/P6-004-review.md)。用户按 [D-020](DECISIONS.md) 确认保持纯气泡，主动靠近延期至后续独立待办，不作为本版未完成项。已完成范围不等于预测效果已经真实长期验证。
+- **P6-PLAN 状态：`done`（2026-11-25，[监理R3](reviews/P6-PLAN-review.md) 接收）**：四步分别验收；R1 F-01～F-04规划问题在R2关闭，用户已明确统计默认关闭。参数与行为以[PRODUCT R-09](PRODUCT.md#r-09-习惯学习阶段-6)为准，技术约定见[ARCHITECTURE §7](ARCHITECTURE.md#p6-001-使用习惯本地统计约定待实现)。P6-001依赖解除，实际开工时改in-progress；当前仅文档完成，不称产品已实现，不进入P6-002～004。
+- 阶段 5（P5B-003）已验收 done，P6 不再阻塞于阶段 5；P6 各任务依赖按本列表顺序推进。
+- 精确桌面/任务栏软件图标定位另立探索任务，不做为预测正确性前提，失败时退回气泡反馈。
+
+### P6-001 本地统计：事件采集、关闭与清除
+
+- 状态：`done`（2026-11-27；[监理R11](reviews/P6-001-review.md) 最终接收，F-01～F-06关闭；既有菜单/前台/清除恢复/退出及R10锁屏、R11真实睡眠生命周期均通过，隔离进程exit0并清理）。依赖：P6-PLAN已接收。关联：[PRODUCT R-09](PRODUCT.md#r-09-习惯学习阶段-6)。
+- 范围（只细化本步，P6-002~004 留待各步实现时展开）：
+  - 事件来源四类互不混用：`app-start`＝桌宠自身启动；`unlock`＝解锁/会话恢复；`resume`＝睡眠恢复（不并入 unlock）；`boot`＝操作系统开机，须独立可验证来源，来源尚不可用时如实不记录，不安排开机启动/常驻服务补测，首版不收集全进程创建事件。外部应用一律按前台观测记录，不称启动。
+  - 统计口径：仅观测前台应用；应用标识＝规范化可执行文件基名（不存绝对路径/PID 作长期身份），同名合并，识别失败丢弃该应用归属区间并在覆盖统计中计数（单一口径，不保留 unknown 归属分支，与 PRODUCT R-09 一致）；明示为近似前台活跃时长。
+  - 采样已定值（监理 R2 确认，无需再裁决，已写入 PRODUCT）：前台 5 秒采样、输入年龄 60 秒阈值、事件边界即时处理；锁屏/睡眠/暂停/缺样区间不归属应用、不补计。
+  - 持久化：日历日期/本地时间带时区偏移，时长为单调差值；跨午夜拆段、跨重启不接续。
+  - 采集字段白名单：日期、活跃时间段（单调起止与时长）、应用标识、事件类型。黑名单：不采集窗口标题、网页地址、正文或按键；应用标识获取避免窗口标题探测。
+  - 保留与聚合边界：原始 7 天（仅有限校验），聚合 30 天按固定桶（已定 30 分钟，2026-11-26 依监理 R2 采纳，与 PRODUCT 一致）增量幂等落盘；过期按被统计日期清理，统计关闭时清理仍执行。
+  - 关闭：停止新采样/统计更新/主动预测反馈，保留受保留期约束的既有数据，保留期清理仍生效。清除：仅删原始/聚合/派生预测与待写缓存，保留开关与配置；旧定时器/异步保存/备份不得回写（串行化或代次边界）；开启后新数据是新记录非复生；重启不恢复已清除历史。入口 P6-001 即提供。
+  - 默认开关：默认关闭、由用户主动启用，用户2026-11-25明确决定，见PRODUCT。
+- 验收：四类事件可区分、外部应用不称启动；字段未触黑名单；关闭后不新增且旧数据保留；清除后不复生并有证据；未安排开机启动/常驻服务补测。样本不足等无样本场景不得宣称已实现习惯预测。
+- 验证方式与证据去向：Core 纯逻辑测试（注入时钟/事件源）＋ App 接线验证（真实 `SessionSwitch`/`PowerModeChanged` 与启动时序）；证据写入 `docs/history/` 或任务整改记录链接，STATUS 引用。
+
+- 实现证据（2026-11-26）：Core 新增 `UsageStatsCollector`/`UsageStatsArchive`（stats.json schemaVersion=1、temp→replace 安全写、5s/60s/15s/7 天常量、四类事件、缺样不补计、generation guard 防旧写回、Restore 不恢复已清除）；`PetStateArchive` L161 新增 `UsageStatsEnabled=false`（默认关闭、随设置持久化）。App 新增 `UsageStatsService`（独立 5s 定时器、Dispatcher 串行化、`%LOCALAPPDATA%\DesktopPet\stats.json` 独立存储）与 `ForegroundAppSampler`（规范化基名、识别失败丢弃+计数）；App.xaml.cs 接线 `InitializeUsageStats`（L611，仅开关开启才启用）/系统事件转发/`SetUsageStatsEnabled`（L1264）/`ClearUsageStats`（L1287）/测试缝/清理；MainWindow 右键菜单 `MenuIdStatsToggle`/`MenuIdStatsClear`（L1002-1017，动态标签，不继续往更新循环堆逻辑）。专项 `UsageStatsServiceTests` 13/13（默认关闭/启停持久化/缺测不补计/跨日/保留期/清除防回写/重启不恢复/App 转发/不动宠物存档），`UsageStatsCollectorTests` 已入 Core；全量 Core 580/580 + App 623/623，构建 0 警告 0 错误。未做真实锁屏/睡眠/前台观测与实机菜单点击（单测覆盖）。状态 `awaiting-verification`，不自行标 done、不提交/推送。开发整改记录见 [P6-001-response](remediation/P6-001-response.md)。
+- 隔离实机入口（2026-11-26，监理 R4）：探针新增 `usage-stats-live` 场景——独立 run 目录+唯一实例锁，`settings/state/stats` 及 `.corrupted/.tmp` 全部限定 run 目录；生产 `CreatePetWindow`/`Show`、生产 `InitializeUsageStats`（真实 5s timer、真实空闲/前台采样）、`SessionSwitch`/`PowerModeChanged` 转发、真实窗口右键菜单；jsonl 观测 + sidecar/cleanup sidecar。App 新增 internal `InitializeUsageStatsForIsolatedProbe` 与 `UsageStatsService.IsSuspended` 只读转发（生产逻辑零改动）。无鼠标构建 0 警告 0 错误（App 与 DiagnosticProbe）。命令与操作清单见 [P6-001-live-entry](history/P6-001-live-entry.md)。真实菜单/前台/锁屏睡眠由监理与用户约时段执行。
+- R2 限定边界整改（2026-11-26，已自测通过待监理 R3 复核）：Service 挂起期间不读 idle/前台采样器（门控前置）、App 默认关闭暂停启动初始化无条件同步且开启不解除挂起；Core 单调回退拒绝并重置基线防重复累计；清除副本删除失败经 `LastWriteError` 可见、快照成功不掩盖、`DrainPending` 有界重试闭环。新增 Core 2 条、App 3 条专项反例；专项 Core **28/28**、App **18/18**，全量 Core **591/591** + App **628/628**，构建 0 警告 0 错误。详见 [整改记录 R2 段](remediation/P6-001-response.md)，未改监理报告与证据。
+- R3 剩余 F-02 整改（2026-11-26，自测通过待监理复核）：Core 新增 `_monotonicRollbackFloorMs`（自上次 `ClearAll` 起已接受的最高单调上界，与 `_lastSampleMs` 基线分离）；`SampleTick` 回退判定改为 `< floor`，低于上界连续 tick 拒绝并 `ResetBaseline()`（保留 floor），回到/越过上界按既定缺测重建恢复、只累计未计过区间；`Enable/Disable/ResetBaseline`/挂起保留 floor，仅 `ClearAll` 重置（新时间域），`Restore` 不设。新增 Core 4 条专项（R3 反例 0→5000→1000→2000→5000 期望 5000、持续低于上界、越过上界恢复、生命周期）；专项 Core **32/32**、R3 验证器隔离目录干净复跑 **14/14 pass**。详见 [整改记录 R3 段](remediation/P6-001-response.md#r3-整改段2026-11-26对应-监理r3-唯一剩余-f-02-连续回退窗口)，App 层零改动，未改监理报告与证据、未提交推送。
+- R5 F-05 实机入口整改（2026-11-26，自测通过待监理预检）：①live 场景区分首轮/重启——重启经 `LoadArchivesForIsolatedProbe`（生产 `LoadState→LoadSettings→_isPaused`，不覆盖磁盘）+ `TestEnsureProbeRuntimeObjects`（只补运行对象）；②系统订阅走共享 `StartForIsolatedProbe`（`InitializeActivitySession`→`SubscribeSystemEvents`），退出沿用 `ShutdownMainWindow` 退订；③sidecar 改收尾时刻从服务当前值写、删预写 `usedRealContextMenuDispatch`（如实 `realContextMenuDispatchConfirmed=false`），obs/sidecar/cleanup 按 session 编号不覆盖；④清单拆 E「关闭保留」/F「重新开启后清除保留 On」（clear 记 generation/时间、旧记录消失、toggle 保持 On、之后新记录允许）、app-start 仅启动已启用才记录不补造、重启"不恢复旧历史、允许新记录"、标记应用由操作者自建精确归属。App 新增 internal `LoadArchivesForIsolatedProbe/TestEnsureProbeRuntimeObjects/TestSettings`（生产逻辑零改动）。新增无窗口 `usage-stats-wiring` 场景。无鼠标构建 0 警告 0 错误；wiring 连跑两次验证：预存 On→加载保持 On、`subscribedAfterStart=true`→cleanup `subscribedAfterCleanup=false`、appStartEventCount=1、session-1/2 三件套并存不覆盖。详见 [整改记录 R5 段](remediation/P6-001-response.md#r5-整改段2026-11-26对应-监理r5-唯一剩余-f-05-隔离实机入口缺口)；未改监理报告与证据、未提交推送、不进入 P6-002。
+- R8 F-06 隔离探针生命周期整改（2026-11-26，自测通过待监理预检）：①根因——探针 `new App()` 未加载 App.xaml→默认 `OnLastWindowClose`；首轮经 `ResetWpfLifecycleForTest` 反射对齐，重启分支（`LoadArchivesForIsolatedProbe`+`TestEnsureProbeRuntimeObjects`）未对齐，`ShutdownMainWindow` 先关窗（L1599-1601）后设 `ShutdownMode`（L1609）在已关闭应用上抛 `InvalidOperationException`；②修法——`usage-stats-live` 场景建窗前用公开属性 `ShutdownMode = ShutdownMode.OnExplicitShutdown` 显式对齐生产约定（首轮/重启共用一行，不新增 WPF 私有字段反射、不用 try/catch 吞异常、不用 `Environment.Exit(0)`），探针由裸 `Dispatcher.Run()` 改真实 `Application.Run()` 以承载生产 `Shutdown(0)` 正常返回，`MainWindow.MenuIdExit` 仅放宽为 internal（生产行为零变化），不改 `ShutdownMainWindow` 顺序；③回归——新增 `usage-stats-exit` 子进程级场景（真实 `Application.Run()`+生产菜单分发 Exit），同目录连跑两轮 RUN1/RUN2 退出码均 **0**、`isRestart=false/true` 覆盖首轮与重启，两轮 `applicationRunReturned/shutdownViaMenuDispatch/unsubscribedAfterExit/usageStatsNullAfterExit/activitySessionNullAfterExit` 全 true、`usedEnvironmentExitZero=false`、`exceptionLoggedInDiagnosticLog=false`、logs 目录 0 文件；④对照实验（临时移除 `ShutdownMode` 赋值、同目录跑重启分支）精确复现 `InvalidOperationException: 正在关闭或已经关闭应用程序时无法设置ShutdownMode`（`App.xaml.cs:1609`，退出码 **-532462766**），证回归可检出 F-06，随后恢复并复跑通过；⑤构建 0 警告 0 错误、`dotnet test tests/DesktopPet.App.Tests` **628/628**。证据 `%TEMP%\codefree-agent\p6-001-r8-final\usage-stats-exit\`（对照 `p6-001-r8-control3\`、首次失败 `p6-001-r8-f06\`，本机临时目录不入库）。详见 [整改记录 R8 段](remediation/P6-001-response.md#r8-整改段2026-11-26对应-监理r8-唯一剩余-f-06-隔离重启退出异常)；未重做已通过项、未改监理报告与证据、未提交推送、不进入 P6-002。
+
+### P6-002 聚合：7 天原始 → 30 天聚合
+
+- 状态：`done`（2026-11-27，[监理 R1](reviews/P6-002-review.md) 接收，无阻断项）。依赖：P6-001（done）。关联：[PRODUCT R-09 细化段](PRODUCT.md#r-09-习惯学习阶段-6)、[ARCHITECTURE §7 P6-002](ARCHITECTURE.md#p6-002-聚合与保留约定已实现)。
+- 范围（本轮展开）：
+  - **固定 30 分钟桶**：本地零点对齐 [:00,:30)/[:30,:60)，桶键 `AppId+BucketStartLocal`；每段已验证区间提交时同时切到午夜与 30 分钟桶，及时增量聚合，不等原始过期。
+  - **频次定义（一次使用＝一个会话，非 5 秒采样次数）**：会话＝同一应用标识下无中断的连续已验证前台区间链；中断（缺样/空闲/锁屏/睡眠/暂停/关闭/生命周期事件）或应用切换结束会话，下一次已验证区间即新会话；会话计数只记在会话起始所在桶，跨桶/跨午夜只分裂时长不重复计次。
+  - **双保留按被统计日期**：原始段/事件 7 天，聚合桶 30 天，独立判定；`PruneToRetention` 每次落盘执行两套清理，采集关闭时仍执行；不等原始记录过期才聚合，也不因持续生成延长旧桶寿命。
+  - **幂等/不重不漏**：整份已提交快照覆盖写；重试/重复 drain 不叠加，桶内时长增量累加、会话起始一次性计数；`Restore` 只恢复已提交数据、不重建基线与会话，重启不重计已保存段/桶，新活动是新会话。
+  - **沿用 P6-001 约束**：不设独立聚合开关，单一全局开关；关闭不新增但保留期内旧桶保留 + 过期清理继续；清除 (`ClearAll`) 同清原始/事件/聚合桶并立即落盘、generation 代次守卫防回写、重启不恢复；聚合不写宠物存档、清除不碰宠物存档。
+- 验收：7 天原始/30 天聚合双保留边界正确；聚合不重不漏，不承诺恢复细粒度轨迹。
+- 验证方式与证据去向：注入时钟覆盖跨桶、跨午夜、应用切换、空闲中断、30 天按被统计日期过期、清除与重启不重计；隔离目录 App 测试验证落盘/恢复/关闭清理/清除。证据见下并与 STATUS 链接。
+- 实现与验证证据（2026-11-26，开发自测通过、待监理复核）：
+  - Core：`UsageStatsArchive` 升级 `schemaVersion=2` 新增 `UsageStatsBucket`/`buckets`（v1 缺失反序列化为空、附加式无迁移）；`UsageStatsCollector` 新增 `BucketMinutes=30`/`AggregatedRetentionDays=30`、`Buckets` 只读视图、`_buckets` 字典、会话跟踪（`_sessionOpen`/`_lastCommittedAppId`）、`CommitVerifiedInterval`→`AddSegment`→`AddBuckets` 及时切桶、`BeginOrContinueSession` 会话界定、`ResetBaseline` 关会话、`PruneBuckets` 30 天清理、`Restore`/`ClearAll` 处理桶。App：`UsageStatsService` 新增 `Buckets` 只读转发，`PersistSnapshot` 写入 `Buckets`；无其它生产逻辑改动。
+  - 测试：Core 新增 7 条（同桶多采样只计 1 会话、跨桶时长分裂会话只在起始桶、跨午夜会话只在起始日、应用切换新会话、空闲中断新会话、30 天按被统计日期且与 7 天原始独立、清除清桶无复生）；App 新增 3 条隔离目录（落盘+重启恢复不重计、关闭时按被统计日期清理过期桶、清除清桶保留开关）。Core **602/602**、App **631/631** 全通过，构建 0 警告 0 错误（App/Core/DiagnosticProbe）。
+  - 隔离存储验证：App 测试在 `%TEMP%/DP6Stats_*` 独立目录运行，断言 `stats.json` 中 `buckets` 内容、重启恢复、关闭清理与清除后为空；不写 `state.json`/`settings.json` 之外的宠物存档。
+  - 未验证/限制：未做真实长时间（跨月）实机聚合观测；跨桶/跨午夜/保留用注入时钟覆盖。监理 R1 判定当前验收无需实际等待跨月，不将长期观察新增为阻断条件。详见 [整改记录 P6-002-response](remediation/P6-002-response.md)。
+  - 监理 R1 接收（2026-11-27）：重新编译统计专项 Core 39/39、App 21/21；补充隔离验证 6/6（含 6000 次受控采样比对、失败重试、重启新增会话、v1 兼容与双保留精确边界）。[报告及限制](reviews/P6-002-review.md)、[证据](reviews/evidence/P6-002-R1/)。未重跑无关全量；P6-003/004 不自动推进。
+
+
+### P6-003 频次预测：样本不足不预测
+
+- 状态：`done`（2026-11-27 [监理 R2](reviews/P6-003-review.md)关闭 F-01，接收 P6-003；未提交/推送）。依赖：P6-002（done）。关联：[PRODUCT R-09 频次判断](PRODUCT.md#r-09-习惯学习阶段-6)、[ARCHITECTURE §7 P6-003](ARCHITECTURE.md#p6-003-频次判断约定已实现)、[交付记录](remediation/P6-003-response.md)。
+- 范围（本轮展开，首版保守起步值，未经真实预测效果验证）：
+  - **仅复用 P6-002 聚合桶**：不新增采集路径、不改桶语义；判断为 Core 纯逻辑（`UsageStatsFrequencyJudge`，无状态/无缓存），App `UsageStatsService.GetFrequencyPredictions()` 按需转发。
+  - **窗口**：当前本地日期之前 30 个完整日期的名义回看，**与既有“含今天保留 30 天”聚合保留上限取交集**——保留区间 `[today−29, today]`，排除尚未结束的当天后实际可用 `[today−29, today−1]`，即**最多 29 个已完成日期**；当天、未来与超出保留期的日期均不参与（既不作支持也不作反对）。不延长数据保留、不为查询恢复已过期记录，过期桶从第一次查询起即排除（纯只读过滤，不依赖 drain）。
+  - **覆盖门槛**：窗口内至少 **7 个不同日期**存在有效统计数据（`ActiveMs>0` 的桶）。“有记录的日期”不等于“完整观察了一天”，缺失数据不得当作用户没使用。
+  - **候选门槛**：同一应用在**相同半小时时段**至少出现于 **5 个不同日期**且该时段累计会话数至少 **5 次**；“出现”＝该 (`AppId`, 时段) 桶 `ActiveMs>0`，会话数取 `SessionCount` 之和（一次使用＝一个会话）。
+  - **输出**：应用标识、时段（`HH:mm`）、支持日期数、会话数，附 `ObservedDateCount`/`WindowDays`；`WindowDays` 为实际生效的完整日期数（默认配置下为 29，不冒称完整 30 日历史），`ObservedDateCount` 为有记录日期数；仅统计依据，不包装为预测准确率、不伪称知道用户意图。
+  - **开关/清除语义**：沿用单一全局统计开关（无独立预测开关）；关闭即返回空；清除后旧预测与缓存立即失效（不保留预测缓存），重启由恢复桶重算。
+  - **明确不做**：气泡、移动宠物、图标定位、自动启动应用；不进入 P6-004。
+- 验收：样本不足（覆盖日期 <7 或支持日期 <5 或会话 <5）时不预测、不输出可被误读为“已可靠预测习惯”的内容；有足够样本时预测仅表达“统计上的时间偏好”。当天/过期数据不误计；关闭不输出；清除后立即失效；重启不恢复旧预测。
+- 验证方式与证据去向：Core 注入时钟/构造桶覆盖门槛正反例、当天排除、30 天边界、关闭、非法桶跳过、排序；App 隔离目录覆盖落盘后重算、重启、关闭、清除。证据写入[整改记录 P6-003-response](remediation/P6-003-response.md) 并由 STATUS 链接；无真实长期样本时明确未验证项。
+- 实现与验证证据（2026-11-27，开发自测通过、待监理复核）：
+  - Core：新增 `UsageStatsFrequencyJudge`/`UsageStatsFrequencyOptions`/`UsageStatsFrequencyResult`/`UsageStatsFrequencyCandidate`（无状态、无缓存；有效窗口 = 名义 `[today−30, today−1]` 与保留上限 `[today−29, today]` 的交集，默认即 `[today−29, today−1]`；覆盖 ≥7 日期、支持 ≥5 日期且会话 ≥5；跳过非法/空/零活跃桶；按支持日期数→会话数→AppId 排序；`WindowDays` 输出实际生效完整日期数）。
+  - App：`UsageStatsService.GetFrequencyPredictions()` 按需计算（无预测缓存，关闭/清除后立即为空，重启由恢复桶重算）；内部构造器新增可选 `localNow` 注入，生产默认 `DateTimeOffset.Now`。
+  - 测试：Core 新增 11 条（关闭、6 日期不足、4 支持日期、4 会话、达标字段、当天排除含反证、窗口边界（today−29 计入 / today−30 过期）、非法桶、null、排序、会话求和）；App 新增 6 条隔离目录（达标+重启重算、默认关闭/开启/关闭即空、ClearAll 即空且落盘、当天/未来/过期忽略（today−29 为有效起点）、today−30 从首查即排除且 drain 前后+重启一致、today−29 在 drain 前后+重启均有效）。Core **613/613**、App **637/637** 通过，构建 0 警告 0 错误。
+  - 未验证/限制：无真实长期使用数据，门槛为保守起步值，不宣称预测准确；未真实等待跨月；时区/夏令时未专项验证；未接展示（P6-004）。
+
+- 监理 R1（2026-11-27）：Core 频次专项 11/11、App 统计专项 25/25；隔离生产清理反例证实首次查询可用过期 `today−30` 补足门槛，正常 drain 后候选消失。限定整改与监理起步指令更正见[报告 F-01](reviews/P6-003-review.md)。保持既有保留期和 7/5/5 门槛，统一查询有效日期交集及文档/边界测试；P6-001/002 接收保持，不进入 P6-004。
+- F-01 开发整改（2026-11-27，开发自测通过、待监理复核）：`UsageStatsFrequencyOptions` 新增只读 `RetentionDays=30`；`UsageStatsFrequencyJudge.Evaluate` 将名义窗口与保留区间 `[today−29, today]` 取交集（默认 `[today−29, today−1]`），过期桶从首查即排除，不依赖 drain；`WindowDays` 改为输出实际生效完整日期数（默认 29）。修正 Core 窗口边界与 `WindowDays` 断言，App 新增 today−30 首查即排除、today−29 有效的 drain 前后+重启正反例。PRODUCT/ARCHITECTURE/STATUS/交付记录同步交集口径。详见[整改记录 F-01 段](remediation/P6-003-response.md#f-01-整改2026-11-27)。
+
+- 监理 R2 接收（2026-11-27）：F-01 关闭；重新编译 Core 频次专项 11/11、App 统计专项 27/27，原隔离反例重跑首次查询/清理后均为覆盖6/候选0，对照均覆盖7/候选1；正式测试含 today−29/today−30 清理及重启正反例。权威文档及实际日期交集一致。[报告 R2](reviews/P6-003-review.md)、[证据](reviews/evidence/P6-003-R2/)。仅接收规则实现，不宣称真实预测可靠；P6-004 保持 todo。
+
+### P6-004 展示：气泡反馈与统计入口
+
+- 状态：`done`（2026-11-27 [监理 R4](reviews/P6-004-review.md)最终接收；R3 实机通过，F-01/F-02 关闭；用户按 [D-020](DECISIONS.md) 明确将靠近延期，不是宣称靠近已实现）。依赖：P6-003（done）。关联：[PRODUCT R-09](PRODUCT.md#r-09-习惯学习阶段-6)、[ARCHITECTURE §7 P6-004](ARCHITECTURE.md#p6-004-展示气泡与统计入口约定第一步已实现)、[交付记录](remediation/P6-004-response.md)。
+- 本版范围：用气泡反馈及主动查看入口表达统计事实与有样本支持的时间偏好；沿用统计关闭/清除入口，不移动宠物、不恢复好感度；靠近另记 FUT-001，图标定位仍另行验证。
+- 验收：展示内容与实际记录一致、区分记录与预测；统计关闭后无相关主动反馈；图标定位失败时不虚假宣称已定位。
+- 验证方式与证据去向：隔离预览/实机人工步骤，按 TESTING 约定记录；证据入历史文档并链接 STATUS。
+
+#### 第一小步：气泡反馈与统计查看入口（2026-11-27 起）
+
+- **主动查看入口**：右键菜单新增「Usage Statistics」，打开只读查看窗，分两段展示：
+  - 「已记录的统计」：有记录的日期数、近似前台活跃时长、会话次数、涉及应用数（全部来自已提交聚合桶，名称沿用 R-09 口径）。
+  - 「有样本支持的时间偏好」：P6-003 候选列表（应用、时段、支持日期数、会话次数），标注为“统计依据，非预测准确率”。
+  - 统计关闭时入口仍可打开，但如实显示未启用/无记录；不把缺失数据说成“没有使用”。
+- **主动气泡门槛**：仅使用 P6-003 结果中 `SlotStart` 等于当前本地半小时时段且已达标的候选；无候选时保持安静，不输出“样本不足”提醒，不提示用户打开应用。
+- **文案**：只表达统计依据，模板「过去有记录的日期里，你有 {N} 天在 {HH:mm–HH:mm} 这个时段使用 {app}」；不出现“你现在该打开它了”等指令式措辞，不包装准确率或“知道用户意图”。
+- **展示参数（保守初值）**：约 8 秒自动消失，提供关闭按钮；主动气泡每个本地日期全局最多展示一次——去重日期持久化在独立 `stats.json`，跨重启同样生效；多宠时只选一只“可接受展示”的空闲宠物（拖动/抚摸/物理/委屈/探头/休息提醒/菜单/攀爬/社交/暂停任一进行中即不可用），其余宠物不展示。
+- **抑制与撤销**：暂停、锁屏、睡眠期间不展示，恢复后不补播积压（仅在下一 tick 按当时状态重新判定）；统计关闭后立即隐藏当前气泡并丢弃待展示内容（保留当天已展示标记）；清除统计后同理隐藏，并重置已展示标记。
+- **不抢焦点/不阻挡**：气泡为独立透明置顶窗口（不激活、不占任务栏），放置在宠物窗口外侧且不与宠物矩形重叠，不拦截宠物拖动与透明区命中，不覆盖已有高优先级交互；关闭按钮只关闭气泡。
+- **明确不做（当前范围）**：本版不移动宠物、不做图标定位、不自动启动外部应用；原待讨论的「靠近」已由用户明确延期（D-020），移至 FUT-001。下列 R1～R3 记录保留当时分步状态，当前结论以本任务状态行与 R4 为准。
+- 验收（第一小步）：查看入口区分“已记录统计”与“有样本支持的时间偏好”且名称准确；气泡仅由当前时段达标候选驱动，无候选静默；文案含依据且无准确率/意图宣称；8 秒自动消失、可关闭、每本地日期最多一次且重启去重；统计关闭/清除立即撤销；暂停/锁屏/睡眠不展示且不补播；不抢焦点、不阻挡宠物拖动与透明区命中。
+- 验证方式与证据去向：Core 规则测试（时段匹配、每日去重、抑制、文案）+ App 隔离测试（去重持久化/重启、关闭与清除撤销、多宠单选）+ DiagnosticProbe 隔离预览；证据入交付记录并由 STATUS 链接。
+- 第一小步实现与自测（2026-11-27，开发自测通过、待监理复核；P6-004 仍 `in-progress`，「靠近」待讨论）：
+  - Core 新增 `UsageStatsBubblePlanner`（判定/文案/汇总），`UsageStatsArchive.BubbleLastShownLocalDate`；App `UsageStatsService` 恢复/记录/清除、`StatsBubbleWindow`、`StatsViewerWindow`、`MainWindow`「Usage Statistics」入口与可用性判定、`App` 判定定时器与暂停/锁屏/睡眠/关闭/清除撤销接线。
+  - 验证：Core 规则 25/25、App 隔离 7/7；DiagnosticProbe 新增 `usage-stats-bubble` 隔离预览（当前时段候选驱动、每日一次含重启去重、关闭保留/清除重置、查看窗两段准确名称）；全量 Core **638/638**、App **644/644**；App 与探针构建 0 警告 0 错误。详见[交付记录](remediation/P6-004-response.md)。
+  - 未验证：8 秒自动消失与关闭按钮真实点击、真实长期样本、多屏/DPI 组合；本小步未移动宠物、未定位图标、未启动外部应用。
+
+- 第一小步监理 R1（2026-11-27）：重新编译 Core 规则 25/25、App 隔离 7/7；补证复现社交共享状态尚未同步本地旗时选窗守卫误放行、查看汇总首查计入过期桶。F-01/F-02 限定整改见[报告](reviews/P6-004-review.md)及[证据](reviews/evidence/P6-004-R1/)。离屏真实 WPF 消息泵 8.5 秒后定时隐藏通过；真实关闭按钮/焦点/宠物输入留待代码复核后集中实机。不重开 P6-001/002/003，不推进靠近。
+
+- 第一小步 F-01/F-02 开发整改（2026-11-27，开发自测通过、待监理复核）：
+  - F-01：`MainWindow.IsAvailableForStatsBubble` 追加 `!IsInSharedSocialSession`，复用共享社交权威会话（与 `IsPerchWriteAllowed` 同源），保留本地 `_isSocialActive` 与其余全部守卫。新增 App 隔离正反例：共享会话活跃且本地旗未更新时不选/不展示/不消费每日标记，会话结束恢复；另有真正空闲且未参与会话的宠物时按原规则选取。
+  - F-02：`UsageStatsBubblePlanner.SummarizeRecorded` 增加必填本地时间参数，从首查即按含今天窗口 `[today−29, today]` 过滤（与 `UsageStatsCollector.PruneToRetention` 同口径，未来日期也排除，不套用预测的“排除今天”）；`UsageStatsService.GetRecordedSummary` 传入 `_localNow()`，查询不写盘、不延长保留、不复活过期记录。新增 Core 边界用例（today−30 首查排除、today−29/今天保留、未来排除、窗口随日期右移）与 App 用例（首查即过滤、drain 前后一致、关闭可见期限内旧记录、重启一致、清除为空）。
+  - 回归：Core **641/641**、App **647/647**，构建 0 警告 0 错误；探针 `usage-stats-bubble` 干净目录重跑 exit 0。详见[交付记录第 6 节](remediation/P6-004-response.md#6-r1-限定整改f-01--f-022026-11-27)。真实关闭按钮/焦点/输入体验待代码复核通过后再集中安排。
+
+- 第一小步监理 R2（2026-11-27）：F-01/F-02 关闭；重新编译专项 Core 28/28、App 10/10，原隔离验证器四组全部通过（共享会话不误选、会话结束恢复、汇总首查/清理一致、离屏真实定时隐藏）。[报告 R2](reviews/P6-004-review.md)、[证据](reviews/evidence/P6-004-R2/)。第一小步仍待真实关闭按钮/焦点/宠物拖动与透明区命中及观感，约用户可占鼠标时段再执行；不推进靠近、不标 done、不提交推送。
+
+- 第一小步监理 R3 接收（2026-11-27）：用户授权后真实点击气泡关闭、默认约8秒隐藏、不抢前台、气泡可见时实体拖动/透明角落穿透、真实原生菜单查看入口及两段内容、正常退出通过。[报告 R3](reviews/P6-004-review.md)、[证据](reviews/evidence/P6-004-R3/)。本监理初轮夹具漏隔离启动导致一次正式主存档写入，已停止并恢复测试前主文件、复核哈希不变；更早备份未能恢复，完整事故/恢复限制亦见报告，不归为产品问题。随后两轮正确隔离数据通过且无测试残留。整体仍 in-progress，靠近待用户讨论，不提交推送。
+
+- 监理 R4 最终接收（2026-11-27）：用户明确“按这个方案收尾”，本版保留纯气泡及查看，靠近转后续独立待办；R2 代码复核与 R3 真实输入证据已满足调整后的全部范围，P6-004 标 done。纯文档更新，未改代码/资源、未重测、未提交推送；R3 事故和恢复限制保留，旧历史记录不改写。
+
+## 后续独立待办（未排期，不计入已完成阶段 6 本版）
+
+### FUT-001 习惯反馈主动靠近
+
+- 状态：`todo`（2026-11-27 用户按 [D-020](DECISIONS.md) 决定从本版延期，未授权开工）。
+- 依赖：P6-004 已接收；先由用户确认靠近目标、触发/冷却、位置所有权和接管规则。精确图标定位如确有需要，另设可行性验证，不默认可用。
+- 当前仅登记：不实现移动、不补“占位靠近”、不以本待办阻塞 P6 本版收尾。验收/拆分待用户另行安排后制定，不自动进入下一阶段。
 
 ## 新任务模板
 
@@ -640,3 +809,37 @@
 验证方式与证据去向：
 阻塞条件（如有）：
 ```
+
+
+P5B-001 R1直接整改补完（2026-11-22）：用户授权本助手实施，专项39/39、全量1133/1133、M-17独立夹具18/18全部通过；新增证据与限制见 [整改记录](remediation/P5B-001-response.md)。保持awaiting-verification，需独立复核，不代签原R1问题关闭。
+
+
+P5B-001 监理R2收尾（2026-11-22）：用户指定本助手继续复核，原R1四项全部关闭，首版接收；当前状态以本任务done状态行及R2报告为准。保留历史整改进度，不推进后续功能，未提交/推送。
+
+
+P5B-002 M-18监理确认（2026-11-22）：[R1验证记录](reviews/P5B-002-review.md)，实机确认轮18/18通过；当前保持awaiting-verification，待整体交付审查，实机时段等待已解除。
+
+
+P5B-002监理R3（2026-11-22）：R2 F-01关闭，正式入口接收，当前状态以任务done状态行与R3报告为准。未重复实机，未提交/推送。
+
+
+P5B-003范围调整（2026-11-23，用户明确决定）：当前美术临时使用，视觉改进后置，不再等待候选造型批准。原“观感确认后接线”前置条件由R6用户接受替代；可生成必需帧并接入动作/镜像/中断。脚点、阶段切换、内容一致性、动作释放及缺失资源回退验收仍保留，不将临时美术称定稿。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

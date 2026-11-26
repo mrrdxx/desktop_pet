@@ -1,0 +1,1 @@
+{"scenario":"usage-stats-exit","phase":"pre-exit","session":2,"isRestart":true,"lifecycleModeBeforeWindow":"OnLastWindowClose","usedProductionCreatePetWindow":true,"usedProductionMenuExitDispatch":true,"usedProductionShutdownMainWindow":true,"subscribedAfterStart":true,"enabledBeforeExit":true,"appStartEventCount":2,"segmentsCountBeforeExit":0,"eventsCountBeforeExit":2}

@@ -1,0 +1,92 @@
+**********************
+PowerShell transcript start
+Start time: 20261122173402
+Username: 毛茸茸的小熊\mrrdxx
+RunAs User: 毛茸茸的小熊\mrrdxx
+Configuration Name: 
+Machine: 毛茸茸的小熊 (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\WindowsApps\OpenAI.CodexPrimaryRuntime.v26-1119-907-0_26.1119.907.0_x64__3k8sg7r9htsxt\dependencies\native\powershell\pwsh.dll -NoProfile -Sta -File tools/Invoke-P5B002EntryPreview.ps1 -DurationSec 600 -ProbePath artifacts/m18-supervisor-20261122/bin/DesktopPet.DiagnosticProbe/debug/DesktopPet.DiagnosticProbe.exe
+Process ID: 25260
+PSVersion: 7.6.9
+PSEdition: Core
+GitCommitId: 7.6.9
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+[M18] driver thread DPI awareness = 2 (2=PerMonitor; required for physical px)
+[M18] lures set: file=C:\Users\mrrdxx\Desktop\pet\.temp\p5b-002\m18\lure-run-20261122-173402\P5B002NP-lure-20261122-173402.txt window='P5B002NP-lure-20261122-173402.txt' @(60,60) windowlessPid=27672
+[M18] run dir: C:\Users\mrrdxx\Desktop\pet\.temp\p5b-002\m18\run-20261122-173402-fixture
+[M18] targetSubstr='P5B002NP-20261122-173402' (unique; user windows cannot match)
+[M18] target start issued pid=27800
+[M18] target ownership verified: hwnd=0x308B0 pid=27800
+[PASS] ① 目标标记与归属确认（驱动侧零写入前提） : hwnd=0x308B0 pid=27800 marker=P5B002NP-20261122-173402
+[M18] probe started pid=28244
+[M18] real-menu attempt 1 pre-click: fg=0x504F4 title='ChatGPT' lastInput=1.2s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[160,160] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ② 真实右键「Climb on Window」→ climbPickActive=true status=active : real menu 'Climb on Window' selected: rightClick=[160,160] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ③ 真实点击合格近距目标 → started+climb-started(targetHwnd 匹配) : click=True click=[493,209] hold=300ms startedEv=True targetHwnd=0x308B0 climb=True status=started
+[PASS] ④ 路线推进：climb-step≥3 且 fraction 递增 : steps=20 fracInc=True fractions=[0.0502371321520156,0.106374317351254,0.145826470109133,0.186189536654964,0.225039377651501,0.256186909650795,0.260487171032251,0.262773850652357,0.277751322403827,0.318199841295962,0.357792796860196,0.401841076730419,0.442010650986921,0.479903278840648,0.520399127486,0.558423451854386,0.597367270807748,0.629842793274872,0.671858368516615,0.716747888113548]
+[PASS] ⑤ 顶部交接：climb-completed 脚点=上缘中点±6 perchActive 无跳动 : foot=[690,160] expected=[690,160] dx=0 dy=0 perch=True climb=False noJump=True
+[PASS] ⑥ 交接后跟随：移动目标后脚点贴新上缘 : foot=[790,210] newEdge=[790,210] perch=True
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=1.9s ago
+[M18] real-menu Perch on Window: real menu 'Perch on Window' selected: rightClick=[894,410] itemIndex=2 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑦ 平行入口「Perch on Window」→ selected+perchActive 攀爬不触发 : menu=True click=True click=[1227,259] hold=300ms status=selected perch=True climb=False
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=1.8s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑧ 拒绝：点击桌面/壳 → rejected-ineligible 宠物不动 : click=True click=[576,1056] hold=300ms shell=class=Shell_TrayWnd root=0x100E0 point=[576,1056] status=rejected-ineligible climb=False noMove=True
+[M18] ⑨ env: closing system UI '搜索' (entryTry 1)
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=1.8s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑨ 拒绝：超距目标 → rejected-too-far 宠物不动 : click=True click=[223,449] hold=300ms distance=715px(>200) status=rejected-too-far climb=False noMove=True
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=2.2s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑩ 取消：点击宠物自身 → cancelled-self : click=True click=[1528,410] hold=300ms status=cancelled climb=False perch=False
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=1.4s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑪ 取消：15s 真实超时 → cancelled-timeout 宠物不动 : status=cancelled-timeout climb=False perch=False noMove=True
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=16.4s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑫ 取消：拾取中打开真实菜单 → cancelled 且菜单可正常关闭 : status=cancelled menuOpened=True menuClosedAfterEsc=True
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=1.2s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑬ 取消：拾取中暂停 → cancelled resume 后不续接 : status=cancelled pickActive=False climb=False perch=False
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=3.1s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1528,410] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑭ 取消：拾取中真实拖动 → cancelled 回空闲 : dragged from (1528,452) by (96,72) steps=12 hold=700ms status=cancelled drag=False climb=False perch=False
+[M18] real-menu attempt 1 pre-click: fg=0x308B0 title='P5B002NP-20261122-173402' lastInput=1.6s ago
+[M18] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[1624,482] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+[PASS] ⑮ 攀爬中真实拖动 → climb-drag-preempted 松手后不回拉 : preempted=True dragged from (1499,394) by (96,72) steps=12 hold=700ms stayAtDrop=True attempt=1
+[M18] probe exited code=0
+[PASS] ⑯ 探针 exitCode=0 : probe exit=0 result exitCode=0
+[PASS] ⑰ 诱饵存活（其他轮标记文件/标记窗口/无窗口进程未被越界清理） : lureFile=True lureWin=True title='P5B002NP-lure-20261122-173402.txt' rect=[60,60,360,180] snapshot=[60,60,360,180] iconic=False windowless=True pid=27672
+[PASS] ⑱ 完整流程走完（固定条目数） : ①-⑰ 全部唯一 PASS + reachedEnd 且未 failed（合计 18 项含本条）
+
+Item                                                              Result Detail
+----                                                              ------ ------
+① 目标标记与归属确认（驱动侧零写入前提）                          PASS   hwnd=0x308B0 pid=27800 marker=P5B002NP-20261122-173402
+② 真实右键「Climb on Window」→ climbPickActive=true status=active PASS   real menu 'Climb on Window' selected: rightClick=[160,160] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+③ 真实点击合格近距目标 → started+climb-started(targetHwnd 匹配)   PASS   click=True click=[493,209] hold=300ms startedEv=True targetHwnd=0x308B0 climb=True status=started
+④ 路线推进：climb-step≥3 且 fraction 递增                         PASS   steps=20 fracInc=True fractions=[0.0502371321520156,0.106374317351254,0.145826470109133,0.186189536654964,0.225039377651501,0.256186909650795,0.26…
+⑤ 顶部交接：climb-completed 脚点=上缘中点±6 perchActive 无跳动    PASS   foot=[690,160] expected=[690,160] dx=0 dy=0 perch=True climb=False noJump=True
+⑥ 交接后跟随：移动目标后脚点贴新上缘                              PASS   foot=[790,210] newEdge=[790,210] perch=True
+⑦ 平行入口「Perch on Window」→ selected+perchActive 攀爬不触发    PASS   menu=True click=True click=[1227,259] hold=300ms status=selected perch=True climb=False
+⑧ 拒绝：点击桌面/壳 → rejected-ineligible 宠物不动                PASS   click=True click=[576,1056] hold=300ms shell=class=Shell_TrayWnd root=0x100E0 point=[576,1056] status=rejected-ineligible climb=False noMove=True
+⑨ 拒绝：超距目标 → rejected-too-far 宠物不动                      PASS   click=True click=[223,449] hold=300ms distance=715px(>200) status=rejected-too-far climb=False noMove=True
+⑩ 取消：点击宠物自身 → cancelled-self                             PASS   click=True click=[1528,410] hold=300ms status=cancelled climb=False perch=False
+⑪ 取消：15s 真实超时 → cancelled-timeout 宠物不动                 PASS   status=cancelled-timeout climb=False perch=False noMove=True
+⑫ 取消：拾取中打开真实菜单 → cancelled 且菜单可正常关闭           PASS   status=cancelled menuOpened=True menuClosedAfterEsc=True
+⑬ 取消：拾取中暂停 → cancelled resume 后不续接                    PASS   status=cancelled pickActive=False climb=False perch=False
+⑭ 取消：拾取中真实拖动 → cancelled 回空闲                         PASS   dragged from (1528,452) by (96,72) steps=12 hold=700ms status=cancelled drag=False climb=False perch=False
+⑮ 攀爬中真实拖动 → climb-drag-preempted 松手后不回拉              PASS   preempted=True dragged from (1499,394) by (96,72) steps=12 hold=700ms stayAtDrop=True attempt=1
+⑯ 探针 exitCode=0                                                 PASS   probe exit=0 result exitCode=0
+⑰ 诱饵存活（其他轮标记文件/标记窗口/无窗口进程未被越界清理）      PASS   lureFile=True lureWin=True title='P5B002NP-lure-20261122-173402.txt' rect=[60,60,360,180] snapshot=[60,60,360,180] iconic=False windowless=True pi…
+⑱ 完整流程走完（固定条目数）                                      PASS   ①-⑰ 全部唯一 PASS + reachedEnd 且未 failed（合计 18 项含本条）
+[M18] checklist: ALL PASS -> C:\Users\mrrdxx\Desktop\pet\.temp\p5b-002\m18\run-20261122-173402-fixture
+**********************
+PowerShell transcript end
+End time: 20261122173511
+**********************

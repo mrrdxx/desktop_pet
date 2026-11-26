@@ -1,0 +1,15 @@
+{
+  "scenario": "usage-stats-wiring",
+  "session": 1,
+  "usedProductionLoadArchives": true,
+  "usedProductionSystemEventSubscription": true,
+  "usedProductionUsageStatsInit": true,
+  "usedFakeForegroundOrManualTick": false,
+  "toggleOnAfterLoad": true,
+  "subscribedAfterStart": true,
+  "enabledAtShutdown": true,
+  "appStartEventCount": 1,
+  "segmentsCountAtShutdown": 0,
+  "eventsCountAtShutdown": 1,
+  "statsFilePath": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-r6-wiring-c0c41edd2373472393c746bc1b85b2ab\\usage-stats-wiring\\stats.json"
+}

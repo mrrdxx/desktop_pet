@@ -93,6 +93,24 @@ public partial class App : System.Windows.Application
     // Core (ActivitySession) handles timer and threshold logic.
     internal ActivitySessionService? ActivitySessionService { get; private set; }
 
+    // P6-001: App-level service for local usage statistics (foreground
+    // activity approximation + normalized app base name). Independently
+    // stored in stats.json; sampled on its own 5 s timer; never touches the
+    // pet archive and never mixes with the rest-reminder timing.
+    internal UsageStatsService? UsageStatsService { get; private set; }
+
+    // P6-004（第一小步）：主动气泡与只读查看窗。气泡实例复用（隐藏而非销毁），
+    // 展示判定全部交给 Core 的 UsageStatsBubblePlanner；查看窗为用户主动打开。
+    private StatsBubbleWindow? _statsBubble;
+    private StatsViewerWindow? _statsViewer;
+    private DispatcherTimer? _statsBubbleTimer;
+
+    /// <summary>
+    /// P6-004（第一小步）：主动气泡判定使用的本地时间源注入点。生产为 null
+    /// （用 <see cref="DateTimeOffset.Now"/>），测试/隔离预览可固定时段。
+    /// </summary>
+    internal Func<DateTimeOffset>? TestStatsBubbleLocalNow;
+
     /// <summary>
     /// PREP-001 R2 F-02: Isolated startup for diagnostic probes.
     /// Sets up isolated archive/save infrastructure (like TestSetupIsolatedSave)
@@ -179,6 +197,14 @@ public partial class App : System.Windows.Application
         // test. Tests that need to verify the service can inject a custom
         // one via the ActivitySessionService property setter.
         ActivitySessionService ??= new ActivitySessionService();
+
+        // P6-001: Create a fresh usage-stats service rooted at the isolated
+        // directory (independent stats.json, never the user archive). The
+        // sampling timer is not auto-started here — stats-specific tests
+        // inject a service with controlled samplers/clock or call
+        // Service.Start() to exercise the restore path.
+        UsageStatsService ??= new UsageStatsService(isolatedDir, autoStartTimer: false);
+
         EmotionAccumulator ??= new EmotionDecayAccumulator(50, DateTime.UtcNow);
         GrievanceExpression ??= new GrievanceExpressionState();
         CornerTracking ??= new CornerTracker();
@@ -282,6 +308,10 @@ public partial class App : System.Windows.Application
         // P4-001: Dispose the activity session service.
         ActivitySessionService?.Dispose();
         ActivitySessionService = null;
+        // P6-001: Dispose the usage-stats service (Dispose → Stop → persist
+        // pending + retention prune before the isolated dir is discarded).
+        UsageStatsService?.Dispose();
+        UsageStatsService = null;
         // PREP-001: Clean up diagnostic logger.
         DiagnosticLogger?.Dispose();
         DiagnosticLogger = null;
@@ -585,6 +615,16 @@ public partial class App : System.Windows.Application
         // F-04 R4: Use the shared initialization method so production
         // and isolated probe entry points share identical wiring.
         InitializeActivitySession();
+
+        // P6-001: Start the independent usage-stats service. Per R-09 the
+        // collector stays disabled unless the persisted settings toggle
+        // (UsageStatsEnabled, default false) says otherwise; only then is
+        // the app-start observation registered (once per process startup).
+        InitializeUsageStats();
+
+        // P6-004（第一小步）：低频主动气泡判定。只在有达标且匹配当前时段
+        // 候选、且无抑制条件时展示，其余情况保持安静。
+        InitializeUsageStatsBubbleTimer();
     }
 
     /// <summary>
@@ -651,6 +691,98 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
+    /// P6-001: Creates and starts the usage-stats service. R-09: statistics
+    /// are disabled by default — the collector only turns on when the
+    /// persisted toggle (<see cref="PetSettingsArchive.UsageStatsEnabled"/>)
+    /// is true, and only then is the app-start observation registered
+    /// (once per process startup). Existing in-retention statistics are
+    /// restored and kept even while disabled.
+    /// </summary>
+    private void InitializeUsageStats(string? saveDirectory = null)
+    {
+        UsageStatsService = new UsageStatsService(saveDirectory);
+        UsageStatsService.Start();
+
+        // F-01 R2: sync the initial pause state UNCONDITIONALLY — also when
+        // the toggle is off (statistics are disabled by default). _isPaused
+        // is initialized from the persisted pause toggle before this point;
+        // the collector stays suspended until the user unpauses, so enabling
+        // statistics later while the pet is globally paused keeps sampling
+        // suspended instead of starting immediately.
+        if (_isPaused)
+        {
+            UsageStatsService.OnPauseToggled(true);
+        }
+
+        if (_settings is not null && _settings.UsageStatsEnabled)
+        {
+            UsageStatsService.Enable();
+            UsageStatsService.OnAppStart();
+        }
+    }
+
+    /// <summary>
+    /// P6-001 R4: Isolated-probe entry into the SAME production
+    /// initialization used by <see cref="OnStartup"/> (real 5-second
+    /// DispatcherTimer, real idle/foreground samplers, pause sync, settings
+    /// gate), with a caller-chosen storage directory — the probe's isolated
+    /// run directory, never the user archive. Production logic is unchanged;
+    /// this only exposes the private <see cref="InitializeUsageStats"/> to
+    /// the diagnostic probe (InternalsVisibleTo).
+    /// </summary>
+    internal void InitializeUsageStatsForIsolatedProbe(string saveDirectory)
+    {
+        InitializeUsageStats(saveDirectory);
+    }
+
+    /// <summary>
+    /// P6-001 R5 F-05: Loads the isolated directory's persisted settings/state
+    /// through the SAME production startup path (LoadState → LoadSettings →
+    /// <c>_isPaused = _state.IsPaused</c>), without seed-overwriting what is
+    /// already on disk. A first-run directory (no files) yields the defaults;
+    /// a restart loads the existing independent settings/state so the toggle
+    /// and pet state survive — never the user archive (the caller's isolated
+    /// <see cref="ArchiveService"/> is used).
+    /// </summary>
+    internal void LoadArchivesForIsolatedProbe()
+    {
+        if (_archive is null) return;
+        var (state, _, _) = _archive.LoadState();
+        var (settings, _, _) = _archive.LoadSettings();
+        _state = state;
+        _settings = settings;
+        _isPaused = _state.IsPaused;
+    }
+
+    /// <summary>
+    /// P6-001 R5 F-05: Read-only accessor so the probe can assert what was
+    /// actually loaded from disk (e.g. <c>UsageStatsEnabled</c> persisted by
+    /// the previous run).
+    /// </summary>
+    internal PetSettingsArchive? TestSettings => _settings;
+
+    /// <summary>
+    /// P6-001 R5 F-05: Fills the runtime helper objects with the SAME
+    /// defaults <see cref="TestSetupIsolatedSave"/> uses, WITHOUT overwriting
+    /// <c>_state</c>/<c>_settings</c>/<c>_isPaused</c> that were just loaded
+    /// from disk. Intended for the restart branch of isolated probes: first
+    /// <see cref="LoadArchivesForIsolatedProbe"/> restores the persisted
+    /// settings/state, then this call provides the side objects the pet
+    /// window needs (rare-event trackers, social coordinator, activity
+    /// session, emotion objects) without losing the loaded archives.
+    /// </summary>
+    internal void TestEnsureProbeRuntimeObjects()
+    {
+        RuntimeTracker ??= new EffectiveRuntimeTracker();
+        RareEventScheduler ??= new RareEventScheduler();
+        SocialCoordinator ??= new SocialCoordinator();
+        ActivitySessionService ??= new ActivitySessionService();
+        EmotionAccumulator ??= new EmotionDecayAccumulator(50, DateTime.UtcNow);
+        GrievanceExpression ??= new GrievanceExpressionState();
+        CornerTracking ??= new CornerTracker();
+    }
+
+    /// <summary>
     /// P4-001 F-04 R3: Starts the activity session through the same
     /// production wiring used by OnStartup, but without creating windows,
     /// tray, or single-instance guard. F-04 R4: delegates to the shared
@@ -689,11 +821,20 @@ public partial class App : System.Windows.Application
         // CancelRestReminder → UpdateFrame never crosses threads.
         ActivitySessionService?.OnSessionSwitch((int)e.Reason);
 
+        // P6-001: Same lifecycle feed for usage stats — the stats service
+        // marshals internally to its Dispatcher (lock/sleep suspend the
+        // current segment; unlock/resume record their own event).
+        UsageStatsService?.OnSessionSwitch((int)e.Reason);
+
         // P4-002 R1 F-01: Lock screen cancels rest-reminder performances.
         // SessionSwitchReason.SessionLock = 7. Unlock (8) does NOT replay
         // — the performance was already cancelled when lock started.
         if ((int)e.Reason == 7)
         {
+            // P6-004（第一小步）：锁屏期间不展示主动气泡，立即撤销已有的；
+            // 解锁后不补播积压。
+            HideStatsBubbleOnUiDispatcher();
+
             // R2 F-01 收尾: the collection read, the snapshot and the
             // cancels all happen on the UI Dispatcher (see
             // CancelRestRemindersOnUiDispatcher).
@@ -708,12 +849,21 @@ public partial class App : System.Windows.Application
         // (see above).
         ActivitySessionService?.OnPowerModeChanged((int)e.Mode);
 
+        // P6-001: Same power-mode feed for usage stats (sleep suspends the
+        // current segment; resume records its own event and rebuilds the
+        // baseline). Marshaled internally to the stats service Dispatcher.
+        UsageStatsService?.OnPowerModeChanged((int)e.Mode);
+
         // P4-002 R1 F-01: Sleep (Suspend) cancels rest-reminder
         // performances. PowerModes.Suspend = 3. Resume (1) does NOT
         // replay — the performance was already cancelled when sleep
         // started.
         if ((int)e.Mode == (int)Microsoft.Win32.PowerModes.Suspend)
         {
+            // P6-004（第一小步）：睡眠期间不展示主动气泡，立即撤销已有的；
+            // 唤醒后不补播积压。
+            HideStatsBubbleOnUiDispatcher();
+
             // R2 F-01 收尾: the collection read, the snapshot and the
             // cancels all happen on the UI Dispatcher (see
             // CancelRestRemindersOnUiDispatcher).
@@ -1194,6 +1344,242 @@ public partial class App : System.Windows.Application
     /// </summary>
     internal bool IsGloballyPaused => _isPaused;
 
+    /// <summary>
+    /// P6-001: Whether usage-statistics collection is currently enabled.
+    /// Mirrors the persisted settings toggle; used by the window menu to
+    /// label the Statistics toggle entry.
+    /// </summary>
+    internal bool IsUsageStatsEnabled => UsageStatsService?.IsEnabled ?? false;
+
+    /// <summary>
+    /// P6-001: Enables or disables local usage statistics. The toggle is
+    /// persisted in settings (kept by Clear) and applied to the stats
+    /// service. Statistics are OFF by default — only this explicit user
+    /// action turns collection on.
+    /// </summary>
+    internal void SetUsageStatsEnabled(bool enabled)
+    {
+        if (_settings is not null)
+        {
+            _settings.UsageStatsEnabled = enabled;
+            _saveCoordinator?.MarkSettingsDirty(_settings);
+        }
+
+        var service = UsageStatsService;
+        if (service is null) return;
+        if (enabled)
+        {
+            service.Enable();
+            // F-01 R2: the pet may already be globally paused while the user
+            // turns statistics on (e.g. pause-persisted start, or pause
+            // before this call) — keep sampling suspended until unpaused.
+            // Idempotent: InitializeUsageStats already synced a paused start.
+            if (_isPaused)
+            {
+                service.OnPauseToggled(true);
+            }
+        }
+        else
+        {
+            service.Disable();
+            // P6-004（第一小步）：统计关闭后立即撤销相关主动气泡与待展示
+            // 内容（判定每次即时计算，不存在排队）；查看窗如打开则刷新为
+            // 关闭状态。
+            HideUsageStatsBubble();
+            if (_statsViewer is { IsVisible: true })
+                _statsViewer.Refresh();
+        }
+    }
+
+    /// <summary>
+    /// P6-001: Clears all collected statistics (segments, events, pending
+    /// writes, coverage-mismatch count) and immediately persists the cleared
+    /// state. The enable toggle and settings are preserved — only the
+    /// statistics are removed. Old asynchronous writes / backups cannot
+    /// resurrect cleared data (collector generation guard).
+    /// </summary>
+    internal void ClearUsageStats()
+    {
+        UsageStatsService?.ClearAll();
+        // P6-004（第一小步）：清除后立即撤销气泡（当天已展示标记由服务
+        // 一并重置），查看窗如打开则立即刷新为新记录状态。
+        HideUsageStatsBubble();
+        if (_statsViewer is { IsVisible: true })
+            _statsViewer.Refresh();
+    }
+
+    /// <summary>
+    /// P6-001: Test-only injection of the usage-stats service so App-level
+    /// tests can wire controlled samplers/clock and an isolated stats file.
+    /// Disposes any previously created service.
+    /// </summary>
+    internal void SetUsageStatsServiceForTest(UsageStatsService? service)
+    {
+        UsageStatsService?.Dispose();
+        UsageStatsService = service;
+    }
+
+    // ── P6-004（第一小步）：主动气泡与查看入口 ──────────────────────────
+
+    /// <summary>
+    /// P6-004（第一小步）：启动主动气泡判定定时器。频率很低（30 秒），每次
+    /// 只做一次纯判定；没有达标候选或处于抑制状态时保持安静。生产在
+    /// <see cref="OnStartup"/> 中调用；隔离预览可自行触发
+    /// <see cref="TryShowUsageStatsBubble"/>。
+    /// </summary>
+    private void InitializeUsageStatsBubbleTimer()
+    {
+        if (_statsBubbleTimer is not null) return;
+        _statsBubbleTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(30)
+        };
+        _statsBubbleTimer.Tick += (_, _) => TryShowUsageStatsBubble();
+        _statsBubbleTimer.Start();
+    }
+
+    /// <summary>
+    /// P6-004（第一小步）：一次主动气泡判定与展示。规则全部在 Core：
+    /// 只使用 P6-003 达标且匹配当前半小时时段的候选；无候选保持安静（不提示
+    /// “样本不足”）；暂停/锁屏/睡眠、无可接受展示的空闲宠物、当天已展示过
+    /// 都不展示，也不消费当天额度。
+    /// </summary>
+    internal void TryShowUsageStatsBubble()
+    {
+        if (_isShuttingDown) return;
+        var service = UsageStatsService;
+        if (service is null) return;
+
+        var pet = SelectStatsBubblePet();
+        var now = (TestStatsBubbleLocalNow ?? (() => DateTimeOffset.Now))();
+        var decision = UsageStatsBubblePlanner.Decide(
+            service.GetFrequencyPredictions(),
+            now,
+            service.BubbleLastShownLocalDate,
+            service.IsSuspended,
+            pet is not null);
+
+        if (!decision.ShouldShow || pet is null)
+            return;
+
+        var bubble = _statsBubble ??= CreateStatsBubbleWindow();
+        bubble.ShowNear(
+            decision.Message,
+            pet.GetPetRectDipForStatsBubble(),
+            pet.GetWorkAreaDipForStatsBubble());
+
+        // 仅在真正展示后记录当天额度（持久化，跨重启同样去重）。
+        service.RecordStatsBubbleShown(decision.LocalDate);
+    }
+
+    /// <summary>
+    /// P6-004（第一小步）：多宠时只选一只“可接受展示”的空闲宠物，按
+    /// PetId 排序保证确定性；其余宠物不展示。没有空闲宠物时返回 null，
+    /// 且不消费当天额度。
+    /// </summary>
+    private MainWindow? SelectStatsBubblePet()
+    {
+        foreach (var pair in _petWindows.OrderBy(p => p.Key, StringComparer.Ordinal))
+        {
+            var window = pair.Value;
+            if (window is not null && window.IsAvailableForStatsBubble)
+                return window;
+        }
+        return null;
+    }
+
+    private StatsBubbleWindow CreateStatsBubbleWindow()
+    {
+        var bubble = new StatsBubbleWindow();
+        bubble.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_statsBubble, bubble))
+                _statsBubble = null;
+        };
+        return bubble;
+    }
+
+    /// <summary>
+    /// P6-004（第一小步）：立即隐藏当前主动气泡（暂停/锁屏/睡眠/统计关闭或
+    /// 清除）。恢复后不补播积压——后续展示只由下一次判定按当时状态决定。
+    /// </summary>
+    internal void HideUsageStatsBubble()
+    {
+        _statsBubble?.HideBubble();
+    }
+
+    /// <summary>在 UI Dispatcher 上隐藏气泡（系统事件从系统线程触发）。</summary>
+    private void HideStatsBubbleOnUiDispatcher()
+    {
+        var d = _petWindowsDispatcher;
+        if (d is null || d.CheckAccess())
+        {
+            HideUsageStatsBubble();
+        }
+        else
+        {
+            d.BeginInvoke(new Action(HideUsageStatsBubble));
+        }
+    }
+
+    /// <summary>
+    /// P6-004（第一小步）：打开只读统计查看窗（右键菜单入口）。窗口分两段：
+    /// 已记录的统计（R-09 准确名称）与有样本支持的时间偏好（标注为统计依据）。
+    /// 统计关闭时仍可打开，如实显示未启用与已有记录。
+    /// </summary>
+    internal void ShowUsageStatsViewer()
+    {
+        if (_isShuttingDown) return;
+
+        if (_statsViewer is { IsVisible: true })
+        {
+            _statsViewer.Refresh();
+            _statsViewer.Activate();
+            return;
+        }
+
+        var viewer = new StatsViewerWindow();
+        viewer.SetProvider(BuildStatsViewSnapshot);
+        viewer.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_statsViewer, viewer))
+                _statsViewer = null;
+        };
+        _statsViewer = viewer;
+        viewer.Show();
+    }
+
+    private StatsViewSnapshot BuildStatsViewSnapshot()
+    {
+        var service = UsageStatsService;
+        if (service is null)
+            return new StatsViewSnapshot { IsServiceAvailable = false };
+
+        var preferenceLines = new List<string>();
+        foreach (var candidate in service.GetFrequencyPredictions().Candidates)
+            preferenceLines.Add(UsageStatsBubblePlanner.FormatPreferenceLine(candidate));
+
+        return new StatsViewSnapshot
+        {
+            IsServiceAvailable = true,
+            IsEnabled = service.IsEnabled,
+            RecordedLines = UsageStatsBubblePlanner.FormatRecordedSummaryLines(service.GetRecordedSummary()),
+            PreferenceLines = preferenceLines
+        };
+    }
+
+    /// <summary>当前气泡是否可见（测试/隔离预览断言）。</summary>
+    internal bool TestStatsBubbleVisible => _statsBubble?.IsVisible == true;
+
+    /// <summary>当前气泡文案（测试/隔离预览断言）。</summary>
+    internal string TestStatsBubbleMessage => _statsBubble?.CurrentMessage ?? "";
+
+    /// <summary>当前气泡窗口实例（测试/隔离预览断言；未展示时为 null）。</summary>
+    internal StatsBubbleWindow? TestStatsBubbleWindow => _statsBubble;
+
+    /// <summary>只读查看窗实例（测试/隔离预览断言；未打开时为 null）。</summary>
+    internal StatsViewerWindow? TestStatsViewerWindow => _statsViewer;
+
     internal void OnPauseToggled(object? sender, bool paused)
     {
         _isPaused = paused;
@@ -1205,8 +1591,16 @@ public partial class App : System.Windows.Application
         // accumulating active time. Resume starts from a new baseline.
         ActivitySessionService?.OnPauseToggled(paused);
 
+        // P6-001: Pausing also suspends the usage-stats current segment
+        // (the paused interval is never attributed); resume rebuilds the
+        // baseline from the next sample without back-fill.
+        UsageStatsService?.OnPauseToggled(paused);
+
         if (paused)
         {
+            // P6-004（第一小步）：暂停期间不展示主动气泡，立即撤销已有的。
+            HideUsageStatsBubble();
+
             // P4-002: Cancel any active rest-reminder performance on pause.
             // Per R-06: "暂停...时结束正在播放的提醒，恢复后不续播。"
             foreach (var w in _petWindows.Values)
@@ -1349,6 +1743,14 @@ public partial class App : System.Windows.Application
             return;
         _isShuttingDown = true;
 
+        // P6-004（第一小步）：停止主动气泡判定并关闭气泡/查看窗。
+        _statsBubbleTimer?.Stop();
+        _statsBubbleTimer = null;
+        _statsBubble?.Close();
+        _statsBubble = null;
+        _statsViewer?.Close();
+        _statsViewer = null;
+
         // P4-002: Cancel any active rest-reminder performance before flushing.
         foreach (var w in _petWindows.Values)
             w.CancelRestReminder();
@@ -1361,6 +1763,12 @@ public partial class App : System.Windows.Application
         ActivitySessionService?.Stop();
         ActivitySessionService?.Dispose();
         ActivitySessionService = null;
+
+        // P6-001: Stop the usage-stats sampling and persist anything pending
+        // (with retention pruning) before the process exits.
+        UsageStatsService?.Stop();
+        UsageStatsService?.Dispose();
+        UsageStatsService = null;
 
         // F-04 R4: After cleanup, write the post-cleanup state to the
         // sidecar file so the probe can verify subscriptions were
@@ -1564,6 +1972,10 @@ public partial class App : System.Windows.Application
         UnsubscribeSystemEvents();
         ActivitySessionService?.Dispose();
         ActivitySessionService = null;
+        // P6-001: Dispose the usage-stats service — Dispose → Stop → persist
+        // pending stats + retention pruning.
+        UsageStatsService?.Dispose();
+        UsageStatsService = null;
         _tray?.Dispose();
         _instanceGuard?.Dispose();
         base.OnExit(e);

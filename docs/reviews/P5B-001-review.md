@@ -59,3 +59,27 @@
 - 命令：`dotnet test .temp/supervisor-p5b001-r1/DesktopPet.slnx --artifacts-path C:/Users/mrrdxx/Desktop/pet/artifacts/supervisor-p5b001-r1 --no-restore --filter "FullyQualifiedName~WindowClimbAppTests|FullyQualifiedName~WindowClimbTests" --logger "trx;LogFilePrefix=review-final" --results-directory docs/reviews/evidence/P5B-001-R1`。
 - [开发原始清单副本](evidence/P5B-001-R1/developer-m17-checklist.txt)、[原始事件副本](evidence/P5B-001-R1/developer-climb-live-events.jsonl)。15项PASS按实际覆盖接受，不抹除开发已经取得的证据，也不外推为完整验收。
 - 下一步：开发按本报告F编号在独立整改记录追加修复、自测、限制及复核请求；监理独立复核。未提交/推送，不创建或委派新开发聊天。
+
+
+## R2：2026-11-22 用户指定同一助手继续复核——接收
+
+### 授权、对象与方法
+
+- 用户本轮明确指示：“不需要独立审查 AI，你继续做审查AI”。此前用户亦明确授权本助手直接实施整改。因此本轮由参与实现的同一助手复核，**不称独立审查或独立验证**。按 REVIEW_PROCESS 的用户指定审查者及明确例外规则记录此分工；未豁免产品验收或静默改变原要求。
+- 对象为 HEAD `0aa994d` 加当前未提交的 R1 整改。重新读取 R1/整改最新R2请求、实际代码、TASKS/STATUS及实机原始记录；核对最终源码SHA-256与实机证据记录完全一致。见 [核对结果](evidence/P5B-001-R2/verification.json)。
+- 本轮未改产品代码、未重复构建/测试/实机操作。复核既有实际运行TRX：专项Core15/15、App24/24；全量Core563/563、App570/570，均0失败0跳过。TRX稳定留存于 [R2目录](evidence/P5B-001-R2/)。全量是在最终探针petHwnd观测字段之前，最终观测适配之后已完成全方案warnaserror构建与M-17整轮验证；此版本区别保留。
+
+### 逐项结论
+
+- **F-01：通过，关闭。** 起攀及写入守卫检查栖息、本地/共享社交与更高优先级状态；非攀爬提交在攀爬持有时被拒，攀爬提交不自我阻塞；找回同步取消路线，后续旧目标变化和Tick不再拉回。纳入的原反例及新增所有权/找回测试通过，既有paired-commit保留。
+- **F-02：通过，关闭。** 剩余路径按折线计算，单tick限制补步并丢弃积压；回退/相同时间不改变时间基线；探针起攀与生产Tick同单调域；先提交最终脚点再交接。新增回退恢复测试通过；原始实机流共2对climb-arrived→climb-completed脚点完全一致（位移0），不再只用落位800ms后的稳定性证明无跳动。时间域修复后的首步记录亦与默认速度相符，不重用旧11ms/91.95px结论。
+- **F-03：通过，关闭。** 新驱动目标限制为本轮独立WinForms夹具，以启动对象精确PID确认归属；清理重新核对句柄、精确标题及进程存活，仅对该目标发WM_CLOSE。无跨轮文件删除、无无窗口Notepad清理、无Alt+N调用；自身探针/诱饵清理不外推为外部进程清理。最终实机第16/17项证明诱饵文件/窗口标题位置/无窗口进程保持至断言。残留AltN声明与旧notepad注释无调用/行为影响，作为非阻断整理项，不要求为此重测。
+- **F-04：通过，关闭。** 保存用例从实际起攀中间状态走ShutdownMainWindowForTest→FlushFinalState→真实文件读档，断言爬行前坐标、保留宠物、新工厂窗口无旧路线；目标失效用例以null采样走生产重观测→WindowGone→取消→后续零写入，符合R1允许的确定失效源验证。明确不称真实外部窗口销毁或Shutdown(0)子进程退出实测。清单固定17个唯一顺序项加完整性第18项，异常/提前退出/缺项/重复均不通过；两轮实际失败未被包装为ALL PASS。文档新命令、链接及状态口径已同步。
+
+### 接收及限制
+
+**R1 F-01～F-04全部关闭；P5B-001表演式有限攀爬隔离预览首版接收，TASKS可标done。** 该结论基于本次用户指定的同助手复核，不伪称独立审查。
+
+- 接受实机轮 `run-20261122-045010-fixture`，18/18 ALL PASS，驱动与探针exit=0。稳定原始证据见 [实现自测目录](../remediation/evidence/P5B-001-direct-20261122/)。失败轮及原R1结论按当时版本保留。
+- 本轮新实机目标是独立WinForms夹具，不宣称已重测Notepad/Edge。跨屏、混合DPI、多宠攀爬、专用攀爬美术、复杂真实边框寻路及正式用户入口均不因本结论自动完成。保存测试不包含实际操作系统进程退出，也不额外声称新窗口Show后完整坐标恢复实测。
+- 原R1“未关闭”标题与暂不接收结论属于历史版本，当前问题状态以本R2为准。无需开发重复实现或重跑既有绿色验证。后续开发任务由用户另行安排；本轮不提交/推送。

@@ -1,0 +1,50 @@
+<Window x:Class="DesktopPet.App.Platform.StatsBubbleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Usage Statistics Notice"
+        Width="280"
+        SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Focusable="False"
+        ShowActivated="False"
+        WindowStartupLocation="Manual"
+        SourceInitialized="StatsBubbleWindow_SourceInitialized">
+    <Border CornerRadius="10"
+            Background="#F2FFFFFF"
+            BorderBrush="#C8C8C8"
+            BorderThickness="1"
+            Padding="12,10">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="MessageText"
+                       Grid.Column="0"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       LineHeight="18"
+                       Foreground="#202020"
+                       Margin="0,0,8,0" />
+            <Button x:Name="CloseButton"
+                    Grid.Column="1"
+                    Content="✕"
+                    Width="20"
+                    Height="20"
+                    Padding="0"
+                    FontSize="11"
+                    Foreground="#606060"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    VerticalAlignment="Top"
+                    Focusable="False"
+                    ToolTip="Dismiss"
+                    Click="CloseButton_Click" />
+        </Grid>
+    </Border>
+</Window>

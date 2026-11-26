@@ -1,0 +1,27 @@
+[
+  {
+    "case": "original event, derived chain annotation",
+    "expected": true,
+    "actual": true
+  },
+  {
+    "case": "otherChain",
+    "expected": false,
+    "actual": false
+  },
+  {
+    "case": "stale",
+    "expected": false,
+    "actual": false
+  },
+  {
+    "case": "wrongTarget",
+    "expected": false,
+    "actual": false
+  },
+  {
+    "case": "missingChain",
+    "expected": false,
+    "actual": false
+  }
+]

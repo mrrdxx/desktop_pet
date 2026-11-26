@@ -1,0 +1,6 @@
+{
+  "src/DesktopPet.App/MainWindow.xaml.cs": "ee0bda2f8cbf694a646db89dad2c2856797dd3c9deba00ee241e34359fe5f888",
+  "src/DesktopPet.App/MainWindow.xaml": "ff6352222c1b92aa0272af3328d50b04212485b2e3edafd876c3e18284a6867f",
+  "src/DesktopPet.App/Platform/PetWindowClimb.cs": "351f4c7120f7955f4dc104f56c7a2eccacea3b2e17322ac5d268dc914cf9a90a",
+  "tests/DesktopPet.App.Tests/ClimbActionTests.cs": "f5ea90b2ae39e45a91f4587d3c08d9a013b2555d576db5bf6b6212914fd8bfc6"
+}

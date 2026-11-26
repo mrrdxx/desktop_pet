@@ -1,0 +1,27 @@
+[
+  {
+    "localTime": "23:29:59",
+    "isNight": false,
+    "sleepAccepted": false
+  },
+  {
+    "localTime": "23:30:00",
+    "isNight": true,
+    "sleepAccepted": true
+  },
+  {
+    "localTime": "00:30:00",
+    "isNight": true,
+    "sleepAccepted": true
+  },
+  {
+    "localTime": "05:59:59",
+    "isNight": true,
+    "sleepAccepted": true
+  },
+  {
+    "localTime": "06:00:00",
+    "isNight": false,
+    "sleepAccepted": false
+  }
+]

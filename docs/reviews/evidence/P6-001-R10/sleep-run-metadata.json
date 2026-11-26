@@ -1,0 +1,7 @@
+{
+  "base": "C:\\Users\\mrrdxx\\Desktop\\pet\\.temp\\p6-001-live\\run-20261126-214737-sleep",
+  "started": "2026-11-26T21:47:37.4739737+08:00",
+  "probe": 87228,
+  "mode": "isolated real sleep-resume test",
+  "exe": "C:\\Users\\mrrdxx\\Desktop\\pet\\artifacts\\p6001-probe-r9\\bin\\DesktopPet.DiagnosticProbe\\debug\\DesktopPet.DiagnosticProbe.exe"
+}

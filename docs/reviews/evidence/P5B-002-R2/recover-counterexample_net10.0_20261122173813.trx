@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ab597b53-a563-41b6-aa9d-f13e23339620" name="mrrdxx@毛茸茸的小熊 2026-11-22 17:38:13" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T17:38:13.9158451+08:00" queuing="2026-11-22T17:38:13.9158453+08:00" start="2026-11-22T17:38:10.2331628+08:00" finish="2026-11-22T17:38:13.9280795+08:00" />
+  <TestSettings name="default" id="02291ba4-76ee-42ee-9a61-f9952d236585">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-22_17_38_13" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7988ba62-3cf7-4e8a-a537-012b7e55f4a4" testId="2fac9ea9-ef54-4ace-f296-b87a5c75aa20" testName="Reviewer_RecoverDuringClimbPick_MustEndPendingSelection" computerName="毛茸茸的小熊" duration="00:00:00.5746579" startTime="2026-11-22T17:38:11.5857988+08:00" endTime="2026-11-22T17:38:13.7410886+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7988ba62-3cf7-4e8a-a537-012b7e55f4a4">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsFalse 失败。找回必须同时结束尚未选目标的攀爬拾取</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ClimbEntryTests.Reviewer_RecoverDuringClimbPick_MustEndPendingSelection() in C:\Users\mrrdxx\Desktop\pet\.temp\p5b002-review-recover\tests\DesktopPet.App.Tests\ClimbEntryTests.cs:line 502&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_RecoverDuringClimbPick_MustEndPendingSelection" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b002-review-recover\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="2fac9ea9-ef54-4ace-f296-b87a5c75aa20">
+      <Execution id="7988ba62-3cf7-4e8a-a537-012b7e55f4a4" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b002-review-recover\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbEntryTests" name="Reviewer_RecoverDuringClimbPick_MustEndPendingSelection" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="2fac9ea9-ef54-4ace-f296-b87a5c75aa20" executionId="7988ba62-3cf7-4e8a-a537-012b7e55f4a4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

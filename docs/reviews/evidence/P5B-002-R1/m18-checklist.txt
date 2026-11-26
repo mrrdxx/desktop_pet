@@ -1,0 +1,23 @@
+
+Item                                                              Result Detail
+----                                                              ------ ------
+① 目标标记与归属确认（驱动侧零写入前提）                          PASS   hwnd=0x308B0 pid=27800 marker=P5B002NP-20261122-173402
+② 真实右键「Climb on Window」→ climbPickActive=true status=active PASS   real menu 'Climb on Window' selected: rightClick=[160,160] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x108E0
+③ 真实点击合格近距目标 → started+climb-started(targetHwnd 匹配)   PASS   click=True click=[493,209] hold=300ms startedEv=True targetHwnd=0x308B0 climb=True status=started
+④ 路线推进：climb-step≥3 且 fraction 递增                         PASS   steps=20 fracInc=True fractions=[0.0502371321520156,0.106374317351254,0.145826470109133,0.186189536654964,0.225039377651501,0.256186909650795,0.26…
+⑤ 顶部交接：climb-completed 脚点=上缘中点±6 perchActive 无跳动    PASS   foot=[690,160] expected=[690,160] dx=0 dy=0 perch=True climb=False noJump=True
+⑥ 交接后跟随：移动目标后脚点贴新上缘                              PASS   foot=[790,210] newEdge=[790,210] perch=True
+⑦ 平行入口「Perch on Window」→ selected+perchActive 攀爬不触发    PASS   menu=True click=True click=[1227,259] hold=300ms status=selected perch=True climb=False
+⑧ 拒绝：点击桌面/壳 → rejected-ineligible 宠物不动                PASS   click=True click=[576,1056] hold=300ms shell=class=Shell_TrayWnd root=0x100E0 point=[576,1056] status=rejected-ineligible climb=False noMove=True
+⑨ 拒绝：超距目标 → rejected-too-far 宠物不动                      PASS   click=True click=[223,449] hold=300ms distance=715px(>200) status=rejected-too-far climb=False noMove=True
+⑩ 取消：点击宠物自身 → cancelled-self                             PASS   click=True click=[1528,410] hold=300ms status=cancelled climb=False perch=False
+⑪ 取消：15s 真实超时 → cancelled-timeout 宠物不动                 PASS   status=cancelled-timeout climb=False perch=False noMove=True
+⑫ 取消：拾取中打开真实菜单 → cancelled 且菜单可正常关闭           PASS   status=cancelled menuOpened=True menuClosedAfterEsc=True
+⑬ 取消：拾取中暂停 → cancelled resume 后不续接                    PASS   status=cancelled pickActive=False climb=False perch=False
+⑭ 取消：拾取中真实拖动 → cancelled 回空闲                         PASS   dragged from (1528,452) by (96,72) steps=12 hold=700ms status=cancelled drag=False climb=False perch=False
+⑮ 攀爬中真实拖动 → climb-drag-preempted 松手后不回拉              PASS   preempted=True dragged from (1499,394) by (96,72) steps=12 hold=700ms stayAtDrop=True attempt=1
+⑯ 探针 exitCode=0                                                 PASS   probe exit=0 result exitCode=0
+⑰ 诱饵存活（其他轮标记文件/标记窗口/无窗口进程未被越界清理）      PASS   lureFile=True lureWin=True title='P5B002NP-lure-20261122-173402.txt' rect=[60,60,360,180] snapshot=[60,60,360,180] iconic=False windowless=True pi…
+⑱ 完整流程走完（固定条目数）                                      PASS   ①-⑰ 全部唯一 PASS + reachedEnd 且未 failed（合计 18 项含本条）
+
+

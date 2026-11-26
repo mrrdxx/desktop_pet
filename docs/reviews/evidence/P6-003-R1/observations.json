@@ -1,0 +1,76 @@
+{
+  "localNow": "2026-11-27T12:00:00+08:00",
+  "collectorRetentionDays": 30,
+  "judgeWindowDays": 30,
+  "observations": [
+    {
+      "scenario": "oldest-complete-day",
+      "before": {
+        "observedDateCount": 7,
+        "count": 1,
+        "bucketDates": [
+          "2026-10-28",
+          "2026-11-20",
+          "2026-11-21",
+          "2026-11-23",
+          "2026-11-24",
+          "2026-11-25",
+          "2026-11-26"
+        ]
+      },
+      "after": {
+        "observedDateCount": 6,
+        "count": 0,
+        "bucketDates": [
+          "2026-11-20",
+          "2026-11-21",
+          "2026-11-23",
+          "2026-11-24",
+          "2026-11-25",
+          "2026-11-26"
+        ]
+      },
+      "stableAcrossNormalDrain": false
+    },
+    {
+      "scenario": "boundary-lifecycle",
+      "disabledEmpty": true,
+      "clearEmpty": true
+    },
+    {
+      "scenario": "in-retention-control",
+      "before": {
+        "observedDateCount": 7,
+        "count": 1,
+        "bucketDates": [
+          "2026-11-20",
+          "2026-11-21",
+          "2026-11-22",
+          "2026-11-23",
+          "2026-11-24",
+          "2026-11-25",
+          "2026-11-26"
+        ]
+      },
+      "after": {
+        "observedDateCount": 7,
+        "count": 1,
+        "bucketDates": [
+          "2026-11-20",
+          "2026-11-21",
+          "2026-11-22",
+          "2026-11-23",
+          "2026-11-24",
+          "2026-11-25",
+          "2026-11-26"
+        ]
+      },
+      "stableAcrossNormalDrain": true
+    },
+    {
+      "scenario": "control-lifecycle",
+      "disabledEmpty": true,
+      "clearEmpty": true
+    }
+  ]
+}

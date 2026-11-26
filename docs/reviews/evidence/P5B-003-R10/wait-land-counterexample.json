@@ -1,0 +1,8 @@
+{
+  "result": {
+    "Detail": "land may have finished: action=idle",
+    "Ok": true
+  },
+  "parserErrors": 0,
+  "case": "completed event exists but land playback already ended"
+}

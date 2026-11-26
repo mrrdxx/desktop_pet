@@ -1,0 +1,8 @@
+{
+  "case": "valid normal landing completed: idle, mirror=1, route inactive, perch still active",
+  "source": "actual Test-NonClimbIdle function via AST; no UI",
+  "result": {
+    "Ok": false,
+    "Reason": "still perchActive"
+  }
+}

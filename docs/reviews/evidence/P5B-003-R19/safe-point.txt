@@ -1,0 +1,5 @@
+{
+  "line": "    $cands = @(\r\n",
+  "message": "Method invocation failed because [System.Object[]] does not contain a method named 'op_Subtraction'.",
+  "ok": false
+}

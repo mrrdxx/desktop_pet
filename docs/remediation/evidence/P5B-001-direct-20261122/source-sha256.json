@@ -1,0 +1,6 @@
+{
+  "src/DesktopPet.App/Platform/PetWindowClimb.cs": "944f811356d0fde21de1f64d058c0471b9333a1acd05b951a8940afd9d2e3ddd",
+  "tests/DesktopPet.App.Tests/WindowClimbAppTests.cs": "d7410288c35b6a35aca5ed887c07fffd886301cb18c349857cd4be4b96b9fdfe",
+  "tests/DesktopPet.DiagnosticProbe/WindowClimbLiveScenario.cs": "89cc060cef0b7d421101d39cd124610d52b79459df4aa4b8e92a8234830b9c16",
+  "tools/Invoke-P5B001ClimbPreview.ps1": "e98bfe1a7de5fe083643b6d19da961549da52b24db2b2282d6a7f361ed3b715d"
+}

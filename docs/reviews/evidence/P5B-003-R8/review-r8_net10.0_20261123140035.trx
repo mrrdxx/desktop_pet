@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="85ebb659-440a-494f-a77b-a1f66b732167" name="mrrdxx@毛茸茸的小熊 2026-11-23 14:00:35" runUser="毛茸茸的小熊\mrrdxx" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-23T14:00:35.3623309+08:00" queuing="2026-11-23T14:00:35.3623312+08:00" start="2026-11-23T14:00:27.3249403+08:00" finish="2026-11-23T14:00:35.8562980+08:00" />
+  <TestSettings name="default" id="3e366d9c-976b-4a09-af14-40c7b3d82855">
+    <Deployment runDeploymentRoot="mrrdxx_毛茸茸的小熊_2026-11-23_14_00_35" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="cb418e7d-88fb-4e46-901d-d0406c990a33" testId="dcde7c7f-83e3-2ec2-1e00-66f53ac0dfd7" testName="Reviewer_LandPlayback_PauseMustClearActionAndMirror" computerName="毛茸茸的小熊" duration="00:00:00.0589669" startTime="2026-11-23T14:00:35.3318265+08:00" endTime="2026-11-23T14:00:35.4062642+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb418e7d-88fb-4e46-901d-d0406c990a33" />
+    <UnitTestResult executionId="0c9fd817-7a28-4fcc-84d5-d11a62689561" testId="7cb5b59d-07f3-739d-a412-a295511711f3" testName="Reviewer_Climb_LongStall_MustDiscardBacklog" computerName="毛茸茸的小熊" duration="00:00:00.0145009" startTime="2026-11-23T14:00:35.6510702+08:00" endTime="2026-11-23T14:00:35.6754245+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c9fd817-7a28-4fcc-84d5-d11a62689561" />
+    <UnitTestResult executionId="2d3b0c53-2a2a-4b91-82a3-ee74a08d797f" testId="12169603-bb42-731e-1caf-2207b71b2666" testName="Reviewer_Climb_LocalSocialActive_MustRejectStart" computerName="毛茸茸的小熊" duration="00:00:00.0112465" startTime="2026-11-23T14:00:35.6285147+08:00" endTime="2026-11-23T14:00:35.6474459+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2d3b0c53-2a2a-4b91-82a3-ee74a08d797f" />
+    <UnitTestResult executionId="5f451b4e-f579-4f46-83d3-ca7715c955fd" testId="eb7f3a3d-9f04-be27-65a2-a801570ad246" testName="Reviewer_Climb_Recovery_MustCancelRoute" computerName="毛茸茸的小熊" duration="00:00:00.0137015" startTime="2026-11-23T14:00:35.5796557+08:00" endTime="2026-11-23T14:00:35.6031621+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5f451b4e-f579-4f46-83d3-ca7715c955fd" />
+    <UnitTestResult executionId="562fd621-cb6b-4f5e-be36-57b283c2039c" testId="b6ef27f2-f185-dc7e-6d95-d7fbe551134c" testName="Reviewer_LandTargetGone_MustReleasePresentation" computerName="毛茸茸的小熊" duration="00:00:00.0537113" startTime="2026-11-23T14:00:35.4642239+08:00" endTime="2026-11-23T14:00:35.5303227+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="562fd621-cb6b-4f5e-be36-57b283c2039c">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;idle&gt;，实际为: &lt;climb_land&gt;。land播放中目标失效：动作必须立即回 idle。</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ClimbActionTests.AssertCleanIdle(MainWindow window, String context) in C:\Users\mrrdxx\Desktop\pet\.temp\p5b003-s2-review\tests\DesktopPet.App.Tests\ClimbActionTests.cs:line 92&#xD;
+   at DesktopPet.App.Tests.ClimbActionTests.Reviewer_LandTargetGone_MustReleasePresentation() in C:\Users\mrrdxx\Desktop\pet\.temp\p5b003-s2-review\tests\DesktopPet.App.Tests\ClimbActionTests.cs:line 459&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="950ddfc3-029b-40bb-bccd-d5c9227c9f92" testId="cc652805-966e-f603-f35a-5ef8a2136be0" testName="Reviewer_Climb_AlreadyPerched_MustRejectWithoutChangingBinding" computerName="毛茸茸的小熊" duration="00:00:00.0142498" startTime="2026-11-23T14:00:35.5562790+08:00" endTime="2026-11-23T14:00:35.5795615+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="950ddfc3-029b-40bb-bccd-d5c9227c9f92" />
+    <UnitTestResult executionId="b7717ca8-ee21-4760-b3f9-44ffe8fefbcd" testId="cef0d34f-5237-7ef3-17da-4a428e1819b5" testName="Reviewer_Climb_MustNotShortcutPolylineWhenDirectDistanceFitsBudget" computerName="毛茸茸的小熊" duration="00:00:00.0138984" startTime="2026-11-23T14:00:35.6032530+08:00" endTime="2026-11-23T14:00:35.6284143+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7717ca8-ee21-4760-b3f9-44ffe8fefbcd" />
+    <UnitTestResult executionId="a1ff1266-2e3d-4aec-b905-2e564136ffb9" testId="7d3a4bf3-5eb4-a1cb-1bc9-0143e59cd8ca" testName="Reviewer_ExpressionEndsDuringClimb_RetryStagePlayback" computerName="毛茸茸的小熊" duration="00:00:00.0161601" startTime="2026-11-23T14:00:35.4396325+08:00" endTime="2026-11-23T14:00:35.4641285+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a1ff1266-2e3d-4aec-b905-2e564136ffb9" />
+    <UnitTestResult executionId="62e19a57-9076-430a-a076-beb35be4bbf6" testId="c9140c80-30b2-8617-dc78-5dec1443aa17" testName="Reviewer_AlreadyPlayingThenOverridden_MustRetryStage" computerName="毛茸茸的小熊" duration="00:00:00.0150585" startTime="2026-11-23T14:00:35.5306201+08:00" endTime="2026-11-23T14:00:35.5561859+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="62e19a57-9076-430a-a076-beb35be4bbf6">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual 失败。应为: &lt;climb_side&gt;，实际为: &lt;idle&gt;。阶段已成功播过后被表达覆盖再释放，也须补播</Message>
+          <StackTrace>   at DesktopPet.App.Tests.ClimbActionTests.Reviewer_AlreadyPlayingThenOverridden_MustRetryStage() in C:\Users\mrrdxx\Desktop\pet\.temp\p5b003-s2-review\tests\DesktopPet.App.Tests\ClimbActionTests.cs:line 471&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1790db12-c302-4a19-b810-407fcd21934e" testId="96bc0b53-f85e-974b-e68a-c9dc771806c4" testName="Reviewer_MissingAction_MustNotMirrorIdle" computerName="毛茸茸的小熊" duration="00:00:01.3423092" startTime="2026-11-23T14:00:28.9637167+08:00" endTime="2026-11-23T14:00:35.2907209+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1790db12-c302-4a19-b810-407fcd21934e" />
+    <UnitTestResult executionId="0b560c8d-c8a2-4b61-84c1-a2273515015d" testId="69b9115f-2a06-c4f1-c70c-774de6e4e423" testName="Reviewer_ClimbingSameWall_MirrorMustNotFlipAtSideContact" computerName="毛茸茸的小熊" duration="00:00:00.0192217" startTime="2026-11-23T14:00:35.4069442+08:00" endTime="2026-11-23T14:00:35.4395186+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b560c8d-c8a2-4b61-84c1-a2273515015d" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Reviewer_MissingAction_MustNotMirrorIdle" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="96bc0b53-f85e-974b-e68a-c9dc771806c4">
+      <Execution id="1790db12-c302-4a19-b810-407fcd21934e" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbActionTests" name="Reviewer_MissingAction_MustNotMirrorIdle" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Climb_LocalSocialActive_MustRejectStart" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="12169603-bb42-731e-1caf-2207b71b2666">
+      <Execution id="2d3b0c53-2a2a-4b91-82a3-ee74a08d797f" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.WindowClimbAppTests" name="Reviewer_Climb_LocalSocialActive_MustRejectStart" />
+    </UnitTest>
+    <UnitTest name="Reviewer_LandTargetGone_MustReleasePresentation" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="b6ef27f2-f185-dc7e-6d95-d7fbe551134c">
+      <Execution id="562fd621-cb6b-4f5e-be36-57b283c2039c" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbActionTests" name="Reviewer_LandTargetGone_MustReleasePresentation" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Climb_MustNotShortcutPolylineWhenDirectDistanceFitsBudget" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="cef0d34f-5237-7ef3-17da-4a428e1819b5">
+      <Execution id="b7717ca8-ee21-4760-b3f9-44ffe8fefbcd" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.WindowClimbAppTests" name="Reviewer_Climb_MustNotShortcutPolylineWhenDirectDistanceFitsBudget" />
+    </UnitTest>
+    <UnitTest name="Reviewer_ExpressionEndsDuringClimb_RetryStagePlayback" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="7d3a4bf3-5eb4-a1cb-1bc9-0143e59cd8ca">
+      <Execution id="a1ff1266-2e3d-4aec-b905-2e564136ffb9" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbActionTests" name="Reviewer_ExpressionEndsDuringClimb_RetryStagePlayback" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Climb_AlreadyPerched_MustRejectWithoutChangingBinding" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="cc652805-966e-f603-f35a-5ef8a2136be0">
+      <Execution id="950ddfc3-029b-40bb-bccd-d5c9227c9f92" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.WindowClimbAppTests" name="Reviewer_Climb_AlreadyPerched_MustRejectWithoutChangingBinding" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Climb_Recovery_MustCancelRoute" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="eb7f3a3d-9f04-be27-65a2-a801570ad246">
+      <Execution id="5f451b4e-f579-4f46-83d3-ca7715c955fd" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.WindowClimbAppTests" name="Reviewer_Climb_Recovery_MustCancelRoute" />
+    </UnitTest>
+    <UnitTest name="Reviewer_Climb_LongStall_MustDiscardBacklog" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="7cb5b59d-07f3-739d-a412-a295511711f3">
+      <Execution id="0c9fd817-7a28-4fcc-84d5-d11a62689561" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.WindowClimbAppTests" name="Reviewer_Climb_LongStall_MustDiscardBacklog" />
+    </UnitTest>
+    <UnitTest name="Reviewer_AlreadyPlayingThenOverridden_MustRetryStage" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="c9140c80-30b2-8617-dc78-5dec1443aa17">
+      <Execution id="62e19a57-9076-430a-a076-beb35be4bbf6" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbActionTests" name="Reviewer_AlreadyPlayingThenOverridden_MustRetryStage" />
+    </UnitTest>
+    <UnitTest name="Reviewer_ClimbingSameWall_MirrorMustNotFlipAtSideContact" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="69b9115f-2a06-c4f1-c70c-774de6e4e423">
+      <Execution id="0b560c8d-c8a2-4b61-84c1-a2273515015d" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbActionTests" name="Reviewer_ClimbingSameWall_MirrorMustNotFlipAtSideContact" />
+    </UnitTest>
+    <UnitTest name="Reviewer_LandPlayback_PauseMustClearActionAndMirror" storage="c:\users\mrrdxx\desktop\pet\artifacts\p5b003-s2-review\bin\desktoppet.app.tests\debug\desktoppet.app.tests.dll" id="dcde7c7f-83e3-2ec2-1e00-66f53ac0dfd7">
+      <Execution id="cb418e7d-88fb-4e46-901d-d0406c990a33" />
+      <TestMethod codeBase="C:\Users\mrrdxx\Desktop\pet\artifacts\p5b003-s2-review\bin\DesktopPet.App.Tests\debug\DesktopPet.App.Tests.dll" adapterTypeName="executor://mstestadapter/v2" className="DesktopPet.App.Tests.ClimbActionTests" name="Reviewer_LandPlayback_PauseMustClearActionAndMirror" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="dcde7c7f-83e3-2ec2-1e00-66f53ac0dfd7" executionId="cb418e7d-88fb-4e46-901d-d0406c990a33" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7cb5b59d-07f3-739d-a412-a295511711f3" executionId="0c9fd817-7a28-4fcc-84d5-d11a62689561" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="12169603-bb42-731e-1caf-2207b71b2666" executionId="2d3b0c53-2a2a-4b91-82a3-ee74a08d797f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eb7f3a3d-9f04-be27-65a2-a801570ad246" executionId="5f451b4e-f579-4f46-83d3-ca7715c955fd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b6ef27f2-f185-dc7e-6d95-d7fbe551134c" executionId="562fd621-cb6b-4f5e-be36-57b283c2039c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cc652805-966e-f603-f35a-5ef8a2136be0" executionId="950ddfc3-029b-40bb-bccd-d5c9227c9f92" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cef0d34f-5237-7ef3-17da-4a428e1819b5" executionId="b7717ca8-ee21-4760-b3f9-44ffe8fefbcd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7d3a4bf3-5eb4-a1cb-1bc9-0143e59cd8ca" executionId="a1ff1266-2e3d-4aec-b905-2e564136ffb9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9140c80-30b2-8617-dc78-5dec1443aa17" executionId="62e19a57-9076-430a-a076-beb35be4bbf6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="96bc0b53-f85e-974b-e68a-c9dc771806c4" executionId="1790db12-c302-4a19-b810-407fcd21934e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="69b9115f-2a06-c4f1-c70c-774de6e4e423" executionId="0b560c8d-c8a2-4b61-84c1-a2273515015d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="11" executed="11" passed="9" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

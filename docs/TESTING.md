@@ -221,3 +221,35 @@
 4. 前置：夜间（23:30–06:00）跑 App 测试须受套件时间缝保护（`MainWindow.TestSuiteLocalNowDefault`，App 测试程序集 ModuleInitializer 固定白天正午；2026-11-20 首次夜间全量运行发现旧测试在夜间全挂的时依性缺陷后修复，Core 560/560、App 556/556 夜间全绿）。
 5. 实机证据（1920×1080@96DPI 单屏）：接受轮 `run-20261121-141812-notepad/` **15/15 ALL PASS**、探针 exitCode=0（含 ③ 路线推进 `steps=8 fracInc=True fractions=[0.171…0.339]`、④ 顶部交接 `foot=[690,160]`=上缘中点 `dx=0 dy=0 perch=True noJump=True`、⑤~⑮ 跟随/拖动脱离/超距/遮挡/最小化拒绝/路线中移动收敛/最小化取消/遮挡取消/拖动抢占/暂停取消/退出）。过程失败轮按当时版本保留：run-20261121-141126-notepad 暴露上缘卡死产品缺陷（`BuildRoute` 每 tick 重建把上缘脚点拉回侧边再折返，fraction 卡 0.29），已修复并新增 3 个回归用例，见 [P5B-001-response](remediation/P5B-001-response.md)；run-20261121-141036-notepad `start-rejected RejectedNoLanding` 判定偶发，复验轮未复现。跨屏、混合 DPI 未测；多宠攀爬不在本验证范围。
 
+
+
+#### M-17 R1 直接整改后的复跑入口（2026-11-22）
+
+使用独立有消息泵的 WinForms 夹具，目标不再借用记事本共享进程。命令：`pwsh -NoProfile -Sta -File tools/Invoke-P5B001ClimbPreview.ps1 -TargetKind fixture -DurationSec 600 -ProbePath artifacts/p5b-r1-direct-20261122/bin/DesktopPet.DiagnosticProbe/debug/DesktopPet.DiagnosticProbe.exe`。先运行 `dotnet build DesktopPet.slnx --artifacts-path artifacts/p5b-r1-direct-20261122 -warnaserror`。旧 notepad 命令属于历史版本，不适用于新驱动。
+
+清单固定为17项行为/证据检查加第18项完整性检查。必须顺序唯一、无异常、到达正常结束且全部PASS；缺项、重复、异常及提前退出均失败。夹具与测试数据独立，未验证跨屏/混合DPI。实机结果以独立整改记录的新run为准，旧15项PASS不替代修复后的复验。
+
+### M-18 窗口攀爬正式入口实机验证（P5B-002）
+
+1. 场景与入口：沿用 `window-climb-live` 探针（已增补 `pick-entry`/`menu-entry` 命令与攀爬拾取心跳 `climbPickActive`/`climbPickStatus`）。正式入口关键链必须是**真实右键菜单 → 真实点击目标**，手法参照 M-16 R1 补证轮：驱动注入真实鼠标在宠物上右键弹出生产 `TrackPopupMenuEx` 菜单，选择「Climb on Window」，再注入左键点击合格外部窗口（独立 WinForms 夹具/记事本/浏览器，锁定纪律同 M-17：本轮独有标记 + 归属确认，不碰用户窗口）。
+2. 操作序列与断言：
+   - 入口：真实右键菜单出现「Climb on Window」→ 选择后心跳 `climbPickActive=true`、`climbPickStatus=active`；
+   - 点击合格近距目标 → `climbPickActive=false`、`climbPickStatus=started`、`climbActive=true`，事件流 `climb-started`；宠物沿侧边→上缘→顶部落位，最终 `climb-completed` 且交接栖息（落位脚点与栖息 landed 一致、无可见跳动）；
+   - 平行入口回归：同一真实菜单「Perch on Window」→ 点击目标仍落位栖息（`perchActive=true`），攀爬不触发；
+   - 拒绝与取消：真实点击无效点/超距目标 → `rejected-ineligible`/`rejected-too-far` 且宠物不移动；15s 超时 → `cancelled-timeout`；拾取中点宠物自身 → `cancelled-self`；拖动/暂停/开菜单可随时取消；
+   - 既有接管不回归：攀爬/拾取期间拖动接管、暂停结束、退出顺序正常。
+3. 判定标准：逐项断言写入驱动清单，ALL PASS 要求全部项通过；探针 exitCode=0。跨屏、混合 DPI 未测须注明。
+4. 前置：真实鼠标验证占用用户输入，执行前必须先确认可用时段；夜间跑 App 测试受套件时间缝保护（同 M-17 第 4 条）。
+5. 状态：**M-18 实机验证已执行（2026-11-22）**，最终轮 `run-20261122-152310-fixture` **18/18 ALL PASS**（探针 exitCode=0），证据见 `.temp\p5b-002\m18\run-20261122-152310-fixture\`（driver-transcript.log / m18-checklist.txt / probe-result.json）。晚于此轮的失败自测轮（`run-20261122-151430/151549/151716/151846-fixture`）保留为开发证据，不覆盖最终轮。
+   - 覆盖：② 真实右键「Climb on Window」（rightClick=[160,160] itemIndex=3 viaKeyboard）→ `active`；③ 真实点击近距目标 → `started` + `climb-started`(targetHwnd=0xC2089A 匹配) + `climbActive`；④ climb-step≥3 递增（steps=19）；⑤ `climb-completed` 脚点=上缘中点±6（[690,160]，dx=0 dy=0）`perchActive` 无跳动；⑥ 交接后跟随（foot=[790,210]）；⑦ 平行入口「Perch on Window」（itemIndex=2）→ `selected`+`perchActive` 攀爬不触发；⑧ 点击任务栏 `Shell_TrayWnd` → `rejected-ineligible` 不移动；⑨ 超距 715px(>200) → `rejected-too-far` 不移动（入口前曾出现系统「搜索」面板抢占前台，驱动按前台标题 Esc 清理+重试后成功，未改产品代码）；⑩ 点击宠物自身 → `cancelled`（实机终态为反手感占领优先的 `cancelled`，`cancelled-self` 仅测试缝路径可达：`MainWindow.xaml.cs:2515-2519` 兜底先于 2556-2563；驱动断言接受 `cancelled-self`/`cancelled` 等价集合，detail 如实保留 `status=cancelled`）；⑪ 15s 超时 → `cancelled-timeout` 不移动；⑫ 拾取中真实菜单 → `cancelled` 且菜单可 Esc 正常关闭；⑬ 拾取中暂停 → `cancelled` 恢复不续接；⑭ 拾取中真实拖动 → `cancelled` 回空闲；⑮ 攀爬中真实拖动 → `climb-drag-preempted` 松手后不回拉；⑯ 探针 exitCode=0；⑰ 诱饵存活（清理未越界）；⑱ 完整流程走完（18 项唯一）。
+   - 各场景均经真实右键入口注入（`TrackPopupMenuEx` 生产菜单 + UIA 定位 + 键盘选中），`pick-entry`/`menu-entry` 探针命令未使用替代真实右键。跨屏、混合 DPI 未测（限定单屏 1920×1080@96DPI 实机）。
+
+
+2026-11-22 监理M-18确认轮：run-20261122-173402-fixture，18/18 ALL PASS，驱动与探针exit=0；实际覆盖、暂停/退出等证据层次及未测范围见 [验证报告](reviews/P5B-002-review.md)。历史开发轮保留，确认轮不改变步骤及判定含义。
+
+### M-19 攀爬动作隔离预览观感确认（P5B-003 第一阶段）
+
+1. 预览入口（浏览器打开聚合页，含三阶段 120×120 动态 GIF + 关键帧 4× 放大 + 2× 对比）：`.temp\p5b-003\run-20261122-182213\deliverables\preview.html`。独立产物同目录：`preview_side.gif`（侧边爬升 loop）/`preview_edge.gif`（上缘移动 loop）/`preview_land.gif`（顶部落位 once）/`climb_keyframes_4x.png`/`climb_zoom_compare_2x.png`/`render-foot-stability.json`。
+2. 观感要点（每阶段确认）：动作可辨认（side 扒边交替、edge 探左居中探右、land 收脚→站稳衔接 idle、不"趴下后静止"）；脚点稳定（渲染断言口径见第 3 条）；风格与现有小熊一致。
+3. 复跑入口（自动部分，已执行）：探针场景 `climb-preview`——`dotnet build tests/DesktopPet.DiagnosticProbe -warnaserror` → `pwsh -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-P5B003ClimbPreview.ps1`（三检查：summary 产出/exit=0/34 帧齐全）→ `python tools\Verify-P5B003RenderPreview.py <run>\climb-preview\frames <run>\deliverables`（渲染级断言 ALL PASS）。脚点判据＝渲染像素逐帧测量（中心≈60±1.5、不越出 idle±1、y110 落地），非 Offset=0/脚底行相等；跨素材逐像素断言因渲染链系统性 ±1 扰动不可行（已三次证伪）。素材派生与断言：`python tools\Export-P5B003-ClimbPreview.py <out>`（side/edge 脚带与 idle 逐像素一致；land 收脚中心≈60；循环帧间 diffPx>0）。
+4. 边界：第一阶段不接线 `PlayClimbAction`/`EndClimbAction`，不改路线/位置/中断规则，镜像留第二阶段。无真实鼠标占用；无需 keep 时段。

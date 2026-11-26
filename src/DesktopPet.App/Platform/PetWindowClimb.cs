@@ -57,6 +57,9 @@ public sealed class PetWindowClimb
 {
     private const int OcclusionSampleCount = 9;
 
+    /// <summary>R7 F-05：脚点投影距侧边轴在此范围内视为"贴边"，不切换镜像。</summary>
+    private const double SideWallEpsilonPx = 0.5;
+
     private readonly MainWindow _owner;
     private readonly PerchTargetTracker _tracker = new();
     private readonly Dictionary<uint, string> _pidNameCache = new();
@@ -67,8 +70,27 @@ public sealed class PetWindowClimb
     private double _preClimbLeft;
     private double _preClimbTop;
 
+    // P5B-003 S2：当前攀爬动作与镜像方向（避免每 tick 变化时重播动画）。
+    // R7 F-04：缓存只记录"实际成功播放"的组合（PlayClimbAction 返回
+    // true）；被守卫拒绝或动作缺失时不更新，表达释放后下一 tick 经
+    // DispatchStageAction 自动补播。
+    private string? _lastClimbActionId;
+    private bool _lastClimbMirrorLeft;
+
     /// <summary>当前是否正在攀爬路线中。</summary>
     public bool IsActive { get; private set; }
+
+    /// <summary>
+    /// R7 F-03：是否存在攀爬呈现活动——路线进行中，或路线已结束但
+    /// climb_* 动作仍在播放（到达交接栖息后 land once 尚未播完）。
+    /// 生产中断（拖动/暂停/找回/退出）即使路线已结束也必须清理残留
+    /// 呈现，否则 land 残影连同镜像悬挂在宠物体上。
+    /// </summary>
+    private bool IsPresentingClimb
+        => IsActive || IsClimbActionId(_owner.CurrentAction);
+
+    private static bool IsClimbActionId(string actionId)
+        => actionId == "climb_side" || actionId == "climb_edge" || actionId == "climb_land";
 
     /// <summary>当前目标句柄数值（仅 IsActive 时非空）。</summary>
     public long? TargetHwndValue => IsActive ? _tracker.Target?.HwndValue : null;
@@ -137,7 +159,21 @@ public sealed class PetWindowClimb
             (landingX - foot.FootCenterX) * (landingX - foot.FootCenterX)
             + (landingY - foot.FootCenterY) * (landingY - foot.FootCenterY));
         ProgressFraction = 0;
-        _owner.PlayClimbAction(); // 临时爬行表现（复用现有动作）
+        // P5B-003 S2：起攀即播侧边爬升动作；素材默认朝左伸爪，
+        // 目标在宠物右侧（最近侧边在脚点右侧）时镜像翻转。
+        // R7 F-04：只在实际成功播放后记录缓存——临时表达占用（好奇等）
+        // 时守卫拒绝播放但路线照常开始，表达释放后下一 tick 经
+        // DispatchStageAction 自动补播 climb_side。
+        var sideX = Math.Abs(foot.FootCenterX - snapshot.BoundsLeft)
+            <= Math.Abs(foot.FootCenterX - snapshot.BoundsRight)
+            ? snapshot.BoundsLeft
+            : snapshot.BoundsRight;
+        var mirrorLeft = sideX > foot.FootCenterX;
+        if (_owner.PlayClimbAction("climb_side", mirrorLeft))
+        {
+            _lastClimbActionId = "climb_side";
+            _lastClimbMirrorLeft = mirrorLeft;
+        }
         Emit("climb-started", targetHwnd: snapshot.HwndValue, targetBounds: Bounds(snapshot),
             footX: foot.FootCenterX, footY: foot.FootCenterY);
         return PetClimbStartResult.Started;
@@ -165,11 +201,11 @@ public sealed class PetWindowClimb
         }
 
         var dtMs = nowMs - _lastTickMs;
-        _lastTickMs = nowMs;
         // F-02：单调时间域——时钟未前进（含回退）时不推进、不发步事件，
         // 不重复消费积压；生产计时器持续前进，正常路径不受影响。
         if (dtMs <= 0)
             return;
+        _lastTickMs = nowMs;
 
         var selfPid = (uint)Environment.ProcessId;
         var target = _tracker.Target!;
@@ -217,8 +253,29 @@ public sealed class PetWindowClimb
 
         if (remainingPolylinePx <= advancePx || remainingPolylinePx <= 1.0)
         {
-            // 到达：结束路线，交接栖息（落位脚点一致，无可见跳动）。
-            StopCore();
+            // 先由攀爬持有者提交最终脚点，再释放位置交给栖息。
+            if (!_owner.ApplyPerchFoot(new PetWorldPosition(landingX, landingY), fromClimb: true))
+            {
+                CancelCore("write-rejected");
+                return;
+            }
+            Emit("climb-arrived", targetHwnd: latest.HwndValue,
+                targetBounds: Bounds(latest), footX: landingX, footY: landingY);
+            // P5B-003 S2：到达播落位动作（once）。播放成功才保留 land
+            // 呈现并 StopCore(keepLand: true) 跳过立即回 idle，让 land
+            // 自然播完（栖息结构化只移位置不切动作，不打断 land）；播完
+            // 后 OnActionCompleted 回 idle 并复位镜像。
+            // R7 F-04：播放失败（缺失/被守卫）时立即走 keepLand:false
+            // 清理——回 idle、复位镜像，不残留攀爬动作。
+            if (_owner.PlayClimbAction("climb_land", _lastClimbMirrorLeft))
+            {
+                _lastClimbActionId = "climb_land";
+                StopCore(keepLand: true);
+            }
+            else
+            {
+                StopCore(keepLand: false);
+            }
             var selected = _owner.Perch.TrySelectExplicit(latest, selfPid);
             var finalFoot = CurrentFootPx();
             Emit(selected ? "climb-completed" : "climb-completed-no-handoff",
@@ -228,6 +285,16 @@ public sealed class PetWindowClimb
                 ReturnToVisibleArea(); // 交接失败（理论上仅时序竞争）：回到可见区域。
             return;
         }
+
+        // P5B-003 S2：非到达——按路线阶段分派侧边/上缘动作（仅变化时重播）。
+        // 上缘段判据与 WindowClimbPolicy.BuildRoute 同源（脚点已到上缘高度
+        // 且水平在外框跨度内）；不能靠 BuildRoute 返回值特征推断——脚点恰在
+        // 侧边 x 轴上时非上缘路径的 w1 也会是 (footX, footY)。
+        var onTopEdge = foot.FootCenterY <= latest.BoundsTop
+            && foot.FootCenterX >= latest.BoundsLeft
+            && foot.FootCenterX <= latest.BoundsRight;
+        DispatchStageAction(
+            w1x, w1y, w2x, w2y, foot.FootCenterX, foot.FootCenterY, landingX, onTopEdge);
 
         var (nextX, nextY) = WindowClimbPolicy.AdvanceAlongRoute(
             foot.FootCenterX, foot.FootCenterY, w1x, w1y, w2x, w2y, landingX, landingY, advancePx);
@@ -248,20 +315,21 @@ public sealed class PetWindowClimb
             targetBounds: Bounds(latest), footX: nextX, footY: nextY);
     }
 
-    /// <summary>用户开始拖动：立即交回位置控制。结束路线、不恢复位置。</summary>
+    /// <summary>用户开始拖动：立即交回位置控制。结束路线、不恢复位置。
+    /// R7 F-03：land 仍在播（路线已结束）时同样清理呈现。</summary>
     public void CancelForDrag()
     {
-        if (!IsActive)
+        if (!IsPresentingClimb)
             return;
         var hwnd = _tracker.Target?.HwndValue;
         StopCore();
         Emit("climb-drag-preempted", targetHwnd: hwnd);
     }
 
-    /// <summary>暂停：结束路线（恢复后不续接）。</summary>
+    /// <summary>暂停：结束路线（恢复后不续接）。R7 F-03：land 仍在播时同样清理。</summary>
     public void CancelForPause()
     {
-        if (!IsActive)
+        if (!IsPresentingClimb)
             return;
         CancelCore("paused");
     }
@@ -269,20 +337,43 @@ public sealed class PetWindowClimb
     /// <summary>
     /// P5B-001 R1 F-01：找回（RecoverPet）同步取消路线——找回完成后
     /// 路线不得仍活跃，否则后续 Tick 会把宠物拉回原目标。
+    /// R7 F-03：land 仍在播（路线已结束）时同样清理呈现。
     /// </summary>
     public void CancelForRecover()
     {
-        if (!IsActive)
+        if (!IsPresentingClimb)
             return;
         var hwnd = _tracker.Target?.HwndValue;
         StopCore();
         Emit("climb-cancelled", reason: "recovered", targetHwnd: hwnd);
     }
 
-    /// <summary>退出：结束路线并把窗口移回爬行前位置（保证存档是休息位）。</summary>
+    /// <summary>
+    /// R8 F-03：栖息实际脱离（目标失效/最小化/遮挡，或主动脱离/拖动/
+    /// 暂停/找回——生产 Perch.OnTick 轮询 Cleared/no-landing/occluded
+    /// 及 Detach/DetachForPause/CancelForDrag 均收敛到
+    /// <see cref="PetWindowPerch"/> 的 DetachInternal）时，释放仍由攀爬
+    /// 持有的落位表现：到达交接后 climb_land 可能在播（路线已结束），
+    /// 目标一旦失效必须同步清理动作与镜像，不得让 land 残影悬挂。
+    /// 与 <see cref="CancelForDrag"/> 同语义：不移动、不恢复位置
+    /// （栖息脱离语义=宠物留在当前位置）；不与 Pause/Recover/Exit 的
+    /// 既有清理重复（IsPresentingClimb 守卫使其在已清理后变 no-op）。
+    /// </summary>
+    public void CancelForPerchDetached()
+    {
+        if (!IsPresentingClimb)
+            return;
+        var hwnd = _tracker.Target?.HwndValue;
+        StopCore();
+        Emit("climb-cancelled", reason: "perch-detached", targetHwnd: hwnd);
+    }
+
+    /// <summary>退出：结束路线并把窗口移回爬行前位置（保证存档是休息位）。
+    /// R7 F-03：land 仍在播（路线已结束）时同样清理呈现；到达后爬行前
+    /// 位置已释放，不恢复（落位点即合法休息位）。</summary>
     public void CancelForExit()
     {
-        if (!IsActive)
+        if (!IsPresentingClimb)
             return;
         // 先取回爬行前位置再停路线（StopCore 清恢复标记）。
         var restoreLeft = _preClimbLeft;
@@ -309,14 +400,59 @@ public sealed class PetWindowClimb
         Emit("climb-cancelled", reason: reason, targetHwnd: hwnd);
     }
 
-    /// <summary>结束路线：清所有权旗、恢复爬行前表现、丢弃目标。不移动。</summary>
-    private void StopCore()
+    /// <summary>结束路线：清所有权旗、恢复爬行前表现、丢弃目标。不移动。
+    /// P5B-003 S2：<paramref name="keepLand"/>=true（到达分支已播 climb_land
+    /// 并交栖息）时跳过立即回 idle，让 land once 自然播完。</summary>
+    private void StopCore(bool keepLand = false)
     {
         IsActive = false;
         ProgressFraction = 0;
         _hasPreClimbPosition = false;
         _tracker.Reset();
-        _owner.EndClimbAction();
+        _owner.EndClimbAction(keepLand);
+    }
+
+    /// <summary>
+    /// P5B-003 S2：按路线阶段分派攀爬动作。上缘段（<paramref name="onTopEdge"/>，
+    /// 与 <see cref="WindowClimbPolicy.BuildRoute"/> 同源判定）→ edge，方向用
+    /// 落位脚点与当前脚点比较；否则 → side，方向用最近侧边（w1x）与脚点比较。
+    /// R7 F-04：仅在实际成功播放后才更新缓存；播放被守卫拒绝/动作缺失时
+    /// 保持上一缓存，下一 tick 重试（临时表达释放后自动补播）。
+    /// R7 F-05：脚点已贴到侧边轴（数值相等误差内）时保持上一镜像，不翻转
+    /// ——沿墙直爬阶段镜像不得在轴两侧抖动。</summary>
+    private void DispatchStageAction(
+        double w1x, double w1y, double w2x, double w2y,
+        double footX, double footY, double landingX, bool onTopEdge)
+    {
+        string actionId;
+        bool mirrorLeft;
+        if (onTopEdge)
+        {
+            actionId = "climb_edge";
+            mirrorLeft = landingX > footX;
+        }
+        else
+        {
+            actionId = "climb_side";
+            mirrorLeft = Math.Abs(w1x - footX) <= SideWallEpsilonPx
+                ? _lastClimbMirrorLeft
+                : w1x > footX;
+        }
+        if (_lastClimbActionId == actionId && _lastClimbMirrorLeft == mirrorLeft)
+        {
+            // R8 F-04：缓存相等只说明"上一 tick 实际成功播过该组合"。
+            // 阶段已成功播过、随后被更高优先级表达（curious 等）覆盖、
+            // 表达释放回 idle 后，缓存相等但真实播放已不是请求阶段——
+            // 必须核对当前实际播放动作与镜像；一致才可跳过（正常同阶段
+            // 不重启），不一致则继续重试 PlayClimbAction 补播。
+            if (_owner.CurrentAction == actionId
+                && (_owner.ClimbMirrorTransform.ScaleX < 0) == mirrorLeft)
+                return;
+        }
+        if (!_owner.PlayClimbAction(actionId, mirrorLeft))
+            return;
+        _lastClimbActionId = actionId;
+        _lastClimbMirrorLeft = mirrorLeft;
     }
 
     private void ReturnToVisibleArea() => _owner.ClampWindowToVisibleWorkArea();

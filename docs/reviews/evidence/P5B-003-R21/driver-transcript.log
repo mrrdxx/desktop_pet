@@ -1,0 +1,43 @@
+**********************
+PowerShell transcript start
+Start time: 20261125200852
+Username: 毛茸茸的小熊\mrrdxx
+RunAs User: 毛茸茸的小熊\mrrdxx
+Configuration Name: 
+Machine: 毛茸茸的小熊 (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\WindowsApps\OpenAI.CodexPrimaryRuntime.v26-1119-907-0_26.1119.907.0_x64__3k8sg7r9htsxt\dependencies\native\powershell\pwsh.dll -NoProfile -Sta -File tools/Invoke-P5B003R9Live.ps1 -OnlyChecks 4,7 -DurationSec 600
+Process ID: 62120
+PSVersion: 7.6.9
+PSEdition: Core
+GitCommitId: 7.6.9
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+[R9] driver thread DPI awareness = 2 (2=PerMonitor; required for physical px)
+[R9] NARROW mode: 仅跑检查 [4,7]，①② 底盘与 ⑩ 收尾/诱饵纪律始终执行
+[R9] lures set: file=C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\lure-run-20261125-200852\P5B003R9-lure-20261125-200852.txt window='P5B003R9-lure-20261125-200852.txt' @(60,60) windowlessPid=56560
+[R9] run dir: C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\run-20261125-200852-fixture
+[R9] targetSubstr='P5B003R9-20261125-200852' (unique; user windows cannot match)
+[R9] target start issued pid=64652
+[R9] target ownership verified: hwnd=0x4C1776 pid=64652
+[PASS] ① 目标标记与归属确认（驱动侧零写入前提） : hwnd=0x4C1776 pid=64652 marker=P5B003R9-20261125-200852
+[R9] probe started pid=2456
+[PASS] ② 探针心跳含 new 观测字段 currentAction/climbMirrorScaleX : currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[160,220] | 来源：心跳 climb-live-state.json
+[R9] real-menu attempt 1 pre-click: fg=0x350784 title='C:\Program Files\WindowsApps\OpenAI.CodexPrimaryRuntime.v26-1119-907-0_26.1119.907.0_x64__3k8sg7r9htsxt\dependencies\native\powershell\pwsh.exe' lastInput=18.7s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[160,160] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x31E46
+[PASS] ④ 右侧链：贴边镜像=-1 → 上缘 → land → 正常回 idle : start=started targetHwnd=0x4C1776 afterStart=currentAction=climb_edge climbMirrorScaleX=-1 climbActive=True perchActive=False progress=0.591 foot=[472,160] | beforeMenu=currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[160,220]; afterPick=currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[160,220] | sideAction=climb_side(evt@t=3427) mirSide=-1(src=startedEvt) edge=climb_edge,mir=-1@t=4499 land=climb_land,mir=-1@t=4904 steps=7 §sidecar right-sidelimb action=climb_land mirror=-1 tMs=5114 after land -> currentAction=idle climbMirrorScaleX=1 climbActive=False perchActive=True progress=0 foot=[690,160] | 帧=frames/right-sidelimb.png(+sidecar)
+[R9] real-menu attempt 1 pre-click: fg=0x4C1776 title='P5B003R9-20261125-200852' lastInput=2.6s ago
+[R9] real-menu Climb on Window: real menu 'Climb on Window' selected: rightClick=[794,360] itemIndex=3 totalItems=6 viaKeyboard petHwnd=0x31E46
+[PASS] ⑦ land 期间拖动→preempted→回 idle 镜像复位不回拉 : §sidecar land-before-drag action=climb_land mirror=-1 tMs=17396 dragged from (1324,142) by (-104,260) steps=26 hold=700ms cancel=perch-detached(climb-cancelled(perch-detached) @t=17480 reason=perch-detached) currentAction=curious climbMirrorScaleX=1 climbActive=False perchActive=False progress=0 foot=[1220,420] idle=clean idle stable=True | 帧=frames/land-before-drag.png(+sidecar证明land) | 拖动手感细节已由 P2-004 覆盖，此处验证 land 中断清理
+[FAIL] ⑩ 探针 exitCode=0 且诱饵内容/标题/位置/进程存活 + 帧数达标 : exitCode=0 frames=2 frameEvents=2 lureFile=True lureContent=True lureWin=True lureWinPos=True lureProc=True
+[R9] checklist completeness FAIL (R15-NARROW[4,7]): narrow missing=[] fail=[10]
+[R9] summary (R15-NARROW[4,7]): 5 checks, passed=4 failed=1
+[R9] details at C:\Users\mrrdxx\Desktop\pet\.temp\p5b-003\r9\run-20261125-200852-fixture (r9-summary.json / driver-transcript.log / frames)
+**********************
+PowerShell transcript end
+End time: 20261125200920
+**********************

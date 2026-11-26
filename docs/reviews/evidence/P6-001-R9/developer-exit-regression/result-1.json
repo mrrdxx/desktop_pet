@@ -1,0 +1,8 @@
+{
+  "scenario": "usage-stats-exit",
+  "exitCode": 0,
+  "message": "usage-stats-exit: the production menu Exit ended the process cleanly (session 1, isRestart=False, exitCode=0 from returning out of Main).",
+  "logDirectory": "C:\\Users\\mrrdxx\\AppData\\Local\\Temp\\codefree-agent\\p6-001-r8-final\\usage-stats-exit\\logs",
+  "logFiles": [],
+  "logContent": ""
+}

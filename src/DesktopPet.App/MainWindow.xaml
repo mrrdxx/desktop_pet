@@ -29,6 +29,11 @@
             <Image.RenderTransform>
                 <TransformGroup>
                     <TranslateTransform x:Name="FrameOffsetTransform" X="0" Y="0" />
+                    <!-- P5B-003 S2：攀爬朝向镜像。素材默认朝左伸爪；
+                         目标方向在宠物右侧时 ScaleX=-1 翻转到朝右。
+                         中心=素材脚点 footAnchor(60,110)，y 不变故脚点稳定。
+                         位置在 FrameOffset 之后、Wobble 之前：镜像不影响偏移与晃动。 -->
+                    <ScaleTransform x:Name="ClimbMirrorTransform" ScaleX="1" CenterX="60" CenterY="110" />
                     <!-- P5A-002：栖息跟随成功后的短暂晃动（纯视觉）。
                          R1-1：旋转中心=帧偏移补偿后的素材脚点
                          （footAnchor + FrameOffset，代码每 tick 更新），
